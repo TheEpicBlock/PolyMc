@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "PolyMc",
+  "id": "polymc",
   "version": "${version}",
 
   "name": "PolyMc api.",
@@ -14,16 +14,16 @@
   },
 
   "license": "",
-  "icon": "assets/PolyMc/icon.png",
+  "icon": "assets/polymc/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.ExampleMod"
+      "io.github.theepicblock.polymc.PolyMc"
     ]
   },
   "mixins": [
-    "PolyMc.mixins.json"
+    "polymc.mixins.json"
   ],
 
   "depends": {
