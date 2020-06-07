@@ -1,4 +1,4 @@
-package io.github.theepicblock.polymc.api;
+package io.github.theepicblock.polymc.api.item;
 
 import net.minecraft.item.ItemStack;
 

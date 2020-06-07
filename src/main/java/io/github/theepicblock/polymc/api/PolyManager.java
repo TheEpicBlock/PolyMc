@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.api;
 
+import io.github.theepicblock.polymc.api.item.ItemPoly;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -7,6 +8,9 @@ import net.minecraft.item.Items;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Manages all polys for all types of objects.
+ */
 public class PolyManager {
     private static final Map<Item, ItemPoly> itemPolys= new HashMap<>();
 
