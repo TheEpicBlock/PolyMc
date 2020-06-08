@@ -1,21 +1,19 @@
 package io.github.theepicblock.polymc.api.item;
 
-import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.util.Pair;
 
 /**
- * Helper class to prevent items from conflicting on the client-side
+ * Helper class to prevent CustomModelData values from conflicting
+ * For example, a mod can request 100 CustomModelData values for a specific item. Then those will be reserved and another mod will get different values
+ *
  */
-public class ItemRegisterManager {
-    /**
-     * To prevent CustomModelData values conflicting, this holds at which value we are per item.
-     * For example, a mod can request 100 CustomModelData values for a specific item. Then those will be reserved and another mod will get different values
-     */
+public class CustomModelDataManager {
     private final Object2IntMap<Item> CustomModelDataCurrent = new Object2IntOpenHashMap<>();
     private final Item[] DEFAULT_ITEMS = {
             Items.STICK,

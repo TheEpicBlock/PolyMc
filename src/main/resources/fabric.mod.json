@@ -4,23 +4,20 @@
   "version": "${version}",
 
   "name": "PolyMc api.",
-  "description": "Combatibilityness!",
+  "description": "An attempt to make mods compatible with vanilla clients.",
   "authors": [
     "TheEpicBlock_TEB"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
+    "homepage": "https://github.com/TheEpicBlock/PolyMc",
     "sources": "https://github.com/TheEpicBlock/PolyMc"
   },
 
   "license": "",
   "icon": "assets/polymc/icon.png",
 
-  "environment": "*",
+  "environment": "server",
   "entrypoints": {
-    "main": [
-      "io.github.theepicblock.polymc.PolyMc"
-    ]
   },
   "mixins": [
     "polymc.mixins.json"

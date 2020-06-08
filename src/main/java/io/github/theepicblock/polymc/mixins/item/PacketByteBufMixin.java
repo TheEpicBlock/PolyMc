@@ -1,6 +1,6 @@
 package io.github.theepicblock.polymc.mixins.item;
 
-import io.github.theepicblock.polymc.api.PolyManager;
+import io.github.theepicblock.polymc.PolyMc;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.PacketByteBuf;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,6 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class PacketByteBufMixin {
     @ModifyVariable(method = "writeItemStack(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/util/PacketByteBuf;", at = @At("HEAD"))
     public ItemStack writeItemStackValueOverwrite(ItemStack itemStack) {
-        return PolyManager.getClientItem(itemStack);
+        return PolyMc.getMap().getClientItem(itemStack);
     }
 }
