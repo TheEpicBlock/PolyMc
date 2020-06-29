@@ -20,7 +20,7 @@ public class ItemPolyGenerator {
         for (Item item : getItemRegistry()) {
             Identifier id = getItemRegistry().getId(item);
             if (id == null) continue;
-            if (!Util.isVanilla(id)) {
+            if (!Util.isVanilla(id) || true) { //TODO remove this debug thingy
                 //this is a modded item and should have a Poly
                 addItemToBuilder(item,builder);
             }
