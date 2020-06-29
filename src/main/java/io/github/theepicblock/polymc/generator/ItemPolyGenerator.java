@@ -22,12 +22,17 @@ public class ItemPolyGenerator {
             if (id == null) continue;
             if (!Util.isVanilla(id)) {
                 //this is a modded item and should have a Poly
+                addItemToBuilder(item,builder);
             }
         }
     }
 
     public static ItemPoly generatePoly(Item item, ItemPolyMapBuilder builder) {
         return new RandomCmdPoly(builder.getCMDManager());
+    }
+
+    private static void addItemToBuilder(Item item, ItemPolyMapBuilder builder) {
+        builder.register(item, generatePoly(item,builder));
     }
 
     /**
