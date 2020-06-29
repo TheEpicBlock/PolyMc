@@ -3,9 +3,33 @@ package io.github.theepicblock.polymc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.register.PolyMapBuilder;
 import io.github.theepicblock.polymc.generator.Generator;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.predicate.NbtPredicate;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
-public class PolyMc {
+import static net.minecraft.server.command.CommandManager.literal;
+
+public class PolyMc implements ModInitializer {
     private static PolyMap map;
+
+    @Override
+    public void onInitialize() {
+        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
+            dispatcher.register(literal("polymc_debug").requires(source -> source.hasPermissionLevel(2))
+                .then(literal("item"))
+                    .executes((context) -> {
+                        ItemStack heldItem = context.getSource().getPlayer().inventory.getMainHandStack();
+                        context.getSource().sendFeedback(new LiteralText(getMap().getClientItem(heldItem).toTag(new CompoundTag()).toString()),false);
+                        return 0;
+                    }));
+        });
+    }
 
     /**
      * Builds the poly map, this should only be run when all blocks/items have been registered.
