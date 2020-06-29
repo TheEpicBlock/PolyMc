@@ -1,17 +1,26 @@
 package io.github.theepicblock.polymc;
 
 import io.github.theepicblock.polymc.api.PolyMap;
-import io.github.theepicblock.polymc.api.PolyMapBuilder;
-import io.github.theepicblock.polymc.generator.ItemGenerator;
-import net.fabricmc.api.ModInitializer;
+import io.github.theepicblock.polymc.api.register.PolyMapBuilder;
+import io.github.theepicblock.polymc.api.register.ItemPolyMapBuilder;
+import io.github.theepicblock.polymc.generator.Generator;
 
 public class PolyMc {
     private static PolyMap map;
 
-    public void generatePolyMap() {
+    /**
+     * Builds the poly map, this should only be run when all blocks/items have been registered.
+     * This will be called by PolyMc when the worlds are generated.
+     * @deprecated this is an internal method you shouldn't call
+     */
+    @SuppressWarnings("DeprecatedIsStillUsed")
+    @Deprecated
+    public static void generatePolyMap() {
         PolyMapBuilder builder = new PolyMapBuilder();
-        //do entrypoint stuff :P
-        ItemGenerator.generateAllItems(builder);
+        //TODO let other mods generate items here via an entry point
+
+        //Auto generate the rest
+        Generator.generateMissing(builder);
 
         map = builder.build();
     }

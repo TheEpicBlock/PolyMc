@@ -9,5 +9,5 @@ public interface ItemPoly {
      * @param input original ItemStack
      * @return ItemStack that should be sent to the client
      */
-    ItemStack getPoly(ItemStack input);
+    ItemStack getClientItem(ItemStack input);
 }
