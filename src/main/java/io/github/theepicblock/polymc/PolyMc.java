@@ -2,7 +2,6 @@ package io.github.theepicblock.polymc;
 
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.register.PolyMapBuilder;
-import io.github.theepicblock.polymc.api.register.ItemPolyMapBuilder;
 import io.github.theepicblock.polymc.generator.Generator;
 
 public class PolyMc {
