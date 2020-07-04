@@ -18,6 +18,9 @@
 
   "environment": "server",
   "entrypoints": {
+    "main": [
+      "io.github.theepicblock.polymc.PolyMc"
+    ]
   },
   "mixins": [
     "polymc.mixins.json"
