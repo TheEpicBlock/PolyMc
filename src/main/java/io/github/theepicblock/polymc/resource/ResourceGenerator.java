@@ -15,7 +15,12 @@ public class ResourceGenerator {
         Path path = resourceDir.toPath().toAbsolutePath();
         ResourcePackMaker pack = new ResourcePackMaker(path);
         PolyMc.getMap().getItemPolys().forEach((item, itemPoly) -> {
-            itemPoly.AddToResourcePack(item, pack);
+            try {
+                itemPoly.AddToResourcePack(item, pack);
+            } catch (Exception e) {
+                PolyMc.LOGGER.warning("Exception whilst generating resources for " + item.getTranslationKey());
+                e.printStackTrace();
+            }
         });
     }
 }
