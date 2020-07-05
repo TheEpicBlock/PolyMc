@@ -22,7 +22,7 @@ public class ItemPolyGenerator {
     public static void generateMissing(PolyMapBuilder builder) {
         for (Item item : getItemRegistry()) {
             Identifier id = getItemRegistry().getId(item);
-            if (!Util.isVanilla(id) || item != Items.AIR) { //TODO remove this debug thingy
+            if (!Util.isVanilla(id)) {
                 //this is a modded item and should have a Poly
                 addItemToBuilder(item,builder);
             }
