@@ -8,6 +8,6 @@ public class Generator {
      * @param builder builder to add polys to
      */
     public static void generateMissing(PolyMapBuilder builder) {
-        ItemPolyGenerator.generateMissing(builder.getItem());
+        ItemPolyGenerator.generateMissing(builder);
     }
 }

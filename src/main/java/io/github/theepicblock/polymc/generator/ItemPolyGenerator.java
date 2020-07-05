@@ -3,7 +3,8 @@ package io.github.theepicblock.polymc.generator;
 import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.item.RandomCmdPoly;
-import io.github.theepicblock.polymc.api.register.ItemPolyMapBuilder;
+import io.github.theepicblock.polymc.api.register.PolyMapBuilder;
+import io.github.theepicblock.polymc.api.register.PolyMapBuilder;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
@@ -18,10 +19,9 @@ public class ItemPolyGenerator {
      * Automatically generates all {@link ItemPoly}s that are missing in the specified builder
      * @param builder builder to add the {@link ItemPoly}s to
      */
-    public static void generateMissing(ItemPolyMapBuilder builder) {
+    public static void generateMissing(PolyMapBuilder builder) {
         for (Item item : getItemRegistry()) {
             Identifier id = getItemRegistry().getId(item);
-            if (id == null) continue;
             if (!Util.isVanilla(id) || item != Items.AIR) { //TODO remove this debug thingy
                 //this is a modded item and should have a Poly
                 addItemToBuilder(item,builder);
@@ -29,12 +29,12 @@ public class ItemPolyGenerator {
         }
     }
 
-    public static ItemPoly generatePoly(Item item, ItemPolyMapBuilder builder) {
+    public static ItemPoly generatePoly(Item item, PolyMapBuilder builder) {
         return new RandomCmdPoly(builder.getCMDManager());
     }
 
-    private static void addItemToBuilder(Item item, ItemPolyMapBuilder builder) {
-        builder.register(item, generatePoly(item,builder));
+    private static void addItemToBuilder(Item item, PolyMapBuilder builder) {
+        builder.registerItem(item, generatePoly(item,builder));
     }
 
     /**
