@@ -19,9 +19,6 @@ public class ItemPolyGenerator {
      * @param builder builder to add the {@link ItemPoly}s to
      */
     public static void generateMissing(ItemPolyMapBuilder builder) {
-        getItemRegistry().getEntries().stream().filter((entry) -> !(Util.isVanilla(entry.getKey().getValue()))).sorted((entry) -> {
-
-        });
         for (Item item : getItemRegistry()) {
             Identifier id = getItemRegistry().getId(item);
             if (id == null) continue;
