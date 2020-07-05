@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.register.PolyMapBuilder;
 import io.github.theepicblock.polymc.generator.Generator;
+import io.github.theepicblock.polymc.resource.ResourceGenerator;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.minecraft.item.ItemStack;
@@ -13,10 +14,13 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
+import java.util.logging.Logger;
+
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class PolyMc implements ModInitializer {
     private static PolyMap map;
+    public static final Logger LOGGER = Logger.getLogger("PolyMc");
 
     @Override
     public void onInitialize() {
@@ -27,7 +31,13 @@ public class PolyMc implements ModInitializer {
                         ItemStack heldItem = context.getSource().getPlayer().inventory.getMainHandStack();
                         context.getSource().sendFeedback(new LiteralText(getMap().getClientItem(heldItem).toTag(new CompoundTag()).toString()),false);
                         return 0;
-                    })));
+                    }))
+                .then(literal("gen_resource")
+                    .executes((context -> {
+                        ResourceGenerator.generate();
+                        context.getSource().sendFeedback(new LiteralText("Finished generating"),true);
+                        return 0;
+                    }))));
         });
     }
 

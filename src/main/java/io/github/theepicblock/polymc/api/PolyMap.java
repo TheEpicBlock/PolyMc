@@ -19,4 +19,8 @@ public class PolyMap {
 
         return poly.getClientItem(serverItem);
     }
+
+    public Map<Item, ItemPoly> getItemPolys() {
+        return itemPolys;
+    }
 }

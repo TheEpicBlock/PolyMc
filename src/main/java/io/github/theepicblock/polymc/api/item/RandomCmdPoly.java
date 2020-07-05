@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.api.item;
 
 import io.github.theepicblock.polymc.api.register.CustomModelDataManager;
+import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
@@ -23,5 +24,10 @@ public class RandomCmdPoly implements ItemPoly{
     @Override
     public ItemStack getClientItem(ItemStack input) {
         return replaceItem;
+    }
+
+    @Override
+    public void AddToResourcePack(Item item, ResourcePackMaker pack) {
+        pack.copyItemModel(item);
     }
 }
