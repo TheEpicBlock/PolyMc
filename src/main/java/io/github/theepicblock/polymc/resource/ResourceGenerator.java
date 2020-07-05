@@ -22,5 +22,7 @@ public class ResourceGenerator {
                 e.printStackTrace();
             }
         });
+
+        pack.saveAll();
     }
 }

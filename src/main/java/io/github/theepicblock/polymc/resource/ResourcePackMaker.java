@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Optional;
+import java.util.*;
 
 public class ResourcePackMaker {
     private static final String MODELS = "models/";
@@ -24,8 +24,29 @@ public class ResourcePackMaker {
     private final Path BuildLocation;
     private final Gson gson = new Gson();
 
+    private final Map<Identifier,JsonModel> modelsToSave = new HashMap<>();
+
     public ResourcePackMaker(Path buildLocation) {
         BuildLocation = buildLocation;
+    }
+
+    /**
+     * Add's a minecraft itemmodel to the resourcepack. You can then add additional statements to this model.
+     * May not work for all items.
+     * @param path example "testitem"
+     * @return
+     */
+    public JsonModel copyMinecraftItemModel(String path) {
+        Identifier id = new Identifier("minecraft", "item/"+path);
+        JsonModel v = modelsToSave.get(id);
+        if (v == null) {
+            v = new JsonModel();
+            v.parent = "item/generated";
+            v.textures = new HashMap<>();
+            v.textures.put("layer0","item/"+path);
+            modelsToSave.put(id,v);
+        }
+        return v;
     }
 
     /**
@@ -114,5 +135,21 @@ public class ResourcePackMaker {
      */
     public Path copyAssetFromMod(String modId, String path) {
         return copyFileFromMod(modId, String.format("assets/%s/%s", modId, path));
+    }
+
+    /**
+     * Saves all changes that haven't been done yet
+     */
+    public void saveAll() {
+        modelsToSave.forEach((id,model) -> {
+            String json = gson.toJson(model);
+            Path path = BuildLocation.resolve("assets/"+id.getNamespace()+"/"+MODELS+id.getPath()+".json");
+            path.toFile().getParentFile().mkdirs();
+            try {
+                Files.write(path, json.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
