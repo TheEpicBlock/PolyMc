@@ -13,7 +13,7 @@
     "sources": "https://github.com/TheEpicBlock/PolyMc"
   },
 
-  "license": "",
+  "license": "LGPL",
   "icon": "assets/polymc/icon.png",
 
   "environment": "server",
