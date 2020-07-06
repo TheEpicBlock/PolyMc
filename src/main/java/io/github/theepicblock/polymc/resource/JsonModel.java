@@ -1,5 +1,7 @@
 package io.github.theepicblock.polymc.resource;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +17,10 @@ public class JsonModel {
             overrides = new ArrayList<>();
         }
         overrides.add(e);
+    }
+
+    public String toJson(Gson gson) {
+        //Ensure that the overrides are in the correct order before converting
         Collections.sort(overrides,(o1,o2) -> {
             if (o1.predicate.size() > 0 && o2.predicate.size() > 0) {
                 int i1 = o1.predicate.values().iterator().next();
@@ -23,6 +29,8 @@ public class JsonModel {
             }
             return 0;
         });
+
+        return gson.toJson(this);
     }
 
     public static class Override {

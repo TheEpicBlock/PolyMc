@@ -142,7 +142,7 @@ public class ResourcePackMaker {
      */
     public void saveAll() {
         modelsToSave.forEach((id,model) -> {
-            String json = gson.toJson(model);
+            String json = model.toJson(gson);
             Path path = BuildLocation.resolve("assets/"+id.getNamespace()+"/"+MODELS+id.getPath()+".json");
             path.toFile().getParentFile().mkdirs();
             try {
