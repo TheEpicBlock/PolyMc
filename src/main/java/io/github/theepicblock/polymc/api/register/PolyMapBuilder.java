@@ -28,7 +28,6 @@ public class PolyMapBuilder {
         return CMDManager;
     }
     public PolyMap build() {
-        //TODO fix
         return new PolyMap(itemMap);
     }
 }

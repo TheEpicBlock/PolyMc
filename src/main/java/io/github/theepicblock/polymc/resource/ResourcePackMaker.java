@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
+//TODO organize these classes
 public class ResourcePackMaker {
     private static final String MODELS = "models/";
     private static final String TEXTURES = "textures/";
@@ -140,6 +141,7 @@ public class ResourcePackMaker {
     /**
      * Saves all changes that haven't been done yet
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void saveAll() {
         modelsToSave.forEach((id,model) -> {
             String json = model.toJson(gson);
