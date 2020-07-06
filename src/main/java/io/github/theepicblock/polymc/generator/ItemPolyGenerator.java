@@ -2,11 +2,9 @@ package io.github.theepicblock.polymc.generator;
 
 import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
-import io.github.theepicblock.polymc.api.item.RandomCmdPoly;
-import io.github.theepicblock.polymc.api.register.PolyMapBuilder;
+import io.github.theepicblock.polymc.api.item.CustomModelDataPoly;
 import io.github.theepicblock.polymc.api.register.PolyMapBuilder;
 import net.minecraft.item.Item;
-import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
@@ -30,7 +28,7 @@ public class ItemPolyGenerator {
     }
 
     public static ItemPoly generatePoly(Item item, PolyMapBuilder builder) {
-        return new RandomCmdPoly(builder.getCMDManager());
+        return new CustomModelDataPoly(builder.getCMDManager(), item);
     }
 
     private static void addItemToBuilder(Item item, PolyMapBuilder builder) {

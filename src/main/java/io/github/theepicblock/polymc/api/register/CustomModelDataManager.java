@@ -25,14 +25,14 @@ public class CustomModelDataManager {
 
     /**
      * Request an amount of CMD values you need for a specific item. To prevent CMD values from conflicting
-     * If you don't specifically need this item it's recommended to use {@link #RequestItem}
+     * If you don't specifically need this item it's recommended to use {@link #RequestCMDwithItem}
      * Example: you request 5 values for a carrot on a stick. You get the number 2 back. You can now use the values 2,3,4,5,6 in your code and resourcepack.
      * @param item the item you need CMD for
      * @param amount the amount of CMD values you're requesting
      * @throws ArithmeticException if the limit of CustomModelData is reached
      * @return the first value you can use.
      */
-    public int RequestCustomModelDataValue(Item item, int amount) throws ArithmeticException{
+    public int RequestCMDValue(Item item, int amount) throws ArithmeticException{
         int current = CustomModelDataCurrent.getInt(item); //this is the current CMD that we're at for this item/
         if (current == 0) {
             current = 1; //we should start at 1. Never 0
@@ -48,8 +48,8 @@ public class CustomModelDataManager {
      * @param item the item you need CMD for
      * @return the value you can use.
      */
-    public int RequestCustomModelDataValue(Item item) {
-        return RequestCustomModelDataValue(item, 1);
+    public int RequestCMDValue(Item item) {
+        return RequestCMDValue(item, 1);
     }
 
     /**
@@ -61,10 +61,10 @@ public class CustomModelDataManager {
      * @return the first number you can use and for which item that is.
      * @throws ArithmeticException if there have been a rediculous amount of CMD values allocated
      */
-    public Pair<Item,Integer> RequestItem(int amount) {
+    public Pair<Item,Integer> RequestCMDwithItem(int amount) {
         for(Item item : DEFAULT_ITEMS) {
             try {
-                int value = RequestCustomModelDataValue(item, amount);
+                int value = RequestCMDValue(item, amount);
                 return new Pair<>(item, value);
             } catch (ArithmeticException ignored) {}
         }
@@ -78,7 +78,7 @@ public class CustomModelDataManager {
      * Items that will be used are in {@link #DEFAULT_ITEMS}
      * @return the number you can use and for which item.
      */
-    public Pair<Item,Integer> RequestItem() {
-        return RequestItem(1);
+    public Pair<Item,Integer> RequestCMDwithItem() {
+        return RequestCMDwithItem(1);
     }
 }
