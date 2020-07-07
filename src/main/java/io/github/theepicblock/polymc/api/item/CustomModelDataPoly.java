@@ -6,7 +6,9 @@ import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.text.Style;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.registry.Registry;
@@ -27,7 +29,7 @@ public class CustomModelDataPoly implements ItemPoly{
         CompoundTag tag = new CompoundTag();
         tag.putInt("CustomModelData", CMDvalue);
         defaultServerItem.setTag(tag);
-        defaultServerItem.setCustomName(new TranslatableText(base.getTranslationKey()));
+        defaultServerItem.setCustomName(new TranslatableText(base.getTranslationKey()).setStyle(Style.EMPTY.withItalic(false)));
     }
 
     /**
@@ -42,7 +44,7 @@ public class CustomModelDataPoly implements ItemPoly{
         CompoundTag tag = new CompoundTag();
         tag.putInt("CustomModelData", CMDvalue);
         defaultServerItem.setTag(tag);
-        defaultServerItem.setCustomName(new TranslatableText(base.getTranslationKey()));
+        defaultServerItem.setCustomName(new TranslatableText(base.getTranslationKey()).setStyle(Style.EMPTY.withItalic(false)));
     }
 
     @Override
