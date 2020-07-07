@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "item.PacketByteBufMixin",
+    "item.ServerPlayNetworkHandlerMixin",
     "ServerStartMixin"
   ],
   "injectors": {
