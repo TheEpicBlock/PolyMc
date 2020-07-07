@@ -1,4 +1,4 @@
 # PolyMc
-Trying to make blocks/items etc registerable on the server. But replaced with a different block/item etc when they're sent to the server. Making you able to be compatible with vanilla client without having to do wierd nbt stuff.
+This mod works as a polyfill library of sorts. It replaces modded items/other stuff with vanilla items before they get sent to the client.  
 
-Highly inspired by [fiblib](https://github.com/Hephaestus-Dev/FibLib)
+At the current stage 99% of modded items can be made fully compatible with the vanilla client. PolyMC automatically generates a resourcepack to use. 
