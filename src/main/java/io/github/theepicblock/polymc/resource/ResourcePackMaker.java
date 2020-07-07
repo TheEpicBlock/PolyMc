@@ -100,6 +100,10 @@ public class ResourcePackMaker {
      */
     public void copyTexture(String modId, String path) {
         copyAssetFromMod(modId, TEXTURES+path+".png");
+        String mcMetaPath = TEXTURES+path+".png.mcmeta";
+        if (checkForAsset(modId,mcMetaPath)) {
+            copyAssetFromMod(modId, mcMetaPath);
+        }
     }
 
     /**
@@ -108,8 +112,8 @@ public class ResourcePackMaker {
      * @param path example: "asset/testmod/models/item/testitem.json"
      * @return The path to the new file
      */
-    public Path copyFileFromMod(String modId, String path) {
-        if (modId == "minecraft") return null;
+    private Path copyFileFromMod(String modId, String path) {
+        if (modId.equals("minecraft")) return null;
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
             PolyMc.LOGGER.warning("Mod not present whilst trying to get it's assets. Mod ID "+modId);
@@ -128,14 +132,36 @@ public class ResourcePackMaker {
         return null;
     }
 
+    private boolean checkFileInMod(String modId, String path) {
+        if (modId.equals("minecraft")) return false;
+        Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
+        if (!modOpt.isPresent()) {
+            return false;
+        }
+
+        ModContainer mod = modOpt.get();
+        Path pathInJar = mod.getPath(path);
+        return Files.exists(pathInJar);
+    }
+
     /**
      * gets a file from the modId's jar's asset folder
-     * @param modId
+     * @param modId the mod who's assets we're getting from
      * @param path example "models/item/testitem.json"
      * @return The path to the new file
      */
     public Path copyAssetFromMod(String modId, String path) {
         return copyFileFromMod(modId, String.format("assets/%s/%s", modId, path));
+    }
+
+    /**
+     * Checks if a mod's jar contains the asset
+     * @param modId the mod who's assets we're checking
+     * @param path example "models/item/testitem.json"
+     * @return true if the file exists
+     */
+    public boolean checkForAsset(String modId, String path) {
+        return checkFileInMod(modId, String.format("assets/%s/%s", modId, path));
     }
 
     /**
