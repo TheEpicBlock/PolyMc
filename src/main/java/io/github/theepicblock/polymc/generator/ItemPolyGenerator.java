@@ -5,6 +5,7 @@ import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.item.CustomModelDataPoly;
 import io.github.theepicblock.polymc.api.register.PolyMapBuilder;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
@@ -28,6 +29,9 @@ public class ItemPolyGenerator {
     }
 
     public static ItemPoly generatePoly(Item item, PolyMapBuilder builder) {
+        if (item.isFood()) {
+            return new CustomModelDataPoly(builder.getCMDManager(), item, Items.COOKED_BEEF);
+        }
         return new CustomModelDataPoly(builder.getCMDManager(), item);
     }
 
