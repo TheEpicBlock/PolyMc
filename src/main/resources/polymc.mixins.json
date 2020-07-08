@@ -4,9 +4,10 @@
   "package": "io.github.theepicblock.polymc.mixins",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "ServerStartMixin",
+    "item.CustomRecipeFix",
     "item.PacketByteBufMixin",
-    "item.ServerPlayNetworkHandlerMixin",
-    "ServerStartMixin"
+    "item.ServerPlayNetworkHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
