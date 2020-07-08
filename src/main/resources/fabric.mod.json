@@ -16,7 +16,7 @@
   "license": "LGPL",
   "icon": "assets/polymc/icon.png",
 
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "main": [
       "io.github.theepicblock.polymc.PolyMc"
