@@ -24,21 +24,7 @@ public class PolyMc implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-            dispatcher.register(literal("polymc_debug").requires(source -> source.hasPermissionLevel(2))
-                .then(literal("item")
-                    .executes((context) -> {
-                        ItemStack heldItem = context.getSource().getPlayer().inventory.getMainHandStack();
-                        context.getSource().sendFeedback(new LiteralText(getMap().getClientItem(heldItem).toTag(new CompoundTag()).toString()),false);
-                        return 0;
-                    }))
-                .then(literal("gen_resource")
-                    .executes((context -> {
-                        ResourceGenerator.generate();
-                        context.getSource().sendFeedback(new LiteralText("Finished generating"),true);
-                        return 0;
-                    }))));
-        });
+        PolyMcCommands.registerCommands();
     }
 
     /**
