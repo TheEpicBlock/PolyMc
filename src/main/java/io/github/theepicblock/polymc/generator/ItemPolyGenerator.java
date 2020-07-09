@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.generator;
 
 import io.github.theepicblock.polymc.Util;
+import io.github.theepicblock.polymc.api.item.DamageableItemPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.item.CustomModelDataPoly;
 import io.github.theepicblock.polymc.api.register.PolyMapBuilder;
@@ -29,6 +30,10 @@ public class ItemPolyGenerator {
     }
 
     public static ItemPoly generatePoly(Item item, PolyMapBuilder builder) {
+        if (item.isDamageable()) {
+            return new DamageableItemPoly(builder.getCMDManager(), item);
+        }
+
         if (item.isFood()) {
             return new CustomModelDataPoly(builder.getCMDManager(), item, Items.COOKED_BEEF);
         }

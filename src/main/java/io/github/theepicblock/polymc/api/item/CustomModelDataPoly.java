@@ -55,7 +55,7 @@ public class CustomModelDataPoly implements ItemPoly{
             serverItem.setTag(input.getTag());
             //doing this removes the CMD, so we should add that again
             serverItem.getTag().putInt("CustomModelData",CMDvalue);
-            if (!serverItem.hasCustomName()) { //It might be that the tags didn't include the name, so we should add them back in
+            if (!input.hasCustomName()) { //It might be that the tags didn't include the name, so we should add them back in
                 serverItem.setCustomName(defaultServerItem.getName());
             }
         }
