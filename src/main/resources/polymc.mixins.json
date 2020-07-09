@@ -6,9 +6,10 @@
   "plugin": "io.github.theepicblock.polymc.mixins.MixinConfigPlugin",
   "mixins": [
     "ServerStartMixin",
+    "item.CreativeModeHotfix",
     "item.CustomRecipeFix",
     "item.ItemPolyImplementation",
-    "item.ServerPlayNetworkHandlerMixin"
+    "item.DesyncPatch"
   ],
   "injectors": {
     "defaultRequire": 1
