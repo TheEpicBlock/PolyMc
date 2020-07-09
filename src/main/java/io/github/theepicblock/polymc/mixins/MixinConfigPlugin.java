@@ -26,7 +26,10 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         String mixin = mixinClassName.substring(MIXIN_PACKAGE_ROOT.length());
-        return !config.isMixinDisabled(mixin);
+        if (config.isMixinDisabled(mixin)) {
+            PolyMc.LOGGER.config(String.format("%s is disabled by config", mixin));
+        }
+        return true;
     }
 
     @Override
