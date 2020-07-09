@@ -9,7 +9,7 @@
     "item.CreativeModeHotfix",
     "item.CustomRecipeFix",
     "item.ItemPolyImplementation",
-    "item.DesyncPatch"
+    "item.InventoryDesyncPatch"
   ],
   "injectors": {
     "defaultRequire": 1
