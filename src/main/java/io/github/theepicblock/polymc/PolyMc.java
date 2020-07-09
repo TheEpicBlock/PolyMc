@@ -1,22 +1,11 @@
 package io.github.theepicblock.polymc;
 
 import io.github.theepicblock.polymc.api.PolyMap;
-import io.github.theepicblock.polymc.api.register.PolyMapBuilder;
+import io.github.theepicblock.polymc.api.register.PolyRegister;
 import io.github.theepicblock.polymc.generator.Generator;
-import io.github.theepicblock.polymc.resource.ResourceGenerator;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.predicate.NbtPredicate;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
 
 import java.util.logging.Logger;
-
-import static net.minecraft.server.command.CommandManager.literal;
 
 public class PolyMc implements ModInitializer {
     private static PolyMap map;
@@ -35,7 +24,7 @@ public class PolyMc implements ModInitializer {
     @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
     public static void generatePolyMap() {
-        PolyMapBuilder builder = new PolyMapBuilder();
+        PolyRegister builder = new PolyRegister();
         //TODO let other mods generate items here via an entry point
 
         //Auto generate the rest

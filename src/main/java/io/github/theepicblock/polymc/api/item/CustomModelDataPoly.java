@@ -16,7 +16,7 @@ import net.minecraft.util.registry.Registry;
 import java.util.HashMap;
 
 /**
- * Replaces an item with a random vanilla item with a custom model data value.
+ * The most standard ItemPoly implementation
  */
 public class CustomModelDataPoly implements ItemPoly{
     private final ItemStack defaultServerItem;

@@ -8,10 +8,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Makes a {@link PolyMap}
- * It contains all the utilities needed to manage the different Poly types.
+ * A class to register Polys.
+ * Also contains helper stuff to help with the registration of Polys and help lower conflicts.
  */
-public class PolyMapBuilder {
+public class PolyRegister {
     private final CustomModelDataManager CMDManager = new CustomModelDataManager();
     private final Map<Item, ItemPoly> itemMap = new HashMap<>();
 
@@ -27,6 +27,7 @@ public class PolyMapBuilder {
     public CustomModelDataManager getCMDManager() {
         return CMDManager;
     }
+
     public PolyMap build() {
         return new PolyMap(itemMap);
     }

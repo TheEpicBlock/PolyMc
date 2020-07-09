@@ -9,7 +9,6 @@ import net.minecraft.util.Pair;
 /**
  * Helper class to prevent CustomModelData values from conflicting
  * For example, a mod can request 100 CustomModelData values for a specific item. Then those will be reserved and another mod will get different values
- *
  */
 public class CustomModelDataManager {
     private final Object2IntMap<Item> CustomModelDataCurrent = new Object2IntOpenHashMap<>();

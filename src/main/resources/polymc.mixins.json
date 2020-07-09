@@ -6,7 +6,7 @@
   "mixins": [
     "ServerStartMixin",
     "item.CustomRecipeFix",
-    "item.PacketByteBufMixin",
+    "item.ItemPolyImplementation",
     "item.ServerPlayNetworkHandlerMixin"
   ],
   "injectors": {

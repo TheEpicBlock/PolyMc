@@ -6,6 +6,9 @@ import net.minecraft.item.ItemStack;
 
 import java.util.Map;
 
+/**
+ *
+ */
 public class PolyMap {
     private final Map<Item, ItemPoly> itemPolys;
 

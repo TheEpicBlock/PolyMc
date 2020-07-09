@@ -8,6 +8,9 @@ import net.minecraft.text.LiteralText;
 
 import static net.minecraft.server.command.CommandManager.literal;
 
+/**
+ * Registers the polymc command
+ */
 public class PolyMcCommands {
     static void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
