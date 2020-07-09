@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "io.github.theepicblock.polymc.mixins",
   "compatibilityLevel": "JAVA_8",
+  "plugin": "io.github.theepicblock.polymc.mixins.MixinConfigPlugin",
   "mixins": [
     "ServerStartMixin",
     "item.CustomRecipeFix",
