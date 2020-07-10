@@ -18,6 +18,7 @@
 
 package io.github.theepicblock.polymc.api.register;
 
+import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import net.minecraft.item.Item;
@@ -28,8 +29,9 @@ import java.util.Map;
 /**
  * A class to register Polys.
  * Also contains helper stuff to help with the registration of Polys and help lower conflicts.
+ * This eventually get's transformed to an {@link PolyMap}
  */
-public class PolyRegister {
+public class PolyRegistry {
     private final CustomModelDataManager CMDManager = new CustomModelDataManager();
     private final Map<Item, ItemPoly> itemMap = new HashMap<>();
 
@@ -42,11 +44,21 @@ public class PolyRegister {
         itemMap.put(item, poly);
     }
 
+    /**
+     * Checks if the item has a registered itempoly
+     * @param item item to check
+     * @return true if the itempoly exists for the given item
+     */
+    public boolean hasItemPoly(Item item) {
+        return itemMap.containsKey(item);
+    }
+
     public CustomModelDataManager getCMDManager() {
         return CMDManager;
     }
 
     public PolyMap build() {
-        return new PolyMap(itemMap);
+        ImmutableMap<Item,ItemPoly> itemMapIm = ImmutableMap.copyOf(itemMap);
+        return new PolyMap(itemMapIm);
     }
 }

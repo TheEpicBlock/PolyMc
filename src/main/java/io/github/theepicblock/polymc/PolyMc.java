@@ -21,9 +21,8 @@ package io.github.theepicblock.polymc;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.api.PolyMap;
-import io.github.theepicblock.polymc.api.register.PolyRegister;
+import io.github.theepicblock.polymc.api.register.PolyRegistry;
 import io.github.theepicblock.polymc.generator.Generator;
-import io.github.theepicblock.polymc.resource.JsonModel;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -35,6 +34,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -56,13 +56,18 @@ public class PolyMc implements ModInitializer {
     @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
     public static void generatePolyMap() {
-        PolyRegister builder = new PolyRegister();
-        //TODO let other mods generate items here via an entry point
+        PolyRegistry registry = new PolyRegistry();
+
+        //Let mods register polys via the api
+        List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("poly-mc",PolyMcEntrypoint.class);
+        for (PolyMcEntrypoint entrypointEntry : entrypoints) {
+            entrypointEntry.registerPolys(registry);
+        }
 
         //Auto generate the rest
-        Generator.generateMissing(builder);
+        Generator.generateMissing(registry);
 
-        map = builder.build();
+        map = registry.build();
     }
 
     /**

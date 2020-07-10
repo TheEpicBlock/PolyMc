@@ -15,10 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-
 package io.github.theepicblock.polymc;
 
-import io.github.theepicblock.polymc.resource.ResourceGenerator;
+import io.github.theepicblock.polymc.resource.ResourcePackGenerator;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
@@ -41,7 +40,7 @@ public class PolyMcCommands {
                             }))
                     .then(literal("gen_resource")
                             .executes((context -> {
-                                ResourceGenerator.generate();
+                                ResourcePackGenerator.generate();
                                 context.getSource().sendFeedback(new LiteralText("Finished generating"),true);
                                 return 0;
                             }))));

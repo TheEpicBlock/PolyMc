@@ -15,34 +15,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
+package io.github.theepicblock.polymc;
 
-package io.github.theepicblock.polymc.api;
-
-import com.google.common.collect.ImmutableMap;
-import io.github.theepicblock.polymc.api.item.ItemPoly;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-
-import java.util.Map;
+import io.github.theepicblock.polymc.api.register.PolyRegistry;
+import io.github.theepicblock.polymc.resource.ResourcePackGenerator;
 
 /**
- *
+ * The entrypoint for all PolyMc related stuff to hook into PolyMc.
  */
-public class PolyMap {
-    private final ImmutableMap<Item, ItemPoly> itemPolys;
+public interface PolyMcEntrypoint {
+    void registerPolys(PolyRegistry registry);
 
-    public PolyMap(ImmutableMap<Item, ItemPoly> itemPolys) {
-        this.itemPolys = itemPolys;
-    }
+    default void registerModSpecificResources(ResourcePackGenerator pack) {
 
-    public ItemStack getClientItem(ItemStack serverItem) {
-        ItemPoly poly = itemPolys.get(serverItem.getItem());
-        if (poly == null) return serverItem;
-
-        return poly.getClientItem(serverItem);
-    }
-
-    public ImmutableMap<Item, ItemPoly> getItemPolys() {
-        return itemPolys;
     }
 }

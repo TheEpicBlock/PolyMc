@@ -28,7 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-public class ResourceGenerator {
+public class ResourcePackGenerator {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void generate() {
         File gameDir = FabricLoader.getInstance().getGameDirectory();
