@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-
 /**
  * Contains classes to register polys. Together with utility classes to stop you from conflicting with other Polys.
  *
