@@ -66,7 +66,7 @@ public class ItemPolyGenerator {
      * @see #generatePoly(Item, PolyRegistry)
      */
     private static void addItemToBuilder(Item item, PolyRegistry builder) {
-        builder.registerItem(item, generatePoly(item,builder));
+        builder.registerItemPoly(item, generatePoly(item,builder));
     }
 
     /**

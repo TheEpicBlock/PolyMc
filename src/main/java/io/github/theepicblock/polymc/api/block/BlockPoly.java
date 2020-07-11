@@ -15,24 +15,34 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.api.item;
+package io.github.theepicblock.polymc.api.block;
 
+import io.github.theepicblock.polymc.api.register.PolyRegistry;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-public interface ItemPoly {
+public interface BlockPoly {
     /**
-     * Transforms an ItemStack to it's client version
-     * @param input original ItemStack
-     * @return ItemStack that should be sent to the client
+     * Get's called when this poly is first used.
+     * @param registry registry in which this poly was used
      */
-    ItemStack getClientItem(ItemStack input);
+    default void onFirstUse(PolyRegistry registry) {
+
+    }
+    /**
+     * Transforms an BlockState to it's client version
+     * @param input original BlockState
+     * @return BlockState that should be sent to the client
+     */
+    BlockState getClientBlock(BlockState input);
 
     /**
-     * Callback to add all resources needed for this item to a resourcepack
-     * @param item item this ItemPoly was registered to, for reference.
+     * Callback to add all resources needed for this block to a resourcepack
+     * @param block block this BlockPoly was registered to, for reference.
      * @param pack resourcepack to add to.
      */
-    void AddToResourcePack(Item item, ResourcePackMaker pack);
+    void AddToResourcePack(Block block, ResourcePackMaker pack);
 }

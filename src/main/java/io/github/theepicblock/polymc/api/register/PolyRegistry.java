@@ -19,10 +19,14 @@ package io.github.theepicblock.polymc.api.register;
 
 import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.PolyMap;
+import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,24 +36,50 @@ import java.util.Map;
  */
 public class PolyRegistry {
     private final CustomModelDataManager CMDManager = new CustomModelDataManager();
-    private final Map<Item, ItemPoly> itemMap = new HashMap<>();
+    private final Map<Item, ItemPoly> itemPolys = new HashMap<>();
+    private final Map<Block, BlockPoly> blockPolys = new HashMap<>();
+    private final List<Class<?>> blockPolysUsed = new ArrayList<>();
 
     /**
      * Register a poly for an item
      * @param item item to associate poly with
      * @param poly poly to register
      */
-    public void registerItem(Item item, ItemPoly poly) {
-        itemMap.put(item, poly);
+    public void registerItemPoly(Item item, ItemPoly poly) {
+        itemPolys.put(item, poly);
     }
 
     /**
-     * Checks if the item has a registered itempoly
+     * Register a poly for a block
+     * @param block block to associate poly with
+     * @param poly poly to register
+     */
+    public void registerBlockPoly(Block block, BlockPoly poly) {
+        Class<?> polyClass = poly.getClass();
+        if (!blockPolysUsed.contains(polyClass)) {
+            poly.onFirstUse(this);
+            blockPolysUsed.add(polyClass);
+        }
+
+        blockPolys.put(block, poly);
+    }
+
+    /**
+     * Checks if the item has a registered ItemPoly
      * @param item item to check
      * @return true if the itempoly exists for the given item
      */
     public boolean hasItemPoly(Item item) {
-        return itemMap.containsKey(item);
+        return itemPolys.containsKey(item);
+    }
+
+    /**
+     * Checks if the block has a registered BlockPoly
+     * @param block block to check
+     * @return true if the BlockPoly exists for the given block
+     */
+    public boolean hasBlockPoly(Block block) {
+        return blockPolys.containsKey(block);
     }
 
     public CustomModelDataManager getCMDManager() {
@@ -57,7 +87,8 @@ public class PolyRegistry {
     }
 
     public PolyMap build() {
-        ImmutableMap<Item,ItemPoly> itemMapIm = ImmutableMap.copyOf(itemMap);
-        return new PolyMap(itemMapIm);
+        ImmutableMap<Item,ItemPoly> itemMap = ImmutableMap.copyOf(itemPolys);
+        ImmutableMap<Block,BlockPoly> blockMap = ImmutableMap.copyOf(blockPolys);
+        return new PolyMap(itemMap, blockMap);
     }
 }

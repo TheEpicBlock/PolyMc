@@ -18,20 +18,23 @@
 package io.github.theepicblock.polymc.api;
 
 import com.google.common.collect.ImmutableMap;
+import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-
-import java.util.Map;
 
 /**
  *
  */
 public class PolyMap {
     private final ImmutableMap<Item, ItemPoly> itemPolys;
+    private final ImmutableMap<Block, BlockPoly> blockPolys;
 
-    public PolyMap(ImmutableMap<Item, ItemPoly> itemPolys) {
+    public PolyMap(ImmutableMap<Item, ItemPoly> itemPolys, ImmutableMap<Block, BlockPoly> blockPolys) {
         this.itemPolys = itemPolys;
+        this.blockPolys = blockPolys;
     }
 
     public ItemStack getClientItem(ItemStack serverItem) {
@@ -39,6 +42,13 @@ public class PolyMap {
         if (poly == null) return serverItem;
 
         return poly.getClientItem(serverItem);
+    }
+
+    public BlockState getClientBlock(BlockState serverBlock) {
+        BlockPoly poly = blockPolys.get(serverBlock.getBlock());
+        if (poly == null) return serverBlock;
+
+        return poly.getClientBlock(serverBlock);
     }
 
     public ImmutableMap<Item, ItemPoly> getItemPolys() {

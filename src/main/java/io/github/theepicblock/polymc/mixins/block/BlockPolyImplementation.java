@@ -15,24 +15,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.api.item;
+package io.github.theepicblock.polymc.mixins.block;
 
-import io.github.theepicblock.polymc.resource.ResourcePackMaker;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import io.github.theepicblock.polymc.PolyMc;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-public interface ItemPoly {
-    /**
-     * Transforms an ItemStack to it's client version
-     * @param input original ItemStack
-     * @return ItemStack that should be sent to the client
-     */
-    ItemStack getClientItem(ItemStack input);
-
-    /**
-     * Callback to add all resources needed for this item to a resourcepack
-     * @param item item this ItemPoly was registered to, for reference.
-     * @param pack resourcepack to add to.
-     */
-    void AddToResourcePack(Item item, ResourcePackMaker pack);
+@Mixin(Block.class)
+public class BlockPolyImplementation {
+    @ModifyVariable(method = "getRawIdFromState(Lnet/minecraft/block/BlockState;)I", at = @At("HEAD"))
+    private static BlockState rawBlockStateOverwrite(BlockState state) {
+        return PolyMc.getMap().getClientBlock(state);
+    }
 }

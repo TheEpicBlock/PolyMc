@@ -26,5 +26,6 @@ public class Generator {
      */
     public static void generateMissing(PolyRegistry builder) {
         ItemPolyGenerator.generateMissing(builder);
+        BlockPolyGenerator.generateMissing(builder);
     }
 }

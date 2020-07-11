@@ -6,10 +6,11 @@
   "plugin": "io.github.theepicblock.polymc.mixins.MixinConfigPlugin",
   "mixins": [
     "ServerStartMixin",
+    "block.BlockPolyImplementation",
     "item.CreativeModeHotfix",
     "item.CustomRecipeFix",
-    "item.ItemPolyImplementation",
-    "item.InventoryDesyncPatch"
+    "item.InventoryDesyncPatch",
+    "item.ItemPolyImplementation"
   ],
   "injectors": {
     "defaultRequire": 1
