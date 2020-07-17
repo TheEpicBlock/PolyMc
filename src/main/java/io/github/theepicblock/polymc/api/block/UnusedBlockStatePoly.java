@@ -17,8 +17,51 @@
  */
 package io.github.theepicblock.polymc.api.block;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import io.github.theepicblock.polymc.api.OutOfBoundsException;
+import io.github.theepicblock.polymc.api.register.BlockStateManager;
+import io.github.theepicblock.polymc.api.register.PolyRegistry;
+import io.github.theepicblock.polymc.resource.ResourcePackMaker;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.StateManager;
+
+import java.util.HashMap;
+
 /**
  * This poly uses unused blockstates to display blocks
  */
-public class UnusedBlockStatePoly {
+public class UnusedBlockStatePoly implements BlockPoly{
+    private final ImmutableMap<BlockState,BlockState> states;
+    /**
+     *
+     * @param moddedBlock the block this poly represents
+     * @param clientSideBlock the block used to display this block on the client
+     * @param registry registry used to register this poly
+     * @throws OutOfBoundsException when the clientSideBlock doesn't have any more BlockStates left.
+     */
+    public UnusedBlockStatePoly(Block moddedBlock, Block clientSideBlock, PolyRegistry registry) throws OutOfBoundsException {
+        BlockStateManager manager = registry.getBlockStateManager();
+
+        ImmutableList<BlockState> moddedStates = moddedBlock.getStateManager().getStates();
+
+        HashMap<BlockState,BlockState> res = new HashMap<>();
+        for (BlockState state : moddedStates) {
+            res.put(state,manager.requestBlockState(clientSideBlock,registry));
+            System.out.println(state);
+            System.out.println(res.get(state));
+        }
+        states = ImmutableMap.copyOf(res);
+    }
+
+    @Override
+    public BlockState getClientBlock(BlockState input) {
+        return states.get(input);
+    }
+
+    @Override
+    public void AddToResourcePack(Block block, ResourcePackMaker pack) {
+        //TODO do this pls thank you
+    }
 }

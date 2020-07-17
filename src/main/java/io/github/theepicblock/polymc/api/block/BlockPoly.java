@@ -26,13 +26,6 @@ import net.minecraft.item.ItemStack;
 
 public interface BlockPoly {
     /**
-     * Get's called when this poly is first used.
-     * @param registry registry in which this poly was used
-     */
-    default void onFirstUse(PolyRegistry registry) {
-
-    }
-    /**
      * Transforms an BlockState to it's client version
      * @param input original BlockState
      * @return BlockState that should be sent to the client

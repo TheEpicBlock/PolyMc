@@ -36,9 +36,10 @@ import java.util.Map;
  */
 public class PolyRegistry {
     private final CustomModelDataManager CMDManager = new CustomModelDataManager();
+    private final BlockStateManager blockStateManager = new BlockStateManager();
+
     private final Map<Item, ItemPoly> itemPolys = new HashMap<>();
     private final Map<Block, BlockPoly> blockPolys = new HashMap<>();
-    private final List<Class<?>> blockPolysUsed = new ArrayList<>();
 
     /**
      * Register a poly for an item
@@ -55,12 +56,6 @@ public class PolyRegistry {
      * @param poly poly to register
      */
     public void registerBlockPoly(Block block, BlockPoly poly) {
-        Class<?> polyClass = poly.getClass();
-        if (!blockPolysUsed.contains(polyClass)) {
-            poly.onFirstUse(this);
-            blockPolysUsed.add(polyClass);
-        }
-
         blockPolys.put(block, poly);
     }
 
@@ -84,6 +79,10 @@ public class PolyRegistry {
 
     public CustomModelDataManager getCMDManager() {
         return CMDManager;
+    }
+
+    public BlockStateManager getBlockStateManager() {
+        return blockStateManager;
     }
 
     public PolyMap build() {

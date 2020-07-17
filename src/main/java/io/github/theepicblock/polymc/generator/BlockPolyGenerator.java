@@ -18,10 +18,13 @@
 package io.github.theepicblock.polymc.generator;
 
 import io.github.theepicblock.polymc.Util;
+import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.SimpleReplacementPoly;
+import io.github.theepicblock.polymc.api.block.UnusedBlockStatePoly;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
@@ -51,7 +54,15 @@ public class BlockPolyGenerator {
      * Generates the most suitable BlockPoly for a given block
      */
     public static BlockPoly generatePoly(Block block, PolyRegistry builder) {
-        return new SimpleReplacementPoly(Blocks.STONE);
+        BlockState state = block.getDefaultState();
+        if (Block.isShapeFullCube(state.getCollisionShape(null, null))) {
+            try {
+                return new UnusedBlockStatePoly(block,Blocks.NOTE_BLOCK,builder);
+            } catch (OutOfBoundsException e) {
+                return new SimpleReplacementPoly(Blocks.STONE);
+            }
+        }
+        return new SimpleReplacementPoly(Blocks.STONE); //TODO better implementation
     }
 
     /**
