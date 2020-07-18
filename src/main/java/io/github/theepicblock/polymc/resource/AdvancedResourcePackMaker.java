@@ -43,7 +43,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
             try {
                 Files.copy(assets,tempLocation);
             } catch (IOException e) {
-                PolyMc.LOGGER.warning("Failed to get resources from mod " + mod.getMetadata().getId());
+                PolyMc.LOGGER.warn("Failed to get resources from mod " + mod.getMetadata().getId());
             }
         });
 
@@ -53,7 +53,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
                 try {
                     artificeResourcePack.dumpResources(tempLocation.toString());
                 } catch (IOException e) {
-                    PolyMc.LOGGER.warning("Failed to get resources from artifice pack " + artificeResourcePack.getName());
+                    PolyMc.LOGGER.warn("Failed to get resources from artifice pack " + artificeResourcePack.getName());
                 }
             }));
         }
@@ -80,7 +80,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
         try {
             return Files.copy(filePath, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            PolyMc.LOGGER.warning("Failed to get resource from mod jar '"+modId+"' path: " + path);
+            PolyMc.LOGGER.warn("Failed to get resource from mod jar '"+modId+"' path: " + path);
         }
         return null;
     }
@@ -116,7 +116,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
         try {
             return new InputStreamReader(Files.newInputStream(filePath, StandardOpenOption.READ));
         } catch (IOException e) {
-            PolyMc.LOGGER.warning("Failed to get resource from mod jar '"+modId+"' path: " + path);
+            PolyMc.LOGGER.warn("Failed to get resource from mod jar '"+modId+"' path: " + path);
         }
         return null;
     }

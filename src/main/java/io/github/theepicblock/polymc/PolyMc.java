@@ -25,6 +25,8 @@ import io.github.theepicblock.polymc.generator.Generator;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,12 +37,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 public class PolyMc implements ModInitializer {
     private static PolyMap map;
     private static Config config;
-    public static final Logger LOGGER = Logger.getLogger("PolyMc");
+    public static final Logger LOGGER = LogManager.getLogger("PolyMc");
 
     @Override
     public void onInitialize() {
@@ -87,13 +88,13 @@ public class PolyMc implements ModInitializer {
                 try {
                     Files.copy(defaultConfig, Paths.get(configFile.getAbsolutePath()));
                 } catch (IOException e) {
-                    LOGGER.warning("error whilst copying over default config. An error trying to load said config will most likely appear soon");
+                    LOGGER.warn("error whilst copying over default config. An error trying to load said config will most likely appear soon");
                     e.printStackTrace();
                 }
             } else {
-                LOGGER.warning("Couldn't copy over default config file. An error trying to load said config will most likely appear soon");
-                LOGGER.warning("The modcontainer for 'polymc' couldn't be found.");
-                LOGGER.warning("Did someone change the modid in the fabric.mod.json!?");
+                LOGGER.warn("Couldn't copy over default config file. An error trying to load said config will most likely appear soon");
+                LOGGER.warn("The modcontainer for 'polymc' couldn't be found.");
+                LOGGER.warn("Did someone change the modid in the fabric.mod.json!?");
             }
         }
         Gson gson = new Gson();
@@ -103,7 +104,7 @@ public class PolyMc implements ModInitializer {
             Config config = gson.fromJson(reader, Config.class);
             PolyMc.config = config;
         } catch (FileNotFoundException e) {
-            LOGGER.warning("Couldn't find config file: " + configFile.getPath());
+            LOGGER.warn("Couldn't find config file: " + configFile.getPath());
         }
     }
 

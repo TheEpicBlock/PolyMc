@@ -162,7 +162,7 @@ public class ResourcePackMaker {
         if (modId.equals("minecraft")) return null;
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
-            PolyMc.LOGGER.warning("Tried to access assets from mod, but it isn't present. Mod ID "+modId);
+            PolyMc.LOGGER.warn("Tried to access assets from mod, but it isn't present. Mod ID "+modId);
             return null;
         }
 
@@ -173,7 +173,7 @@ public class ResourcePackMaker {
         try {
             return Files.copy(pathInJar, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            PolyMc.LOGGER.warning("Failed to get resource from mod jar '"+modId+"' path: " + path);
+            PolyMc.LOGGER.warn("Failed to get resource from mod jar '"+modId+"' path: " + path);
         }
         return null;
     }
@@ -200,7 +200,7 @@ public class ResourcePackMaker {
         if (modId.equals("minecraft")) return null;
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
-            PolyMc.LOGGER.warning("Tried to access assets from mod, but it isn't present. Mod ID "+modId);
+            PolyMc.LOGGER.warn("Tried to access assets from mod, but it isn't present. Mod ID "+modId);
             return null;
         }
 
@@ -209,7 +209,7 @@ public class ResourcePackMaker {
         try {
             return new InputStreamReader(Files.newInputStream(pathInJar, StandardOpenOption.READ));
         } catch (IOException e) {
-            PolyMc.LOGGER.warning("Failed to get resource from mod jar '"+modId+"' path: " + path);
+            PolyMc.LOGGER.warn("Failed to get resource from mod jar '"+modId+"' path: " + path);
         }
         return null;
     }

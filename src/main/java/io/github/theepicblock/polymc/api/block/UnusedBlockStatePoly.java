@@ -71,7 +71,7 @@ public class UnusedBlockStatePoly implements BlockPoly{
         Identifier modBlockId = Registry.BLOCK.getId(block);
         InputStreamReader blockStateReader = pack.getAssetFromMod(modBlockId.getNamespace(),ResourcePackMaker.BLOCKSTATES+modBlockId.getPath()+".json");
         if (blockStateReader == null) {
-            PolyMc.LOGGER.warning("Couldn't get blockstate file for: " + block.getTranslationKey());
+            PolyMc.LOGGER.warn("Couldn't get blockstate file for: " + block.getTranslationKey());
             return;
         }
         JsonBlockstate originalBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader),JsonBlockstate.class);

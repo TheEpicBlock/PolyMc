@@ -52,7 +52,7 @@ public class ResourcePackGenerator {
             try {
                 itemPoly.AddToResourcePack(item, pack);
             } catch (Exception e) {
-                PolyMc.LOGGER.warning("Exception whilst generating resources for " + item.getTranslationKey());
+                PolyMc.LOGGER.warn("Exception whilst generating resources for " + item.getTranslationKey());
                 e.printStackTrace();
             }
         });
@@ -62,7 +62,7 @@ public class ResourcePackGenerator {
             try {
                 blockPoly.AddToResourcePack(block, pack);
             } catch (Exception e) {
-                PolyMc.LOGGER.warning("Exception whilst generating resources for " + block.getTranslationKey());
+                PolyMc.LOGGER.warn("Exception whilst generating resources for " + block.getTranslationKey());
                 e.printStackTrace();
             }
         });
@@ -78,7 +78,7 @@ public class ResourcePackGenerator {
                     pack.copyAssetFromMod(modId, "lang/"+langPath.relativize(langFile));
                 });
             } catch (IOException e) {
-                PolyMc.LOGGER.warning("Exception whilst copying lang files from " + modId);
+                PolyMc.LOGGER.warn("Exception whilst copying lang files from " + modId);
                 e.printStackTrace();
             }
         }
