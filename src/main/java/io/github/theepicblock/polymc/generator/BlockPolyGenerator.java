@@ -29,7 +29,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Class to automatically generate BlockPolys for Blocks

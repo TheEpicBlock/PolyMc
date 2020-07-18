@@ -46,6 +46,16 @@ public class ResourcePackGenerator {
             }
         });
 
+        //Hooks for all blockpolys
+        PolyMc.getMap().getBlockPolys().forEach((block, blockPoly) -> {
+            try {
+                blockPoly.AddToResourcePack(block, pack);
+            } catch (Exception e) {
+                PolyMc.LOGGER.warning("Exception whilst generating resources for " + block.getTranslationKey());
+                e.printStackTrace();
+            }
+        });
+
         //Get all lang files from all mods
         for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
             String modId = mod.getMetadata().getId();

@@ -17,7 +17,12 @@
  */
 package io.github.theepicblock.polymc;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
+
+import java.util.Optional;
 
 public class Util {
     /**
@@ -25,5 +30,56 @@ public class Util {
      */
     public static boolean isVanilla(Identifier id) {
         return id.getNamespace().equals("minecraft");
+    }
+
+    /**
+     * Get a BlockState using the properties from a string
+     * @param block base block on which the properties are applied
+     * @param string the properties which define this blockstate. Eg: "facing=north,lit=false"
+     * @return the blockstate
+     */
+    public static BlockState getBlockStateFromString(Block block, String string) {
+        BlockState v = block.getDefaultState();
+        for (String property : string.split(",")) {
+            String[] t = property.split("=");
+            if (t.length != 2) continue;
+            String key = t[0];
+            String value = t[1];
+
+            Property<?> prop = block.getStateManager().getProperty(key);
+            if (prop != null) {
+                v = parseAndAddBlockState(v,prop,value);
+            }
+        }
+        return v;
+    }
+
+    private static <T extends Comparable<T>> BlockState parseAndAddBlockState(BlockState v, Property<T> property, String value) {
+        Optional<T> optional = property.parse(value);
+        if (optional.isPresent()) {
+            return v.with(property,optional.get());
+        }
+        return v;
+    }
+
+    /**
+     * Get the properties of a blockstate as a string
+     * @param state state to extract properties from
+     * @return "facing=north,lit=false" for example
+     */
+    public static String getPropertiesFromBlockState(BlockState state) {
+        StringBuilder v = new StringBuilder();
+        state.getEntries().forEach((property,value) -> {
+            v.append(property.getName());
+            v.append("=");
+            v.append(nameValue(property,value));
+            v.append(",");
+        });
+        String res = v.toString();
+        return res.substring(0,res.length()-1); //this removes the last comma
+    }
+
+    private static <T extends Comparable<T>> String nameValue(Property<T> property, Comparable<?> value) {
+        return property.name((T)value);
     }
 }

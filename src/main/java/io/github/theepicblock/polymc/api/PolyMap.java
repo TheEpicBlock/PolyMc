@@ -54,4 +54,8 @@ public class PolyMap {
     public ImmutableMap<Item, ItemPoly> getItemPolys() {
         return itemPolys;
     }
+
+    public ImmutableMap<Block, BlockPoly> getBlockPolys() {
+        return blockPolys;
+    }
 }

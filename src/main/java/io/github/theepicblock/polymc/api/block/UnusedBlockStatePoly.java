@@ -19,14 +19,22 @@ package io.github.theepicblock.polymc.api.block;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.stream.JsonReader;
+import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.register.BlockStateManager;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
+import io.github.theepicblock.polymc.resource.JsonBlockstate;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.state.StateManager;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 
 /**
@@ -49,8 +57,6 @@ public class UnusedBlockStatePoly implements BlockPoly{
         HashMap<BlockState,BlockState> res = new HashMap<>();
         for (BlockState state : moddedStates) {
             res.put(state,manager.requestBlockState(clientSideBlock,registry));
-            System.out.println(state);
-            System.out.println(res.get(state));
         }
         states = ImmutableMap.copyOf(res);
     }
@@ -62,6 +68,35 @@ public class UnusedBlockStatePoly implements BlockPoly{
 
     @Override
     public void AddToResourcePack(Block block, ResourcePackMaker pack) {
-        //TODO do this pls thank you
+        Identifier modBlockId = Registry.BLOCK.getId(block);
+        InputStreamReader blockStateReader = pack.getAssetFromMod(modBlockId.getNamespace(),ResourcePackMaker.BLOCKSTATES+modBlockId.getPath()+".json");
+        if (blockStateReader == null) {
+            PolyMc.LOGGER.warning("Couldn't get blockstate file for: " + block.getTranslationKey());
+            return;
+        }
+        JsonBlockstate originalBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader),JsonBlockstate.class);
+
+        Block clientBlock = states.get(block.getDefaultState()).getBlock();
+        Identifier clientBlockId = Registry.BLOCK.getId(clientBlock);
+        JsonBlockstate newBlockStates = pack.getOrCreateBlockState(clientBlockId);
+
+        //paste all of the blockstates from the original block into an entry for the clientside block
+        originalBlockStates.variants.forEach((stateString,variant) -> {
+            BlockState state = Util.getBlockStateFromString(block,stateString);
+            BlockState clientState = states.get(state);
+            String clientStateString = Util.getPropertiesFromBlockState(clientState);
+
+            newBlockStates.variants.put(clientStateString,variant);
+        });
+
+        //make sure all the models are present
+        newBlockStates.variants.forEach((stateString,rawVariant) -> {
+            JsonBlockstate.Variant[] variants = JsonBlockstate.getVariants(rawVariant);
+            for (JsonBlockstate.Variant variant : variants) {
+                if (variant.model != null && !variant.model.isEmpty()) {
+                    pack.copyModel(new Identifier(variant.model));
+                }
+            }
+        });
     }
 }
