@@ -1,5 +1,8 @@
 {
   "disabledMixins": [
 
-  ]
+  ],
+  "generator": {
+    "advanced": false
+  }
 }

@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.resource;
 
+import com.swordglowsblue.artifice.api.Artifice;
 import io.github.theepicblock.polymc.PolyMc;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -34,7 +35,17 @@ public class ResourcePackGenerator {
         File resourceDir = new File(gameDir, "resource");
         resourceDir.mkdirs();
         Path path = resourceDir.toPath().toAbsolutePath();
-        ResourcePackMaker pack = new ResourcePackMaker(path);
+
+        ResourcePackMaker pack;
+        if (PolyMc.getConfig().generator.advanced) {
+            File tempDir = new File(gameDir,"resource_temp");
+            tempDir.mkdirs();
+            Path tempPath = tempDir.toPath().toAbsolutePath();
+            pack = new AdvancedResourcePackMaker(path,tempPath);
+        } else {
+            pack = new ResourcePackMaker(path);
+        }
+
 
         //Hooks for all itempolys
         PolyMc.getMap().getItemPolys().forEach((item, itemPoly) -> {

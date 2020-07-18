@@ -39,8 +39,8 @@ public class ResourcePackMaker {
     public static final String TEXTURES = "textures/";
     public static final String BLOCKSTATES = "blockstates/";
 
-    private final Path BuildLocation;
-    private final Gson gson = new Gson();
+    protected final Path BuildLocation;
+    protected final Gson gson = new Gson();
 
     private final List<Identifier> copiedModels = new ArrayList<>();
     private final Map<Identifier,JsonModel> modelsToSave = new HashMap<>();

@@ -22,9 +22,14 @@ import java.util.Map;
 
 public class Config {
     private List<String> disabledMixins;
+    public generatorConfig generator;
 
     public boolean isMixinDisabled(String mixin) {
         if (disabledMixins == null) return false;
         return disabledMixins.contains(mixin);
+    }
+
+    public static class generatorConfig {
+        public boolean advanced;
     }
 }
