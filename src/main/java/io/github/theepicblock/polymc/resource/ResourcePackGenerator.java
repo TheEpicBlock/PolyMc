@@ -44,6 +44,11 @@ public class ResourcePackGenerator {
             pack = new AdvancedResourcePackMaker(path,tempPath);
         } else {
             pack = new ResourcePackMaker(path);
+
+            if (FabricLoader.getInstance().getModContainer("artifice").isPresent()) {
+                PolyMc.LOGGER.warn("Artifice was detected, but the default PolyMc resourcepack maker is not compatible with Artice");
+                PolyMc.LOGGER.warn("Please switch to the advanced generator in the config.");
+            }
         }
 
 
