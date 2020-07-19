@@ -158,7 +158,7 @@ public class ResourcePackMaker {
      * @param path example: "asset/testmod/models/item/testitem.json"
      * @return The path to the new file
      */
-    private Path copyFileFromMod(String modId, String path) {
+    protected Path copyFileFromMod(String modId, String path) {
         if (modId.equals("minecraft")) return null;
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
@@ -178,7 +178,7 @@ public class ResourcePackMaker {
         return null;
     }
 
-    private boolean checkFileFromMod(String modId, String path) {
+    protected boolean checkFileFromMod(String modId, String path) {
         if (modId.equals("minecraft")) return false;
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
@@ -196,7 +196,7 @@ public class ResourcePackMaker {
      * @param path example "asset/testmod/models/item/testitem.json"
      * @return A reader for this file.
      */
-    private InputStreamReader getFileFromMod(String modId, String path) {
+    protected InputStreamReader getFileFromMod(String modId, String path) {
         if (modId.equals("minecraft")) return null;
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {

@@ -40,7 +40,11 @@ public class PolyMcCommands {
                             }))
                     .then(literal("gen_resource")
                             .executes((context -> {
-                                ResourcePackGenerator.generate();
+                                try {
+                                    ResourcePackGenerator.generate();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                                 context.getSource().sendFeedback(new LiteralText("Finished generating"),true);
                                 return 0;
                             }))));
