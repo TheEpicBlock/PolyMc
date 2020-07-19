@@ -37,7 +37,7 @@ public class ResourcePackGenerator {
         Path path = resourceDir.toPath().toAbsolutePath();
 
         ResourcePackMaker pack;
-        if (PolyMc.getConfig().generator.advanced) {
+        if (PolyMc.getConfig().resourcepack.advancedDiscovery) {
             File tempDir = new File(gameDir,"resource_temp");
             tempDir.mkdirs();
             Path tempPath = tempDir.toPath().toAbsolutePath();

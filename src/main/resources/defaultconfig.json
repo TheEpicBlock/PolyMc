@@ -2,7 +2,7 @@
   "disabledMixins": [
 
   ],
-  "generator": {
-    "advanced": false
+  "resourcepack": {
+    "advancedDiscovery": false
   }
 }
