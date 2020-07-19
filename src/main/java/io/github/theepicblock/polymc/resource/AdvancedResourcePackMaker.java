@@ -94,13 +94,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
     @Override
     protected Path copyFileFromMod(String modId, String path) {
         if (modId.equals("minecraft")) return null;
-//        Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
-//        if (!modOpt.isPresent()) {
-//            PolyMc.LOGGER.warning("Tried to access assets from mod, but it isn't present. Mod ID "+modId);
-//            return null;
-//        }
 
-//        ModContainer mod = modOpt.get();
         Path filePath = tempLocation.resolve(path);
         Path newLoc = BuildLocation.resolve(path);
         boolean c = newLoc.toFile().mkdirs();
@@ -115,12 +109,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
     @Override
     protected boolean checkFileFromMod(String modId, String path) {
         if (modId.equals("minecraft")) return false;
-//        Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
-//        if (!modOpt.isPresent()) {
-//            return false;
-//        }
-//
-//        ModContainer mod = modOpt.get();
+
         Path filePath = tempLocation.resolve(path);
         return Files.exists(filePath);
     }
@@ -134,13 +123,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
     @Override
     protected InputStreamReader getFileFromMod(String modId, String path) {
         if (modId.equals("minecraft")) return null;
-//        Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
-//        if (!modOpt.isPresent()) {
-//            PolyMc.LOGGER.warning("Tried to access assets from mod, but it isn't present. Mod ID "+modId);
-//            return null;
-//        }
-//
-//        ModContainer mod = modOpt.get();
+
         Path filePath = tempLocation.resolve(path);
         try {
             return new InputStreamReader(Files.newInputStream(filePath, StandardOpenOption.READ));
