@@ -149,4 +149,16 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
         }
         return null;
     }
+
+    @Override
+    public void saveAll() {
+        super.saveAll();
+
+        try {
+            Files.delete(tempLocation);
+        } catch (IOException e) {
+            PolyMc.LOGGER.warn("Couldn't delete temporary file");
+            PolyMc.LOGGER.warn(e);
+        }
+    }
 }
