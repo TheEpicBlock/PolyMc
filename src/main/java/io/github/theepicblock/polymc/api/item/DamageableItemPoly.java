@@ -21,7 +21,6 @@ import io.github.theepicblock.polymc.api.register.CustomModelDataManager;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.ToolItem;
 
 public class DamageableItemPoly extends CustomModelDataPoly{
     private final static int FUNGUS_MAX_DAMAGE = Items.WARPED_FUNGUS_ON_A_STICK.getMaxDamage();

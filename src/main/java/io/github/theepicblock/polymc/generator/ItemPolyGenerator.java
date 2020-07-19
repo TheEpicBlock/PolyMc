@@ -18,9 +18,9 @@
 package io.github.theepicblock.polymc.generator;
 
 import io.github.theepicblock.polymc.Util;
+import io.github.theepicblock.polymc.api.item.CustomModelDataPoly;
 import io.github.theepicblock.polymc.api.item.DamageableItemPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
-import io.github.theepicblock.polymc.api.item.CustomModelDataPoly;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;

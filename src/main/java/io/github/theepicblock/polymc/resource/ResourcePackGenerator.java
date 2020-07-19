@@ -17,7 +17,6 @@
  */
 package io.github.theepicblock.polymc.resource;
 
-import com.swordglowsblue.artifice.api.Artifice;
 import io.github.theepicblock.polymc.PolyMc;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;

@@ -17,12 +17,9 @@
  */
 package io.github.theepicblock.polymc.api.block;
 
-import io.github.theepicblock.polymc.api.register.PolyRegistry;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 
 public interface BlockPoly {
     /**

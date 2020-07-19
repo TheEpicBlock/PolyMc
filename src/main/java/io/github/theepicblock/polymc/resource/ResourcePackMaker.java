@@ -25,13 +25,16 @@ import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import org.spongepowered.asm.mixin.struct.SourceMap;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 //TODO organize these classes
 public class ResourcePackMaker {
