@@ -23,6 +23,7 @@ import io.github.theepicblock.polymc.PolyMc;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -143,7 +144,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
         super.saveAll();
 
         try {
-            Files.delete(tempLocation);
+            FileUtils.deleteDirectory(tempLocation.toFile());
         } catch (IOException e) {
             PolyMc.LOGGER.warn("Couldn't delete temporary file");
             PolyMc.LOGGER.warn(e);
