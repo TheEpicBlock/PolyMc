@@ -20,7 +20,6 @@ package io.github.theepicblock.polymc.resource;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.swordglowsblue.artifice.api.ArtificeResourcePack;
-import com.swordglowsblue.artifice.api.util.Processor;
 import com.swordglowsblue.artifice.common.ClientResourcePackProfileLike;
 import com.swordglowsblue.artifice.impl.ArtificeResourcePackImpl;
 import io.github.theepicblock.polymc.PolyMc;
@@ -40,6 +39,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.function.Consumer;
 
 //TODO organize these classes
 public class ResourcePackMaker {
@@ -126,7 +126,7 @@ public class ResourcePackMaker {
      * @param pack resourcepack to import
      * @see AdvancedResourcePackMaker#importArtificePack(ArtificeResourcePack)
      */
-    public void importArtificePack(Processor<ArtificeResourcePack.ClientResourcePackBuilder> pack) {
+    public void importArtificePack(Consumer<ArtificeResourcePack.ClientResourcePackBuilder> pack) {
         importArtificePack(new ArtificeResourcePackImpl(ResourceType.CLIENT_RESOURCES,pack));
     }
 
