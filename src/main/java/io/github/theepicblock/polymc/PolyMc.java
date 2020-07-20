@@ -20,6 +20,7 @@ package io.github.theepicblock.polymc;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.api.PolyMap;
+import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
 import io.github.theepicblock.polymc.generator.Generator;
 import net.fabricmc.api.ModInitializer;
