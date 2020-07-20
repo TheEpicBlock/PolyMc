@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.resource;
 
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 
@@ -25,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class ResourcePackGenerator {
@@ -50,6 +52,11 @@ public class ResourcePackGenerator {
             }
         }
 
+        //Let mods register resources via the api
+        List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("poly-mc",PolyMcEntrypoint.class);
+        for (PolyMcEntrypoint entrypointEntry : entrypoints) {
+            entrypointEntry.registerModSpecificResources(pack);
+        }
 
         //Hooks for all itempolys
         PolyMc.getMap().getItemPolys().forEach((item, itemPoly) -> {

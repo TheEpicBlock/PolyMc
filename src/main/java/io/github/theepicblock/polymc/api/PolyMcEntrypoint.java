@@ -18,7 +18,7 @@
 package io.github.theepicblock.polymc.api;
 
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
-import io.github.theepicblock.polymc.resource.ResourcePackGenerator;
+import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 
 /**
  * The entrypoint for all PolyMc related stuff to hook into PolyMc.
@@ -26,7 +26,7 @@ import io.github.theepicblock.polymc.resource.ResourcePackGenerator;
 public interface PolyMcEntrypoint {
     void registerPolys(PolyRegistry registry);
 
-    default void registerModSpecificResources(ResourcePackGenerator pack) {
+    default void registerModSpecificResources(ResourcePackMaker pack) {
 
     }
 }
