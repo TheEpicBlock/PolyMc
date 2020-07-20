@@ -3,7 +3,7 @@
   "id": "polymc",
   "version": "${version}",
 
-  "name": "PolyMc api.",
+  "name": "PolyMc",
   "description": "An attempt to make mods compatible with vanilla clients.",
   "authors": [
     "TheEpicBlock_TEB"
