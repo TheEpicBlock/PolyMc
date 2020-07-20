@@ -110,6 +110,9 @@ public class ResourcePackMaker {
     public void importArtificePack(ClientResourcePackProfileLike pack) {
         if (pack instanceof ArtificeResourcePack) {
             importArtificePack((ArtificeResourcePack)pack);
+        } else {
+            PolyMc.LOGGER.warn("Failed to get resources from artifice pack");
+            PolyMc.LOGGER.warn("Provided resourcepack is not of type ArtificeResourcePack, it is instead " + pack.getClass().getName());
         }
     }
 
