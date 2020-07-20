@@ -19,6 +19,8 @@ package io.github.theepicblock.polymc.resource;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import com.swordglowsblue.artifice.api.ArtificeResourcePack;
+import com.swordglowsblue.artifice.common.ClientResourcePackProfileLike;
 import io.github.theepicblock.polymc.PolyMc;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -84,6 +86,31 @@ public class ResourcePackMaker {
 
     public JsonBlockstate getOrCreateBlockState(String modId, String path) {
         return getOrCreateBlockState(new Identifier(modId,path));
+    }
+
+    /**
+     * Imports an Artifice resourcepack to be used when getting assets.
+     * This is not needed on the client. But it's the only way to support Artifice resourcepacks on servers.
+     * This function won't do anything on the client since the pack will automatically be imported there from {@link com.swordglowsblue.artifice.common.ArtificeRegistry#ASSETS}
+     * @param pack resourcepack to import
+     * @see AdvancedResourcePackMaker#importArtificePack(ArtificeResourcePack)
+     */
+    public void importArtificePack(ArtificeResourcePack pack) {
+        PolyMc.LOGGER.warn("Tried to import Artifice resourcepack '" + pack.getName() + "' but this isn't supported with the default discovery method");
+        PolyMc.LOGGER.warn("Please switch to the advancedDiscovery method. See https://github.com/TheEpicBlock/PolyMc/wiki/Config#advanceddiscovery");
+    }
+
+    /**
+     * Imports an Artifice resourcepack to be used when getting assets.
+     * This is not needed on the client. But it's the only way to support Artifice resourcepacks on servers.
+     * This function won't do anything on the client since the pack will automatically be imported there from {@link com.swordglowsblue.artifice.common.ArtificeRegistry#ASSETS}
+     * @param pack resourcepack to import
+     * @see AdvancedResourcePackMaker#importArtificePack(ArtificeResourcePack)
+     */
+    public void importArtificePack(ClientResourcePackProfileLike pack) {
+        if (pack instanceof ArtificeResourcePack) {
+            importArtificePack((ArtificeResourcePack)pack);
+        }
     }
 
     /**
@@ -172,7 +199,7 @@ public class ResourcePackMaker {
         ModContainer mod = modOpt.get();
         Path pathInJar = mod.getPath(path);
         Path newLoc = BuildLocation.resolve(path);
-        boolean c = newLoc.toFile().mkdirs();
+        boolean c = newLoc.toFile().getParentFile().mkdirs();
         try {
             return Files.copy(pathInJar, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {

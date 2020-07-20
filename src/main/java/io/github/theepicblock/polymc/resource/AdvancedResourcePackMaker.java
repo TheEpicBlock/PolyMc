@@ -17,13 +17,18 @@
  */
 package io.github.theepicblock.polymc.resource;
 
+import com.swordglowsblue.artifice.api.ArtificeResourcePack;
+import com.swordglowsblue.artifice.common.ArtificeRegistry;
 import io.github.theepicblock.polymc.PolyMc;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Optional;
 
 /**
  * This class copies all assets into a temp folder. Then uses that to generate the resourcepack, instead of getting the assets straight from the jars.
@@ -40,7 +45,6 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
             Path assets = mod.getPath("assets");
             if (!Files.exists(assets)) return;
             try {
-                System.out.println("Temp dir: " + tempLocation.toString());
                 copyAll(assets,tempLocation);
             } catch (IOException e) {
                 PolyMc.LOGGER.warn("Failed to get resources from mod " + mod.getMetadata().getId());
@@ -48,17 +52,24 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
             }
         });
 
-//        Optional<ModContainer> artifice = FabricLoader.getInstance().getModContainer("artifice");
-//        if (artifice.isPresent()) {
-//            Artifice.ASSETS.forEach((artificeResourcePack -> {
-//                try {
-//                    artificeResourcePack.dumpResources(tempLocation.toString());
-//                } catch (IOException e) {
-//                    PolyMc.LOGGER.warn("Failed to get resources from artifice pack " + artificeResourcePack.getName());
-//                    PolyMc.LOGGER.warn(e);
-//                }
-//            }));
-//        }
+        //Artifice provides a list with virtual resourcepacks. But it only exists on the client
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+            Optional<ModContainer> artifice = FabricLoader.getInstance().getModContainer("artifice");
+            if (artifice.isPresent()) {
+                ArtificeRegistry.ASSETS.forEach((this::importArtificePack));
+            }
+        }
+    }
+
+    @Override
+    public void importArtificePack(ArtificeResourcePack pack) {
+        try {
+            Path artLoc = FabricLoader.getInstance().getGameDirectory().toPath().relativize(tempLocation);
+            pack.dumpResources(artLoc.toString());
+        } catch (IOException e) {
+            PolyMc.LOGGER.warn("Failed to get resources from artifice pack " + pack.getName());
+            PolyMc.LOGGER.warn(e);
+        }
     }
 
     public void copyAll(Path from, Path to) throws IOException {
@@ -90,7 +101,8 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
 
         Path filePath = tempLocation.resolve(path);
         Path newLoc = BuildLocation.resolve(path);
-        boolean c = newLoc.toFile().mkdirs();
+        //noinspection ResultOfMethodCallIgnored
+        newLoc.toFile().getParentFile().mkdirs();
         try {
             return Files.copy(filePath, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
