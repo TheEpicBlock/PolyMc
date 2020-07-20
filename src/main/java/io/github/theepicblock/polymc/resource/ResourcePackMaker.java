@@ -20,11 +20,14 @@ package io.github.theepicblock.polymc.resource;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.swordglowsblue.artifice.api.ArtificeResourcePack;
+import com.swordglowsblue.artifice.api.util.Processor;
 import com.swordglowsblue.artifice.common.ClientResourcePackProfileLike;
+import com.swordglowsblue.artifice.impl.ArtificeResourcePackImpl;
 import io.github.theepicblock.polymc.PolyMc;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.item.Item;
+import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -114,6 +117,17 @@ public class ResourcePackMaker {
             PolyMc.LOGGER.warn("Failed to get resources from artifice pack");
             PolyMc.LOGGER.warn("Provided resourcepack is not of type ArtificeResourcePack, it is instead " + pack.getClass().getName());
         }
+    }
+
+    /**
+     * Imports an Artifice resourcepack to be used when getting assets.
+     * This is not needed on the client. But it's the only way to support Artifice resourcepacks on servers.
+     * This function won't do anything on the client since the pack will automatically be imported there from {@link com.swordglowsblue.artifice.common.ArtificeRegistry#ASSETS}
+     * @param pack resourcepack to import
+     * @see AdvancedResourcePackMaker#importArtificePack(ArtificeResourcePack)
+     */
+    public void importArtificePack(Processor<ArtificeResourcePack.ClientResourcePackBuilder> pack) {
+        importArtificePack(new ArtificeResourcePackImpl(ResourceType.CLIENT_RESOURCES,pack));
     }
 
     /**
