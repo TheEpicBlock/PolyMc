@@ -100,7 +100,7 @@ public class ResourcePackMaker {
      */
     public void importArtificePack(ArtificeResourcePack pack) {
         PolyMc.LOGGER.warn("Tried to import Artifice resourcepack '" + pack.getName() + "' but this isn't supported with the default discovery method");
-        PolyMc.LOGGER.warn("Please switch to the advancedDiscovery method. See https://github.com/TheEpicBlock/PolyMc/wiki/Config#advanceddiscovery");
+        PolyMc.LOGGER.warn("Please switch to the advancedDiscovery method. See https://github.com/TheEpicBlock/PolyMc/wiki/ModCompat#artifice");
     }
 
     /**
