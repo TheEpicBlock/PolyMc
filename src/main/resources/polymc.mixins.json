@@ -6,7 +6,9 @@
   "plugin": "io.github.theepicblock.polymc.mixins.MixinConfigPlugin",
   "mixins": [
     "ServerStartMixin",
+    "block.AAAAAAAA",
     "block.BlockPolyImplementation",
+    "block.PaletteBlockPolyImplementation",
     "item.CreativeModeHotfix",
     "item.CustomRecipeFix",
     "item.InventoryDesyncPatch",
