@@ -114,8 +114,8 @@ public class ResourcePackMaker {
         if (pack instanceof ArtificeResourcePack) {
             importArtificePack((ArtificeResourcePack)pack);
         } else {
-            PolyMc.LOGGER.warn("Failed to get resources from artifice pack");
-            PolyMc.LOGGER.warn("Provided resourcepack is not of type ArtificeResourcePack, it is instead " + pack.getClass().getName());
+            PolyMc.LOGGER.error("Failed to get resources from artifice pack");
+            PolyMc.LOGGER.error("Provided resourcepack is not of type ArtificeResourcePack, it is instead " + pack.getClass().getName());
         }
     }
 
