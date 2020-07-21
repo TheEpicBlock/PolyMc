@@ -29,6 +29,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.shape.VoxelShape;
 
 /**
  * Class to automatically generate BlockPolys for Blocks
@@ -54,12 +55,19 @@ public class BlockPolyGenerator {
      */
     public static BlockPoly generatePoly(Block block, PolyRegistry builder) {
         BlockState state = block.getDefaultState();
-        if (Block.isShapeFullCube(state.getCollisionShape(null, null))) {
+        VoxelShape collisionShape = state.getCollisionShape(null, null);
+
+        System.out.println(block.getTranslationKey());
+        if (Block.isShapeFullCube(collisionShape)) {
             try {
                 return new UnusedBlockStatePoly(block,Blocks.NOTE_BLOCK,builder);
-            } catch (OutOfBoundsException e) {
-                return new SimpleReplacementPoly(Blocks.STONE);
-            }
+            } catch (OutOfBoundsException ignored) {}
+        }
+        if (collisionShape.isEmpty()) {
+            System.out.println("empty");
+            try {
+                return new UnusedBlockStatePoly(block,Blocks.SUGAR_CANE,builder);
+            } catch (OutOfBoundsException ignored) {}
         }
         return new SimpleReplacementPoly(Blocks.STONE); //TODO better implementation
     }
