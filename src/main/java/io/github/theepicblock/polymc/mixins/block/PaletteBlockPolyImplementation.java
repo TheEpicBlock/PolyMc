@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.mixins.block;
 
 import io.github.theepicblock.polymc.PolyMc;
+import me.jellysquid.mods.lithium.common.world.chunk.LithiumHashPalette;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.collection.IdList;
 import net.minecraft.world.chunk.ArrayPalette;
@@ -31,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * Therefor {@link BlockPolyImplementation} doesn't work on chunks.
  * This Mixin makes sure that the blocks are polyd before they get sent to the client.
  */
-@Mixin({ArrayPalette.class, BiMapPalette.class})
+@Mixin({ArrayPalette.class, BiMapPalette.class, LithiumHashPalette.class})
 public class PaletteBlockPolyImplementation<T> {
     @Redirect(method = "toPacket(Lnet/minecraft/network/PacketByteBuf;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IdList;getId(Ljava/lang/Object;)I"))
     public int GetIdRedirect(IdList<T> idList, T object) {

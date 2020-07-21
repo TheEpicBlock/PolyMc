@@ -12,6 +12,9 @@ group = project.maven_group
 
 repositories {
 	maven {
+		url "https://jitpack.io"
+	}
+	maven {
 		url "https://maven.swordglowsblue.com"
 	}
 }
@@ -25,6 +28,7 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	modImplementation "com.lettuce.fudge:artifice:${project.artifice_version}"
+	modImplementation "com.github.jellysquid3:lithium-fabric:${project.lithium_version}"
 }
 
 processResources {
