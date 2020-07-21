@@ -19,10 +19,12 @@ package io.github.theepicblock.polymc.resource;
 
 import com.swordglowsblue.artifice.api.ArtificeResourcePack;
 import com.swordglowsblue.artifice.common.ArtificeRegistry;
+import com.swordglowsblue.artifice.impl.ArtificeResourcePackImpl;
 import io.github.theepicblock.polymc.PolyMc;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.resource.ResourceType;
 import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
@@ -30,6 +32,7 @@ import java.io.InputStreamReader;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * This class copies all assets into a temp folder. Then uses that to generate the resourcepack, instead of getting the assets straight from the jars.
@@ -63,13 +66,20 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
     }
 
     @Override
-    public void importArtificePack(ArtificeResourcePack pack) {
-        try {
-            Path artLoc = FabricLoader.getInstance().getGameDirectory().toPath().relativize(tempLocation);
-            pack.dumpResources(artLoc.toString());
-        } catch (IOException e) {
-            PolyMc.LOGGER.warn("Failed to get resources from artifice pack " + pack.getName());
-            PolyMc.LOGGER.warn(e);
+    public void importArtificePack(Object pack) {
+        if (pack instanceof ArtificeResourcePack) {
+            ArtificeResourcePack aPack = (ArtificeResourcePack)pack;
+            try {
+                Path artLoc = FabricLoader.getInstance().getGameDirectory().toPath().relativize(tempLocation);
+                aPack.dumpResources(artLoc.toString());
+            } catch (IOException e) {
+                PolyMc.LOGGER.warn("Failed to get resources from artifice pack " + aPack.getName());
+                PolyMc.LOGGER.warn(e);
+            }
+        }
+        if (pack instanceof Consumer) {
+            //noinspection unchecked
+            importArtificePack(new ArtificeResourcePackImpl(ResourceType.CLIENT_RESOURCES,(Consumer<ArtificeResourcePack.ClientResourcePackBuilder>)pack));
         }
     }
 

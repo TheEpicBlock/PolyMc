@@ -20,13 +20,10 @@ package io.github.theepicblock.polymc.resource;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.swordglowsblue.artifice.api.ArtificeResourcePack;
-import com.swordglowsblue.artifice.common.ClientResourcePackProfileLike;
-import com.swordglowsblue.artifice.impl.ArtificeResourcePackImpl;
 import io.github.theepicblock.polymc.PolyMc;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.item.Item;
-import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -39,7 +36,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.function.Consumer;
 
 //TODO organize these classes
 public class ResourcePackMaker {
@@ -96,38 +92,15 @@ public class ResourcePackMaker {
      * This is not needed on the client. But it's the only way to support Artifice resourcepacks on servers.
      * This function won't do anything on the client since the pack will automatically be imported there from {@link com.swordglowsblue.artifice.common.ArtificeRegistry#ASSETS}
      * @param pack resourcepack to import
-     * @see AdvancedResourcePackMaker#importArtificePack(ArtificeResourcePack)
+     * @see AdvancedResourcePackMaker#importArtificePack(Object)
      */
-    public void importArtificePack(ArtificeResourcePack pack) {
-        PolyMc.LOGGER.warn("Tried to import Artifice resourcepack '" + pack.getName() + "' but this isn't supported with the default discovery method");
-        PolyMc.LOGGER.warn("Please switch to the advancedDiscovery method. See https://github.com/TheEpicBlock/PolyMc/wiki/ModCompat#artifice");
-    }
-
-    /**
-     * Imports an Artifice resourcepack to be used when getting assets.
-     * This is not needed on the client. But it's the only way to support Artifice resourcepacks on servers.
-     * This function won't do anything on the client since the pack will automatically be imported there from {@link com.swordglowsblue.artifice.common.ArtificeRegistry#ASSETS}
-     * @param pack resourcepack to import
-     * @see AdvancedResourcePackMaker#importArtificePack(ArtificeResourcePack)
-     */
-    public void importArtificePack(ClientResourcePackProfileLike pack) {
+    public void importArtificePack(Object pack) {
+        String packname = "unknown:unknown";
         if (pack instanceof ArtificeResourcePack) {
-            importArtificePack((ArtificeResourcePack)pack);
-        } else {
-            PolyMc.LOGGER.error("Failed to get resources from artifice pack");
-            PolyMc.LOGGER.error("Provided resourcepack is not of type ArtificeResourcePack, it is instead " + pack.getClass().getName());
+            packname = ((ArtificeResourcePack)pack).getName();
         }
-    }
-
-    /**
-     * Imports an Artifice resourcepack to be used when getting assets.
-     * This is not needed on the client. But it's the only way to support Artifice resourcepacks on servers.
-     * This function won't do anything on the client since the pack will automatically be imported there from {@link com.swordglowsblue.artifice.common.ArtificeRegistry#ASSETS}
-     * @param pack resourcepack to import
-     * @see AdvancedResourcePackMaker#importArtificePack(ArtificeResourcePack)
-     */
-    public void importArtificePack(Consumer<ArtificeResourcePack.ClientResourcePackBuilder> pack) {
-        importArtificePack(new ArtificeResourcePackImpl(ResourceType.CLIENT_RESOURCES,pack));
+        PolyMc.LOGGER.warn("Tried to import Artifice resourcepack '" + packname + "' but this isn't supported with the default discovery method");
+        PolyMc.LOGGER.warn("Please switch to the advancedDiscovery method. See https://github.com/TheEpicBlock/PolyMc/wiki/ModCompat#artifice");
     }
 
     /**
