@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.mixins;
 
 import io.github.theepicblock.polymc.Config;
+import io.github.theepicblock.polymc.ConfigManager;
 import io.github.theepicblock.polymc.PolyMc;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
@@ -32,7 +33,7 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
-        config = PolyMc.getConfig();
+        config = ConfigManager.getConfig();
     }
 
     @Override

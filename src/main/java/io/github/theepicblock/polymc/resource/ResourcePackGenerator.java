@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.resource;
 
+import io.github.theepicblock.polymc.ConfigManager;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import net.fabricmc.loader.api.FabricLoader;
@@ -38,7 +39,7 @@ public class ResourcePackGenerator {
         Path path = resourceDir.toPath().toAbsolutePath();
 
         ResourcePackMaker pack;
-        if (PolyMc.getConfig().resourcepack.advancedDiscovery) {
+        if (ConfigManager.getConfig().resourcepack.advancedDiscovery) {
             File tempDir = new File(gameDir,"resource_temp");
             tempDir.mkdirs();
             Path tempPath = tempDir.toPath().toAbsolutePath();
