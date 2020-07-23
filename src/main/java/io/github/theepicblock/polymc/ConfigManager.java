@@ -17,19 +17,16 @@
  */
 package io.github.theepicblock.polymc;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
+import java.util.*;
 
 public class ConfigManager {
     private static Config config;
@@ -43,32 +40,128 @@ public class ConfigManager {
         configDir.mkdirs();
         File configFile = new File(configDir,"polymc.json");
 
+        //pre fill if it doesn't exist yet
         if (!configFile.exists()) {
-            Optional<ModContainer> container = FabricLoader.getInstance().getModContainer("polymc");
-            if (container.isPresent()) {
-                ModContainer polymcContainer = container.get();
-                Path defaultConfig = polymcContainer.getPath("defaultconfig.json");
+            Path defaultConfig = getPathFromResources("defaultconfig.json");
+            Objects.requireNonNull(defaultConfig);
 
-                try {
-                    Files.copy(defaultConfig, Paths.get(configFile.getAbsolutePath()));
-                } catch (IOException e) {
-                    PolyMc.LOGGER.warn("error whilst copying over default config. An error trying to load said config will most likely appear soon");
-                    e.printStackTrace();
-                }
-            } else {
-                PolyMc.LOGGER.warn("Couldn't copy over default config file. An error trying to load said config will most likely appear soon");
-                PolyMc.LOGGER.warn("The modcontainer for 'polymc' couldn't be found.");
-                PolyMc.LOGGER.warn("Did someone change the modid in the fabric.mod.json!?");
+            try {
+                Files.copy(defaultConfig, Paths.get(configFile.getAbsolutePath()));
+            } catch (IOException e) {
+                PolyMc.LOGGER.warn("error whilst copying over default config. An error trying to load said config will most likely appear soon");
+                e.printStackTrace();
             }
         }
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         try {
             JsonReader reader = new JsonReader(new FileReader(configFile));
-            ConfigManager.config = gson.fromJson(reader, Config.class);
+            JsonElement configJson = gson.fromJson(reader, JsonElement.class);
+            Config configobj = gson.fromJson(configJson, Config.class);
+
+            //Update the config
+            if (configobj.getConfigVersion() < Config.LATEST_VERSION) {
+                int cVersion = configobj.getConfigVersion();
+                PolyMc.LOGGER.info("Updating config from v" + cVersion + " to v" + Config.LATEST_VERSION);
+
+                Path updatesPath = getPathFromResources("config_update.json");
+                Objects.requireNonNull(updatesPath);
+                JsonReader uReader = new JsonReader(new InputStreamReader(Files.newInputStream(updatesPath)));
+                JsonObject updates = gson.fromJson(uReader,JsonObject.class);
+
+                for (int i = cVersion+1; i <= Config.LATEST_VERSION; i++) {
+                    try {
+                        update(i,configJson.getAsJsonObject(),updates);
+                    } catch (Exception e) {
+                        PolyMc.LOGGER.warn("failed to update config to v" + i);
+                        e.printStackTrace();
+                    }
+                }
+
+                //write updated config to file and read it again
+                FileWriter configWriter = new FileWriter(configFile);
+                configWriter.write(gson.toJson(configJson));
+                configWriter.close();
+                configobj = gson.fromJson(configJson, Config.class);
+            }
+            ConfigManager.config = configobj;
         } catch (FileNotFoundException e) {
             PolyMc.LOGGER.warn("Couldn't find config file: " + configFile.getPath());
+            PolyMc.LOGGER.warn(e);
+        } catch (IOException e) {
+            PolyMc.LOGGER.warn("failed to update config");
+            PolyMc.LOGGER.warn(e);
         }
+    }
+
+    private static Path getPathFromResources(String path) {
+        Optional<ModContainer> container = FabricLoader.getInstance().getModContainer("polymc");
+        if (container.isPresent()) {
+            ModContainer polymcContainer = container.get();
+            return polymcContainer.getPath(path);
+        } else {
+            PolyMc.LOGGER.warn("The modcontainer for 'polymc' couldn't be found.");
+            PolyMc.LOGGER.warn("Did someone change the modid in the fabric.mod.json!?");
+            PolyMc.LOGGER.warn("The server will probably crash due to a NullPointer exception now");
+            return null;
+        }
+    }
+
+    private static void update(int v,JsonObject config,JsonObject updates) {
+        JsonObject update = updates.getAsJsonObject(String.valueOf(v));
+
+        //process additions
+        JsonObject add = update.getAsJsonObject("add");
+        if (add != null) {
+            for (Map.Entry<String, JsonElement> e : add.entrySet()) {
+                JsonElement element = e.getValue();
+                List<String> path = new LinkedList<>(Arrays.asList(e.getKey().split("\\.")));
+                String last = path.remove(path.size()-1);
+
+                if (element.isJsonObject()) {
+                    JsonObject obj = element.getAsJsonObject();
+                    traverse(config,path).add(last,obj);
+                } else if (element.isJsonArray()) {
+                    JsonArray arr = element.getAsJsonArray();
+                    JsonObject subject = traverse(config,path);
+                    if (subject.has(last)) {
+                        subject.getAsJsonArray(last).addAll(arr);
+                    } else {
+                        subject.add(last, arr);
+                    }
+                }
+            }
+        }
+
+        //process removals
+        JsonArray remove = update.getAsJsonArray("remove");
+        if (remove != null) {
+            for (JsonElement e : remove) {
+                List<String> path = new LinkedList<>(Arrays.asList(e.getAsString().split("\\.")));
+                String last = path.remove(path.size()-1);
+                if (path.size() == 0) {
+                    config.remove(last);
+                    continue;
+                }
+                String secondLast = path.remove(path.size()-1);
+
+                JsonElement elementToRemoveFrom = traverse(config,path).get(secondLast);
+                if (elementToRemoveFrom.isJsonObject()) {
+                    elementToRemoveFrom.getAsJsonObject().remove(last);
+                } else if (elementToRemoveFrom.isJsonArray()) {
+                    elementToRemoveFrom.getAsJsonArray().remove(new JsonPrimitive(last));
+                }
+            }
+        }
+        config.addProperty("config_version",v);
+    }
+
+    private static JsonObject traverse(JsonObject obj, List<String> toTraverse) {
+        JsonObject ret = obj;
+        for (String s : toTraverse) {
+            ret = ret.getAsJsonObject(s);
+        }
+        return ret;
     }
 
     /**
@@ -80,5 +173,9 @@ public class ConfigManager {
             generateConfig();
         }
         return config;
+    }
+
+    public static class config_update {
+        private JsonElement add;
     }
 }

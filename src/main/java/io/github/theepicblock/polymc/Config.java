@@ -21,8 +21,15 @@ import java.util.List;
 
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection"})
 public class Config {
+    public static final int LATEST_VERSION = 1;
+
+    private int config_version;
     private List<String> disabledMixins;
     public resourcepackConfig resourcepack;
+
+    public int getConfigVersion() {
+        return config_version;
+    }
 
     public boolean isMixinDisabled(String mixin) {
         if (disabledMixins == null) return false;

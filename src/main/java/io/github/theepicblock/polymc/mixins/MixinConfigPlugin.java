@@ -33,7 +33,17 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
-        config = ConfigManager.getConfig();
+        try {
+            config = ConfigManager.getConfig();
+        } catch (Exception e) {
+            PolyMc.LOGGER.warn("PolyMc: couldn't read config due to exception.");
+            e.printStackTrace();
+            throw new NullPointerException("Couldn't read config");
+        }
+        if (config == null) {
+            PolyMc.LOGGER.warn("PolyMc: couldn't read config.");
+            throw new NullPointerException("Couldn't read config");
+        }
     }
 
     @Override
