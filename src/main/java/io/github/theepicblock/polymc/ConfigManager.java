@@ -129,6 +129,8 @@ public class ConfigManager {
                     } else {
                         subject.add(last, arr);
                     }
+                } else if (element.isJsonNull() || element.isJsonPrimitive()) {
+                    traverse(config,path).add(last,element);
                 }
             }
         }
