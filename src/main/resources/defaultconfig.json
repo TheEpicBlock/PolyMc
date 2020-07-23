@@ -1,9 +1,14 @@
 {
-  "config_version": 1,
+  "configVersion": 2,
   "disabledMixins": [
 
   ],
   "resourcepack": {
     "advancedDiscovery": false
+  },
+  "misc": {
+    "processSyncedBlockEventServerSide": [
+      "minecraft:note_block"
+    ]
   }
 }

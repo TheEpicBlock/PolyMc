@@ -5,9 +5,11 @@
   "compatibilityLevel": "JAVA_8",
   "plugin": "io.github.theepicblock.polymc.mixins.MixinConfigPlugin",
   "mixins": [
+    "ServerParticlePatch",
     "ServerStartMixin",
     "block.BlockPolyImplementation",
     "block.PaletteBlockPolyImplementation",
+    "block.ProcessSyncedBlockEventServerSideImplementation",
     "item.CreativeModeHotfix",
     "item.CustomRecipeFix",
     "item.InventoryDesyncPatch",

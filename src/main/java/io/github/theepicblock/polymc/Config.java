@@ -21,14 +21,15 @@ import java.util.List;
 
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection"})
 public class Config {
-    public static final int LATEST_VERSION = 1;
+    public static final int LATEST_VERSION = 2;
 
-    private int config_version;
+    private int configVersion;
     private List<String> disabledMixins;
     public resourcepackConfig resourcepack;
+    public miscConfig misc;
 
     public int getConfigVersion() {
-        return config_version;
+        return configVersion;
     }
 
     public boolean isMixinDisabled(String mixin) {
@@ -38,5 +39,13 @@ public class Config {
 
     public static class resourcepackConfig {
         public boolean advancedDiscovery;
+    }
+
+    public static class miscConfig {
+        private List<String> processSyncedBlockEventServerSide;
+
+        public List<String> getProcessSyncedBlockEventServerSide() {
+            return processSyncedBlockEventServerSide;
+        }
     }
 }

@@ -70,6 +70,9 @@ public class ConfigManager {
                 JsonObject updates = gson.fromJson(uReader,JsonObject.class);
 
                 for (int i = cVersion+1; i <= Config.LATEST_VERSION; i++) {
+                    if (cVersion == 0) {
+                        PolyMc.LOGGER.error("PolyMc: Config file seems to be corrupt. You might need to delete it");
+                    }
                     try {
                         update(i,configJson.getAsJsonObject(),updates);
                     } catch (Exception e) {
@@ -155,7 +158,7 @@ public class ConfigManager {
                 }
             }
         }
-        config.addProperty("config_version",v);
+        config.addProperty("configVersion",v);
     }
 
     private static JsonObject traverse(JsonObject obj, List<String> toTraverse) {
