@@ -39,22 +39,6 @@ public class TagSyncronizePatch<T> {
     @Shadow @Final private Registry<T> registry;
     private Map<Identifier, Tag<T>> entriesWithoutModdedCache;
 
-//    @Redirect(method = "toPacket(Lnet/minecraft/network/PacketByteBuf;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/registry/Registry;getRawId(Ljava/lang/Object;)I"))
-//    public <T> int getRawIdRedirect(Registry<T> registry, T entry) {
-//        if (!Util.isVanilla(registry.getId(entry))) {
-//            return -1;
-//        }
-//        return registry.getRawId(entry);
-//    }
-//
-//    @Redirect(method = "toPacket(Lnet/minecraft/network/PacketByteBuf;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeVarInt(I)Lnet/minecraft/network/PacketByteBuf;"))
-//    public PacketByteBuf writeVarIntRedirect(PacketByteBuf packetByteBuf, int i) {
-//        if (i == -1) {
-//            return packetByteBuf;
-//        }
-//        return packetByteBuf.writeVarInt(i);
-//    }
-
     @Redirect(method = "toPacket(Lnet/minecraft/network/PacketByteBuf;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/tag/RegistryTagContainer;getEntries()Ljava/util/Map;"))
     public Map<Identifier, Tag<T>> getEntriesRedirect(RegistryTagContainer<T> registryTagContainer) {
         if (entriesWithoutModdedCache != null) {
