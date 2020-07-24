@@ -57,14 +57,12 @@ public class BlockPolyGenerator {
         BlockState state = block.getDefaultState();
         VoxelShape collisionShape = state.getCollisionShape(null, null);
 
-        System.out.println(block.getTranslationKey());
         if (Block.isShapeFullCube(collisionShape)) {
             try {
                 return new UnusedBlockStatePoly(block,Blocks.NOTE_BLOCK,builder);
             } catch (OutOfBoundsException ignored) {}
         }
         if (collisionShape.isEmpty()) {
-            System.out.println("empty");
             try {
                 return new UnusedBlockStatePoly(block,Blocks.SUGAR_CANE,builder);
             } catch (OutOfBoundsException ignored) {}
