@@ -29,6 +29,7 @@ public class Util {
      * Returns true if this identifier is in the minecraft namespace
      */
     public static boolean isVanilla(Identifier id) {
+        if (id == null) return false;
         return id.getNamespace().equals("minecraft");
     }
 
