@@ -37,6 +37,14 @@ public class Config {
         return disabledMixins.contains(mixin);
     }
 
+    public boolean isMixinAutoDisabled(String mixin) {
+        //automatically disable mixins related to processSyncedBlockEventServerSide if it's empty
+        if (misc.processSyncedBlockEventServerSide.size() == 0 &&
+                (mixin.equals("block.ProcessSyncedBlockEventServerSideImplementation") ||
+                 mixin.equals("ServerParticlePatch"))) return true;
+        return false;
+    }
+
     public static class resourcepackConfig {
         public boolean advancedDiscovery;
     }
