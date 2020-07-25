@@ -9,6 +9,8 @@
     "ServerParticlePatch",
     "ServerStartMixin",
     "TagSyncronizePatch",
+    "block.BlockBreakingDisplayPatch",
+    "block.BlockBreakingPatch",
     "block.BlockPolyImplementation",
     "block.PaletteBlockPolyImplementation",
     "block.ProcessSyncedBlockEventServerSideImplementation",
