@@ -41,7 +41,7 @@ public abstract class BlockBreakingPatch {
     public void breakIfTakingTooLong(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
         int j = tickCounter - i;
         float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j + 1);
-        if (f >= 0.71F) {
+        if (f >= 0.75F) {
             player.networkHandler.sendPacket(new WorldEventS2CPacket(2001, pos, Block.getRawIdFromState(state), false));
             finishMining(pos, PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK,"destroyed");
         }
