@@ -20,9 +20,11 @@ package io.github.theepicblock.polymc.api.register;
 import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
+import net.minecraft.screen.ScreenHandlerType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +40,7 @@ public class PolyRegistry {
 
     private final Map<Item, ItemPoly> itemPolys = new HashMap<>();
     private final Map<Block, BlockPoly> blockPolys = new HashMap<>();
+    private final Map<ScreenHandlerType<?>, GuiPoly> guiPolys = new HashMap<>();
 
     /**
      * Register a poly for an item
@@ -58,6 +61,15 @@ public class PolyRegistry {
     }
 
     /**
+     * Register a poly for a gui
+     * @param screenHandler screen handler to associate poly with
+     * @param poly poly to register
+     */
+    public void registerBlockPoly(ScreenHandlerType<?> screenHandler, GuiPoly poly) {
+        guiPolys.put(screenHandler, poly);
+    }
+
+    /**
      * Checks if the item has a registered ItemPoly
      * @param item item to check
      * @return true if the itempoly exists for the given item
@@ -75,6 +87,15 @@ public class PolyRegistry {
         return blockPolys.containsKey(block);
     }
 
+    /**
+     * Checks if the screen handler has a registered GuiPoly
+     * @param screenHandler screen handler to check
+     * @return true if the GuiPoly exists for the given screen handler
+     */
+    public boolean hasGuiPoly(ScreenHandlerType<?> screenHandler) {
+        return guiPolys.containsKey(screenHandler);
+    }
+
     public CustomModelDataManager getCMDManager() {
         return CMDManager;
     }
@@ -86,6 +107,7 @@ public class PolyRegistry {
     public PolyMap build() {
         ImmutableMap<Item,ItemPoly> itemMap = ImmutableMap.copyOf(itemPolys);
         ImmutableMap<Block,BlockPoly> blockMap = ImmutableMap.copyOf(blockPolys);
-        return new PolyMap(itemMap, blockMap);
+        ImmutableMap<ScreenHandlerType<?>, GuiPoly> guiMap = ImmutableMap.copyOf(guiPolys);
+        return new PolyMap(itemMap, blockMap, guiMap);
     }
 }
