@@ -40,9 +40,9 @@ public class BlockPolyGenerator {
      * @param builder builder to add the {@link BlockPoly}s to
      */
     public static void generateMissing(PolyRegistry builder) {
-        for (Block block : getItemRegistry()) {
+        for (Block block : getBlockRegistry()) {
             if (builder.hasBlockPoly(block)) continue;
-            Identifier id = getItemRegistry().getId(block);
+            Identifier id = getBlockRegistry().getId(block);
             if (!Util.isVanilla(id)) {
                 //this is a modded block and should have a Poly
                 addBlockToBuilder(block,builder);
@@ -81,7 +81,7 @@ public class BlockPolyGenerator {
     /**
      * @return the minecraft item registry
      */
-    private static DefaultedRegistry<Block> getItemRegistry() {
+    private static DefaultedRegistry<Block> getBlockRegistry() {
         return Registry.BLOCK;
     }
 }
