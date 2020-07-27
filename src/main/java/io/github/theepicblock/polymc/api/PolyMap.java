@@ -55,8 +55,8 @@ public class PolyMap {
         return poly.getClientBlock(serverBlock);
     }
 
-    public GuiPoly getGuiPoly(int serverHandlerId) {
-        return guiPolys.get(serverHandlerId);
+    public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {
+        return guiPolys.get(serverGuiType);
     }
 
     public ImmutableMap<Item, ItemPoly> getItemPolys() {

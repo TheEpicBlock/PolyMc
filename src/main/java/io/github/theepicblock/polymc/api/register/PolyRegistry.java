@@ -65,7 +65,7 @@ public class PolyRegistry {
      * @param screenHandler screen handler to associate poly with
      * @param poly poly to register
      */
-    public void registerBlockPoly(ScreenHandlerType<?> screenHandler, GuiPoly poly) {
+    public void registerGuiPoly(ScreenHandlerType<?> screenHandler, GuiPoly poly) {
         guiPolys.put(screenHandler, poly);
     }
 
