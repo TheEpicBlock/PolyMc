@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.mixins.gui;
 
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.registry.Registry;
@@ -30,8 +31,11 @@ public class GuiHandlerIdImplementation {
     @Redirect(method = "<init>(ILnet/minecraft/screen/ScreenHandlerType;Lnet/minecraft/text/Text;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/registry/Registry;getRawId(Ljava/lang/Object;)I"))
     public <T> int handlerId(Registry<T> registry, T entry) {
         if (entry instanceof ScreenHandlerType<?>) {
-            //noinspection unchecked
-            return registry.getRawId((T) PolyMc.getMap().getGuiPoly((ScreenHandlerType<?>)entry).getClientSideType());
+            GuiPoly poly = PolyMc.getMap().getGuiPoly((ScreenHandlerType<?>)entry);
+            if (poly != null) {
+                //noinspection unchecked
+                return registry.getRawId((T)poly.getClientSideType());
+            }
         }
         return registry.getRawId(entry);
     }
