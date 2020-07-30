@@ -60,7 +60,7 @@ public class ResourcePackMaker {
      * @param path example "testitem"
      * @return
      */
-    public JsonModel copyMinecraftItemModel(String path) {
+    public JsonModel getOrDefaultPendingItemModel(String path) {
         Identifier id = new Identifier("minecraft", "item/"+path);
         JsonModel v = modelsToSave.get(id);
         if (v == null) {
@@ -71,6 +71,21 @@ public class ResourcePackMaker {
             modelsToSave.put(id,v);
         }
         return v;
+    }
+
+    /**
+     * Checks if there's an ItemModel in the modelsToSave system
+     */
+    public boolean hasPendingItemModel(Identifier id) {
+        return modelsToSave.containsKey(id);
+    }
+
+    public void putPendingItemModel(Identifier id, JsonModel model) {
+        modelsToSave.put(id,model);
+    }
+
+    public JsonModel getPendingItemModel(Identifier id) {
+        return modelsToSave.get(id);
     }
 
     //TODO document this

@@ -35,8 +35,8 @@ import java.util.HashMap;
  * The most standard ItemPoly implementation
  */
 public class CustomModelDataPoly implements ItemPoly{
-    private final ItemStack defaultServerItem;
-    private final int CMDvalue;
+    protected final ItemStack defaultServerItem;
+    protected final int CMDvalue;
 
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item base) {
         Pair<Item, Integer> pair = registerManager.RequestCMDwithItem();
@@ -84,12 +84,12 @@ public class CustomModelDataPoly implements ItemPoly{
     public void AddToResourcePack(Item item, ResourcePackMaker pack) {
         //TODO this can be cleaner
         pack.copyItemModel(item);
-        JsonModel itemMod = pack.copyMinecraftItemModel(Registry.ITEM.getId(defaultServerItem.getItem()).getPath());
+        JsonModel itemModel = pack.getOrDefaultPendingItemModel(Registry.ITEM.getId(defaultServerItem.getItem()).getPath());
         JsonModel.Override override = new JsonModel.Override();
         override.predicate = new HashMap<>();
-        override.predicate.put("custom_model_data",CMDvalue);
+        override.predicate.put("custom_model_data",(double)CMDvalue);
         Identifier modelId = Registry.ITEM.getId(item);
         override.model = modelId.getNamespace()+":item/"+modelId.getPath();
-        itemMod.addOverride(override);
+        itemModel.addOverride(override);
     }
 }

@@ -18,12 +18,9 @@
 package io.github.theepicblock.polymc.generator;
 
 import io.github.theepicblock.polymc.Util;
-import io.github.theepicblock.polymc.api.item.CustomModelDataPoly;
-import io.github.theepicblock.polymc.api.item.DamageableItemPoly;
-import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.api.item.*;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
@@ -51,12 +48,29 @@ public class ItemPolyGenerator {
      * Generates the most suitable ItemPoly for a given item
      */
     public static ItemPoly generatePoly(Item item, PolyRegistry builder) {
+        if (item instanceof ShieldItem) {
+            return new ShieldPoly(builder.getCMDManager(), item);
+        }
+        if (item instanceof CompassItem) {
+            return new CustomModelDataPoly(builder.getCMDManager(), item, Items.COMPASS);
+        }
+        if (item instanceof CrossbowItem) {
+            return new PredicateBasedDamageableItem(builder.getCMDManager(), item, Items.CROSSBOW);
+        }
+        if (item instanceof RangedWeaponItem) {
+            return new BowPoly(builder.getCMDManager(), item);
+        }
         if (item.isDamageable()) {
+            if (item instanceof DyeableItem) {
+                return new DamageableItemPoly(builder.getCMDManager(), item, Items.LEATHER_HELMET);
+            }
             return new DamageableItemPoly(builder.getCMDManager(), item);
         }
-
         if (item.isFood()) {
             return new CustomModelDataPoly(builder.getCMDManager(), item, Items.COOKED_BEEF);
+        }
+        if (item instanceof DyeableItem) {
+            return new CustomModelDataPoly(builder.getCMDManager(), item, Items.LEATHER_HORSE_ARMOR);
         }
         return new CustomModelDataPoly(builder.getCMDManager(), item);
     }

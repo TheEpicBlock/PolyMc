@@ -26,7 +26,9 @@ import java.util.Map;
 
 public class JsonModel {
     public String parent;
+    public String gui_light;
     public Map<String,String> textures;
+    public Map<String,DisplayEntry> display;
     public List<Override> overrides;
 
     public void addOverride(Override e) {
@@ -40,9 +42,9 @@ public class JsonModel {
         //Ensure that the overrides are in the correct order before converting
         Collections.sort(overrides,(o1,o2) -> {
             if (o1.predicate.size() > 0 && o2.predicate.size() > 0) {
-                int i1 = o1.predicate.values().iterator().next();
-                int i2 = o2.predicate.values().iterator().next();
-                return i1 - i2;
+                double i1 = o1.predicate.values().iterator().next();
+                double i2 = o2.predicate.values().iterator().next();
+                return (int) (i1 - i2);
             }
             return 0;
         });
@@ -51,7 +53,13 @@ public class JsonModel {
     }
 
     public static class Override {
-        public Map<String,Integer> predicate;
+        public Map<String,Double> predicate;
         public String model;
+    }
+
+    public static class DisplayEntry {
+        public double[] rotation;
+        public double[] translation;
+        public double[] scale;
     }
 }

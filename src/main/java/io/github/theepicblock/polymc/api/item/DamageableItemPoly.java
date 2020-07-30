@@ -23,18 +23,24 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 
 public class DamageableItemPoly extends CustomModelDataPoly{
-    private final static int FUNGUS_MAX_DAMAGE = Items.WARPED_FUNGUS_ON_A_STICK.getMaxDamage();
-    private final int maxDamage;
+    private final int clientSideMaxDamage;
+    private final int serverSideMaxDamage;
+
     public DamageableItemPoly(CustomModelDataManager registerManager, Item base) {
-        super(registerManager, base, Items.WARPED_FUNGUS_ON_A_STICK);
-        maxDamage = base.getMaxDamage();
+        this(registerManager,base,Items.WARPED_FUNGUS_ON_A_STICK);
+    }
+
+    public DamageableItemPoly(CustomModelDataManager registerManager, Item base, Item target) {
+        super(registerManager, base, target);
+        clientSideMaxDamage = target.getMaxDamage();
+        serverSideMaxDamage = base.getMaxDamage();
     }
 
     @Override
     public ItemStack getClientItem(ItemStack input) {
         ItemStack sup = super.getClientItem(input);
         int inputDamage = input.getDamage();
-        int damage = (int)(((float)inputDamage/maxDamage)*FUNGUS_MAX_DAMAGE);
+        int damage = (int)(((float)inputDamage/ serverSideMaxDamage)* clientSideMaxDamage); //convert serverside damage to clientside damage
         if (damage == 0 && inputDamage > 0) damage = 1; //If the item is damaged in any way it should show up
         sup.setDamage(damage);
         return sup;
