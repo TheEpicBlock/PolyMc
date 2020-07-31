@@ -20,35 +20,34 @@ package io.github.theepicblock.polymc.mixins.block;
 import io.github.theepicblock.polymc.PolyMc;
 import me.jellysquid.mods.lithium.common.world.chunk.LithiumHashPalette;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.collection.IdList;
 import net.minecraft.world.chunk.ArrayPalette;
 import net.minecraft.world.chunk.BiMapPalette;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 /**
  * Minecraft uses a different method to get ids when it sends chunks.
  * Therefor {@link BlockPolyImplementation} doesn't work on chunks.
  * This Mixin makes sure that the blocks are polyd before they get sent to the client.
  */
-@Mixin({ArrayPalette.class, BiMapPalette.class, LithiumHashPalette.class})
+@Mixin(value = {ArrayPalette.class, BiMapPalette.class, LithiumHashPalette.class})
 public class PaletteBlockPolyImplementation<T> {
-    @Redirect(method = "toPacket(Lnet/minecraft/network/PacketByteBuf;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IdList;getId(Ljava/lang/Object;)I"))
-    public int GetIdRedirect(IdList<T> idList, T object) {
+    @ModifyArg(method = "toPacket(Lnet/minecraft/network/PacketByteBuf;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IdList;getId(Ljava/lang/Object;)I"))
+    public T GetIdRedirect(T object) {
         if (object instanceof BlockState) {
             //noinspection unchecked
-            return idList.getId((T)PolyMc.getMap().getClientBlock((BlockState)object));
+            return (T)PolyMc.getMap().getClientBlock((BlockState)object);
         }
-        return idList.getId(object);
+        return object;
     }
 
-    @Redirect(method = "getPacketSize()I", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IdList;getId(Ljava/lang/Object;)I"))
-    public int GetIdRedirect2(IdList<T> idList, T object) {
+    @ModifyArg(method = "getPacketSize()I", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IdList;getId(Ljava/lang/Object;)I"))
+    public T GetIdRedirect2(T object) {
         if (object instanceof BlockState) {
             //noinspection unchecked
-            return idList.getId((T)PolyMc.getMap().getClientBlock((BlockState)object));
+            return (T)PolyMc.getMap().getClientBlock((BlockState)object);
         }
-        return idList.getId(object);
+        return object;
     }
 }
