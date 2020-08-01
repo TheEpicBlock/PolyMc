@@ -18,7 +18,6 @@
 package io.github.theepicblock.polymc.api.register;
 
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
-import io.github.theepicblock.polymc.api.block.SimpleReplacementPoly;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.Block;
@@ -26,6 +25,8 @@ import net.minecraft.block.BlockState;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 /**
  * We can use (unused) vanilla blockstates to display different modded blocks.
@@ -41,20 +42,23 @@ public class BlockStateManager {
     /**
      * Request a blockstate value to be allocated for a specific block.
      * @param block the block you need a BlockState for
+     * @param filter limits the blockstates that this function can return. A blockstate can only be used if {@link Predicate#test(Object)} returns true. A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
+     * @param onFirstRegister this will be called if this block is first used. Useful for registering a poly for it.
      * @throws OutOfBoundsException if the limit of BlockStates is reached
      * @return the value you can use.
      */
-    public BlockState requestBlockState(Block block, PolyRegistry registry) throws OutOfBoundsException{
-        int current = BlockStateIdIndex.getInt(block); //this is the current blockstateId that we're at for this item/
-        if (current == 0) {
-            current = 1; //we should start at 1. Never 0
-            registry.registerBlockPoly(block, new SimpleReplacementPoly(block.getStateManager().getDefaultState()));
-        }
-        BlockStateIdIndex.put(block, current + 1);
-        try {
-            return block.getStateManager().getStates().get(current);
-        } catch (IndexOutOfBoundsException e) {
-            throw new OutOfBoundsException("Tried to access more BlockStates then block has: " + block.getTranslationKey());
+    public BlockState requestBlockState(Block block, PolyRegistry registry, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) throws OutOfBoundsException{
+        while (true) {
+            int current = getBlockStateIdIndex(block, registry, onFirstRegister);
+            try {
+                BlockStateIdIndex.put(block,current+1);
+                BlockState t = block.getStateManager().getStates().get(current);
+                if (filter.test(t)){
+                    return t;
+                }
+            } catch (IndexOutOfBoundsException e) {
+                throw new OutOfBoundsException("Tried to access more BlockStates then block has: " + block.getTranslationKey());
+            }
         }
     }
 
@@ -62,14 +66,61 @@ public class BlockStateManager {
      * Request multiple Blockstates for a single block
      * @param block the block you need a block state for
      * @param amount the amount of BlockStates you need
+     * @param filter limits the blockstates that this function can return. A blockstate can only be used if {@link Predicate#test(Object)} returns true. A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
+     * @param onFirstRegister this will be called if this block is first used. Useful for registering a poly for it.
      * @throws OutOfBoundsException if the limit of BlockStates is reached
      * @return the BlockStates you can do
      */
-    public List<BlockState> requestBlockState(Block block, int amount, PolyRegistry registry) throws OutOfBoundsException {
+    public List<BlockState> requestBlockState(Block block, int amount, PolyRegistry registry, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) throws OutOfBoundsException {
+        int initialValue = getBlockStateIdIndex(block, registry, onFirstRegister);
+
         List<BlockState> ret = new ArrayList<>();
         for (int i = 0; i < amount; i++) {
-            ret.add(requestBlockState(block, registry));
+            try {
+                ret.add(requestBlockState(block, registry,filter,onFirstRegister));
+            } catch (OutOfBoundsException e) {
+                BlockStateIdIndex.put(block,initialValue);
+                throw e;
+            }
         }
         return ret;
+
+    }
+
+    /**
+     * Checks how many blockstates are available for the specified block and compares that with the amount specified
+     * @param block for which block to check
+     * @param filter limits which blockstates you're looking for. A blockstate can only be used if {@link Predicate#test(Object)} returns true. It is advised to use the same filter per block.
+     * @param amount how many blockstates you need
+     * @return true if that amount of blockstates are available
+     */
+    public boolean isAvailable(Block block, int amount, Predicate<BlockState> filter) {
+        int current = BlockStateIdIndex.getOrDefault(block,0); //this is the current blockstateId that we're at for this item/
+        if (current == 0) {
+            current = 1; //we should start at 1. Never 0
+        }
+        int i = 0;
+        int goodBlocks = 0;
+        while (true) {
+            i++;
+            try {
+                BlockState t = block.getStateManager().getStates().get(i);
+                if (filter.test(t)) {
+                    goodBlocks++;
+                    if (goodBlocks == amount) return true;
+                }
+            } catch (IndexOutOfBoundsException e) {
+                return false;
+            }
+        }
+    }
+
+    private int getBlockStateIdIndex(Block block, PolyRegistry registry, BiConsumer<Block,PolyRegistry> onFirstRegister) {
+        if (!BlockStateIdIndex.containsKey(block)) {
+            onFirstRegister.accept(block,registry);
+        }
+        int v = BlockStateIdIndex.getOrDefault(block,0); //this is the current blockstateId that we're at for this item/
+        BlockStateIdIndex.put(block, v + 1);
+        return v;
     }
 }

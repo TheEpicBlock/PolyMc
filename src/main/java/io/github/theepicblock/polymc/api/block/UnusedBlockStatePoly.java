@@ -34,12 +34,16 @@ import net.minecraft.util.registry.Registry;
 
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 /**
  * This poly uses unused blockstates to display blocks
  */
 public class UnusedBlockStatePoly implements BlockPoly{
     private final ImmutableMap<BlockState,BlockState> states;
+    private final Predicate<BlockState> DEFAULT_FILTER = (blockState) -> blockState != blockState.getBlock().getDefaultState();
+    private final BiConsumer<Block,PolyRegistry> DEFAULT_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block,new SimpleReplacementPoly(block.getDefaultState()));
     /**
      *
      * @param moddedBlock the block this poly represents
@@ -51,10 +55,37 @@ public class UnusedBlockStatePoly implements BlockPoly{
         BlockStateManager manager = registry.getBlockStateManager();
 
         ImmutableList<BlockState> moddedStates = moddedBlock.getStateManager().getStates();
+        if (!manager.isAvailable(clientSideBlock,moddedStates.size(), DEFAULT_FILTER)) {
+            throw new OutOfBoundsException(clientSideBlock.getTranslationKey()+" doesn't have enough blockstates left for "+moddedBlock.getTranslationKey());
+        }
 
         HashMap<BlockState,BlockState> res = new HashMap<>();
         for (BlockState state : moddedStates) {
-            res.put(state,manager.requestBlockState(clientSideBlock,registry));
+            res.put(state,manager.requestBlockState(clientSideBlock,registry, DEFAULT_FILTER, DEFAULT_ON_FIRST_REGISTER));
+        }
+        states = ImmutableMap.copyOf(res);
+    }
+
+    /**
+     *
+     * @param moddedBlock the block this poly represents
+     * @param clientSideBlock the block used to display this block on the client
+     * @param registry registry used to register this poly
+     * @param filter limits the blockstates that can be used. A blockstate can only be used if {@link Predicate#test(Object)} returns true. A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
+     * @param onFirstRegister this will be called if the clientSideBlock is first used. Useful for registering a poly for it.
+     * @throws OutOfBoundsException when the clientSideBlock doesn't have any more BlockStates left.
+     */
+    public UnusedBlockStatePoly(Block moddedBlock, Block clientSideBlock, PolyRegistry registry, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) throws OutOfBoundsException {
+        BlockStateManager manager = registry.getBlockStateManager();
+
+        ImmutableList<BlockState> moddedStates = moddedBlock.getStateManager().getStates();
+        if (!manager.isAvailable(clientSideBlock,moddedStates.size(), filter)) {
+            throw new OutOfBoundsException(clientSideBlock.getTranslationKey()+" doesn't have enough blockstates left for "+moddedBlock.getTranslationKey());
+        }
+
+        HashMap<BlockState,BlockState> res = new HashMap<>();
+        for (BlockState state : moddedStates) {
+            res.put(state,manager.requestBlockState(clientSideBlock,registry, filter, onFirstRegister));
         }
         states = ImmutableMap.copyOf(res);
     }
