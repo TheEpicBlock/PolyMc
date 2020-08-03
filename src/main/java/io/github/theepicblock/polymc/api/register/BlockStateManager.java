@@ -179,7 +179,9 @@ public class BlockStateManager {
                         goodBlocks++;
                         if (goodBlocks == amount) return true;
                     }
-                } catch (IndexOutOfBoundsException ignored) {}
+                } catch (IndexOutOfBoundsException ignored) {
+                    break;
+                }
             }
         }
         return false;

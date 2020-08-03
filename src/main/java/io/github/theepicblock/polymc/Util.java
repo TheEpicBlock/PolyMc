@@ -30,7 +30,14 @@ public class Util {
      */
     public static boolean isVanilla(Identifier id) {
         if (id == null) return false;
-        return id.getNamespace().equals("minecraft");
+        return isNamespaceVanilla(id.getNamespace());
+    }
+
+    /**
+     * Returns true if this namespace is minecraft
+     */
+    public static boolean isNamespaceVanilla(String v) {
+        return v.equals("minecraft");
     }
 
     /**
@@ -77,6 +84,7 @@ public class Util {
             v.append(",");
         });
         String res = v.toString();
+        if (res.length() == 0) return res;
         return res.substring(0,res.length()-1); //this removes the last comma
     }
 

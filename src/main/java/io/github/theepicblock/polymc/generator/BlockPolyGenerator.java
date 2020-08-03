@@ -20,6 +20,7 @@ package io.github.theepicblock.polymc.generator;
 import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.block.NoCollisionBlockHelper;
 import io.github.theepicblock.polymc.api.block.SimpleReplacementPoly;
 import io.github.theepicblock.polymc.api.block.UnusedBlockStatePoly;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
@@ -35,6 +36,9 @@ import net.minecraft.util.shape.VoxelShape;
  * Class to automatically generate BlockPolys for Blocks
  */
 public class BlockPolyGenerator {
+
+
+
     /**
      * Automatically generates all {@link BlockPoly}s that are missing in the specified builder
      * @param builder builder to add the {@link BlockPoly}s to
@@ -64,7 +68,7 @@ public class BlockPolyGenerator {
         }
         if (collisionShape.isEmpty()) {
             try {
-                return new UnusedBlockStatePoly(block,Blocks.SUGAR_CANE,builder);
+                return NoCollisionBlockHelper.getPoly(block,builder);
             } catch (OutOfBoundsException ignored) {}
         }
         return new SimpleReplacementPoly(Blocks.STONE); //TODO better implementation

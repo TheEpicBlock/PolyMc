@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.swordglowsblue.artifice.api.ArtificeResourcePack;
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.Util;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.item.Item;
@@ -134,6 +135,7 @@ public class ResourcePackMaker {
      * @see #copyModel(Identifier)
      */
     private void copyModel(String modId, String path) {
+        if (Util.isNamespaceVanilla(modId)) return;
         //copy the file from the mod (we assume the modid is the same as the item's id)
         Path newFile = copyAssetFromMod(modId,MODELS+path+".json");
 
@@ -147,8 +149,8 @@ public class ResourcePackMaker {
             if (model.textures != null) {
                 model.textures.forEach((textureRef,id) -> {
                     //textureRef is an internal thing used in the model itself. Not needed to resolve the dependencies
-                    Identifier mcId = new Identifier(id);
-                    copyTexture(mcId.getNamespace(),mcId.getPath());
+                    Identifier mcId = Identifier.tryParse(id);
+                    if (mcId != null) copyTexture(mcId.getNamespace(),mcId.getPath());
                 });
             }
 
