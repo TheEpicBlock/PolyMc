@@ -6,6 +6,7 @@
   "plugin": "io.github.theepicblock.polymc.mixins.MixinConfigPlugin",
   "mixins": [
     "FabricRegistrySyncDisabler",
+    "FabricRemapDisabler",
     "ServerParticlePatch",
     "ServerStartMixin",
     "TagSyncronizePatch",
