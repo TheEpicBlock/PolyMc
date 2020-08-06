@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.generator;
 
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
@@ -59,7 +60,13 @@ public class BlockPolyGenerator {
      */
     public static BlockPoly generatePoly(Block block, PolyRegistry builder) {
         BlockState state = block.getDefaultState();
-        VoxelShape collisionShape = state.getCollisionShape(null, null);
+        VoxelShape collisionShape = null;
+        try {
+            collisionShape = state.getCollisionShape(null, null);
+        } catch (Exception e) {
+            PolyMc.LOGGER.warn("Failed to get collision shape for "+block.getTranslationKey()+": "+e.getMessage());
+            return new SimpleReplacementPoly(Blocks.STONE);
+        }
 
         if (Block.isShapeFullCube(collisionShape)) {
             try {
