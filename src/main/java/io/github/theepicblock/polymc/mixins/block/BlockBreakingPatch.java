@@ -19,15 +19,21 @@ package io.github.theepicblock.polymc.mixins.block;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
+import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
+import net.minecraft.network.packet.s2c.play.EntityStatusEffectS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayerInteractionManager.class)
@@ -41,9 +47,27 @@ public abstract class BlockBreakingPatch {
     public void breakIfTakingTooLong(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
         int j = tickCounter - i;
         float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j + 1);
-        if (f >= 0.75F) {
+        if (f >= 1f) {
             player.networkHandler.sendPacket(new WorldEventS2CPacket(2001, pos, Block.getRawIdFromState(state), false));
             finishMining(pos, PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK,"destroyed");
+        }
+    }
+
+    @Inject(method = "continueMining", at = @At(value = "INVOKE",target = "Lnet/minecraft/server/world/ServerWorld;setBlockBreakingInfo(ILnet/minecraft/util/math/BlockPos;I)V"))
+    public void onUpdateBreakStatus(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
+        int j = tickCounter - i;
+        float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j + 1);
+        int k = (int)(f * 10.0F);
+        //TODO Replace with a local capture
+        player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(123, pos, k));
+    }
+
+    @Inject(method = "processBlockBreakingAction", at = @At("HEAD"))
+    public void packetRecievedInject(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
+        if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
+            player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getEntityId(),new StatusEffectInstance(StatusEffects.MINING_FATIGUE,20,-1,true,false)));
+        } else if (action == PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK) {
+            player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(123, pos, -1));
         }
     }
 }
