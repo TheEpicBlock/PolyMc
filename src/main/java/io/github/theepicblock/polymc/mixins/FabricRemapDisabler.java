@@ -30,6 +30,7 @@ public class FabricRemapDisabler implements RemappableRegistry {
 
     /**
      * @author TheEpicBlock
+     * @reason vanilla ids should always be in the right place. The other ids aren't used for networking so this is not needed.
      */
     @SuppressWarnings("OverwriteTarget")
     @Overwrite(remap = false)
