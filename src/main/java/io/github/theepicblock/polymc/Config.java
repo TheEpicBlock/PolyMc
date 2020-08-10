@@ -17,11 +17,26 @@
  */
 package io.github.theepicblock.polymc;
 
+import com.google.gson.JsonObject;
+
 import java.util.List;
 
-@SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection"})
+/**
+ * Hello, if you've come here, you might be wondering how to add something to this config.
+ * Please increment the LATEST_VERSION in this class.
+ * If you're adding a value, add it into this class so its parsed correctly.
+ * (the entire config is parsed using GSON)
+ * Please add an entry in the "config_update.json" under the resources folder.
+ * This file defines how to update the config for each version.
+ * It is based on removing and adding json.
+ * Look at some of the previous ones to get an idea of how to do it.
+ * The add section takes in a path and some json value/object. It adds the json value/object on that path
+ * Check {@link ConfigManager#update(int, JsonObject, JsonObject)} for the exact implementation. Warning: ugly code
+ * Optional: update the "defaultconfig.json" to reflect the changes
+ */
+@SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection", "JavadocReference"})
 public class Config {
-    public static final int LATEST_VERSION = 2;
+    public static final int LATEST_VERSION = 3;
 
     private int configVersion;
     private List<String> disabledMixins;

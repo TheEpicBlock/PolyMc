@@ -7,5 +7,12 @@
         ]
       }
     }
+  },
+  "3": {
+    "add": {
+      "disabledMixins": [
+        "CustomPacketDisabler"
+      ]
+    }
   }
 }
