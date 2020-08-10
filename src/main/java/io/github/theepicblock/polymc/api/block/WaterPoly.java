@@ -30,7 +30,6 @@ public class WaterPoly implements BlockPoly{
         for (Property<?> p : input.getProperties()) {
             output = copyProperty(output, input, p);
         }
-        System.out.println(input + " -> " + output);
         return output;
     }
 
