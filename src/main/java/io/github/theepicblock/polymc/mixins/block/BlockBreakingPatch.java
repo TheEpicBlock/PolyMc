@@ -17,14 +17,12 @@
  */
 package io.github.theepicblock.polymc.mixins.block;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityStatusEffectS2CPacket;
-import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.util.math.BlockPos;
@@ -46,9 +44,9 @@ public abstract class BlockBreakingPatch {
     @Inject(method = "continueMining", at = @At("TAIL"))
     public void breakIfTakingTooLong(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
         int j = tickCounter - i;
-        float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j + 1);
-        if (f >= 1f) {
-            player.networkHandler.sendPacket(new WorldEventS2CPacket(2001, pos, Block.getRawIdFromState(state), false));
+        float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j);
+        if (f >= 1.0F) {
+            //player.networkHandler.sendPacket(new WorldEventS2CPacket(2001, pos, Block.getRawIdFromState(state), false));
             finishMining(pos, PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK,"destroyed");
         }
     }
