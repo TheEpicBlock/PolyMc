@@ -19,13 +19,9 @@ package io.github.theepicblock.polymc.api.block;
 
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
-import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.RedstoneWireBlock;
-import net.minecraft.block.enums.WireConnection;
-import net.minecraft.state.property.Property;
 
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -36,41 +32,28 @@ import java.util.function.Predicate;
 public class NoCollisionBlockHelper {
     private static final Block[] NO_COLLISION_BLOCKS = {Blocks.SUGAR_CANE,
             Blocks.ACACIA_SAPLING,Blocks.BIRCH_SAPLING,Blocks.DARK_OAK_SAPLING,Blocks.JUNGLE_SAPLING,Blocks.OAK_SAPLING,
-            Blocks.REDSTONE_WIRE};
-    private static final Predicate<BlockState> NO_COLLISION_FILTER = (blockState) -> {
-        if (blockState.getBlock() == Blocks.REDSTONE_WIRE) {
-            return isRedstoneStateUsable(blockState);
-        }
-        return blockState != blockState.getBlock().getDefaultState();
-    };
-    private static final BiConsumer<Block, PolyRegistry> NO_COLLISION_ON_FIRST_REGISTER = (block, polyRegistry) -> {
-        if (block == Blocks.REDSTONE_WIRE) {
-            polyRegistry.registerBlockPoly(block, new RedstonePoly());
-        } else {
-            polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
-        }
-    };
-    private static final Property<?>[] REDSTONE_PROPERTIES = {RedstoneWireBlock.WIRE_CONNECTION_NORTH,RedstoneWireBlock.WIRE_CONNECTION_WEST,RedstoneWireBlock.WIRE_CONNECTION_SOUTH,RedstoneWireBlock.WIRE_CONNECTION_EAST};
+            Blocks.CAVE_AIR,Blocks.VOID_AIR,Blocks.STRUCTURE_VOID};
 
-    private static boolean isRedstoneStateUsable(BlockState block){
-        int amountConnected = 0;
-        for (Property<?> p : REDSTONE_PROPERTIES) {
-            if (((WireConnection) block.get(p)).isConnected()) amountConnected++;
+    private static final Predicate<BlockState> NO_COLLISION_FILTER = (blockState) -> {
+        System.out.println("e"+ blockState + isAir(blockState.getBlock()));
+        if (isAir(blockState.getBlock())) return true;
+        return UnusedBlockStatePoly.DEFAULT_FILTER.test(blockState);
+    };
+
+    private static final BiConsumer<Block, PolyRegistry> NO_COLLISION_ON_FIRST_REGISTER = (block, polyRegistry) -> {
+        if (isAir(block)) {
+            polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(Blocks.AIR.getDefaultState()));
+            return;
         }
-        return amountConnected == 1;
-    }
+        polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
+    };
 
     public static BlockPoly getPoly(Block block, PolyRegistry builder) throws OutOfBoundsException {
         return new UnusedBlockStatePoly(block,NO_COLLISION_BLOCKS,builder,NO_COLLISION_FILTER,NO_COLLISION_ON_FIRST_REGISTER);
     }
 
-    private static class RedstonePoly implements BlockPoly {
-        @Override
-        public BlockState getClientBlock(BlockState input) {
-            return isRedstoneStateUsable(input) ? Blocks.REDSTONE_WIRE.getDefaultState() : input;
-        }
-
-        @Override
-        public void AddToResourcePack(Block block, ResourcePackMaker pack) {}
+    public static boolean isAir(Block b) {
+        System.out.println(b + " = " + (b == Blocks.CAVE_AIR || b == Blocks.VOID_AIR || b == Blocks.STRUCTURE_VOID));
+        return b == Blocks.CAVE_AIR || b == Blocks.VOID_AIR || b == Blocks.STRUCTURE_VOID;
     }
 }
