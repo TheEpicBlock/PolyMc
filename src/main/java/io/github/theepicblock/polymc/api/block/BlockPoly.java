@@ -17,11 +17,12 @@
  */
 package io.github.theepicblock.polymc.api.block;
 
+import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 
-public interface BlockPoly {
+public interface BlockPoly extends DebugInfoProvider<Block> {
     /**
      * Transforms an BlockState to it's client version
      * @param input original BlockState

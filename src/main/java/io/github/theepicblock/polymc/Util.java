@@ -91,4 +91,23 @@ public class Util {
     private static <T extends Comparable<T>> String nameValue(Property<T> property, Comparable<?> value) {
         return property.name((T)value);
     }
+
+    /**
+     * adds spaces to the end of string s so it has amount length
+     */
+    public static String expandTo(String s, int amount) {
+        int left = amount - s.length();
+        if (left >= 0) {
+            StringBuilder out = new StringBuilder().append(s);
+            for (int i = 0; i < left; i++) {
+                out.append(" ");
+            }
+            return out.toString();
+        }
+        return s;
+    }
+
+    public static String expandTo(Object s, int amount) {
+        return expandTo(s.toString(),amount);
+    }
 }

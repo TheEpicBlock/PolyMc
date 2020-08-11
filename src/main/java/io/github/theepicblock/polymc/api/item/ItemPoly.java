@@ -17,11 +17,12 @@
  */
 package io.github.theepicblock.polymc.api.item;
 
+import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-public interface ItemPoly {
+public interface ItemPoly extends DebugInfoProvider<Item> {
     /**
      * Transforms an ItemStack to it's client version
      * @param input original ItemStack

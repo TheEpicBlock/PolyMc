@@ -167,4 +167,18 @@ public class UnusedBlockStatePoly implements BlockPoly{
 //            });
 //        }
     }
+
+    @Override
+    public String getDebugInfo(Block obj) {
+        StringBuilder out = new StringBuilder();
+        out.append(states.size()).append(" states");
+        states.forEach((moddedState,clientState) -> {
+            out.append("\n");
+            out.append("    #");
+            out.append(moddedState);
+            out.append(" -> ");
+            out.append(clientState);
+        });
+        return out.toString();
+    }
 }

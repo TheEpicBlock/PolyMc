@@ -44,4 +44,9 @@ public class SimpleReplacementPoly implements BlockPoly{
     public void AddToResourcePack(Block block, ResourcePackMaker pack) {
 
     }
+
+    @Override
+    public String getDebugInfo(Block obj) {
+        return state.toString();
+    }
 }

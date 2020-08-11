@@ -51,8 +51,8 @@ public class BlockStateManager {
         while (true) {
             int current = getBlockStateIdIndex(block, registry, onFirstRegister);
             try {
-                BlockStateIdIndex.put(block,current+1);
                 BlockState t = block.getStateManager().getStates().get(current);
+                BlockStateIdIndex.put(block,current+1);
                 if (filter.test(t)){
                     return t;
                 }
@@ -190,9 +190,8 @@ public class BlockStateManager {
     private int getBlockStateIdIndex(Block block, PolyRegistry registry, BiConsumer<Block,PolyRegistry> onFirstRegister) {
         if (!BlockStateIdIndex.containsKey(block)) {
             onFirstRegister.accept(block,registry);
+            BlockStateIdIndex.put(block,0);
         }
-        int v = BlockStateIdIndex.getOrDefault(block,0); //this is the current blockstateId that we're at for this item/
-        BlockStateIdIndex.put(block, v + 1);
-        return v;
+        return BlockStateIdIndex.getInt(block);
     }
 }

@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.api.item;
 
+import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.register.CustomModelDataManager;
 import io.github.theepicblock.polymc.resource.JsonModel;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
@@ -91,5 +92,10 @@ public class CustomModelDataPoly implements ItemPoly{
         Identifier modelId = Registry.ITEM.getId(item);
         override.model = modelId.getNamespace()+":item/"+modelId.getPath();
         itemModel.addOverride(override);
+    }
+
+    @Override
+    public String getDebugInfo(Item item) {
+        return "CMD: "+ Util.expandTo(CMDvalue,3)+", item:"+defaultServerItem.getTranslationKey();
     }
 }
