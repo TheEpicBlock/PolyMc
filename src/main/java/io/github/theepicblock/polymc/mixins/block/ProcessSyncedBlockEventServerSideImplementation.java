@@ -51,7 +51,7 @@ import java.util.concurrent.Executor;
 public class ProcessSyncedBlockEventServerSideImplementation {
     private final List<Block> ServerCalculatedBlockEvents = new ArrayList<>();
     @Inject(method = "<init>", at = @At("TAIL"))
-    public void InitInject(MinecraftServer server, Executor workerExecutor, LevelStorage.Session session, ServerWorldProperties properties, RegistryKey<World> registryKey, RegistryKey<DimensionType> registryKey2, DimensionType dimensionType, WorldGenerationProgressListener generationProgressListener, ChunkGenerator chunkGenerator, boolean bl, long l, List<Spawner> list, boolean bl2, CallbackInfo ci) {
+    public void InitInject(MinecraftServer server, Executor workerExecutor, LevelStorage.Session session, ServerWorldProperties properties, RegistryKey<World> registryKey, DimensionType dimensionType, WorldGenerationProgressListener worldGenerationProgressListener, ChunkGenerator chunkGenerator, boolean bl, long l, List<Spawner> list, boolean bl2, CallbackInfo ci) {
         List<String> ServerCalculatedBlockEventsAsString = ConfigManager.getConfig().misc.getProcessSyncedBlockEventServerSide();
         for (String s : ServerCalculatedBlockEventsAsString) {
             Block e = Registry.BLOCK.get(new Identifier(s));
