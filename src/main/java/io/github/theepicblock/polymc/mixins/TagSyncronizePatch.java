@@ -18,13 +18,11 @@
 package io.github.theepicblock.polymc.mixins;
 
 import io.github.theepicblock.polymc.Util;
-import net.minecraft.tag.RegistryTagContainer;
 import net.minecraft.tag.Tag;
+import net.minecraft.tag.TagGroup;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import org.spongepowered.asm.mixin.Final;
+import net.minecraft.util.registry.DefaultedRegistry;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -33,37 +31,47 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This patch prevents modded blocks/items from appearing in tags when they are synchronised to the client.
+ * The client will replace any ids it doesn't recognize with minecraft:air.
+ * This can cause issues. For example: a mod places a block in the swimmable tag.
+ * It get's replaced with air and the client now thinks it can swim in air.
+ */
 @SuppressWarnings("MixinInnerClass")
-@Mixin(RegistryTagContainer.class)
-public class TagSyncronizePatch<T> {
-    @Shadow @Final private Registry<T> registry;
-    private Map<Identifier, Tag<T>> entriesWithoutModdedCache;
+@Mixin(TagGroup.class)
+public abstract class TagSyncronizePatch<T> {
+    private Map<Identifier, Tag<T>> cache;
 
-    @Redirect(method = "toPacket(Lnet/minecraft/network/PacketByteBuf;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/tag/RegistryTagContainer;getEntries()Ljava/util/Map;"))
-    public Map<Identifier, Tag<T>> getEntriesRedirect(RegistryTagContainer<T> registryTagContainer) {
-        if (entriesWithoutModdedCache != null) {
-            return entriesWithoutModdedCache;
+    /**
+     * Redirects the call to get the tags in the to packet function so we can filter out all of the modded tags.
+     */
+    @Redirect(method = "toPacket(Lnet/minecraft/network/PacketByteBuf;Lnet/minecraft/util/registry/DefaultedRegistry;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/tag/TagGroup;getTags()Ljava/util/Map;"))
+    public Map<Identifier, Tag<T>> getTagsRedirect(TagGroup<T> registryTagContainer, DefaultedRegistry<T> registry) {
+        if (cache != null) {
+            return cache;
         }
 
-        Map<Identifier, Tag<T>> original = registryTagContainer.getEntries();
-        Map<Identifier, Tag<T>> ret = new HashMap<>();
+        Map<Identifier, Tag<T>> original = registryTagContainer.getTags();
+        Map<Identifier, Tag<T>> output = new HashMap<>();
 
-        for (Map.Entry<Identifier, Tag<T>> e : original.entrySet()) {
-            if (Util.isVanilla(e.getKey())) {
-                Tag<T> originalTag = e.getValue();
+        for (Map.Entry<Identifier, Tag<T>> originalEntry : original.entrySet()) {
+            if (Util.isVanilla(originalEntry.getKey())) {
+                //This tag isn't modded, we now need to figure out if it has any modded values in it
+                Tag<T> originalTag = originalEntry.getValue();
                 List<T> newList = new ArrayList<>();
                 originalTag.values().forEach((tag) -> {
+                    //loop thru all the tags and only add it to the new list if it's vanilla
                     if (Util.isVanilla(registry.getId(tag))) {
                         newList.add(tag);
                     }
                 });
                 Tag<T> newTag = new DumbListTag<>(newList);
-                ret.put(e.getKey(),newTag);
+                output.put(originalEntry.getKey(),newTag);
             }
         }
-        entriesWithoutModdedCache = ret;
+        cache = output;
 
-        return ret;
+        return output;
     }
 
     public static class DumbListTag<T> implements Tag<T> {
