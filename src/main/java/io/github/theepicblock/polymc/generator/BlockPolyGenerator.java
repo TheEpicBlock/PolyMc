@@ -65,7 +65,7 @@ public class BlockPolyGenerator {
 
         //Handle fluids
         if (block instanceof FluidBlock) {
-            return new WaterPoly();
+            return new BlockPropertyRetainingPoly(Blocks.WATER);
         }
         //Handle full blocks
         if (Block.isShapeFullCube(collisionShape)) {
