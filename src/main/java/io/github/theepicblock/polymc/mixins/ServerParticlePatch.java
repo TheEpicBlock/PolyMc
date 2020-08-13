@@ -37,10 +37,9 @@ import java.util.function.Supplier;
 public abstract class ServerParticlePatch extends World {
     @Shadow public abstract <T extends ParticleEffect> int spawnParticles(T particle, double x, double y, double z, int count, double deltaX, double deltaY, double deltaZ, double speed);
 
-    protected ServerParticlePatch(MutableWorldProperties mutableWorldProperties, RegistryKey<World> registryKey, RegistryKey<DimensionType> registryKey2, DimensionType dimensionType, Supplier<Profiler> profiler, boolean bl, boolean bl2, long l) {
-        super(mutableWorldProperties, registryKey, registryKey2, dimensionType, profiler, bl, bl2, l);
+    protected ServerParticlePatch(MutableWorldProperties properties, RegistryKey<World> registryKey, DimensionType dimensionType, Supplier<Profiler> supplier, boolean bl, boolean bl2, long l) {
+        super(properties, registryKey, dimensionType, supplier, bl, bl2, l);
     }
-
 
     public void addParticle(ParticleEffect parameters, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
         spawnParticles(parameters,x,y,z,0,velocityX,velocityY,velocityZ,1);

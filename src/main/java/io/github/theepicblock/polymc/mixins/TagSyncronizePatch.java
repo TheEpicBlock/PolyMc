@@ -18,52 +18,78 @@
 package io.github.theepicblock.polymc.mixins;
 
 import io.github.theepicblock.polymc.Util;
-import net.minecraft.tag.RegistryTagContainer;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.tag.Tag;
+import net.minecraft.tag.TagGroup;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import org.spongepowered.asm.mixin.Final;
+import net.minecraft.util.registry.DefaultedRegistry;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+/**
+ * This patch prevents modded blocks/items from appearing in tags when they are synchronised to the client.
+ * The client will replace any ids it doesn't recognize with minecraft:air.
+ * This can cause issues. For example: a mod places a block in the swimmable tag.
+ * It get's replaced with air and the client now thinks it can swim in air.
+ *
+ * Note: we're not actually mixing into the interface, but we're mixing into the anonymous class in {@link TagGroup#create(Map)}
+ * Because TagGroup is an interface, we can't use any injector type mixins on it. So we have to copy over the {@link #toPacket} method and change it manually
+ */
 @SuppressWarnings("MixinInnerClass")
-@Mixin(RegistryTagContainer.class)
-public class TagSyncronizePatch<T> {
-    @Shadow @Final private Registry<T> registry;
-    private Map<Identifier, Tag<T>> entriesWithoutModdedCache;
+@Mixin(targets = "net/minecraft/tag/TagGroup$1")
+public abstract class TagSyncronizePatch<T> implements TagGroup<T> {
+    private Map<Identifier, Tag<T>> cache;
 
-    @Redirect(method = "toPacket(Lnet/minecraft/network/PacketByteBuf;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/tag/RegistryTagContainer;getEntries()Ljava/util/Map;"))
-    public Map<Identifier, Tag<T>> getEntriesRedirect(RegistryTagContainer<T> registryTagContainer) {
-        if (entriesWithoutModdedCache != null) {
-            return entriesWithoutModdedCache;
+    /**
+     * Get's all tags except those that are modded
+     */
+    public Map<Identifier, Tag<T>> getTagsWithoutModded(DefaultedRegistry<T> registry) {
+        if (cache != null) {
+            return cache;
         }
 
-        Map<Identifier, Tag<T>> original = registryTagContainer.getEntries();
-        Map<Identifier, Tag<T>> ret = new HashMap<>();
+        Map<Identifier, Tag<T>> original = this.getTags();
+        Map<Identifier, Tag<T>> output = new HashMap<>();
 
-        for (Map.Entry<Identifier, Tag<T>> e : original.entrySet()) {
-            if (Util.isVanilla(e.getKey())) {
-                Tag<T> originalTag = e.getValue();
+        for (Map.Entry<Identifier, Tag<T>> originalEntry : original.entrySet()) {
+            if (Util.isVanilla(originalEntry.getKey())) {
+                //This tag isn't modded, we now need to figure out if it has any modded values in it
+                Tag<T> originalTag = originalEntry.getValue();
                 List<T> newList = new ArrayList<>();
                 originalTag.values().forEach((tag) -> {
+                    //loop thru all the tags and only add it to the new list if it's vanilla
                     if (Util.isVanilla(registry.getId(tag))) {
                         newList.add(tag);
                     }
                 });
                 Tag<T> newTag = new DumbListTag<>(newList);
-                ret.put(e.getKey(),newTag);
+                output.put(originalEntry.getKey(),newTag);
             }
         }
-        entriesWithoutModdedCache = ret;
+        cache = output;
 
-        return ret;
+        return output;
+    }
+
+    @SuppressWarnings({"unchecked", "WhileLoopReplaceableByForEach"})
+    public void toPacket(PacketByteBuf buf, DefaultedRegistry<T> registry) {
+        Map<Identifier, Tag<T>> map = this.getTagsWithoutModded(registry); //Only actually changed statement
+        buf.writeVarInt(map.size());
+        Iterator<?> var4 = map.entrySet().iterator();
+
+        while(var4.hasNext()) {
+            Map.Entry<Identifier, Tag<T>> entry = (Map.Entry<Identifier, Tag<T>>)var4.next();
+            buf.writeIdentifier((Identifier)entry.getKey());
+            buf.writeVarInt(((Tag<?>)entry.getValue()).values().size());
+            Iterator<?> var6 = ((Tag<?>)entry.getValue()).values().iterator();
+
+            while(var6.hasNext()) {
+                T object = (T) var6.next();
+                buf.writeVarInt(registry.getRawId(object));
+            }
+        }
+
     }
 
     public static class DumbListTag<T> implements Tag<T> {
