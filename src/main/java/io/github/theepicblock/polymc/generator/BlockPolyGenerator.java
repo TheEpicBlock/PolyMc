@@ -79,6 +79,14 @@ public class BlockPolyGenerator {
                 return NoCollisionBlockHelper.getPoly(block,builder);
             } catch (OutOfBoundsException ignored) {}
         }
+        //Handle slabs
+        if (block instanceof SlabBlock) {
+            try {
+                return new UnusedBlockStatePoly(block, Blocks.PETRIFIED_OAK_SLAB, builder,
+                        (b) -> true, //make it use all blockstates, as PETRIFIED_OAK_SLAB is completely unused
+                        (block0, registry0) -> {registry0.registerBlockPoly(block0, new BlockPropertyRetainingPoly(Blocks.OAK_SLAB));}); //registers a poly for PETRIFIED_OAK_SLABs to display as OAK_SLABs instead.
+            } catch (OutOfBoundsException ignored) {}
+        }
         //Handle blocks with same collision as farmland
         if (collisionShape == Blocks.FARMLAND.getOutlineShape(null,null,null,null)) {
             try {
