@@ -22,10 +22,7 @@ import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.block.*;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.FluidBlock;
+import net.minecraft.block.*;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
@@ -66,20 +63,32 @@ public class BlockPolyGenerator {
             return new SimpleReplacementPoly(Blocks.STONE);
         }
 
-
+        //Handle fluids
         if (block instanceof FluidBlock) {
             return new WaterPoly();
         }
+        //Handle full blocks
         if (Block.isShapeFullCube(collisionShape)) {
             try {
                 return new UnusedBlockStatePoly(block,Blocks.NOTE_BLOCK,builder);
             } catch (OutOfBoundsException ignored) {}
         }
+        //Handle blocks without collision
         if (collisionShape.isEmpty()) {
             try {
                 return NoCollisionBlockHelper.getPoly(block,builder);
             } catch (OutOfBoundsException ignored) {}
         }
+        //Handle blocks with same collision as farmland
+        if (collisionShape == Blocks.FARMLAND.getOutlineShape(null,null,null,null)) {
+            try {
+                return IgnoreBlockStateHelper.of(block,Blocks.FARMLAND,builder,(blockstate) -> {
+                    int moisture = blockstate.get(FarmlandBlock.MOISTURE);
+                    return moisture == 0 || moisture == 7;
+                });
+            } catch (OutOfBoundsException ignored) {}
+        }
+        //Odd cases
         return new SimpleReplacementPoly(Blocks.STONE); //TODO better implementation
     }
 
