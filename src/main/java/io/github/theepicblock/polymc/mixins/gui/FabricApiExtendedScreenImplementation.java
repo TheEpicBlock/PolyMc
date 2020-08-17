@@ -33,6 +33,6 @@ public class FabricApiExtendedScreenImplementation {
      */
     @Overwrite
     public static void sendOpenPacket(ServerPlayerEntity player, ExtendedScreenHandlerFactory factory, ScreenHandler handler, int syncId) {
-        player.networkHandler.sendPacket(new OpenScreenS2CPacket(syncId,handler.getType(),factory.getDisplayName()));
+        player.networkHandler.sendPacket(new OpenScreenS2CPacket(syncId, handler.getType(), factory.getDisplayName()));
     }
 }

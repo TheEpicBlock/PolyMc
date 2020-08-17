@@ -44,7 +44,7 @@ public class PolyMcCommands {
                     .then(literal("item")
                             .executes((context) -> {
                                 ItemStack heldItem = context.getSource().getPlayer().inventory.getMainHandStack();
-                                context.getSource().sendFeedback(PolyMc.getMap().getClientItem(heldItem).toTag(new CompoundTag()).toText(),false);
+                                context.getSource().sendFeedback(PolyMc.getMap().getClientItem(heldItem).toTag(new CompoundTag()).toText(), false);
                                 return Command.SINGLE_SUCCESS;
                             }))
                     .then(literal("gen_resource")
@@ -54,7 +54,7 @@ public class PolyMcCommands {
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
-                                context.getSource().sendFeedback(new LiteralText("Finished generating"),true);
+                                context.getSource().sendFeedback(new LiteralText("Finished generating"), true);
                                 return Command.SINGLE_SUCCESS;
                             })))
                     .then(literal("dump_polyMap")
@@ -62,15 +62,15 @@ public class PolyMcCommands {
                                 StringBuilder out = new StringBuilder();
                                 PolyMap map = PolyMc.getMap();
                                 out.append("###########\n###ITEMS###\n###########\n");
-                                map.getItemPolys().forEach((item,poly) -> {
+                                map.getItemPolys().forEach((item, poly) -> {
                                     addAndFormatToBuilder(out, item, item.getTranslationKey(), poly);
                                 });
                                 out.append("############\n###BLOCKS###\n############\n");
-                                map.getBlockPolys().forEach((block,poly) -> {
+                                map.getBlockPolys().forEach((block, poly) -> {
                                     addAndFormatToBuilder(out, block, block.getTranslationKey(), poly);
                                 });
 
-                                File polyDump = new File(FabricLoader.getInstance().getGameDirectory(),"PolyDump.txt");
+                                File polyDump = new File(FabricLoader.getInstance().getGameDirectory(), "PolyDump.txt");
                                 try {
                                     boolean a = polyDump.createNewFile();
                                     if (!a) {
@@ -89,9 +89,9 @@ public class PolyMcCommands {
     }
 
     private static <T> void addAndFormatToBuilder(StringBuilder b, T object, String key, DebugInfoProvider<T> poly) {
-        b.append(Util.expandTo(key,45));
+        b.append(Util.expandTo(key, 45));
         b.append(" --> ");
-        b.append(Util.expandTo(poly.getClass().getName(),60));
+        b.append(Util.expandTo(poly.getClass().getName(), 60));
         try {
             String info = poly.getDebugInfo(object);
             if (info != null) {
@@ -99,7 +99,7 @@ public class PolyMcCommands {
                 b.append(info);
             }
         } catch (Exception e) {
-            PolyMc.LOGGER.debug("Error whilst getting debug info from "+poly.getClass().getName()+" polying "+key);
+            PolyMc.LOGGER.debug("Error whilst getting debug info from " + poly.getClass().getName() + " polying " + key);
             e.printStackTrace();
         }
         b.append("\n");

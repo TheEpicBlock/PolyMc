@@ -35,12 +35,12 @@ import java.util.HashMap;
 /**
  * The most standard ItemPoly implementation
  */
-public class CustomModelDataPoly implements ItemPoly{
+public class CustomModelDataPoly implements ItemPoly {
     protected final ItemStack defaultServerItem;
     protected final int CMDvalue;
 
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item base) {
-        Pair<Item, Integer> pair = registerManager.RequestCMDwithItem();
+        Pair<Item,Integer> pair = registerManager.RequestCMDwithItem();
         CMDvalue = pair.getRight();
         defaultServerItem = new ItemStack(pair.getLeft());
         CompoundTag tag = new CompoundTag();
@@ -53,7 +53,7 @@ public class CustomModelDataPoly implements ItemPoly{
      * Makes a poly that generates the specified item with a custom model data value
      * If the item used doesn't matter it is recommended to use the more generic method instead
      * @param registerManager manager used to generate the CMD value
-     * @param target the serverside item will be of this type
+     * @param target          the serverside item will be of this type
      */
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item base, Item target) {
         CMDvalue = registerManager.RequestCMDValue(target);
@@ -71,7 +71,7 @@ public class CustomModelDataPoly implements ItemPoly{
             serverItem = defaultServerItem.copy();
             serverItem.setTag(input.getTag());
             //doing this removes the CMD, so we should add that again
-            serverItem.getTag().putInt("CustomModelData",CMDvalue);
+            serverItem.getTag().putInt("CustomModelData", CMDvalue);
             if (!input.hasCustomName()) { //It might be that the tags didn't include the name, so we should add them back in
                 serverItem.setCustomName(defaultServerItem.getName());
             }
@@ -88,14 +88,14 @@ public class CustomModelDataPoly implements ItemPoly{
         JsonModel itemModel = pack.getOrDefaultPendingItemModel(Registry.ITEM.getId(defaultServerItem.getItem()).getPath());
         JsonModel.Override override = new JsonModel.Override();
         override.predicate = new HashMap<>();
-        override.predicate.put("custom_model_data",(double)CMDvalue);
+        override.predicate.put("custom_model_data", (double)CMDvalue);
         Identifier modelId = Registry.ITEM.getId(item);
-        override.model = modelId.getNamespace()+":item/"+modelId.getPath();
+        override.model = modelId.getNamespace() + ":item/" + modelId.getPath();
         itemModel.addOverride(override);
     }
 
     @Override
     public String getDebugInfo(Item item) {
-        return "CMD: "+ Util.expandTo(CMDvalue,3)+", item:"+defaultServerItem.getTranslationKey();
+        return "CMD: " + Util.expandTo(CMDvalue, 3) + ", item:" + defaultServerItem.getTranslationKey();
     }
 }

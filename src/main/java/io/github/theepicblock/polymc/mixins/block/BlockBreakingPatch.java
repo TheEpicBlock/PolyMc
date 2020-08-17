@@ -47,11 +47,11 @@ public abstract class BlockBreakingPatch {
         float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j);
         if (f >= 1.0F) {
             //player.networkHandler.sendPacket(new WorldEventS2CPacket(2001, pos, Block.getRawIdFromState(state), false));
-            finishMining(pos, PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK,"destroyed");
+            finishMining(pos, PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, "destroyed");
         }
     }
 
-    @Inject(method = "continueMining", at = @At(value = "INVOKE",target = "Lnet/minecraft/server/world/ServerWorld;setBlockBreakingInfo(ILnet/minecraft/util/math/BlockPos;I)V"))
+    @Inject(method = "continueMining", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockBreakingInfo(ILnet/minecraft/util/math/BlockPos;I)V"))
     public void onUpdateBreakStatus(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
         int j = tickCounter - i;
         float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j + 1);
@@ -63,7 +63,7 @@ public abstract class BlockBreakingPatch {
     @Inject(method = "processBlockBreakingAction", at = @At("HEAD"))
     public void packetRecievedInject(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
         if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
-            player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getEntityId(),new StatusEffectInstance(StatusEffects.MINING_FATIGUE,20,-1,true,false)));
+            player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getEntityId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
         } else if (action == PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK) {
             player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(123, pos, -1));
         }
