@@ -57,6 +57,21 @@ public class ResourcePackMaker {
     }
 
     /**
+     * Checks if there's an ItemModel in the modelsToSave system.
+     */
+    public boolean hasPendingModel(Identifier id) {
+        return modelsToSave.containsKey(id);
+    }
+
+    public void putPendingModel(Identifier id, JsonModel model) {
+        modelsToSave.put(id,model);
+    }
+
+    public JsonModel getPendingModel(Identifier id) {
+        return modelsToSave.get(id);
+    }
+
+    /**
      * Add's a minecraft itemmodel to the resourcepack. You can then add additional statements to this model.
      * May not work for all items.
      * @param path example "testitem"
@@ -73,21 +88,6 @@ public class ResourcePackMaker {
             modelsToSave.put(id,v);
         }
         return v;
-    }
-
-    /**
-     * Checks if there's an ItemModel in the modelsToSave system.
-     */
-    public boolean hasPendingItemModel(Identifier id) {
-        return modelsToSave.containsKey(id);
-    }
-
-    public void putPendingItemModel(Identifier id, JsonModel model) {
-        modelsToSave.put(id,model);
-    }
-
-    public JsonModel getPendingItemModel(Identifier id) {
-        return modelsToSave.get(id);
     }
 
     //TODO document this

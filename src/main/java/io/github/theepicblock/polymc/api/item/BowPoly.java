@@ -43,7 +43,7 @@ public class BowPoly extends PredicateBasedDamageableItem{
         Identifier bowModelPath = new Identifier(serverItemId.getNamespace(),"item/"+serverItemId.getPath());
 
         //default shield model
-        if (!pack.hasPendingItemModel(bowModelPath)) {
+        if (!pack.hasPendingModel(bowModelPath)) {
             JsonModel bowModel = pack.getOrDefaultPendingItemModel(serverItemId.getPath());
 
             Type displayMap = new TypeToken<Map<String, JsonModel.DisplayEntry>>() {}.getType();
