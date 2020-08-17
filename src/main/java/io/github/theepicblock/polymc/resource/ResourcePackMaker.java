@@ -222,7 +222,7 @@ public class ResourcePackMaker {
      * @param path  path to model. Example "item/testitem".
      * @see #copyModel(Identifier)
      */
-    private void copyModel(String modId, String path) {
+    public void copyModel(String modId, String path) {
         if (Util.isNamespaceVanilla(modId)) return;
         //copy the file from the mod (we assume the modid is the same as the item's id)
         Path newFile = copyAsset(modId,MODELS+path+".json");
