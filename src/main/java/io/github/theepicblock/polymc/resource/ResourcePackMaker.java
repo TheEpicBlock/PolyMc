@@ -76,7 +76,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Checks if there's an ItemModel in the modelsToSave system
+     * Checks if there's an ItemModel in the modelsToSave system.
      */
     public boolean hasPendingItemModel(Identifier id) {
         return modelsToSave.containsKey(id);
@@ -107,8 +107,8 @@ public class ResourcePackMaker {
     /**
      * Imports an Artifice resourcepack to be used when getting assets.
      * This is not needed on the client. But it's the only way to support Artifice resourcepacks on servers.
-     * This function won't do anything on the client since the pack will automatically be imported there from {@link com.swordglowsblue.artifice.common.ArtificeRegistry#ASSETS}
-     * @param pack resourcepack to import
+     * This function won't do anything on the client since the pack will automatically be imported there from {@link com.swordglowsblue.artifice.common.ArtificeRegistry#ASSETS}.
+     * @param pack resourcepack to import.
      * @see AdvancedResourcePackMaker#importArtificePack(Object)
      */
     public void importArtificePack(Object pack) {
@@ -121,7 +121,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * places the model of this item into this resourcepack. Together with everything this model depends on.
+     * Places the model of this item into this resourcepack. Together with everything this model depends on.
      * @param item
      */
     public void copyItemModel(Item item) {
@@ -130,9 +130,9 @@ public class ResourcePackMaker {
     }
 
     /**
-     * copies a model file into this resourcepack. Resolving all dependencies on the way.
+     * Copies a model file into this resourcepack. Resolving all dependencies on the way.
      * @param modId the mod who owns the model.
-     * @param path path to model. Example "item/testitem"
+     * @param path path to model. Example "item/testitem".
      * @see #copyModel(Identifier)
      */
     private void copyModel(String modId, String path) {
@@ -166,8 +166,8 @@ public class ResourcePackMaker {
     }
 
     /**
-     * copies a model file into this resourcepack. Resolving all dependencies on the way.
-     * @param id {@code namespace}: the mod who owns the model. {@code path}: path to model. Example "item/testitem"
+     * Copies a model file into this resourcepack. Resolving all dependencies on the way.
+     * @param id {@code namespace}: the mod who owns the model. {@code path}: path to model. Example "item/testitem".
      * @see #copyModel(String,String)
      */
     public void copyModel(Identifier id) {
@@ -178,9 +178,9 @@ public class ResourcePackMaker {
     }
 
     /**
-     * copies a texture file into this resourcepack. Resolving all dependencies on the way.
+     * Copies a texture file into this resourcepack. Resolving all dependencies on the way.
      * @param modId the mod who owns the texture.
-     * @param path path to model. Example "item/testtexture"
+     * @param path path to model. Example: "item/testtexture".
      */
     public void copyTexture(String modId, String path) {
         copyAsset(modId, TEXTURES+path+".png");
@@ -191,10 +191,10 @@ public class ResourcePackMaker {
     }
 
     /**
-     * copies a file from the modId's jar's asset folder to this resourcepack
+     * Copies a file from the modId's jar's asset folder to this resourcepack.
      * @param modId the mod who owns the asset.
-     * @param path example "models/item/testitem.json"
-     * @return The path to the new file
+     * @param path example: "models/item/testitem.json".
+     * @return The path to the new file.
      */
     public Path copyAsset(String modId, String path) {
         return copyFile(modId, String.format(ASSETS+"%s/%s", modId, path));
@@ -203,17 +203,17 @@ public class ResourcePackMaker {
     /**
      * Checks if a mod's jar contains the asset
      * @param modId the mod who owns the asset.
-     * @param path example "models/item/testitem.json"
-     * @return true if the file exists
+     * @param path example: "models/item/testitem.json".
+     * @return True if the file exists.
      */
     public boolean checkAsset(String modId, String path) {
         return checkFile(modId, String.format(ASSETS+"%s/%s", modId, path));
     }
 
     /**
-     * get's a file from the modId's jar's asset folder.
+     * Get's a file from the modId's jar's asset folder.
      * @param modId the mod who owns the asset.
-     * @param path example "models/item/testitem.json"
+     * @param path example: "models/item/testitem.json".
      * @return A reader for this file.
      */
     public InputStreamReader getAsset(String modId, String path) {
@@ -221,11 +221,11 @@ public class ResourcePackMaker {
     }
 
     /**
-     * get's a file from the resourcepack folder.
+     * Get's a file from the resourcepack folder.
      * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
      * @param modId the mod who owns the file.
-     * @param path example "asset/testmod/models/item/testitem.json"
-     * @return A reader for this file. Can be null
+     * @param path example: "asset/testmod/models/item/testitem.json".
+     * @return A reader for this file. Can be null.
      */
     protected InputStreamReader getFile(String modId, String path) {
         if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
@@ -249,8 +249,8 @@ public class ResourcePackMaker {
      * Checks if a file exists.
      * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
      * @param modId the mod who owns the file.
-     * @param path example: "asset/testmod/models/item/testitem.json"
-     * @return The path to the new file
+     * @param path example: "asset/testmod/models/item/testitem.json".
+     * @return The path to the new file.
      */
     protected boolean checkFile(String modId, String path) {
         if (modId.equals("minecraft")) return false; //we can't access minecraft resources easily
@@ -265,11 +265,11 @@ public class ResourcePackMaker {
     }
 
     /**
-     * copies a file into this resourcepack.
+     * Copies a file into this resourcepack.
      * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
      * @param modId the mod who owns the file.
-     * @param path example: "asset/testmod/models/item/testitem.json"
-     * @return The path to the new file. Can be null
+     * @param path example: "asset/testmod/models/item/testitem.json".
+     * @return The path to the new file. Can be null.
      */
     protected Path copyFile(String modId, String path) {
         if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
@@ -292,8 +292,8 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Avoids having to create a new Gson for everything
-     * @return a gson!
+     * Avoids having to create a new Gson for everything.
+     * @return A gson!
      */
     public Gson getGson() {
         return gson;
