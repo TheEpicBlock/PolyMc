@@ -57,7 +57,9 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Checks if there's an ItemModel in the modelsToSave system.
+     * Checks if there's a pending model for that id.
+     * @param id id to check. Example: "minecraft:item/stick".
+     * @return True if the specified id already has a model associated.
      */
     public boolean hasPendingModel(Identifier id) {
         return modelsToSave.containsKey(id);
@@ -70,6 +72,12 @@ public class ResourcePackMaker {
         return hasPendingModel(new Identifier(modId,path));
     }
 
+    /**
+     * Replaces the pending model for that id with the provided one.
+     * In general it is advised to only use this if {@link #hasPendingModel(Identifier)} is false. Otherwise, use {@link #getPendingModel(Identifier)} and modify it.
+     * @param id the id whose model we should replace. Example: "minecraft:item/stick".
+     * @param model
+     */
     public void putPendingModel(Identifier id, JsonModel model) {
         modelsToSave.put(id, model);
     }
@@ -81,6 +89,11 @@ public class ResourcePackMaker {
         putPendingModel(new Identifier(modId,path), model);
     }
 
+    /**
+     * Get's the pending model for that Id if it exists, returns {@code null} otherwise.
+     * @param id id whose associated model we should return. Example: "minecraft:item/stick".
+     * @return The pending model for the specified id. Or {@code null} if there is none.
+     */
     public JsonModel getPendingModel(Identifier id) {
         return modelsToSave.get(id);
     }
@@ -93,21 +106,19 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Add's a minecraft itemmodel to the resourcepack. You can then add additional statements to this model.
-     * May not work for all items.
-     * @param path example "testitem"
-     * @return
+     * Gets a pending model in the item directory using the specified path. If it doesn't exist, it creates a default item model. The model isn't guaranteed to accurately represent all items.
+     * @param path example: "testitem".
+     * @return The resulting pending model.
      */
     public JsonModel getOrDefaultPendingItemModel(String path) {
         Identifier id = new Identifier("minecraft", "item/"+path);
-        JsonModel v = modelsToSave.get(id);
-        if (v == null) {
-            v = new JsonModel();
-            v.parent = "item/generated";
-            v.textures = new HashMap<>();
-            v.textures.put("layer0","item/"+path);
-            modelsToSave.put(id,v);
-        }
+        if (hasPendingModel(id)) return getPendingModel(id);
+
+        JsonModel v = new JsonModel();
+        v.parent = "item/generated";
+        v.textures = new HashMap<>();
+        v.textures.put("layer0","item/"+path);
+        putPendingModel(id,v);
         return v;
     }
 
