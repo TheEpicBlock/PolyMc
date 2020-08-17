@@ -74,7 +74,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
                 Path artLoc = FabricLoader.getInstance().getGameDirectory().toPath().relativize(tempLocation);
                 aPack.dumpResources(artLoc.toString());
             } catch (IOException e) {
-                PolyMc.LOGGER.warn("Failed to get resources from artifice pack " + aPack.getName());
+                PolyMc.LOGGER.warn(String.format("Failed to get resources from artifice pack '%s'", aPack.getName()));
                 PolyMc.LOGGER.warn(e);
             }
         }
@@ -112,7 +112,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
         try {
             return Files.copy(filePath, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            PolyMc.LOGGER.warn("Failed to get resource from mod '"+modId+"' path: "+path);
+            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod '%s' path: '%s'", modId, path));
         }
         return null;
     }
@@ -133,7 +133,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
         try {
             return new InputStreamReader(Files.newInputStream(filePath, StandardOpenOption.READ));
         } catch (IOException e) {
-            PolyMc.LOGGER.warn("Failed to get resource from mod '"+modId+"' path: "+path);
+            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod '%s' path: '%s'", modId, path));
         }
         return null;
     }

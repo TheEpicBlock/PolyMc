@@ -203,13 +203,13 @@ public class ResourcePackMaker {
         if (pack instanceof ArtificeResourcePack) {
             packname = ((ArtificeResourcePack)pack).getName();
         }
-        PolyMc.LOGGER.warn("Tried to import Artifice resourcepack '" + packname + "' but this isn't supported with the default discovery method");
+        PolyMc.LOGGER.warn(String.format("Tried to import Artifice resourcepack '%s' but this isn't supported with the default discovery method", packname));
         PolyMc.LOGGER.warn("Please switch to the advancedDiscovery method. See https://github.com/TheEpicBlock/PolyMc/wiki/ModCompat#artifice");
     }
 
     /**
      * Places the model of this item into this resourcepack. Together with everything this model depends on.
-     * @param item
+     * @param item item whose model we should copy.
      */
     public void copyItemModel(Item item) {
         Identifier id = Registry.ITEM.getId(item);
@@ -318,7 +318,7 @@ public class ResourcePackMaker {
         if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
-            PolyMc.LOGGER.warn("Tried to access assets from mod, but it isn't present. Mod ID " + modId);
+            PolyMc.LOGGER.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
             return null;
         }
 
@@ -327,7 +327,7 @@ public class ResourcePackMaker {
         try {
             return new InputStreamReader(Files.newInputStream(pathInJar, StandardOpenOption.READ));
         } catch (IOException e) {
-            PolyMc.LOGGER.warn("Failed to get resource from mod jar '"+modId+"' path: " + path);
+            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod jar '%s' path: '%s'", modId, path));
         }
         return null;
     }
@@ -362,7 +362,7 @@ public class ResourcePackMaker {
         if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
-            PolyMc.LOGGER.warn("Tried to access assets from mod, but it isn't present. Mod ID " + modId);
+            PolyMc.LOGGER.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
             return null;
         }
 
@@ -373,7 +373,7 @@ public class ResourcePackMaker {
         try {
             return Files.copy(pathInJar, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            PolyMc.LOGGER.warn("Failed to get resource from mod jar '"+modId+"' path: " + path);
+            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod jar '%s' path: %s", modId, path));
         }
         return null;
     }
@@ -393,7 +393,7 @@ public class ResourcePackMaker {
     public void saveAll() {
         modelsToSave.forEach((id, model) -> {
             String json = model.toJson(gson);
-            Path path = BuildLocation.resolve(ASSETS+id.getNamespace()+"/"+MODELS+id.getPath()+".json");
+            Path path = BuildLocation.resolve(String.format("%s%s/%s%s.json", ASSETS, id.getNamespace(), MODELS, id.getPath()));
             path.toFile().getParentFile().mkdirs();
             try {
                 Files.write(path, json.getBytes());
@@ -404,7 +404,7 @@ public class ResourcePackMaker {
 
         blockStatesToSave.forEach((id, blockState) -> {
             String json = gson.toJson(blockState);
-            Path path = BuildLocation.resolve(ASSETS+id.getNamespace()+"/"+BLOCKSTATES+id.getPath()+".json");
+            Path path = BuildLocation.resolve(String.format("%s%s/%s%s.json", ASSETS, id.getNamespace(), BLOCKSTATES, id.getPath()));
             path.toFile().getParentFile().mkdirs();
             try {
                 Files.write(path, json.getBytes());
