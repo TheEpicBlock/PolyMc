@@ -138,7 +138,7 @@ public class ResourcePackMaker {
     private void copyModel(String modId, String path) {
         if (Util.isNamespaceVanilla(modId)) return;
         //copy the file from the mod (we assume the modid is the same as the item's id)
-        Path newFile = copyAssetFromMod(modId,MODELS+path+".json");
+        Path newFile = copyAsset(modId,MODELS+path+".json");
 
         if (newFile == null) return;
         try {
@@ -183,10 +183,10 @@ public class ResourcePackMaker {
      * @param path path to model. Example "item/testtexture"
      */
     public void copyTexture(String modId, String path) {
-        copyAssetFromMod(modId, TEXTURES+path+".png");
+        copyAsset(modId, TEXTURES+path+".png");
         String mcMetaPath = TEXTURES+path+".png.mcmeta";
         if (checkAsset(modId,mcMetaPath)) {
-            copyAssetFromMod(modId, mcMetaPath);
+            copyAsset(modId, mcMetaPath);
         }
     }
 
@@ -196,7 +196,7 @@ public class ResourcePackMaker {
      * @param path example "models/item/testitem.json"
      * @return The path to the new file
      */
-    public Path copyAssetFromMod(String modId, String path) {
+    public Path copyAsset(String modId, String path) {
         return copyFile(modId, String.format(ASSETS+"%s/%s", modId, path));
     }
 
@@ -216,7 +216,7 @@ public class ResourcePackMaker {
      * @param path example "models/item/testitem.json"
      * @return A reader for this file.
      */
-    public InputStreamReader getAssetFromMod(String modId, String path) {
+    public InputStreamReader getAsset(String modId, String path) {
         return getFile(modId, String.format(ASSETS+"%s/%s", modId, path));
     }
 

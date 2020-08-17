@@ -87,7 +87,7 @@ public class ResourcePackGenerator {
             try {
                 Stream<Path> pathStream = Files.list(langPath);
                 pathStream.forEach((langFile) -> {
-                    pack.copyAssetFromMod(modId, "lang/"+langPath.relativize(langFile));
+                    pack.copyAsset(modId, "lang/"+langPath.relativize(langFile));
                 });
             } catch (IOException e) {
                 PolyMc.LOGGER.warn("Exception whilst copying lang files from " + modId);

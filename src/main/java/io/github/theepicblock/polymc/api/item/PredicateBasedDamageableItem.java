@@ -46,7 +46,7 @@ public class PredicateBasedDamageableItem extends DamageableItemPoly {
         JsonModel clientModelJson = pack.getOrDefaultPendingItemModel(Registry.ITEM.getId(defaultServerItem.getItem()).getPath());
         Identifier serverModelId = Registry.ITEM.getId(item);
 
-        InputStreamReader serverModelReader = pack.getAssetFromMod(serverModelId.getNamespace(),"models/item/"+serverModelId.getPath()+".json");
+        InputStreamReader serverModelReader = pack.getAsset(serverModelId.getNamespace(),"models/item/"+serverModelId.getPath()+".json");
         JsonModel serverModel = pack.getGson().fromJson(serverModelReader,JsonModel.class);
 
         JsonModel.Override defaultCMDOverride = new JsonModel.Override();
