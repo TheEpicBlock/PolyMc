@@ -107,7 +107,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
      * @return The path to the new file
      */
     @Override
-    protected Path copyFileFromMod(String modId, String path) {
+    protected Path copyFile(String modId, String path) {
         if (modId.equals("minecraft")) return null;
 
         Path filePath = tempLocation.resolve(path);
@@ -123,7 +123,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
     }
 
     @Override
-    protected boolean checkFileFromMod(String modId, String path) {
+    protected boolean checkFile(String modId, String path) {
         if (modId.equals("minecraft")) return false;
 
         Path filePath = tempLocation.resolve(path);
@@ -137,7 +137,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
      * @return A reader for this file.
      */
     @Override
-    protected InputStreamReader getFileFromMod(String modId, String path) {
+    protected InputStreamReader getFile(String modId, String path) {
         if (modId.equals("minecraft")) return null;
 
         Path filePath = tempLocation.resolve(path);

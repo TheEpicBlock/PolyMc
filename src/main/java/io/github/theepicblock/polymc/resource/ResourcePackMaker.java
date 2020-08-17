@@ -40,6 +40,7 @@ import java.util.*;
 
 //TODO organize these classes
 public class ResourcePackMaker {
+    public static final String ASSETS = "assets/";
     public static final String MODELS = "models/";
     public static final String TEXTURES = "textures/";
     public static final String BLOCKSTATES = "blockstates/";
@@ -184,19 +185,98 @@ public class ResourcePackMaker {
     public void copyTexture(String modId, String path) {
         copyAssetFromMod(modId, TEXTURES+path+".png");
         String mcMetaPath = TEXTURES+path+".png.mcmeta";
-        if (checkForAsset(modId,mcMetaPath)) {
+        if (checkAsset(modId,mcMetaPath)) {
             copyAssetFromMod(modId, mcMetaPath);
         }
     }
 
     /**
-     * copies a file from the modId's jar into this resourcepack
+     * copies a file from the modId's jar's asset folder to this resourcepack
+     * @param modId the mod who's assets we're getting from
+     * @param path example "models/item/testitem.json"
+     * @return The path to the new file
+     */
+    public Path copyAssetFromMod(String modId, String path) {
+        return copyFile(modId, String.format(ASSETS+"%s/%s", modId, path));
+    }
+
+    /**
+     * Checks if a mod's jar contains the asset
+     * @param modId the mod who's assets we're checking
+     * @param path example "models/item/testitem.json"
+     * @return true if the file exists
+     */
+    public boolean checkAsset(String modId, String path) {
+        return checkFile(modId, String.format(ASSETS+"%s/%s", modId, path));
+    }
+
+    /**
+     * get's a file from the modId's jar's asset folder.
+     * @param modId the mod who's assets we're getting from
+     * @param path example "models/item/testitem.json"
+     * @return A reader for this file.
+     */
+    public InputStreamReader getAssetFromMod(String modId, String path) {
+        return getFile(modId, String.format(ASSETS+"%s/%s", modId, path));
+    }
+
+    public Gson getGson() {
+        return gson;
+    }
+
+    /**
+     * get's a file from the resourcepack folder.
+     * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
+     * @param modId the mod who's assets we're getting from
+     * @param path example "asset/testmod/models/item/testitem.json"
+     * @return A reader for this file. Can be null
+     */
+    protected InputStreamReader getFile(String modId, String path) {
+        if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
+        Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
+        if (!modOpt.isPresent()) {
+            PolyMc.LOGGER.warn("Tried to access assets from mod, but it isn't present. Mod ID "+modId);
+            return null;
+        }
+
+        ModContainer mod = modOpt.get();
+        Path pathInJar = mod.getPath(path);
+        try {
+            return new InputStreamReader(Files.newInputStream(pathInJar, StandardOpenOption.READ));
+        } catch (IOException e) {
+            PolyMc.LOGGER.warn("Failed to get resource from mod jar '"+modId+"' path: " + path);
+        }
+        return null;
+    }
+
+    /**
+     * Checks if a file exists.
+     * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
      * @param modId
      * @param path example: "asset/testmod/models/item/testitem.json"
      * @return The path to the new file
      */
-    protected Path copyFileFromMod(String modId, String path) {
-        if (modId.equals("minecraft")) return null;
+    protected boolean checkFile(String modId, String path) {
+        if (modId.equals("minecraft")) return false; //we can't access minecraft resources easily
+        Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
+        if (!modOpt.isPresent()) {
+            return false;
+        }
+
+        ModContainer mod = modOpt.get();
+        Path pathInJar = mod.getPath(path);
+        return Files.exists(pathInJar);
+    }
+
+    /**
+     * copies a file into this resourcepack.
+     * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
+     * @param modId
+     * @param path example: "asset/testmod/models/item/testitem.json"
+     * @return The path to the new file. Can be null
+     */
+    protected Path copyFile(String modId, String path) {
+        if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
             PolyMc.LOGGER.warn("Tried to access assets from mod, but it isn't present. Mod ID "+modId);
@@ -215,84 +295,15 @@ public class ResourcePackMaker {
         return null;
     }
 
-    protected boolean checkFileFromMod(String modId, String path) {
-        if (modId.equals("minecraft")) return false;
-        Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
-        if (!modOpt.isPresent()) {
-            return false;
-        }
-
-        ModContainer mod = modOpt.get();
-        Path pathInJar = mod.getPath(path);
-        return Files.exists(pathInJar);
-    }
 
     /**
-     * get's a file from the modId's jar's asset folder.
-     * @param modId the mod who's assets we're getting from
-     * @param path example "asset/testmod/models/item/testitem.json"
-     * @return A reader for this file.
-     */
-    protected InputStreamReader getFileFromMod(String modId, String path) {
-        if (modId.equals("minecraft")) return null;
-        Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
-        if (!modOpt.isPresent()) {
-            PolyMc.LOGGER.warn("Tried to access assets from mod, but it isn't present. Mod ID "+modId);
-            return null;
-        }
-
-        ModContainer mod = modOpt.get();
-        Path pathInJar = mod.getPath(path);
-        try {
-            return new InputStreamReader(Files.newInputStream(pathInJar, StandardOpenOption.READ));
-        } catch (IOException e) {
-            PolyMc.LOGGER.warn("Failed to get resource from mod jar '"+modId+"' path: " + path);
-        }
-        return null;
-    }
-
-    /**
-     * copies a file from the modId's jar's asset folder to this resourcepack
-     * @param modId the mod who's assets we're getting from
-     * @param path example "models/item/testitem.json"
-     * @return The path to the new file
-     */
-    public Path copyAssetFromMod(String modId, String path) {
-        return copyFileFromMod(modId, String.format("assets/%s/%s", modId, path));
-    }
-
-    /**
-     * Checks if a mod's jar contains the asset
-     * @param modId the mod who's assets we're checking
-     * @param path example "models/item/testitem.json"
-     * @return true if the file exists
-     */
-    public boolean checkForAsset(String modId, String path) {
-        return checkFileFromMod(modId, String.format("assets/%s/%s", modId, path));
-    }
-
-    /**
-     * get's a file from the modId's jar's asset folder.
-     * @param modId the mod who's assets we're getting from
-     * @param path example "models/item/testitem.json"
-     * @return A reader for this file.
-     */
-    public InputStreamReader getAssetFromMod(String modId, String path) {
-        return getFileFromMod(modId, String.format("assets/%s/%s", modId, path));
-    }
-
-    public Gson getGson() {
-        return gson;
-    }
-
-    /**
-     * Saves all changes that haven't been done yet
+     * Saves all in-memory changes to the disk.
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void saveAll() {
         modelsToSave.forEach((id,model) -> {
             String json = model.toJson(gson);
-            Path path = BuildLocation.resolve("assets/"+id.getNamespace()+"/"+MODELS+id.getPath()+".json");
+            Path path = BuildLocation.resolve(ASSETS+id.getNamespace()+"/"+MODELS+id.getPath()+".json");
             path.toFile().getParentFile().mkdirs();
             try {
                 Files.write(path, json.getBytes());
@@ -303,7 +314,7 @@ public class ResourcePackMaker {
 
         blockStatesToSave.forEach((id,blockState) -> {
             String json = gson.toJson(blockState);
-            Path path = BuildLocation.resolve("assets/"+id.getNamespace()+"/"+BLOCKSTATES+id.getPath()+".json");
+            Path path = BuildLocation.resolve(ASSETS+id.getNamespace()+"/"+BLOCKSTATES+id.getPath()+".json");
             path.toFile().getParentFile().mkdirs();
             try {
                 Files.write(path, json.getBytes());
