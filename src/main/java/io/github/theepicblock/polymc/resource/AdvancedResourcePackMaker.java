@@ -38,8 +38,9 @@ import java.util.function.Consumer;
  * This class copies all assets into a temp folder. Then uses that to generate the resourcepack, instead of getting the assets straight from the jars.
  * This is slower, but could help with finding assets.
  */
-public class AdvancedResourcePackMaker extends ResourcePackMaker{
+public class AdvancedResourcePackMaker extends ResourcePackMaker {
     protected final Path tempLocation;
+
     public AdvancedResourcePackMaker(Path buildLocation, Path tempLocation) {
         super(buildLocation);
         this.tempLocation = tempLocation;
@@ -79,7 +80,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
         }
         if (pack instanceof Consumer) {
             //noinspection unchecked
-            importArtificePack(new ArtificeResourcePackImpl(ResourceType.CLIENT_RESOURCES,(Consumer<ArtificeResourcePack.ClientResourcePackBuilder>)pack));
+            importArtificePack(new ArtificeResourcePackImpl(ResourceType.CLIENT_RESOURCES, (Consumer<ArtificeResourcePack.ClientResourcePackBuilder>)pack));
         }
     }
 
@@ -88,7 +89,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if (!attrs.isDirectory()) {
-                    Path dest = to.resolve("."+file.toString()); //the dot is needed to make this relative
+                    Path dest = to.resolve("." + file.toString()); //the dot is needed to make this relative
                     //noinspection ResultOfMethodCallIgnored
                     dest.toFile().mkdirs();
                     Files.copy(file, dest, StandardCopyOption.REPLACE_EXISTING);
@@ -111,7 +112,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
         try {
             return Files.copy(filePath, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            PolyMc.LOGGER.warn("Failed to get resource from mod '"+modId+"' path: " + path);
+            PolyMc.LOGGER.warn("Failed to get resource from mod '"+modId+"' path: "+path);
         }
         return null;
     }
@@ -132,7 +133,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
         try {
             return new InputStreamReader(Files.newInputStream(filePath, StandardOpenOption.READ));
         } catch (IOException e) {
-            PolyMc.LOGGER.warn("Failed to get resource from mod '"+modId+"' path: " + path);
+            PolyMc.LOGGER.warn("Failed to get resource from mod '"+modId+"' path: "+path);
         }
         return null;
     }
