@@ -54,7 +54,7 @@ public class ResourcePackGenerator {
         }
 
         //Let mods register resources via the api
-        List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("poly-mc",PolyMcEntrypoint.class);
+        List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("polymc",PolyMcEntrypoint.class);
         for (PolyMcEntrypoint entrypointEntry : entrypoints) {
             entrypointEntry.registerModSpecificResources(pack);
         }

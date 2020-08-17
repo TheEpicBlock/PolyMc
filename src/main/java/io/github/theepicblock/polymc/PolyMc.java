@@ -48,7 +48,7 @@ public class PolyMc implements ModInitializer {
         PolyRegistry registry = new PolyRegistry();
 
         //Let mods register polys via the api
-        List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("poly-mc",PolyMcEntrypoint.class);
+        List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("polymc",PolyMcEntrypoint.class);
         for (PolyMcEntrypoint entrypointEntry : entrypoints) {
             entrypointEntry.registerPolys(registry);
         }
