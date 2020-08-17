@@ -220,10 +220,6 @@ public class ResourcePackMaker {
         return getFile(modId, String.format(ASSETS+"%s/%s", modId, path));
     }
 
-    public Gson getGson() {
-        return gson;
-    }
-
     /**
      * get's a file from the resourcepack folder.
      * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
@@ -295,6 +291,13 @@ public class ResourcePackMaker {
         return null;
     }
 
+    /**
+     * Avoids having to create a new Gson for everything
+     * @return a gson!
+     */
+    public Gson getGson() {
+        return gson;
+    }
 
     /**
      * Saves all in-memory changes to the disk.
