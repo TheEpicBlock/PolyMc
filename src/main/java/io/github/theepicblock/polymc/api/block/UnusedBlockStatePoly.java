@@ -121,7 +121,7 @@ public class UnusedBlockStatePoly implements BlockPoly{
 
         states.forEach((moddedState,clientState) -> {
             Identifier clientBlockId = Registry.BLOCK.getId(clientState.getBlock());
-            JsonBlockState clientBlockStates = pack.getOrCreatePendingBlockState(clientBlockId);
+            JsonBlockState clientBlockStates = pack.getOrDefaultPendingBlockState(clientBlockId);
             String clientStateString = Util.getPropertiesFromBlockState(clientState);
             String moddedStateString = Util.getPropertiesFromBlockState(moddedState);
 

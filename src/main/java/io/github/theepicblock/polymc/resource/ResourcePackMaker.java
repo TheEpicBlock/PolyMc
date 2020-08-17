@@ -176,7 +176,7 @@ public class ResourcePackMaker {
      * @param id example: "minecraft:grass_block".
      * @return The resulting pending blockState.
      */
-    public JsonBlockState getOrCreatePendingBlockState(Identifier id) {
+    public JsonBlockState getOrDefaultPendingBlockState(Identifier id) {
         if (hasPendingBlockState(id)) return getPendingBlockState(id);
         
         JsonBlockState v = new JsonBlockState();
@@ -185,10 +185,10 @@ public class ResourcePackMaker {
     }
 
     /**
-     * @see #getOrCreatePendingBlockState(Identifier) 
+     * @see #getOrDefaultPendingBlockState(Identifier)
      */
-    public JsonBlockState getOrCreatePendingBlockState(String modId, String path) {
-        return getOrCreatePendingBlockState(new Identifier(modId,path));
+    public JsonBlockState getOrDefaultPendingBlockState(String modId, String path) {
+        return getOrDefaultPendingBlockState(new Identifier(modId,path));
     }
 
     /**
