@@ -38,7 +38,7 @@ public class ConfigManager {
         File configDir = FabricLoader.getInstance().getConfigDirectory();
         //noinspection ResultOfMethodCallIgnored
         configDir.mkdirs();
-        File configFile = new File(configDir,"polymc.json");
+        File configFile = new File(configDir, "polymc.json");
 
         //pre fill if it doesn't exist yet
         if (!configFile.exists()) {
@@ -67,14 +67,14 @@ public class ConfigManager {
                 Path updatesPath = getPathFromResources("config_update.json");
                 Objects.requireNonNull(updatesPath);
                 JsonReader uReader = new JsonReader(new InputStreamReader(Files.newInputStream(updatesPath)));
-                JsonObject updates = gson.fromJson(uReader,JsonObject.class);
+                JsonObject updates = gson.fromJson(uReader, JsonObject.class);
 
-                for (int i = cVersion+1; i <= Config.LATEST_VERSION; i++) {
+                for (int i = cVersion + 1; i <= Config.LATEST_VERSION; i++) {
                     if (cVersion == 0) {
                         PolyMc.LOGGER.error("PolyMc: Config file seems to be corrupt. You might need to delete it");
                     }
                     try {
-                        update(i,configJson.getAsJsonObject(),updates);
+                        update(i, configJson.getAsJsonObject(), updates);
                     } catch (Exception e) {
                         PolyMc.LOGGER.warn("failed to update config to v" + i);
                         e.printStackTrace();
@@ -110,30 +110,30 @@ public class ConfigManager {
         }
     }
 
-    private static void update(int v,JsonObject config,JsonObject updates) {
+    private static void update(int v, JsonObject config, JsonObject updates) {
         JsonObject update = updates.getAsJsonObject(String.valueOf(v));
 
         //process additions
         JsonObject add = update.getAsJsonObject("add");
         if (add != null) {
-            for (Map.Entry<String, JsonElement> e : add.entrySet()) {
+            for (Map.Entry<String,JsonElement> e : add.entrySet()) {
                 JsonElement element = e.getValue();
                 List<String> path = new LinkedList<>(Arrays.asList(e.getKey().split("\\.")));
                 String last = path.remove(path.size()-1);
 
                 if (element.isJsonObject()) {
                     JsonObject obj = element.getAsJsonObject();
-                    traverse(config,path).add(last,obj);
+                    traverse(config, path).add(last, obj);
                 } else if (element.isJsonArray()) {
                     JsonArray arr = element.getAsJsonArray();
-                    JsonObject subject = traverse(config,path);
+                    JsonObject subject = traverse(config, path);
                     if (subject.has(last)) {
                         subject.getAsJsonArray(last).addAll(arr);
                     } else {
                         subject.add(last, arr);
                     }
                 } else if (element.isJsonNull() || element.isJsonPrimitive()) {
-                    traverse(config,path).add(last,element);
+                    traverse(config, path).add(last, element);
                 }
             }
         }
@@ -150,7 +150,7 @@ public class ConfigManager {
                 }
                 String secondLast = path.remove(path.size()-1);
 
-                JsonElement elementToRemoveFrom = traverse(config,path).get(secondLast);
+                JsonElement elementToRemoveFrom = traverse(config, path).get(secondLast);
                 if (elementToRemoveFrom.isJsonObject()) {
                     elementToRemoveFrom.getAsJsonObject().remove(last);
                 } else if (elementToRemoveFrom.isJsonArray()) {
@@ -158,7 +158,7 @@ public class ConfigManager {
                 }
             }
         }
-        config.addProperty("configVersion",v);
+        config.addProperty("configVersion", v);
     }
 
     private static JsonObject traverse(JsonObject obj, List<String> toTraverse) {

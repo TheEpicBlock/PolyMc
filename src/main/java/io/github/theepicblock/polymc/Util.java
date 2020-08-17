@@ -42,7 +42,7 @@ public class Util {
 
     /**
      * Get a BlockState using the properties from a string
-     * @param block base block on which the properties are applied
+     * @param block  base block on which the properties are applied
      * @param string the properties which define this blockstate. Eg: "facing=north,lit=false"
      * @return the blockstate
      */
@@ -56,7 +56,7 @@ public class Util {
 
             Property<?> prop = block.getStateManager().getProperty(key);
             if (prop != null) {
-                v = parseAndAddBlockState(v,prop,value);
+                v = parseAndAddBlockState(v, prop, value);
             }
         }
         return v;
@@ -65,7 +65,7 @@ public class Util {
     private static <T extends Comparable<T>> BlockState parseAndAddBlockState(BlockState v, Property<T> property, String value) {
         Optional<T> optional = property.parse(value);
         if (optional.isPresent()) {
-            return v.with(property,optional.get());
+            return v.with(property, optional.get());
         }
         return v;
     }
@@ -77,15 +77,15 @@ public class Util {
      */
     public static String getPropertiesFromBlockState(BlockState state) {
         StringBuilder v = new StringBuilder();
-        state.getEntries().forEach((property,value) -> {
+        state.getEntries().forEach((property, value) -> {
             v.append(property.getName());
             v.append("=");
-            v.append(nameValue(property,value));
+            v.append(nameValue(property, value));
             v.append(",");
         });
         String res = v.toString();
         if (res.length() == 0) return res;
-        return res.substring(0,res.length()-1); //this removes the last comma
+        return res.substring(0, res.length() - 1); //this removes the last comma
     }
 
     private static <T extends Comparable<T>> String nameValue(Property<T> property, Comparable<?> value) {
@@ -108,6 +108,6 @@ public class Util {
     }
 
     public static String expandTo(Object s, int amount) {
-        return expandTo(s.toString(),amount);
+        return expandTo(s.toString(), amount);
     }
 }

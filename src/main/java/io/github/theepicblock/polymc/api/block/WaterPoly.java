@@ -23,7 +23,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.state.property.Property;
 
-public class WaterPoly implements BlockPoly{
+public class WaterPoly implements BlockPoly {
     @Override
     public BlockState getClientBlock(BlockState input) {
         BlockState output = Blocks.WATER.getDefaultState();
@@ -38,11 +38,9 @@ public class WaterPoly implements BlockPoly{
      * @return
      */
     private <T extends Comparable<T>> BlockState copyProperty(BlockState a, BlockState b, Property<T> p) {
-        return a.with(p,b.get(p));
+        return a.with(p, b.get(p));
     }
 
     @Override
-    public void AddToResourcePack(Block block, ResourcePackMaker pack) {
-
-    }
+    public void AddToResourcePack(Block block, ResourcePackMaker pack) {}
 }

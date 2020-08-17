@@ -19,7 +19,7 @@ package io.github.theepicblock.polymc.api.gui;
 
 import net.minecraft.screen.ScreenHandlerType;
 
-public class TestGuiPoly implements GuiPoly{
+public class TestGuiPoly implements GuiPoly {
 
     @Override
     public ScreenHandlerType<?> getClientSideType() {

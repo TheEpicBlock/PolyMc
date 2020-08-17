@@ -41,13 +41,13 @@ public class ShieldPoly extends PredicateBasedDamageableItem {
         pack.copyItemModel(item);
 
         Identifier serverItemId = Registry.ITEM.getId(defaultServerItem.getItem());
-        Identifier shieldModelPath = new Identifier(serverItemId.getNamespace(),"item/"+serverItemId.getPath());
+        Identifier shieldModelPath = new Identifier(serverItemId.getNamespace(), "item/"+serverItemId.getPath());
 
         //default shield model
         if (!pack.hasPendingItemModel(shieldModelPath)) {
             JsonModel shieldModel = new JsonModel();
             shieldModel.parent = "builtin/entity";
-            shieldModel.gui_light="front";
+            shieldModel.gui_light = "front";
             shieldModel.textures = new HashMap<>();
             shieldModel.textures.put("particle", "block/dark_oak_planks");
             Type displayMap = new TypeToken<Map<String, JsonModel.DisplayEntry>>() {}.getType();
@@ -57,12 +57,12 @@ public class ShieldPoly extends PredicateBasedDamageableItem {
             shieldModel.overrides = new ArrayList<>();
             JsonModel.Override override = new JsonModel.Override();
             override.predicate = new HashMap<>();
-            override.predicate.put("blocking",(double)1);
+            override.predicate.put("blocking", (double)1);
             override.model = "minecraft:item/shield_blocking";
             shieldModel.addOverride(override);
-            pack.putPendingItemModel(shieldModelPath,shieldModel);
+            pack.putPendingItemModel(shieldModelPath, shieldModel);
         }
 
-        super.AddToResourcePack(item,pack);
+        super.AddToResourcePack(item, pack);
     }
 }

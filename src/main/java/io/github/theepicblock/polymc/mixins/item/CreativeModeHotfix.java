@@ -63,7 +63,7 @@ public class CreativeModeHotfix {
 
         if (polyMCrecentlyVoided == null) return original;
 
-        if (ItemStack.areEqual(original,PolyMc.getMap().getClientItem(polyMCrecentlyVoided))) {
+        if (ItemStack.areEqual(original, PolyMc.getMap().getClientItem(polyMCrecentlyVoided))) {
             //the item the client is trying to set is actually a polyd version of polyMCrecentlyVoided.
             return polyMCrecentlyVoided;
         }
