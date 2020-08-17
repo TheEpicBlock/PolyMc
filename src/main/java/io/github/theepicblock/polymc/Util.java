@@ -25,6 +25,7 @@ import net.minecraft.util.Identifier;
 import java.util.Optional;
 
 public class Util {
+    public static final String MC_NAMESPACE = "minecraft";
     /**
      * Returns true if this identifier is in the minecraft namespace
      */
@@ -37,7 +38,7 @@ public class Util {
      * Returns true if this namespace is minecraft
      */
     public static boolean isNamespaceVanilla(String v) {
-        return v.equals("minecraft");
+        return v.equals(MC_NAMESPACE);
     }
 
     /**

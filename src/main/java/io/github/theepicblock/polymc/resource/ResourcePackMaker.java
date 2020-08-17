@@ -69,7 +69,14 @@ public class ResourcePackMaker {
      * @see #hasPendingModel(Identifier)
      */
     public boolean hasPendingModel(String modId, String path) {
-        return hasPendingModel(new Identifier(modId,path));
+        return hasPendingModel(new Identifier(modId, path));
+    }
+
+    /**
+     * @see #hasPendingModel(Identifier)
+     */
+    public boolean hasPendingModel(String path) {
+        return hasPendingModel(new Identifier(Util.MC_NAMESPACE, path));
     }
 
     /**
@@ -86,7 +93,14 @@ public class ResourcePackMaker {
      * @see #putPendingModel(Identifier, JsonModel)
      */
     public void putPendingModel(String modId, String path, JsonModel model) {
-        putPendingModel(new Identifier(modId,path), model);
+        putPendingModel(new Identifier(modId, path), model);
+    }
+
+    /**
+     * @see #putPendingModel(Identifier, JsonModel)
+     */
+    public void putPendingModel(String path, JsonModel model) {
+        putPendingModel(new Identifier(Util.MC_NAMESPACE, path), model);
     }
 
     /**
@@ -106,12 +120,27 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Gets a pending model in the item directory using the specified path. If it doesn't exist, it creates a default item model. The model isn't guaranteed to accurately represent all items.
-     * @param path example: "testitem".
-     * @return The resulting pending model.
+     * @see #getPendingModel(Identifier)
      */
-    public JsonModel getOrDefaultPendingItemModel(String path) {
-        Identifier id = new Identifier("minecraft", "item/"+path);
+    public JsonModel getPendingModel(String path) {
+        return getPendingModel(new Identifier(Util.MC_NAMESPACE,path));
+    }
+
+    /**
+     * Gets a pending model in the item directory using the specified path. If it doesn't exist, it creates a default item model. The model isn't guaranteed to accurately represent all items.
+     * @param id example: "minecraft:stick".
+     * @return The resulting pending model.
+     * @see #getOrDefaultPendingBlockState(String, String)
+     */
+    public JsonModel getOrDefaultPendingItemModel(Identifier id) {
+        return getOrDefaultPendingItemModel(id.getNamespace(),id.getPath());
+    }
+
+    /**
+     * @see #getOrDefaultPendingBlockState(Identifier)
+     */
+    public JsonModel getOrDefaultPendingItemModel(String modId, String path) {
+        Identifier id = new Identifier(modId, "item/"+path);
         if (hasPendingModel(id)) return getPendingModel(id);
 
         JsonModel v = new JsonModel();
@@ -120,6 +149,13 @@ public class ResourcePackMaker {
         v.textures.put("layer0","item/"+path);
         putPendingModel(id,v);
         return v;
+    }
+
+    /**
+     * @see #getOrDefaultPendingBlockState(Identifier)
+     */
+    public JsonModel getOrDefaultPendingItemModel(String path) {
+        return getOrDefaultPendingItemModel(Util.MC_NAMESPACE, path);
     }
 
     /**
@@ -135,7 +171,14 @@ public class ResourcePackMaker {
      * @see #hasPendingModel(Identifier)
      */
     public boolean hasPendingBlockState(String modId, String path) {
-        return hasPendingBlockState(new Identifier(modId,path));
+        return hasPendingBlockState(new Identifier(modId, path));
+    }
+
+    /**
+     * @see #hasPendingModel(Identifier)
+     */
+    public boolean hasPendingBlockState(String path) {
+        return hasPendingBlockState(new Identifier(Util.MC_NAMESPACE, path));
     }
 
     /**
@@ -156,6 +199,13 @@ public class ResourcePackMaker {
     }
 
     /**
+     * @see #putPendingModel(Identifier, JsonModel)
+     */
+    public void putPendingBlockState(String path, JsonBlockState blockState) {
+        putPendingBlockState(new Identifier(Util.MC_NAMESPACE, path), blockState);
+    }
+
+    /**
      * Get's the pending model for that Id if it exists, returns {@code null} otherwise.
      * @param id id whose associated blockState we should return. Example: "minecraft:grass_block".
      * @return The pending model for the specified id. Or {@code null} if there is none.
@@ -168,7 +218,14 @@ public class ResourcePackMaker {
      * @see #getPendingModel(Identifier)
      */
     public JsonBlockState getPendingBlockState(String modId, String path) {
-        return getPendingBlockState(new Identifier(modId,path));
+        return getPendingBlockState(new Identifier(modId, path));
+    }
+
+    /**
+     * @see #getPendingModel(Identifier)
+     */
+    public JsonBlockState getPendingBlockState(String path) {
+        return getPendingBlockState(new Identifier(Util.MC_NAMESPACE, path));
     }
 
     /**
@@ -188,7 +245,14 @@ public class ResourcePackMaker {
      * @see #getOrDefaultPendingBlockState(Identifier)
      */
     public JsonBlockState getOrDefaultPendingBlockState(String modId, String path) {
-        return getOrDefaultPendingBlockState(new Identifier(modId,path));
+        return getOrDefaultPendingBlockState(new Identifier(modId, path));
+    }
+
+    /**
+     * @see #getOrDefaultPendingBlockState(Identifier)
+     */
+    public JsonBlockState getOrDefaultPendingBlockState(String path) {
+        return getOrDefaultPendingBlockState(new Identifier(Util.MC_NAMESPACE, path));
     }
 
     /**
