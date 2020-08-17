@@ -131,7 +131,7 @@ public class ResourcePackMaker {
 
     /**
      * copies a model file into this resourcepack. Resolving all dependencies on the way.
-     * @param modId mod containing this model
+     * @param modId the mod who owns the model.
      * @param path path to model. Example "item/testitem"
      * @see #copyModel(Identifier)
      */
@@ -167,7 +167,7 @@ public class ResourcePackMaker {
 
     /**
      * copies a model file into this resourcepack. Resolving all dependencies on the way.
-     * @param id {@code namespace}: mod containing this model. {@code path}: path to model. Example "item/testitem"
+     * @param id {@code namespace}: the mod who owns the model. {@code path}: path to model. Example "item/testitem"
      * @see #copyModel(String,String)
      */
     public void copyModel(Identifier id) {
@@ -179,7 +179,7 @@ public class ResourcePackMaker {
 
     /**
      * copies a texture file into this resourcepack. Resolving all dependencies on the way.
-     * @param modId mod containing this model
+     * @param modId the mod who owns the texture.
      * @param path path to model. Example "item/testtexture"
      */
     public void copyTexture(String modId, String path) {
@@ -192,7 +192,7 @@ public class ResourcePackMaker {
 
     /**
      * copies a file from the modId's jar's asset folder to this resourcepack
-     * @param modId the mod who's assets we're getting from
+     * @param modId the mod who owns the asset.
      * @param path example "models/item/testitem.json"
      * @return The path to the new file
      */
@@ -202,7 +202,7 @@ public class ResourcePackMaker {
 
     /**
      * Checks if a mod's jar contains the asset
-     * @param modId the mod who's assets we're checking
+     * @param modId the mod who owns the asset.
      * @param path example "models/item/testitem.json"
      * @return true if the file exists
      */
@@ -212,7 +212,7 @@ public class ResourcePackMaker {
 
     /**
      * get's a file from the modId's jar's asset folder.
-     * @param modId the mod who's assets we're getting from
+     * @param modId the mod who owns the asset.
      * @param path example "models/item/testitem.json"
      * @return A reader for this file.
      */
@@ -227,7 +227,7 @@ public class ResourcePackMaker {
     /**
      * get's a file from the resourcepack folder.
      * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
-     * @param modId the mod who's assets we're getting from
+     * @param modId the mod who owns the file.
      * @param path example "asset/testmod/models/item/testitem.json"
      * @return A reader for this file. Can be null
      */
@@ -252,7 +252,7 @@ public class ResourcePackMaker {
     /**
      * Checks if a file exists.
      * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
-     * @param modId
+     * @param modId the mod who owns the file.
      * @param path example: "asset/testmod/models/item/testitem.json"
      * @return The path to the new file
      */
@@ -271,7 +271,7 @@ public class ResourcePackMaker {
     /**
      * copies a file into this resourcepack.
      * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
-     * @param modId
+     * @param modId the mod who owns the file.
      * @param path example: "asset/testmod/models/item/testitem.json"
      * @return The path to the new file. Can be null
      */
