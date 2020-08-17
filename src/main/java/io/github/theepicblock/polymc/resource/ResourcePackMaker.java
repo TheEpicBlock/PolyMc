@@ -63,12 +63,24 @@ public class ResourcePackMaker {
         return modelsToSave.containsKey(id);
     }
 
+    public boolean hasPendingModel(String modId, String path) {
+        return hasPendingModel(new Identifier(modId,path));
+    }
+
     public void putPendingModel(Identifier id, JsonModel model) {
-        modelsToSave.put(id,model);
+        modelsToSave.put(id, model);
+    }
+
+    public void putPendingModel(String modId, String path, JsonModel model) {
+        putPendingModel(new Identifier(modId,path), model);
     }
 
     public JsonModel getPendingModel(Identifier id) {
         return modelsToSave.get(id);
+    }
+
+    public JsonModel getPendingModel(String modId, String path) {
+        return getPendingModel(new Identifier(modId,path));
     }
 
     /**
