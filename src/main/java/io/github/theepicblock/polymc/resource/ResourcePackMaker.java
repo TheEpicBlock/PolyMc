@@ -122,18 +122,73 @@ public class ResourcePackMaker {
         return v;
     }
 
-    //TODO document this
-    public JsonBlockstate getOrCreateBlockState(Identifier id) {
-        if (blockStatesToSave.containsKey(id)) {
-            return blockStatesToSave.get(id);
-        }
-        JsonBlockstate b = new JsonBlockstate();
-        blockStatesToSave.put(id,b);
-        return b;
+    /**
+     * Checks if there's a pending blockState for that id.
+     * @param id id to check. Example: "minecraft:grass_block".
+     * @return True if the specified id already has a blockState associated.
+     */
+    public boolean hasPendingBlockState(Identifier id) {
+        return modelsToSave.containsKey(id);
     }
 
-    public JsonBlockstate getOrCreateBlockState(String modId, String path) {
-        return getOrCreateBlockState(new Identifier(modId,path));
+    /**
+     * @see #hasPendingModel(Identifier)
+     */
+    public boolean hasPendingBlockState(String modId, String path) {
+        return hasPendingBlockState(new Identifier(modId,path));
+    }
+
+    /**
+     * Replaces the pending blockState for that id with the provided one.
+     * In general it is advised to only use this if {@link #hasPendingBlockState(Identifier)} is false. Otherwise, use {@link #getPendingBlockState(Identifier)} and modify it.
+     * @param id the id whose model we should replace. Example: "minecraft:grass_block".
+     * @param blockState blockState to use for {@code id}
+     */
+    public void putPendingBlockState(Identifier id, JsonBlockstate blockState) {
+        blockStatesToSave.put(id, blockState);
+    }
+
+    /**
+     * @see #putPendingModel(Identifier, JsonModel)
+     */
+    public void putPendingBlockState(String modId, String path, JsonBlockstate blockState) {
+        putPendingBlockState(new Identifier(modId,path), blockState);
+    }
+
+    /**
+     * Get's the pending model for that Id if it exists, returns {@code null} otherwise.
+     * @param id id whose associated blockState we should return. Example: "minecraft:grass_block".
+     * @return The pending model for the specified id. Or {@code null} if there is none.
+     */
+    public JsonBlockstate getPendingBlockState(Identifier id) {
+        return blockStatesToSave.get(id);
+    }
+
+    /**
+     * @see #getPendingModel(Identifier)
+     */
+    public JsonBlockstate getPendingBlockState(String modId, String path) {
+        return getPendingBlockState(new Identifier(modId,path));
+    }
+    
+    /**
+     * Gets the pending blockState for that id. If it doesn't exist, it creates a default one.
+     * @param id example: "minecraft:grass_block".
+     * @return The resulting pending blockState.
+     */
+    public JsonBlockstate getOrCreatePendingBlockState(Identifier id) {
+        if (hasPendingBlockState(id)) return getPendingBlockState(id);
+        
+        JsonBlockstate v = new JsonBlockstate();
+        blockStatesToSave.put(id,v);
+        return v;
+    }
+
+    /**
+     * @see #getOrCreatePendingBlockState(Identifier) 
+     */
+    public JsonBlockstate getOrCreatePendingBlockState(String modId, String path) {
+        return getOrCreatePendingBlockState(new Identifier(modId,path));
     }
 
     /**
