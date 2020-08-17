@@ -44,7 +44,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
         super(buildLocation);
         this.tempLocation = tempLocation;
 
-//        Path assetTemp = tempLocation.resolve("assets").toAbsolutePath();
+        //Get all assets from all mods and copy it into a temporary location
         FabricLoader.getInstance().getAllMods().forEach((mod) -> {
             Path assets = mod.getPath("assets");
             if (!Files.exists(assets)) return;
@@ -56,7 +56,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
             }
         });
 
-        //Artifice provides a list with virtual resourcepacks. But it only exists on the client
+        //Artifice provides a list with virtual resourcepacks. But it only exists on the client. We can import them to use the assets
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
             Optional<ModContainer> artifice = FabricLoader.getInstance().getModContainer("artifice");
             if (artifice.isPresent()) {
@@ -88,7 +88,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if (!attrs.isDirectory()) {
-                    Path dest = to.resolve("."+file.toString()); //the dot is needed to make this relative TODO check if this works on windows
+                    Path dest = to.resolve("."+file.toString()); //the dot is needed to make this relative
                     //noinspection ResultOfMethodCallIgnored
                     dest.toFile().mkdirs();
                     Files.copy(file, dest, StandardCopyOption.REPLACE_EXISTING);
@@ -100,12 +100,6 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
         Files.walkFileTree(from,visitor);
     }
 
-    /**
-     * copies a file from the temp file into this resourcepack
-     * @param modId
-     * @param path example: "asset/testmod/models/item/testitem.json"
-     * @return The path to the new file
-     */
     @Override
     protected Path copyFile(String modId, String path) {
         if (modId.equals("minecraft")) return null;
@@ -130,12 +124,6 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
         return Files.exists(filePath);
     }
 
-    /**
-     * get's a file from the temp file.
-     * @param modId the mod who's assets we're getting from
-     * @param path example "asset/testmod/models/item/testitem.json"
-     * @return A reader for this file.
-     */
     @Override
     protected InputStreamReader getFile(String modId, String path) {
         if (modId.equals("minecraft")) return null;
