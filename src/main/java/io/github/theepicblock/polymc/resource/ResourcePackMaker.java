@@ -50,7 +50,7 @@ public class ResourcePackMaker {
 
     private final List<Identifier> copiedModels = new ArrayList<>();
     private final Map<Identifier,JsonModel> modelsToSave = new HashMap<>();
-    private final Map<Identifier,JsonBlockstate> blockStatesToSave = new HashMap<>();
+    private final Map<Identifier, JsonBlockState> blockStatesToSave = new HashMap<>();
 
     public ResourcePackMaker(Path buildLocation) {
         BuildLocation = buildLocation;
@@ -144,14 +144,14 @@ public class ResourcePackMaker {
      * @param id the id whose model we should replace. Example: "minecraft:grass_block".
      * @param blockState blockState to use for {@code id}
      */
-    public void putPendingBlockState(Identifier id, JsonBlockstate blockState) {
+    public void putPendingBlockState(Identifier id, JsonBlockState blockState) {
         blockStatesToSave.put(id, blockState);
     }
 
     /**
      * @see #putPendingModel(Identifier, JsonModel)
      */
-    public void putPendingBlockState(String modId, String path, JsonBlockstate blockState) {
+    public void putPendingBlockState(String modId, String path, JsonBlockState blockState) {
         putPendingBlockState(new Identifier(modId,path), blockState);
     }
 
@@ -160,14 +160,14 @@ public class ResourcePackMaker {
      * @param id id whose associated blockState we should return. Example: "minecraft:grass_block".
      * @return The pending model for the specified id. Or {@code null} if there is none.
      */
-    public JsonBlockstate getPendingBlockState(Identifier id) {
+    public JsonBlockState getPendingBlockState(Identifier id) {
         return blockStatesToSave.get(id);
     }
 
     /**
      * @see #getPendingModel(Identifier)
      */
-    public JsonBlockstate getPendingBlockState(String modId, String path) {
+    public JsonBlockState getPendingBlockState(String modId, String path) {
         return getPendingBlockState(new Identifier(modId,path));
     }
     
@@ -176,10 +176,10 @@ public class ResourcePackMaker {
      * @param id example: "minecraft:grass_block".
      * @return The resulting pending blockState.
      */
-    public JsonBlockstate getOrCreatePendingBlockState(Identifier id) {
+    public JsonBlockState getOrCreatePendingBlockState(Identifier id) {
         if (hasPendingBlockState(id)) return getPendingBlockState(id);
         
-        JsonBlockstate v = new JsonBlockstate();
+        JsonBlockState v = new JsonBlockState();
         blockStatesToSave.put(id,v);
         return v;
     }
@@ -187,7 +187,7 @@ public class ResourcePackMaker {
     /**
      * @see #getOrCreatePendingBlockState(Identifier) 
      */
-    public JsonBlockstate getOrCreatePendingBlockState(String modId, String path) {
+    public JsonBlockState getOrCreatePendingBlockState(String modId, String path) {
         return getOrCreatePendingBlockState(new Identifier(modId,path));
     }
 

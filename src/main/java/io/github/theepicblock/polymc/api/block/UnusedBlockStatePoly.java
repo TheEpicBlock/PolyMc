@@ -25,7 +25,7 @@ import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.register.BlockStateManager;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
-import io.github.theepicblock.polymc.resource.JsonBlockstate;
+import io.github.theepicblock.polymc.resource.JsonBlockState;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -113,7 +113,7 @@ public class UnusedBlockStatePoly implements BlockPoly{
     public void AddToResourcePack(Block block, ResourcePackMaker pack) {
         Identifier moddedBlockId = Registry.BLOCK.getId(block);
         InputStreamReader blockStateReader = pack.getAsset(moddedBlockId.getNamespace(),ResourcePackMaker.BLOCKSTATES+moddedBlockId.getPath()+".json");
-        JsonBlockstate originalBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader),JsonBlockstate.class);
+        JsonBlockState originalBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);
         Map<String, JsonElement> parsedOriginalVariants = new HashMap<>();
         originalBlockStates.variants.forEach((string, element) -> {
             parsedOriginalVariants.put(string.replace(" ",""),element);
@@ -121,13 +121,13 @@ public class UnusedBlockStatePoly implements BlockPoly{
 
         states.forEach((moddedState,clientState) -> {
             Identifier clientBlockId = Registry.BLOCK.getId(clientState.getBlock());
-            JsonBlockstate clientBlockStates = pack.getOrCreatePendingBlockState(clientBlockId);
+            JsonBlockState clientBlockStates = pack.getOrCreatePendingBlockState(clientBlockId);
             String clientStateString = Util.getPropertiesFromBlockState(clientState);
             String moddedStateString = Util.getPropertiesFromBlockState(moddedState);
 
             JsonElement moddedVariants = parsedOriginalVariants.get(moddedStateString);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
-            for (JsonBlockstate.Variant v :JsonBlockstate.getVariants(moddedVariants)) {
+            for (JsonBlockState.Variant v : JsonBlockState.getVariants(moddedVariants)) {
                 Identifier vId = Identifier.tryParse(v.model);
                 if (vId != null) pack.copyModel(new Identifier(v.model));
             }
