@@ -24,7 +24,7 @@ import net.minecraft.block.BlockState;
 /**
  * This poly simply replaces the block with another block
  */
-public class SimpleReplacementPoly implements BlockPoly{
+public class SimpleReplacementPoly implements BlockPoly {
     private final BlockState state;
 
     public SimpleReplacementPoly(BlockState state) {
@@ -41,9 +41,7 @@ public class SimpleReplacementPoly implements BlockPoly{
     }
 
     @Override
-    public void AddToResourcePack(Block block, ResourcePackMaker pack) {
-
-    }
+    public void AddToResourcePack(Block block, ResourcePackMaker pack) {}
 
     @Override
     public String getDebugInfo(Block obj) {

@@ -31,11 +31,11 @@ import net.minecraft.screen.ScreenHandlerType;
  *
  */
 public class PolyMap {
-    private final ImmutableMap<Item, ItemPoly> itemPolys;
-    private final ImmutableMap<Block, BlockPoly> blockPolys;
-    private final ImmutableMap<ScreenHandlerType<?>, GuiPoly> guiPolys;
+    private final ImmutableMap<Item,ItemPoly> itemPolys;
+    private final ImmutableMap<Block,BlockPoly> blockPolys;
+    private final ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys;
 
-    public PolyMap(ImmutableMap<Item, ItemPoly> itemPolys, ImmutableMap<Block, BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>, GuiPoly> guiPolys) {
+    public PolyMap(ImmutableMap<Item,ItemPoly> itemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys) {
         this.itemPolys = itemPolys;
         this.blockPolys = blockPolys;
         this.guiPolys = guiPolys;
@@ -59,11 +59,11 @@ public class PolyMap {
         return guiPolys.get(serverGuiType);
     }
 
-    public ImmutableMap<Item, ItemPoly> getItemPolys() {
+    public ImmutableMap<Item,ItemPoly> getItemPolys() {
         return itemPolys;
     }
 
-    public ImmutableMap<Block, BlockPoly> getBlockPolys() {
+    public ImmutableMap<Block,BlockPoly> getBlockPolys() {
         return blockPolys;
     }
 }

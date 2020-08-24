@@ -30,7 +30,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-public class BowPoly extends PredicateBasedDamageableItem{
+public class BowPoly extends PredicateBasedDamageableItem {
     public BowPoly(CustomModelDataManager registerManager, Item base) {
         super(registerManager, base, Items.BOW);
     }
@@ -40,17 +40,17 @@ public class BowPoly extends PredicateBasedDamageableItem{
         pack.copyItemModel(item);
 
         Identifier serverItemId = Registry.ITEM.getId(defaultServerItem.getItem());
-        Identifier bowModelPath = new Identifier(serverItemId.getNamespace(),"item/"+serverItemId.getPath());
+        Identifier bowModelPath = new Identifier(serverItemId.getNamespace(), "item/"+serverItemId.getPath());
 
         //default shield model
         if (!pack.hasPendingModel(bowModelPath)) {
             JsonModel bowModel = pack.getOrDefaultPendingItemModel(serverItemId.getPath());
 
-            Type displayMap = new TypeToken<Map<String, JsonModel.DisplayEntry>>() {}.getType();
+            Type displayMap = new TypeToken<Map<String,JsonModel.DisplayEntry>>() {}.getType();
             bowModel.display = pack.getGson().fromJson("{\"thirdperson_righthand\":{\"rotation\":[-80,260,-40],\"translation\":[-1,-2,2.5],\"scale\":[0.9,0.9,0.9]},\"thirdperson_lefthand\":{\"rotation\":[-80,-280,40],\"translation\":[-1,-2,2.5],\"scale\":[0.9,0.9,0.9]},\"firstperson_righthand\":{\"rotation\":[0,-90,25],\"translation\":[1.13,3.2,1.13],\"scale\":[0.68,0.68,0.68]},\"firstperson_lefthand\":{\"rotation\":[0,90,-25],\"translation\":[1.13,3.2,1.13],\"scale\":[0.68,0.68,0.68]}}", displayMap);
 
             Type overrideType = new TypeToken<List<JsonModel.Override>>() {}.getType();
-            bowModel.overrides = pack.getGson().fromJson("[{\"predicate\":{\"pulling\":1},\"model\":\"item\\/bow_pulling_0\"},{\"predicate\":{\"pulling\":1,\"pull\":0.65},\"model\":\"item\\/bow_pulling_1\"},{\"predicate\":{\"pulling\":1,\"pull\":0.9},\"model\":\"item\\/bow_pulling_2\"}]",overrideType);
+            bowModel.overrides = pack.getGson().fromJson("[{\"predicate\":{\"pulling\":1},\"model\":\"item\\/bow_pulling_0\"},{\"predicate\":{\"pulling\":1,\"pull\":0.65},\"model\":\"item\\/bow_pulling_1\"},{\"predicate\":{\"pulling\":1,\"pull\":0.9},\"model\":\"item\\/bow_pulling_2\"}]", overrideType);
         }
 
         super.AddToResourcePack(item,pack);

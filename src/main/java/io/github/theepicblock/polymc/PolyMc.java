@@ -29,13 +29,8 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 
 public class PolyMc implements ModInitializer {
-    private static PolyMap map;
     public static final Logger LOGGER = LogManager.getLogger("PolyMc");
-
-    @Override
-    public void onInitialize() {
-        PolyMcCommands.registerCommands();
-    }
+    private static PolyMap map;
 
     /**
      * Builds the poly map, this should only be run when all blocks/items have been registered.
@@ -48,7 +43,7 @@ public class PolyMc implements ModInitializer {
         PolyRegistry registry = new PolyRegistry();
 
         //Let mods register polys via the api
-        List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("poly-mc",PolyMcEntrypoint.class);
+        List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("polymc", PolyMcEntrypoint.class);
         for (PolyMcEntrypoint entrypointEntry : entrypoints) {
             entrypointEntry.registerPolys(registry);
         }
@@ -59,10 +54,15 @@ public class PolyMc implements ModInitializer {
         map = registry.build();
     }
 
+    @Override
+    public void onInitialize() {
+        PolyMcCommands.registerCommands();
+    }
+
     /**
      * Gets the polymap needed to translate from server items to client items.
-     * @throws NullPointerException if you try to access it before the server worlds get initialized
      * @return the PolyMap
+     * @throws NullPointerException if you try to access it before the server worlds get initialized
      */
     public static PolyMap getMap() {
         if (map == null) {
@@ -70,5 +70,4 @@ public class PolyMc implements ModInitializer {
         }
         return map;
     }
-
 }

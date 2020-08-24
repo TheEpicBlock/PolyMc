@@ -32,27 +32,27 @@ import java.util.*;
  * The client will replace any ids it doesn't recognize with minecraft:air.
  * This can cause issues. For example: a mod places a block in the swimmable tag.
  * It get's replaced with air and the client now thinks it can swim in air.
- *
+ * <p>
  * Note: we're not actually mixing into the interface, but we're mixing into the anonymous class in {@link TagGroup#create(Map)}
  * Because TagGroup is an interface, we can't use any injector type mixins on it. So we have to copy over the {@link #toPacket} method and change it manually
  */
 @SuppressWarnings("MixinInnerClass")
 @Mixin(targets = "net/minecraft/tag/TagGroup$1")
 public abstract class TagSyncronizePatch<T> implements TagGroup<T> {
-    private Map<Identifier, Tag<T>> cache;
+    private Map<Identifier,Tag<T>> cache;
 
     /**
      * Get's all tags except those that are modded
      */
-    public Map<Identifier, Tag<T>> getTagsWithoutModded(DefaultedRegistry<T> registry) {
+    public Map<Identifier,Tag<T>> getTagsWithoutModded(DefaultedRegistry<T> registry) {
         if (cache != null) {
             return cache;
         }
 
-        Map<Identifier, Tag<T>> original = this.getTags();
-        Map<Identifier, Tag<T>> output = new HashMap<>();
+        Map<Identifier,Tag<T>> original = this.getTags();
+        Map<Identifier,Tag<T>> output = new HashMap<>();
 
-        for (Map.Entry<Identifier, Tag<T>> originalEntry : original.entrySet()) {
+        for (Map.Entry<Identifier,Tag<T>> originalEntry : original.entrySet()) {
             if (Util.isVanilla(originalEntry.getKey())) {
                 //This tag isn't modded, we now need to figure out if it has any modded values in it
                 Tag<T> originalTag = originalEntry.getValue();
@@ -64,7 +64,7 @@ public abstract class TagSyncronizePatch<T> implements TagGroup<T> {
                     }
                 });
                 Tag<T> newTag = new DumbListTag<>(newList);
-                output.put(originalEntry.getKey(),newTag);
+                output.put(originalEntry.getKey(), newTag);
             }
         }
         cache = output;
@@ -74,18 +74,18 @@ public abstract class TagSyncronizePatch<T> implements TagGroup<T> {
 
     @SuppressWarnings({"unchecked", "WhileLoopReplaceableByForEach"})
     public void toPacket(PacketByteBuf buf, DefaultedRegistry<T> registry) {
-        Map<Identifier, Tag<T>> map = this.getTagsWithoutModded(registry); //Only actually changed statement
+        Map<Identifier,Tag<T>> map = this.getTagsWithoutModded(registry); //Only actually changed statement
         buf.writeVarInt(map.size());
         Iterator<?> var4 = map.entrySet().iterator();
 
-        while(var4.hasNext()) {
-            Map.Entry<Identifier, Tag<T>> entry = (Map.Entry<Identifier, Tag<T>>)var4.next();
-            buf.writeIdentifier((Identifier)entry.getKey());
+        while (var4.hasNext()) {
+            Map.Entry<Identifier,Tag<T>> entry = (Map.Entry<Identifier,Tag<T>>)var4.next();
+            buf.writeIdentifier(entry.getKey());
             buf.writeVarInt(((Tag<?>)entry.getValue()).values().size());
             Iterator<?> var6 = ((Tag<?>)entry.getValue()).values().iterator();
 
-            while(var6.hasNext()) {
-                T object = (T) var6.next();
+            while (var6.hasNext()) {
+                T object = (T)var6.next();
                 buf.writeVarInt(registry.getRawId(object));
             }
         }

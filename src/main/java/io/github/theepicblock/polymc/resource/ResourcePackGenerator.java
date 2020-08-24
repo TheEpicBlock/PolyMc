@@ -40,10 +40,10 @@ public class ResourcePackGenerator {
 
         ResourcePackMaker pack;
         if (ConfigManager.getConfig().resourcepack.advancedDiscovery) {
-            File tempDir = new File(gameDir,"resource_temp");
+            File tempDir = new File(gameDir, "resource_temp");
             tempDir.mkdirs();
             Path tempPath = tempDir.toPath().toAbsolutePath();
-            pack = new AdvancedResourcePackMaker(path,tempPath);
+            pack = new AdvancedResourcePackMaker(path, tempPath);
         } else {
             pack = new ResourcePackMaker(path);
 
@@ -54,7 +54,7 @@ public class ResourcePackGenerator {
         }
 
         //Let mods register resources via the api
-        List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("poly-mc", PolyMcEntrypoint.class);
+        List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("polymc", PolyMcEntrypoint.class);
         for (PolyMcEntrypoint entrypointEntry : entrypoints) {
             entrypointEntry.registerModSpecificResources(pack);
         }
@@ -87,7 +87,7 @@ public class ResourcePackGenerator {
             try {
                 Stream<Path> pathStream = Files.list(langPath);
                 pathStream.forEach((langFile) -> {
-                    pack.copyAsset(modId, "lang/"+langPath.relativize(langFile));
+                    pack.copyAsset(modId, "lang/" + langPath.relativize(langFile));
                 });
             } catch (IOException e) {
                 PolyMc.LOGGER.warn("Exception whilst copying lang files from " + modId);

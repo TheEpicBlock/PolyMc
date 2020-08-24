@@ -25,10 +25,10 @@ import com.google.gson.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class JsonBlockState {
-    public Map<String, JsonElement> variants;
+public class JsonBlockstate {
+    public Map<String,JsonElement> variants;
 
-    public JsonBlockState() {
+    public JsonBlockstate() {
         this.variants = new HashMap<>();
     }
 

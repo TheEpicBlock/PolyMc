@@ -36,7 +36,7 @@ public class GuiGenerator {
             Identifier id = getGuiRegistry().getId(gui);
             if (!Util.isVanilla(id)) {
                 //this is a modded gui and should have a Poly
-                addGuiToBuilder(gui,builder);
+                addGuiToBuilder(gui, builder);
             }
         }
     }
@@ -53,7 +53,7 @@ public class GuiGenerator {
      * @see #generatePoly(ScreenHandlerType, PolyRegistry)
      */
     private static void addGuiToBuilder(ScreenHandlerType<?> gui, PolyRegistry builder) {
-        builder.registerGuiPoly(gui, generatePoly(gui,builder));
+        builder.registerGuiPoly(gui, generatePoly(gui, builder));
     }
 
     private static Registry<ScreenHandlerType<?>> getGuiRegistry() {
