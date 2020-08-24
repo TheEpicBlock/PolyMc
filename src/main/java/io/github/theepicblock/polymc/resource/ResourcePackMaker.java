@@ -39,6 +39,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 //TODO organize these classes
+@SuppressWarnings("unused")
 public class ResourcePackMaker {
     public static final String ASSETS = "assets/";
     public static final String MODELS = "models/";
@@ -83,7 +84,7 @@ public class ResourcePackMaker {
      * Replaces the pending model for that id with the provided one.
      * In general it is advised to only use this if {@link #hasPendingModel(Identifier)} is false. Otherwise, use {@link #getPendingModel(Identifier)} and modify it.
      * @param id    the id whose model we should replace. Example: "minecraft:item/stick".
-     * @param model
+     * @param model model to use for {@code id}
      */
     public void putPendingModel(Identifier id, JsonModel model) {
         modelsToSave.put(id, model);
