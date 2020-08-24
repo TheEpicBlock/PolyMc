@@ -273,6 +273,18 @@ public class ResourcePackMaker {
     }
 
     /**
+     * Imports a mod's entire asset folder.
+     * <p>
+     * This can be useful for other serverside mods to import their resourcepack into PolyMc's system.
+     * Do keep in mind that PolyMc has a lot of compatibility functionality for things like custommodeldata. It's recommended to use those to avoid cmd values from conflicting.
+     * @param modId mod to import assets from.
+     * @see #copyFolder(String, String, String) for more control of what you're copying.
+     */
+    public void importAssetFolder(String modId) {
+        this.copyFolder(modId, "assets", "assets");
+    }
+
+    /**
      * Places the model of this item into this resourcepack. Together with everything this model depends on.
      * @param item item whose model we should copy.
      */
@@ -370,6 +382,31 @@ public class ResourcePackMaker {
      */
     public InputStreamReader getAsset(String modId, String path) {
         return getFile(modId, String.format(ASSETS+"%s/%s", modId, path));
+    }
+
+    /**
+     * Copies a folder from {@code modId}'s jar.
+     * @param modId       the mod that we need to get a folder from.
+     * @param path        example: "assets", "assets/models".
+     * @param newLocation example: "assets", "assets/models".
+     */
+    public void copyFolder(String modId, String path, String newLocation) {
+        if (modId.equals("minecraft")) return; //we can't access minecraft resources easily
+        Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
+        if (!modOpt.isPresent()) {
+            PolyMc.LOGGER.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
+            return;
+        }
+
+        ModContainer mod = modOpt.get();
+        Path pathInJar = mod.getPath(path);
+        Path newLoc = BuildLocation.resolve(newLocation);
+        boolean c = newLoc.toFile().getParentFile().mkdirs();
+        try {
+            Util.copyAll(pathInJar, newLoc);
+        } catch (IOException e) {
+            PolyMc.LOGGER.warn(String.format("Failed to get folder from mod jar '%s' path: %s", modId, path));
+        }
     }
 
     /**

@@ -21,6 +21,7 @@ import com.swordglowsblue.artifice.api.ArtificeResourcePack;
 import com.swordglowsblue.artifice.common.ArtificeRegistry;
 import com.swordglowsblue.artifice.impl.ArtificeResourcePackImpl;
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.Util;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -29,8 +30,10 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -50,7 +53,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
             Path assets = mod.getPath("assets");
             if (!Files.exists(assets)) return;
             try {
-                copyAll(assets,tempLocation);
+                Util.copyAll(assets,tempLocation);
             } catch (IOException e) {
                 PolyMc.LOGGER.warn("Failed to get resources from mod " + mod.getMetadata().getId());
                 e.printStackTrace();
@@ -82,23 +85,6 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
             //noinspection unchecked
             importArtificePack(new ArtificeResourcePackImpl(ResourceType.CLIENT_RESOURCES, (Consumer<ArtificeResourcePack.ClientResourcePackBuilder>)pack));
         }
-    }
-
-    public void copyAll(Path from, Path to) throws IOException {
-        FileVisitor<Path> visitor = new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                if (!attrs.isDirectory()) {
-                    Path dest = to.resolve("." + file.toString()); //the dot is needed to make this relative
-                    //noinspection ResultOfMethodCallIgnored
-                    dest.toFile().mkdirs();
-                    Files.copy(file, dest, StandardCopyOption.REPLACE_EXISTING);
-                }
-                return super.visitFile(file, attrs);
-            }
-        };
-
-        Files.walkFileTree(from,visitor);
     }
 
     @Override

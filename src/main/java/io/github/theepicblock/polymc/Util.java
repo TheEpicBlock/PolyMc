@@ -22,6 +22,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Optional;
 
 public class Util {
@@ -110,5 +113,22 @@ public class Util {
 
     public static String expandTo(Object s, int amount) {
         return expandTo(s.toString(),amount);
+    }
+
+    public static void copyAll(Path from, Path to) throws IOException {
+        FileVisitor<Path> visitor = new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                if (!attrs.isDirectory()) {
+                    Path dest = to.resolve("." + file.toString()); //the dot is needed to make this relative
+                    //noinspection ResultOfMethodCallIgnored
+                    dest.toFile().mkdirs();
+                    Files.copy(file, dest, StandardCopyOption.REPLACE_EXISTING);
+                }
+                return super.visitFile(file, attrs);
+            }
+        };
+
+        Files.walkFileTree(from,visitor);
     }
 }
