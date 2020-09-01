@@ -35,7 +35,6 @@ public class NoCollisionBlockHelper {
             Blocks.CAVE_AIR, Blocks.VOID_AIR, Blocks.STRUCTURE_VOID};
 
     private static final Predicate<BlockState> NO_COLLISION_FILTER = (blockState) -> {
-        System.out.println("e" + blockState + isAir(blockState.getBlock()));
         if (isAir(blockState.getBlock())) return true;
         return UnusedBlockStatePoly.DEFAULT_FILTER.test(blockState);
     };
@@ -53,7 +52,6 @@ public class NoCollisionBlockHelper {
     }
 
     public static boolean isAir(Block b) {
-        System.out.println(b + " = " + (b == Blocks.CAVE_AIR || b == Blocks.VOID_AIR || b == Blocks.STRUCTURE_VOID));
         return b == Blocks.CAVE_AIR || b == Blocks.VOID_AIR || b == Blocks.STRUCTURE_VOID;
     }
 }
