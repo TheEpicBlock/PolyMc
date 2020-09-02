@@ -52,15 +52,6 @@ public abstract class BlockBreakingPatch {
     public void breakIfTakingTooLong(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
         int j = tickCounter - i;
         float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j);
-    }
-
-    @Inject(method = "continueMining", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockBreakingInfo(ILnet/minecraft/util/math/BlockPos;I)V"))
-    public void onUpdateBreakStatus(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
-        int j = tickCounter - i;
-        float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j + 1);
-        int k = (int)(f * 10.0F);
-        //TODO Replace with a local capture
-        player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(123, pos, k));
 
         if (blockBreakingCooldown > 0) {
             --blockBreakingCooldown;
@@ -72,6 +63,15 @@ public abstract class BlockBreakingPatch {
             player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(123, pos, -1));
             finishMining(pos, PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, "destroyed");
         }
+    }
+
+    @Inject(method = "continueMining", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockBreakingInfo(ILnet/minecraft/util/math/BlockPos;I)V"))
+    public void onUpdateBreakStatus(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
+        int j = tickCounter - i;
+        float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j + 1);
+        int k = (int)(f * 10.0F);
+        //TODO Replace with a local capture
+        player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(123, pos, k));
     }
 
     @Inject(method = "processBlockBreakingAction", at = @At("HEAD"))
