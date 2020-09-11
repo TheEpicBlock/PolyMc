@@ -39,7 +39,9 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 //TODO organize these classes
+@SuppressWarnings("unused")
 public class ResourcePackMaker {
+    public static final String ASSETS = "assets/";
     public static final String MODELS = "models/";
     public static final String TEXTURES = "textures/";
     public static final String BLOCKSTATES = "blockstates/";
@@ -49,65 +51,216 @@ public class ResourcePackMaker {
 
     private final List<Identifier> copiedModels = new ArrayList<>();
     private final Map<Identifier,JsonModel> modelsToSave = new HashMap<>();
-    private final Map<Identifier,JsonBlockstate> blockStatesToSave = new HashMap<>();
+    private final Map<Identifier,JsonBlockState> blockStatesToSave = new HashMap<>();
 
     public ResourcePackMaker(Path buildLocation) {
         BuildLocation = buildLocation;
     }
 
     /**
-     * Add's a minecraft itemmodel to the resourcepack. You can then add additional statements to this model.
-     * May not work for all items.
-     * @param path example "testitem"
-     * @return
+     * Checks if there's a pending model for that id.
+     * @param id id to check. Example: "minecraft:item/stick".
+     * @return True if the specified id already has a model associated.
      */
-    public JsonModel getOrDefaultPendingItemModel(String path) {
-        Identifier id = new Identifier("minecraft", "item/"+path);
-        JsonModel v = modelsToSave.get(id);
-        if (v == null) {
-            v = new JsonModel();
-            v.parent = "item/generated";
-            v.textures = new HashMap<>();
-            v.textures.put("layer0","item/"+path);
-            modelsToSave.put(id,v);
-        }
+    public boolean hasPendingModel(Identifier id) {
+        return modelsToSave.containsKey(id);
+    }
+
+    /**
+     * @see #hasPendingModel(Identifier)
+     */
+    public boolean hasPendingModel(String modId, String path) {
+        return hasPendingModel(new Identifier(modId, path));
+    }
+
+    /**
+     * @see #hasPendingModel(Identifier)
+     */
+    public boolean hasPendingModel(String path) {
+        return hasPendingModel(new Identifier(Util.MC_NAMESPACE, path));
+    }
+
+    /**
+     * Replaces the pending model for that id with the provided one.
+     * In general it is advised to only use this if {@link #hasPendingModel(Identifier)} is false. Otherwise, use {@link #getPendingModel(Identifier)} and modify it.
+     * @param id    the id whose model we should replace. Example: "minecraft:item/stick".
+     * @param model model to use for {@code id}
+     */
+    public void putPendingModel(Identifier id, JsonModel model) {
+        modelsToSave.put(id, model);
+    }
+
+    /**
+     * @see #putPendingModel(Identifier, JsonModel)
+     */
+    public void putPendingModel(String modId, String path, JsonModel model) {
+        putPendingModel(new Identifier(modId, path), model);
+    }
+
+    /**
+     * @see #putPendingModel(Identifier, JsonModel)
+     */
+    public void putPendingModel(String path, JsonModel model) {
+        putPendingModel(new Identifier(Util.MC_NAMESPACE, path), model);
+    }
+
+    /**
+     * Get's the pending model for that Id if it exists, returns {@code null} otherwise.
+     * @param id id whose associated model we should return. Example: "minecraft:item/stick".
+     * @return The pending model for the specified id. Or {@code null} if there is none.
+     */
+    public JsonModel getPendingModel(Identifier id) {
+        return modelsToSave.get(id);
+    }
+
+    /**
+     * @see #getPendingModel(Identifier)
+     */
+    public JsonModel getPendingModel(String modId, String path) {
+        return getPendingModel(new Identifier(modId,path));
+    }
+
+    /**
+     * @see #getPendingModel(Identifier)
+     */
+    public JsonModel getPendingModel(String path) {
+        return getPendingModel(new Identifier(Util.MC_NAMESPACE,path));
+    }
+
+    /**
+     * Gets a pending model in the item directory using the specified path. If it doesn't exist, it creates a default item model. The model isn't guaranteed to accurately represent all items.
+     * @param id example: "minecraft:stick".
+     * @return The resulting pending model.
+     * @see #getOrDefaultPendingBlockState(String, String)
+     */
+    public JsonModel getOrDefaultPendingItemModel(Identifier id) {
+        return getOrDefaultPendingItemModel(id.getNamespace(),id.getPath());
+    }
+
+    /**
+     * @see #getOrDefaultPendingBlockState(Identifier)
+     */
+    public JsonModel getOrDefaultPendingItemModel(String modId, String path) {
+        Identifier id = new Identifier(modId, "item/"+path);
+        if (hasPendingModel(id)) return getPendingModel(id);
+
+        JsonModel v = new JsonModel();
+        v.parent = "item/generated";
+        v.textures = new HashMap<>();
+        v.textures.put("layer0","item/"+path);
+        putPendingModel(id,v);
         return v;
     }
 
     /**
-     * Checks if there's an ItemModel in the modelsToSave system
+     * @see #getOrDefaultPendingBlockState(Identifier)
      */
-    public boolean hasPendingItemModel(Identifier id) {
+    public JsonModel getOrDefaultPendingItemModel(String path) {
+        return getOrDefaultPendingItemModel(Util.MC_NAMESPACE, path);
+    }
+
+    /**
+     * Checks if there's a pending blockState for that id.
+     * @param id id to check. Example: "minecraft:grass_block".
+     * @return True if the specified id already has a blockState associated.
+     */
+    public boolean hasPendingBlockState(Identifier id) {
         return modelsToSave.containsKey(id);
     }
 
-    public void putPendingItemModel(Identifier id, JsonModel model) {
-        modelsToSave.put(id,model);
+    /**
+     * @see #hasPendingModel(Identifier)
+     */
+    public boolean hasPendingBlockState(String modId, String path) {
+        return hasPendingBlockState(new Identifier(modId, path));
     }
 
-    public JsonModel getPendingItemModel(Identifier id) {
-        return modelsToSave.get(id);
+    /**
+     * @see #hasPendingModel(Identifier)
+     */
+    public boolean hasPendingBlockState(String path) {
+        return hasPendingBlockState(new Identifier(Util.MC_NAMESPACE, path));
     }
 
-    //TODO document this
-    public JsonBlockstate getOrCreateBlockState(Identifier id) {
-        if (blockStatesToSave.containsKey(id)) {
-            return blockStatesToSave.get(id);
-        }
-        JsonBlockstate b = new JsonBlockstate();
-        blockStatesToSave.put(id,b);
-        return b;
+    /**
+     * Replaces the pending blockState for that id with the provided one.
+     * In general it is advised to only use this if {@link #hasPendingBlockState(Identifier)} is false. Otherwise, use {@link #getPendingBlockState(Identifier)} and modify it.
+     * @param id         the id whose model we should replace. Example: "minecraft:grass_block".
+     * @param blockState blockState to use for {@code id}
+     */
+    public void putPendingBlockState(Identifier id, JsonBlockState blockState) {
+        blockStatesToSave.put(id, blockState);
     }
 
-    public JsonBlockstate getOrCreateBlockState(String modId, String path) {
-        return getOrCreateBlockState(new Identifier(modId,path));
+    /**
+     * @see #putPendingModel(Identifier, JsonModel)
+     */
+    public void putPendingBlockState(String modId, String path, JsonBlockState blockState) {
+        putPendingBlockState(new Identifier(modId,path), blockState);
+    }
+
+    /**
+     * @see #putPendingModel(Identifier, JsonModel)
+     */
+    public void putPendingBlockState(String path, JsonBlockState blockState) {
+        putPendingBlockState(new Identifier(Util.MC_NAMESPACE, path), blockState);
+    }
+
+    /**
+     * Get's the pending model for that Id if it exists, returns {@code null} otherwise.
+     * @param id id whose associated blockState we should return. Example: "minecraft:grass_block".
+     * @return The pending model for the specified id. Or {@code null} if there is none.
+     */
+    public JsonBlockState getPendingBlockState(Identifier id) {
+        return blockStatesToSave.get(id);
+    }
+
+    /**
+     * @see #getPendingModel(Identifier)
+     */
+    public JsonBlockState getPendingBlockState(String modId, String path) {
+        return getPendingBlockState(new Identifier(modId, path));
+    }
+
+    /**
+     * @see #getPendingModel(Identifier)
+     */
+    public JsonBlockState getPendingBlockState(String path) {
+        return getPendingBlockState(new Identifier(Util.MC_NAMESPACE, path));
+    }
+
+    /**
+     * Gets the pending blockState for that id. If it doesn't exist, it creates a default one.
+     * @param id example: "minecraft:grass_block".
+     * @return The resulting pending blockState.
+     */
+    public JsonBlockState getOrDefaultPendingBlockState(Identifier id) {
+        if (hasPendingBlockState(id)) return getPendingBlockState(id);
+
+        JsonBlockState v = new JsonBlockState();
+        blockStatesToSave.put(id,v);
+        return v;
+    }
+
+    /**
+     * @see #getOrDefaultPendingBlockState(Identifier)
+     */
+    public JsonBlockState getOrDefaultPendingBlockState(String modId, String path) {
+        return getOrDefaultPendingBlockState(new Identifier(modId, path));
+    }
+
+    /**
+     * @see #getOrDefaultPendingBlockState(Identifier)
+     */
+    public JsonBlockState getOrDefaultPendingBlockState(String path) {
+        return getOrDefaultPendingBlockState(new Identifier(Util.MC_NAMESPACE, path));
     }
 
     /**
      * Imports an Artifice resourcepack to be used when getting assets.
      * This is not needed on the client. But it's the only way to support Artifice resourcepacks on servers.
-     * This function won't do anything on the client since the pack will automatically be imported there from {@link com.swordglowsblue.artifice.common.ArtificeRegistry#ASSETS}
-     * @param pack resourcepack to import
+     * This function won't do anything on the client since the pack will automatically be imported there from {@link com.swordglowsblue.artifice.common.ArtificeRegistry#ASSETS}.
+     * @param pack resourcepack to import.
      * @see AdvancedResourcePackMaker#importArtificePack(Object)
      */
     public void importArtificePack(Object pack) {
@@ -115,13 +268,25 @@ public class ResourcePackMaker {
         if (pack instanceof ArtificeResourcePack) {
             packname = ((ArtificeResourcePack)pack).getName();
         }
-        PolyMc.LOGGER.warn("Tried to import Artifice resourcepack '" + packname + "' but this isn't supported with the default discovery method");
+        PolyMc.LOGGER.warn(String.format("Tried to import Artifice resourcepack '%s' but this isn't supported with the default discovery method", packname));
         PolyMc.LOGGER.warn("Please switch to the advancedDiscovery method. See https://github.com/TheEpicBlock/PolyMc/wiki/ModCompat#artifice");
     }
 
     /**
-     * places the model of this item into this resourcepack. Together with everything this model depends on.
-     * @param item
+     * Imports a mod's entire asset folder.
+     * <p>
+     * This can be useful for other serverside mods to import their resourcepack into PolyMc's system.
+     * Do keep in mind that PolyMc has a lot of compatibility functionality for things like custommodeldata. It's recommended to use those to avoid cmd values from conflicting.
+     * @param modId mod to import assets from.
+     * @see #copyFolder(String, String, String) for more control of what you're copying.
+     */
+    public void importAssetFolder(String modId) {
+        this.copyFolder(modId, "assets", "assets");
+    }
+
+    /**
+     * Places the model of this item into this resourcepack. Together with everything this model depends on.
+     * @param item item whose model we should copy.
      */
     public void copyItemModel(Item item) {
         Identifier id = Registry.ITEM.getId(item);
@@ -129,15 +294,15 @@ public class ResourcePackMaker {
     }
 
     /**
-     * copies a model file into this resourcepack. Resolving all dependencies on the way.
-     * @param modId mod containing this model
-     * @param path path to model. Example "item/testitem"
+     * Copies a model file into this resourcepack. Resolving all dependencies on the way.
+     * @param modId the mod who owns the model.
+     * @param path  path to model. Example "item/testitem".
      * @see #copyModel(Identifier)
      */
-    private void copyModel(String modId, String path) {
+    public void copyModel(String modId, String path) {
         if (Util.isNamespaceVanilla(modId)) return;
         //copy the file from the mod (we assume the modid is the same as the item's id)
-        Path newFile = copyAssetFromMod(modId,MODELS+path+".json");
+        Path newFile = copyAsset(modId,MODELS+path+".json");
 
         if (newFile == null) return;
         try {
@@ -150,7 +315,7 @@ public class ResourcePackMaker {
                 model.textures.forEach((textureRef,id) -> {
                     //textureRef is an internal thing used in the model itself. Not needed to resolve the dependencies
                     Identifier mcId = Identifier.tryParse(id);
-                    if (mcId != null) copyTexture(mcId.getNamespace(),mcId.getPath());
+                    if (mcId != null) copyTexture(mcId.getNamespace(), mcId.getPath());
                 });
             }
 
@@ -165,9 +330,9 @@ public class ResourcePackMaker {
     }
 
     /**
-     * copies a model file into this resourcepack. Resolving all dependencies on the way.
-     * @param id {@code namespace}: mod containing this model. {@code path}: path to model. Example "item/testitem"
-     * @see #copyModel(String,String)
+     * Copies a model file into this resourcepack. Resolving all dependencies on the way.
+     * @param id {@code namespace}: the mod who owns the model. {@code path}: path to model. Example "item/testitem".
+     * @see #copyModel(String, String)
      */
     public void copyModel(Identifier id) {
         if (!copiedModels.contains(id)) {
@@ -177,46 +342,107 @@ public class ResourcePackMaker {
     }
 
     /**
-     * copies a texture file into this resourcepack. Resolving all dependencies on the way.
-     * @param modId mod containing this model
-     * @param path path to model. Example "item/testtexture"
+     * Copies a texture file into this resourcepack. Resolving all dependencies on the way.
+     * @param modId the mod who owns the texture.
+     * @param path  path to model. Example: "item/testtexture".
      */
     public void copyTexture(String modId, String path) {
-        copyAssetFromMod(modId, TEXTURES+path+".png");
+        copyAsset(modId, TEXTURES+path+".png");
         String mcMetaPath = TEXTURES+path+".png.mcmeta";
-        if (checkForAsset(modId,mcMetaPath)) {
-            copyAssetFromMod(modId, mcMetaPath);
+        if (checkAsset(modId,mcMetaPath)) {
+            copyAsset(modId, mcMetaPath);
         }
     }
 
     /**
-     * copies a file from the modId's jar into this resourcepack
-     * @param modId
-     * @param path example: "asset/testmod/models/item/testitem.json"
-     * @return The path to the new file
+     * Copies a file from the modId's jar's asset folder to this resourcepack.
+     * @param modId the mod who owns the asset.
+     * @param path  example: "models/item/testitem.json".
+     * @return The path to the new file.
      */
-    protected Path copyFileFromMod(String modId, String path) {
-        if (modId.equals("minecraft")) return null;
+    public Path copyAsset(String modId, String path) {
+        return copyFile(modId, String.format(ASSETS+"%s/%s", modId, path));
+    }
+
+    /**
+     * Checks if a mod's jar contains the asset
+     * @param modId the mod who owns the asset.
+     * @param path  example: "models/item/testitem.json".
+     * @return True if the file exists.
+     */
+    public boolean checkAsset(String modId, String path) {
+        return checkFile(modId, String.format(ASSETS+"%s/%s", modId, path));
+    }
+
+    /**
+     * Get's a file from the modId's jar's asset folder.
+     * @param modId the mod who owns the asset.
+     * @param path  example: "models/item/testitem.json".
+     * @return A reader for this file.
+     */
+    public InputStreamReader getAsset(String modId, String path) {
+        return getFile(modId, String.format(ASSETS+"%s/%s", modId, path));
+    }
+
+    /**
+     * Copies a folder from {@code modId}'s jar.
+     * @param modId       the mod that we need to get a folder from.
+     * @param path        example: "assets", "assets/models".
+     * @param newLocation example: "assets", "assets/models".
+     */
+    public void copyFolder(String modId, String path, String newLocation) {
+        if (modId.equals("minecraft")) return; //we can't access minecraft resources easily
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
-            PolyMc.LOGGER.warn("Tried to access assets from mod, but it isn't present. Mod ID "+modId);
+            PolyMc.LOGGER.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
+            return;
+        }
+
+        ModContainer mod = modOpt.get();
+        Path pathInJar = mod.getPath(path);
+        Path newLoc = BuildLocation.resolve(newLocation);
+        boolean c = newLoc.toFile().getParentFile().mkdirs();
+        try {
+            Util.copyAll(pathInJar, newLoc);
+        } catch (IOException e) {
+            PolyMc.LOGGER.warn(String.format("Failed to get folder from mod jar '%s' path: %s", modId, path));
+        }
+    }
+
+    /**
+     * Get's a file from the resourcepack folder.
+     * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
+     * @param modId the mod who owns the file.
+     * @param path  example: "asset/testmod/models/item/testitem.json".
+     * @return A reader for this file. Can be null.
+     */
+    protected InputStreamReader getFile(String modId, String path) {
+        if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
+        Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
+        if (!modOpt.isPresent()) {
+            PolyMc.LOGGER.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
             return null;
         }
 
         ModContainer mod = modOpt.get();
         Path pathInJar = mod.getPath(path);
-        Path newLoc = BuildLocation.resolve(path);
-        boolean c = newLoc.toFile().getParentFile().mkdirs();
         try {
-            return Files.copy(pathInJar, newLoc, StandardCopyOption.REPLACE_EXISTING);
+            return new InputStreamReader(Files.newInputStream(pathInJar, StandardOpenOption.READ));
         } catch (IOException e) {
-            PolyMc.LOGGER.warn("Failed to get resource from mod jar '"+modId+"' path: " + path);
+            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod jar '%s' path: '%s'", modId, path));
         }
         return null;
     }
 
-    protected boolean checkFileFromMod(String modId, String path) {
-        if (modId.equals("minecraft")) return false;
+    /**
+     * Checks if a file exists.
+     * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
+     * @param modId the mod who owns the file.
+     * @param path  example: "asset/testmod/models/item/testitem.json".
+     * @return The path to the new file.
+     */
+    protected boolean checkFile(String modId, String path) {
+        if (modId.equals("minecraft")) return false; //we can't access minecraft resources easily
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
             return false;
@@ -228,71 +454,48 @@ public class ResourcePackMaker {
     }
 
     /**
-     * get's a file from the modId's jar's asset folder.
-     * @param modId the mod who's assets we're getting from
-     * @param path example "asset/testmod/models/item/testitem.json"
-     * @return A reader for this file.
+     * Copies a file into this resourcepack.
+     * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
+     * @param modId the mod who owns the file.
+     * @param path  example: "asset/testmod/models/item/testitem.json".
+     * @return The path to the new file. Can be null.
      */
-    protected InputStreamReader getFileFromMod(String modId, String path) {
-        if (modId.equals("minecraft")) return null;
+    protected Path copyFile(String modId, String path) {
+        if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
-            PolyMc.LOGGER.warn("Tried to access assets from mod, but it isn't present. Mod ID "+modId);
+            PolyMc.LOGGER.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
             return null;
         }
 
         ModContainer mod = modOpt.get();
         Path pathInJar = mod.getPath(path);
+        Path newLoc = BuildLocation.resolve(path);
+        boolean c = newLoc.toFile().getParentFile().mkdirs();
         try {
-            return new InputStreamReader(Files.newInputStream(pathInJar, StandardOpenOption.READ));
+            return Files.copy(pathInJar, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            PolyMc.LOGGER.warn("Failed to get resource from mod jar '"+modId+"' path: " + path);
+            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod jar '%s' path: %s", modId, path));
         }
         return null;
     }
 
     /**
-     * copies a file from the modId's jar's asset folder to this resourcepack
-     * @param modId the mod who's assets we're getting from
-     * @param path example "models/item/testitem.json"
-     * @return The path to the new file
+     * Avoids having to create a new Gson for everything.
+     * @return A gson!
      */
-    public Path copyAssetFromMod(String modId, String path) {
-        return copyFileFromMod(modId, String.format("assets/%s/%s", modId, path));
-    }
-
-    /**
-     * Checks if a mod's jar contains the asset
-     * @param modId the mod who's assets we're checking
-     * @param path example "models/item/testitem.json"
-     * @return true if the file exists
-     */
-    public boolean checkForAsset(String modId, String path) {
-        return checkFileFromMod(modId, String.format("assets/%s/%s", modId, path));
-    }
-
-    /**
-     * get's a file from the modId's jar's asset folder.
-     * @param modId the mod who's assets we're getting from
-     * @param path example "models/item/testitem.json"
-     * @return A reader for this file.
-     */
-    public InputStreamReader getAssetFromMod(String modId, String path) {
-        return getFileFromMod(modId, String.format("assets/%s/%s", modId, path));
-    }
-
     public Gson getGson() {
         return gson;
     }
 
     /**
-     * Saves all changes that haven't been done yet
+     * Saves all in-memory changes to the disk.
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void saveAll() {
-        modelsToSave.forEach((id,model) -> {
+        modelsToSave.forEach((id, model) -> {
             String json = model.toJson(gson);
-            Path path = BuildLocation.resolve("assets/"+id.getNamespace()+"/"+MODELS+id.getPath()+".json");
+            Path path = BuildLocation.resolve(String.format("%s%s/%s%s.json", ASSETS, id.getNamespace(), MODELS, id.getPath()));
             path.toFile().getParentFile().mkdirs();
             try {
                 Files.write(path, json.getBytes());
@@ -301,9 +504,9 @@ public class ResourcePackMaker {
             }
         });
 
-        blockStatesToSave.forEach((id,blockState) -> {
+        blockStatesToSave.forEach((id, blockState) -> {
             String json = gson.toJson(blockState);
-            Path path = BuildLocation.resolve("assets/"+id.getNamespace()+"/"+BLOCKSTATES+id.getPath()+".json");
+            Path path = BuildLocation.resolve(String.format("%s%s/%s%s.json", ASSETS, id.getNamespace(), BLOCKSTATES, id.getPath()));
             path.toFile().getParentFile().mkdirs();
             try {
                 Files.write(path, json.getBytes());
