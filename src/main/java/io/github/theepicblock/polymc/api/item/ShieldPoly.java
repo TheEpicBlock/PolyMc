@@ -44,7 +44,7 @@ public class ShieldPoly extends PredicateBasedDamageableItem {
         Identifier shieldModelPath = new Identifier(serverItemId.getNamespace(), "item/"+serverItemId.getPath());
 
         //default shield model
-        if (!pack.hasPendingItemModel(shieldModelPath)) {
+        if (!pack.hasPendingModel(shieldModelPath)) {
             JsonModel shieldModel = new JsonModel();
             shieldModel.parent = "builtin/entity";
             shieldModel.gui_light = "front";
@@ -60,7 +60,7 @@ public class ShieldPoly extends PredicateBasedDamageableItem {
             override.predicate.put("blocking", (double)1);
             override.model = "minecraft:item/shield_blocking";
             shieldModel.addOverride(override);
-            pack.putPendingItemModel(shieldModelPath, shieldModel);
+            pack.putPendingModel(shieldModelPath, shieldModel);
         }
 
         super.AddToResourcePack(item, pack);

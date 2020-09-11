@@ -25,7 +25,7 @@ import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.register.BlockStateManager;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
-import io.github.theepicblock.polymc.resource.JsonBlockstate;
+import io.github.theepicblock.polymc.resource.JsonBlockState;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -110,8 +110,8 @@ public class UnusedBlockStatePoly implements BlockPoly {
     @Override
     public void AddToResourcePack(Block block, ResourcePackMaker pack) {
         Identifier moddedBlockId = Registry.BLOCK.getId(block);
-        InputStreamReader blockStateReader = pack.getAssetFromMod(moddedBlockId.getNamespace(), ResourcePackMaker.BLOCKSTATES + moddedBlockId.getPath() + ".json");
-        JsonBlockstate originalBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockstate.class);
+        InputStreamReader blockStateReader = pack.getAsset(moddedBlockId.getNamespace(), ResourcePackMaker.BLOCKSTATES + moddedBlockId.getPath() + ".json");
+        JsonBlockState originalBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);
         Map<String,JsonElement> parsedOriginalVariants = new HashMap<>();
         originalBlockStates.variants.forEach((string, element) -> {
             parsedOriginalVariants.put(string.replace(" ", ""), element);
@@ -119,17 +119,51 @@ public class UnusedBlockStatePoly implements BlockPoly {
 
         states.forEach((moddedState, clientState) -> {
             Identifier clientBlockId = Registry.BLOCK.getId(clientState.getBlock());
-            JsonBlockstate clientBlockStates = pack.getOrCreateBlockState(clientBlockId);
+            JsonBlockState clientBlockStates = pack.getOrDefaultPendingBlockState(clientBlockId);
             String clientStateString = Util.getPropertiesFromBlockState(clientState);
             String moddedStateString = Util.getPropertiesFromBlockState(moddedState);
 
             JsonElement moddedVariants = parsedOriginalVariants.get(moddedStateString);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
-            for (JsonBlockstate.Variant v : JsonBlockstate.getVariants(moddedVariants)) {
+            for (JsonBlockState.Variant v : JsonBlockState.getVariants(moddedVariants)) {
                 Identifier vId = Identifier.tryParse(v.model);
                 if (vId != null) pack.copyModel(new Identifier(v.model));
             }
         });
+
+//        Identifier modBlockId = Registry.BLOCK.getId(block);
+//        Set<Block> uniqueBlocks = new ReferenceArraySet<>();
+//        states.forEach((a,b) -> uniqueBlocks.add(b.getBlock()));
+//        InputStreamReader blockStateReader = pack.getAssetFromMod(modBlockId.getNamespace(),ResourcePackMaker.BLOCKSTATES+modBlockId.getPath()+".json");
+//        if (blockStateReader == null) {
+//            PolyMc.LOGGER.warn("Couldn't get blockstate file for: " + block.getTranslationKey());
+//            return;
+//        }
+//        JsonBlockstate originalBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader),JsonBlockstate.class);
+//
+//        for (Block clientBlock : uniqueBlocks) {
+//            Identifier clientBlockId = Registry.BLOCK.getId(clientBlock);
+//            JsonBlockstate newBlockStates = pack.getOrCreateBlockState(clientBlockId);
+//
+//            //paste all of the blockstates from the original block into an entry for the clientside block
+//            originalBlockStates.variants.forEach((stateString,variant) -> {
+//                BlockState state = Util.getBlockStateFromString(block,stateString);
+//                BlockState clientState = states.get(state);
+//                String clientStateString = Util.getPropertiesFromBlockState(clientState);
+//
+//                newBlockStates.variants.put(clientStateString,variant);
+//            });
+//
+//            //make sure all the models are present
+//            newBlockStates.variants.forEach((stateString,rawVariant) -> {
+//                JsonBlockstate.Variant[] variants = JsonBlockstate.getVariants(rawVariant);
+//                for (JsonBlockstate.Variant variant : variants) {
+//                    if (variant.model != null && !variant.model.isEmpty()) {
+//                        pack.copyModel(new Identifier(variant.model));
+//                    }
+//                }
+//            });
+//        }
     }
 
     @Override

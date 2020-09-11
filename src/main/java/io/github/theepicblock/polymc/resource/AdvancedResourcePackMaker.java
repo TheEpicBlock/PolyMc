@@ -21,6 +21,7 @@ import com.swordglowsblue.artifice.api.ArtificeResourcePack;
 import com.swordglowsblue.artifice.common.ArtificeRegistry;
 import com.swordglowsblue.artifice.impl.ArtificeResourcePackImpl;
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.Util;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -29,8 +30,10 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -38,25 +41,26 @@ import java.util.function.Consumer;
  * This class copies all assets into a temp folder. Then uses that to generate the resourcepack, instead of getting the assets straight from the jars.
  * This is slower, but could help with finding assets.
  */
-public class AdvancedResourcePackMaker extends ResourcePackMaker{
+public class AdvancedResourcePackMaker extends ResourcePackMaker {
     protected final Path tempLocation;
+
     public AdvancedResourcePackMaker(Path buildLocation, Path tempLocation) {
         super(buildLocation);
         this.tempLocation = tempLocation;
 
-//        Path assetTemp = tempLocation.resolve("assets").toAbsolutePath();
+        //Get all assets from all mods and copy it into a temporary location
         FabricLoader.getInstance().getAllMods().forEach((mod) -> {
             Path assets = mod.getPath("assets");
             if (!Files.exists(assets)) return;
             try {
-                copyAll(assets,tempLocation);
+                Util.copyAll(assets,tempLocation);
             } catch (IOException e) {
                 PolyMc.LOGGER.warn("Failed to get resources from mod " + mod.getMetadata().getId());
                 e.printStackTrace();
             }
         });
 
-        //Artifice provides a list with virtual resourcepacks. But it only exists on the client
+        //Artifice provides a list with virtual resourcepacks. But it only exists on the client. We can import them to use the assets
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
             Optional<ModContainer> artifice = FabricLoader.getInstance().getModContainer("artifice");
             if (artifice.isPresent()) {
@@ -73,41 +77,18 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
                 Path artLoc = FabricLoader.getInstance().getGameDirectory().toPath().relativize(tempLocation);
                 aPack.dumpResources(artLoc.toString());
             } catch (IOException e) {
-                PolyMc.LOGGER.warn("Failed to get resources from artifice pack " + aPack.getName());
+                PolyMc.LOGGER.warn(String.format("Failed to get resources from artifice pack '%s'", aPack.getName()));
                 PolyMc.LOGGER.warn(e);
             }
         }
         if (pack instanceof Consumer) {
             //noinspection unchecked
-            importArtificePack(new ArtificeResourcePackImpl(ResourceType.CLIENT_RESOURCES,(Consumer<ArtificeResourcePack.ClientResourcePackBuilder>)pack));
+            importArtificePack(new ArtificeResourcePackImpl(ResourceType.CLIENT_RESOURCES, (Consumer<ArtificeResourcePack.ClientResourcePackBuilder>)pack));
         }
     }
 
-    public void copyAll(Path from, Path to) throws IOException {
-        FileVisitor<Path> visitor = new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                if (!attrs.isDirectory()) {
-                    Path dest = to.resolve("."+file.toString()); //the dot is needed to make this relative TODO check if this works on windows
-                    //noinspection ResultOfMethodCallIgnored
-                    dest.toFile().mkdirs();
-                    Files.copy(file, dest, StandardCopyOption.REPLACE_EXISTING);
-                }
-                return super.visitFile(file, attrs);
-            }
-        };
-
-        Files.walkFileTree(from,visitor);
-    }
-
-    /**
-     * copies a file from the temp file into this resourcepack
-     * @param modId
-     * @param path example: "asset/testmod/models/item/testitem.json"
-     * @return The path to the new file
-     */
     @Override
-    protected Path copyFileFromMod(String modId, String path) {
+    protected Path copyFile(String modId, String path) {
         if (modId.equals("minecraft")) return null;
 
         Path filePath = tempLocation.resolve(path);
@@ -117,34 +98,28 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker{
         try {
             return Files.copy(filePath, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            PolyMc.LOGGER.warn("Failed to get resource from mod '"+modId+"' path: " + path);
+            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod '%s' path: '%s'", modId, path));
         }
         return null;
     }
 
     @Override
-    protected boolean checkFileFromMod(String modId, String path) {
+    protected boolean checkFile(String modId, String path) {
         if (modId.equals("minecraft")) return false;
 
         Path filePath = tempLocation.resolve(path);
         return Files.exists(filePath);
     }
 
-    /**
-     * get's a file from the temp file.
-     * @param modId the mod who's assets we're getting from
-     * @param path example "asset/testmod/models/item/testitem.json"
-     * @return A reader for this file.
-     */
     @Override
-    protected InputStreamReader getFileFromMod(String modId, String path) {
+    protected InputStreamReader getFile(String modId, String path) {
         if (modId.equals("minecraft")) return null;
 
         Path filePath = tempLocation.resolve(path);
         try {
             return new InputStreamReader(Files.newInputStream(filePath, StandardOpenOption.READ));
         } catch (IOException e) {
-            PolyMc.LOGGER.warn("Failed to get resource from mod '"+modId+"' path: " + path);
+            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod '%s' path: '%s'", modId, path));
         }
         return null;
     }

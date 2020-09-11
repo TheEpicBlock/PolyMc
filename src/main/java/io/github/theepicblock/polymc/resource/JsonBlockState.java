@@ -25,24 +25,24 @@ import com.google.gson.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class JsonBlockstate {
+public class JsonBlockState {
     public Map<String,JsonElement> variants;
 
-    public JsonBlockstate() {
+    public JsonBlockState() {
         this.variants = new HashMap<>();
     }
 
     public static Variant[] getVariants(JsonElement o) {
         if (o instanceof JsonObject) {
             JsonObject b = (JsonObject)o;
-            Variant var = new Gson().fromJson(b, Variant.class);
+            Variant var = new Gson().fromJson(b,Variant.class);
             Variant[] ret = new Variant[1];
             ret[0] = var;
             return ret;
         }
         if (o instanceof JsonArray) {
             JsonArray b = (JsonArray)o;
-            return new Gson().fromJson(b, Variant[].class);
+            return new Gson().fromJson(b,Variant[].class);
         }
         return new Variant[0];
     }
