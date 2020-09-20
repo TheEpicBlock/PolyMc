@@ -38,7 +38,6 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 
-//TODO organize these classes
 @SuppressWarnings("unused")
 public class ResourcePackMaker {
     public static final String ASSETS = "assets/";
@@ -165,7 +164,7 @@ public class ResourcePackMaker {
      * @return True if the specified id already has a blockState associated.
      */
     public boolean hasPendingBlockState(Identifier id) {
-        return modelsToSave.containsKey(id);
+        return blockStatesToSave.containsKey(id);
     }
 
     /**
