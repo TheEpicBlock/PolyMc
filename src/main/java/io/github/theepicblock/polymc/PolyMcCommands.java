@@ -72,8 +72,14 @@ public class PolyMcCommands {
 
                                 File polyDump = new File(FabricLoader.getInstance().getGameDirectory(), "PolyDump.txt");
                                 try {
-                                    boolean a = polyDump.createNewFile();
-                                    if (!a) {
+                                    if (polyDump.exists()) {
+                                        boolean a = polyDump.delete();
+                                        if (!a) {
+                                            throw new SimpleCommandExceptionType(new LiteralText("Failed to remove file so new one could be created")).create();
+                                        }
+                                    }
+                                    boolean b = polyDump.createNewFile();
+                                    if (!b) {
                                         throw new SimpleCommandExceptionType(new LiteralText("couldn't create file")).create();
                                     }
                                     FileWriter writer = new FileWriter(polyDump);
