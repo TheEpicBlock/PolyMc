@@ -44,7 +44,7 @@ public class BlockPropertyRetainingPoly implements BlockPoly{
      * Copies Property p from BlockState b into BlockState a
      */
     private <T extends Comparable<T>> BlockState copyProperty(BlockState a, BlockState b, Property<T> p) {
-        return a.with(p,b.get(p));
+        return a.with(p, b.get(p));
     }
 
     @Override

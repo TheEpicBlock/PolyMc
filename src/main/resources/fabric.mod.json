@@ -6,14 +6,15 @@
   "name": "PolyMc",
   "description": "An attempt to make mods compatible with vanilla clients.",
   "authors": [
-    "TheEpicBlock_TEB"
+    "TheEpicBlock"
   ],
   "contact": {
-    "homepage": "https://github.com/TheEpicBlock/PolyMc",
+    "homepage": "https://github.com/TheEpicBlock/PolyMc/wiki",
+    "issues": "https://github.com/TheEpicBlock/PolyMc/issues",
     "sources": "https://github.com/TheEpicBlock/PolyMc"
   },
 
-  "license": "LGPL",
+  "license": "LGPL-3.0-or-later",
   "icon": "assets/polymc/icon.png",
 
   "environment": "*",

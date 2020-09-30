@@ -24,7 +24,7 @@ import net.minecraft.block.BlockState;
 /**
  * This poly simply replaces the block with another block
  */
-public class SimpleReplacementPoly implements BlockPoly{
+public class SimpleReplacementPoly implements BlockPoly {
     protected final BlockState state;
 
     public SimpleReplacementPoly(BlockState state) {

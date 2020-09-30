@@ -25,7 +25,7 @@ import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.register.BlockStateManager;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
-import io.github.theepicblock.polymc.resource.JsonBlockstate;
+import io.github.theepicblock.polymc.resource.JsonBlockState;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -41,27 +41,26 @@ import java.util.function.Predicate;
 /**
  * This poly uses unused blockstates to display blocks
  */
-public class UnusedBlockStatePoly implements BlockPoly{
-    private final ImmutableMap<BlockState,BlockState> states;
+public class UnusedBlockStatePoly implements BlockPoly {
     public static final Predicate<BlockState> DEFAULT_FILTER = (blockState) -> blockState != blockState.getBlock().getDefaultState();
-    public static final BiConsumer<Block,PolyRegistry> DEFAULT_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block,new SimpleReplacementPoly(block.getDefaultState()));
+    public static final BiConsumer<Block,PolyRegistry> DEFAULT_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
+    private final ImmutableMap<BlockState,BlockState> states;
+
     /**
-     *
-     * @param moddedBlock the block this poly represents
+     * @param moddedBlock     the block this poly represents
      * @param clientSideBlock the block used to display this block on the client
-     * @param registry registry used to register this poly
+     * @param registry        registry used to register this poly
      * @throws OutOfBoundsException when the clientSideBlock doesn't have any more BlockStates left.
      */
     public UnusedBlockStatePoly(Block moddedBlock, Block clientSideBlock, PolyRegistry registry) throws OutOfBoundsException {
-        this(moddedBlock,clientSideBlock,registry,DEFAULT_FILTER,DEFAULT_ON_FIRST_REGISTER);
+        this(moddedBlock, clientSideBlock, registry, DEFAULT_FILTER, DEFAULT_ON_FIRST_REGISTER);
     }
 
     /**
-     *
-     * @param moddedBlock the block this poly represents
+     * @param moddedBlock     the block this poly represents
      * @param clientSideBlock the block used to display this block on the client
-     * @param registry registry used to register this poly
-     * @param filter limits the blockstates that can be used. A blockstate can only be used if {@link Predicate#test(Object)} returns true. A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
+     * @param registry        registry used to register this poly
+     * @param filter          limits the blockstates that can be used. A blockstate can only be used if {@link Predicate#test(Object)} returns true. A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
      * @param onFirstRegister this will be called if the clientSideBlock is first used. Useful for registering a poly for it.
      * @throws OutOfBoundsException when the clientSideBlock doesn't have any more BlockStates left.
      */
@@ -69,37 +68,36 @@ public class UnusedBlockStatePoly implements BlockPoly{
         BlockStateManager manager = registry.getBlockStateManager();
 
         ImmutableList<BlockState> moddedStates = moddedBlock.getStateManager().getStates();
-        if (!manager.isAvailable(clientSideBlock,moddedStates.size(), filter)) {
-            throw new OutOfBoundsException(clientSideBlock.getTranslationKey()+" doesn't have enough blockstates left for "+moddedBlock.getTranslationKey());
+        if (!manager.isAvailable(clientSideBlock, moddedStates.size(), filter)) {
+            throw new OutOfBoundsException(clientSideBlock.getTranslationKey() + " doesn't have enough blockstates left for " + moddedBlock.getTranslationKey());
         }
 
         HashMap<BlockState,BlockState> res = new HashMap<>();
         for (BlockState state : moddedStates) {
-            res.put(state,manager.requestBlockState(clientSideBlock,registry, filter, onFirstRegister));
+            res.put(state, manager.requestBlockState(clientSideBlock, registry, filter, onFirstRegister));
         }
         states = ImmutableMap.copyOf(res);
     }
 
     /**
-     *
-     * @param moddedBlock the block this poly represents
+     * @param moddedBlock      the block this poly represents
      * @param clientSideBlocks the blocks used to display this block on the client
-     * @param registry registry used to register this poly
-     * @param filter limits the blockstates that can be used. A blockstate can only be used if {@link Predicate#test(Object)} returns true. A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
-     * @param onFirstRegister this will be called if the clientSideBlock is first used. Useful for registering a poly for it.
+     * @param registry         registry used to register this poly
+     * @param filter           limits the blockstates that can be used. A blockstate can only be used if {@link Predicate#test(Object)} returns true. A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
+     * @param onFirstRegister  this will be called if the clientSideBlock is first used. Useful for registering a poly for it.
      * @throws OutOfBoundsException when the clientSideBlock doesn't have any more BlockStates left.
      */
     public UnusedBlockStatePoly(Block moddedBlock, Block[] clientSideBlocks, PolyRegistry registry, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) throws OutOfBoundsException {
         BlockStateManager manager = registry.getBlockStateManager();
 
         ImmutableList<BlockState> moddedStates = moddedBlock.getStateManager().getStates();
-        if (!manager.isAvailable(clientSideBlocks,moddedStates.size(), filter)) {
-            throw new OutOfBoundsException(clientSideBlocks[clientSideBlocks.length-1].getTranslationKey()+" doesn't have enough blockstates left for "+moddedBlock.getTranslationKey()+" even after checking others");
+        if (!manager.isAvailable(clientSideBlocks, moddedStates.size(), filter)) {
+            throw new OutOfBoundsException(clientSideBlocks[clientSideBlocks.length - 1].getTranslationKey() + " doesn't have enough blockstates left for " + moddedBlock.getTranslationKey() + " even after checking others");
         }
 
         HashMap<BlockState,BlockState> res = new HashMap<>();
         for (BlockState state : moddedStates) {
-            res.put(state,manager.requestBlockState(clientSideBlocks,registry, filter, onFirstRegister));
+            res.put(state, manager.requestBlockState(clientSideBlocks, registry, filter, onFirstRegister));
         }
         states = ImmutableMap.copyOf(res);
     }
@@ -112,22 +110,22 @@ public class UnusedBlockStatePoly implements BlockPoly{
     @Override
     public void AddToResourcePack(Block block, ResourcePackMaker pack) {
         Identifier moddedBlockId = Registry.BLOCK.getId(block);
-        InputStreamReader blockStateReader = pack.getAssetFromMod(moddedBlockId.getNamespace(),ResourcePackMaker.BLOCKSTATES+moddedBlockId.getPath()+".json");
-        JsonBlockstate originalBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader),JsonBlockstate.class);
-        Map<String, JsonElement> parsedOriginalVariants = new HashMap<>();
+        InputStreamReader blockStateReader = pack.getAsset(moddedBlockId.getNamespace(), ResourcePackMaker.BLOCKSTATES + moddedBlockId.getPath() + ".json");
+        JsonBlockState originalBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);
+        Map<String,JsonElement> parsedOriginalVariants = new HashMap<>();
         originalBlockStates.variants.forEach((string, element) -> {
-            parsedOriginalVariants.put(string.replace(" ",""),element);
+            parsedOriginalVariants.put(string.replace(" ", ""), element);
         });
 
-        states.forEach((moddedState,clientState) -> {
+        states.forEach((moddedState, clientState) -> {
             Identifier clientBlockId = Registry.BLOCK.getId(clientState.getBlock());
-            JsonBlockstate clientBlockStates = pack.getOrCreateBlockState(clientBlockId);
+            JsonBlockState clientBlockStates = pack.getOrDefaultPendingBlockState(clientBlockId);
             String clientStateString = Util.getPropertiesFromBlockState(clientState);
             String moddedStateString = Util.getPropertiesFromBlockState(moddedState);
 
             JsonElement moddedVariants = parsedOriginalVariants.get(moddedStateString);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
-            for (JsonBlockstate.Variant v :JsonBlockstate.getVariants(moddedVariants)) {
+            for (JsonBlockState.Variant v : JsonBlockState.getVariants(moddedVariants)) {
                 Identifier vId = Identifier.tryParse(v.model);
                 if (vId != null) pack.copyModel(new Identifier(v.model));
             }
@@ -172,7 +170,7 @@ public class UnusedBlockStatePoly implements BlockPoly{
     public String getDebugInfo(Block obj) {
         StringBuilder out = new StringBuilder();
         out.append(states.size()).append(" states");
-        states.forEach((moddedState,clientState) -> {
+        states.forEach((moddedState, clientState) -> {
             out.append("\n");
             out.append("    #");
             out.append(moddedState);

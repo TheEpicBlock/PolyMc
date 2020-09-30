@@ -40,7 +40,7 @@ public class JsonModel {
 
     public String toJson(Gson gson) {
         //Ensure that the overrides are in the correct order before converting
-        Collections.sort(overrides,(o1,o2) -> {
+        Collections.sort(overrides, (o1, o2) -> {
             if (o1.predicate.size() > 0 && o2.predicate.size() > 0) {
                 double i1 = o1.predicate.values().iterator().next();
                 double i2 = o2.predicate.values().iterator().next();

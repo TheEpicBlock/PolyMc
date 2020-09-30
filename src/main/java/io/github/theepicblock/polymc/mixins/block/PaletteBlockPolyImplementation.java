@@ -33,7 +33,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
  */
 @Mixin(value = {ArrayPalette.class, BiMapPalette.class, LithiumHashPalette.class})
 public class PaletteBlockPolyImplementation<T> {
-    @ModifyArg(method = {"toPacket","getPacketSize"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IdList;getRawId(Ljava/lang/Object;)I"))
+    @ModifyArg(method = {"toPacket", "getPacketSize"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IdList;getRawId(Ljava/lang/Object;)I"))
     public T GetIdRedirect(T object) {
         if (object instanceof BlockState) {
             //noinspection unchecked

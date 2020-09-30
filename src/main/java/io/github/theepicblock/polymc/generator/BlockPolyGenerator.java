@@ -33,8 +33,6 @@ import net.minecraft.util.shape.VoxelShape;
  */
 public class BlockPolyGenerator {
 
-
-
     /**
      * Automatically generates all {@link BlockPoly}s that are missing in the specified builder
      * @param builder builder to add the {@link BlockPoly}s to
@@ -45,7 +43,7 @@ public class BlockPolyGenerator {
             Identifier id = getBlockRegistry().getId(block);
             if (!Util.isVanilla(id)) {
                 //this is a modded block and should have a Poly
-                addBlockToBuilder(block,builder);
+                addBlockToBuilder(block, builder);
             }
         }
     }
@@ -59,7 +57,7 @@ public class BlockPolyGenerator {
         try {
             collisionShape = state.getCollisionShape(null, null);
         } catch (Exception e) {
-            PolyMc.LOGGER.warn("Failed to get collision shape for "+block.getTranslationKey()+": "+e.getMessage());
+            PolyMc.LOGGER.warn("Failed to get collision shape for " + block.getTranslationKey() + ": " + e.getMessage());
             return new SimpleReplacementPoly(Blocks.STONE);
         }
 
@@ -105,7 +103,7 @@ public class BlockPolyGenerator {
      * @see #generatePoly(Block, PolyRegistry)
      */
     private static void addBlockToBuilder(Block block, PolyRegistry builder) {
-        builder.registerBlockPoly(block, generatePoly(block,builder));
+        builder.registerBlockPoly(block, generatePoly(block, builder));
     }
 
     /**

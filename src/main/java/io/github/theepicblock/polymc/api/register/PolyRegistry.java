@@ -38,9 +38,9 @@ public class PolyRegistry {
     private final CustomModelDataManager CMDManager = new CustomModelDataManager();
     private final BlockStateManager blockStateManager = new BlockStateManager();
 
-    private final Map<Item, ItemPoly> itemPolys = new HashMap<>();
-    private final Map<Block, BlockPoly> blockPolys = new HashMap<>();
-    private final Map<ScreenHandlerType<?>, GuiPoly> guiPolys = new HashMap<>();
+    private final Map<Item,ItemPoly> itemPolys = new HashMap<>();
+    private final Map<Block,BlockPoly> blockPolys = new HashMap<>();
+    private final Map<ScreenHandlerType<?>,GuiPoly> guiPolys = new HashMap<>();
 
     /**
      * Register a poly for an item
@@ -54,7 +54,7 @@ public class PolyRegistry {
     /**
      * Register a poly for a block
      * @param block block to associate poly with
-     * @param poly poly to register
+     * @param poly  poly to register
      */
     public void registerBlockPoly(Block block, BlockPoly poly) {
         blockPolys.put(block, poly);
@@ -63,7 +63,7 @@ public class PolyRegistry {
     /**
      * Register a poly for a gui
      * @param screenHandler screen handler to associate poly with
-     * @param poly poly to register
+     * @param poly          poly to register
      */
     public void registerGuiPoly(ScreenHandlerType<?> screenHandler, GuiPoly poly) {
         guiPolys.put(screenHandler, poly);
@@ -107,7 +107,7 @@ public class PolyRegistry {
     public PolyMap build() {
         ImmutableMap<Item,ItemPoly> itemMap = ImmutableMap.copyOf(itemPolys);
         ImmutableMap<Block,BlockPoly> blockMap = ImmutableMap.copyOf(blockPolys);
-        ImmutableMap<ScreenHandlerType<?>, GuiPoly> guiMap = ImmutableMap.copyOf(guiPolys);
+        ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiMap = ImmutableMap.copyOf(guiPolys);
         return new PolyMap(itemMap, blockMap, guiMap);
     }
 }

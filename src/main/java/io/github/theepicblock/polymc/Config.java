@@ -37,11 +37,10 @@ import java.util.List;
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection", "JavadocReference"})
 public class Config {
     public static final int LATEST_VERSION = 3;
-
-    private int configVersion;
-    private List<String> disabledMixins;
     public resourcepackConfig resourcepack;
     public miscConfig misc;
+    private int configVersion;
+    private List<String> disabledMixins;
 
     public int getConfigVersion() {
         return configVersion;

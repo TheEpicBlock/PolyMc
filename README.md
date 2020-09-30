@@ -1,6 +1,6 @@
 # PolyMc
 What if you could put mods on a server, without needing it on the client?  
-Well, that's impossible. But we can try!
+Well, that's impossible. But we can try! *Nothing is impossible!*
 
 ---
 PolyMc is unique in that it operates on packet level. The advantage is that the mechanics are seperated from how it's rendered.  

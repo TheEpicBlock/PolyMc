@@ -46,13 +46,13 @@ public class PredicateBasedDamageableItem extends DamageableItemPoly {
         JsonModel clientModelJson = pack.getOrDefaultPendingItemModel(Registry.ITEM.getId(defaultServerItem.getItem()).getPath());
         Identifier serverModelId = Registry.ITEM.getId(item);
 
-        InputStreamReader serverModelReader = pack.getAssetFromMod(serverModelId.getNamespace(),"models/item/"+serverModelId.getPath()+".json");
-        JsonModel serverModel = pack.getGson().fromJson(serverModelReader,JsonModel.class);
+        InputStreamReader serverModelReader = pack.getAsset(serverModelId.getNamespace(), "models/item/" + serverModelId.getPath() + ".json");
+        JsonModel serverModel = pack.getGson().fromJson(serverModelReader, JsonModel.class);
 
         JsonModel.Override defaultCMDOverride = new JsonModel.Override();
         defaultCMDOverride.predicate = new HashMap<>();
-        defaultCMDOverride.predicate.put("custom_model_data",(double)CMDvalue);
-        defaultCMDOverride.model = serverModelId.getNamespace()+":item/"+serverModelId.getPath();
+        defaultCMDOverride.predicate.put("custom_model_data", (double)CMDvalue);
+        defaultCMDOverride.model = serverModelId.getNamespace() + ":item/" + serverModelId.getPath();
         clientModelJson.addOverride(defaultCMDOverride);
 
         for (JsonModel.Override override : serverModel.overrides) {
@@ -62,7 +62,7 @@ public class PredicateBasedDamageableItem extends DamageableItemPoly {
             } else {
                 newOverride.predicate = override.predicate;
             }
-            newOverride.predicate.put("custom_model_data",(double)CMDvalue);
+            newOverride.predicate.put("custom_model_data", (double)CMDvalue);
             newOverride.model = override.model;
             pack.copyModel(new Identifier(override.model));
             clientModelJson.addOverride(newOverride);
