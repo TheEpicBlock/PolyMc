@@ -67,7 +67,9 @@ public class BlockPolyGenerator {
         }
         //Handle leaves
         if (block instanceof LeavesBlock) {
-
+            try {
+                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.LEAVES_PROFILE);
+            } catch (OutOfBoundsException ignored) {}
         }
         //Handle full blocks
         if (Block.isShapeFullCube(collisionShape)) {

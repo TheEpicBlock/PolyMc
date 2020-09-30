@@ -84,6 +84,7 @@ public class BlockStateProfile {
 
     //PROFILES
     public static BlockStateProfile NOTEBLOCK_PROFILE = getDefaultedProfileFromBlock("noteblocks", Blocks.NOTE_BLOCK);
+    public static BlockStateProfile LEAVES_PROFILE = getDefaultedProfileFromBlock("leaves", LEAVES_BLOCKS);
     public static BlockStateProfile NO_COLLISION_PROFILE = new BlockStateProfile("blocks without collisions", NO_COLLISION_BLOCKS, NO_COLLISION_FILTER, NO_COLLISION_ON_FIRST_REGISTER);
     public static BlockStateProfile PETRIFIED_OAK_SLAB_PROFILE = new BlockStateProfile("petrified oak slab", Blocks.PETRIFIED_OAK_SLAB, ALWAYS_TRUE_FILTER, PETRIFIED_OAK_SLAB_ON_FIRST_REGISTER);
     public static BlockStateProfile FARMLAND_PROFILE = new BlockStateProfile("farmland", Blocks.FARMLAND, FARMLAND_FILTER, FARMLAND_ON_FIRST_REGISTER);
