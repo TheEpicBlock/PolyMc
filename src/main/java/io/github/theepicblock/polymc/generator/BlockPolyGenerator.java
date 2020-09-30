@@ -68,7 +68,7 @@ public class BlockPolyGenerator {
         //Handle leaves
         if (block instanceof LeavesBlock) {
             try {
-                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.LEAVES_PROFILE);
+                return new PropertyIgnoringUnusedBlockStatePoly(builder, BlockStateProfile.LEAVES_PROFILE);
             } catch (OutOfBoundsException ignored) {}
         }
         //Handle full blocks
@@ -79,6 +79,11 @@ public class BlockPolyGenerator {
         }
         //Handle blocks without collision
         if (collisionShape.isEmpty()) {
+            if (block instanceof SaplingBlock) {
+                try {
+                    return new PropertyIgnoringUnusedBlockStatePoly(builder, BlockStateProfile.NO_COLLISION_PROFILE);
+                } catch (OutOfBoundsException ignored) {}
+            }
             try {
                 return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NO_COLLISION_PROFILE);
             } catch (OutOfBoundsException ignored) {}
