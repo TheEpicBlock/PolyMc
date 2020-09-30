@@ -63,7 +63,7 @@ public class BlockPolyGenerator {
 
         //Handle fluids
         if (block instanceof FluidBlock) {
-            return new BlockPropertyRetainingPoly(Blocks.WATER);
+            return new PropertyRetainingReplacementPoly(Blocks.WATER);
         }
         //Handle leaves
         if (block instanceof LeavesBlock) {
@@ -72,30 +72,25 @@ public class BlockPolyGenerator {
         //Handle full blocks
         if (Block.isShapeFullCube(collisionShape)) {
             try {
-                return new UnusedBlockStatePoly(block,Blocks.NOTE_BLOCK,builder);
+                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NOTEBLOCK_PROFILE);
             } catch (OutOfBoundsException ignored) {}
         }
         //Handle blocks without collision
         if (collisionShape.isEmpty()) {
             try {
-                return MiscBlockHelper.getPoly(block,builder);
+                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NO_COLLISION_PROFILE);
             } catch (OutOfBoundsException ignored) {}
         }
         //Handle slabs
         if (block instanceof SlabBlock) {
             try {
-                return new UnusedBlockStatePoly(block, Blocks.PETRIFIED_OAK_SLAB, builder,
-                        (b) -> true, //make it use all blockstates, as PETRIFIED_OAK_SLAB is completely unused
-                        (block0, registry0) -> {registry0.registerBlockPoly(block0, new BlockPropertyRetainingPoly(Blocks.OAK_SLAB));}); //registers a poly for PETRIFIED_OAK_SLABs to display as OAK_SLABs instead.
+                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.PETRIFIED_OAK_SLAB_PROFILE);
             } catch (OutOfBoundsException ignored) {}
         }
         //Handle blocks with same collision as farmland
         if (collisionShape == Blocks.FARMLAND.getOutlineShape(null,null,null,null)) {
             try {
-                return IgnoreBlockStateHelper.of(block,Blocks.FARMLAND,builder,(blockstate) -> {
-                    int moisture = blockstate.get(FarmlandBlock.MOISTURE);
-                    return moisture == 0 || moisture == 7;
-                });
+                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.FARMLAND_PROFILE);
             } catch (OutOfBoundsException ignored) {}
         }
         //Odd cases

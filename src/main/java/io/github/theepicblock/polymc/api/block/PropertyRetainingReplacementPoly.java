@@ -26,9 +26,9 @@ import net.minecraft.state.property.Property;
  * A block poly that replaces a block with another block, whilst retaining the properties
  * Only works if the clientside block has all the properties of the modded block
  */
-public class BlockPropertyRetainingPoly implements BlockPoly{
+public class PropertyRetainingReplacementPoly implements BlockPoly{
     private final Block moddedBlock;
-    public BlockPropertyRetainingPoly(Block moddedBlock) {
+    public PropertyRetainingReplacementPoly(Block moddedBlock) {
         this.moddedBlock = moddedBlock;
     }
     @Override

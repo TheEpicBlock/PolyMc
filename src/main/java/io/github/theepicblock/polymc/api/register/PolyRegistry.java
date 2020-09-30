@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class PolyRegistry {
     private final CustomModelDataManager CMDManager = new CustomModelDataManager();
-    private final BlockStateManager blockStateManager = new BlockStateManager();
+    private final BlockStateManager blockStateManager = new BlockStateManager(this);
 
     private final Map<Item,ItemPoly> itemPolys = new HashMap<>();
     private final Map<Block,BlockPoly> blockPolys = new HashMap<>();
