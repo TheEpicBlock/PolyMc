@@ -89,6 +89,7 @@ public class UnusedBlockStatePoly implements BlockPoly {
             String moddedStateString = Util.getPropertiesFromBlockState(moddedState);
 
             JsonElement moddedVariants = parsedOriginalVariants.get(moddedStateString);
+            if (moddedVariants == null) moddedVariants = parsedOriginalVariants.get(""); //TODO there should be a better way for this
             clientBlockStates.variants.put(clientStateString, moddedVariants);
             for (JsonBlockState.Variant v : JsonBlockState.getVariants(moddedVariants)) {
                 Identifier vId = Identifier.tryParse(v.model);
