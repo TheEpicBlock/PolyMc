@@ -20,13 +20,20 @@ package io.github.theepicblock.polymc.api.block;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.state.property.Property;
 
-public class WaterPoly implements BlockPoly {
+/**
+ * A block poly that replaces a block with another block, whilst retaining the properties
+ * Only works if the clientside block has all the properties of the modded block
+ */
+public class PropertyRetainingReplacementPoly implements BlockPoly{
+    private final Block moddedBlock;
+    public PropertyRetainingReplacementPoly(Block moddedBlock) {
+        this.moddedBlock = moddedBlock;
+    }
     @Override
     public BlockState getClientBlock(BlockState input) {
-        BlockState output = Blocks.WATER.getDefaultState();
+        BlockState output = moddedBlock.getDefaultState();
         for (Property<?> p : input.getProperties()) {
             output = copyProperty(output, input, p);
         }
@@ -35,12 +42,18 @@ public class WaterPoly implements BlockPoly {
 
     /**
      * Copies Property p from BlockState b into BlockState a
-     * @return
      */
     private <T extends Comparable<T>> BlockState copyProperty(BlockState a, BlockState b, Property<T> p) {
         return a.with(p, b.get(p));
     }
 
     @Override
-    public void AddToResourcePack(Block block, ResourcePackMaker pack) {}
+    public void AddToResourcePack(Block block, ResourcePackMaker pack) {
+
+    }
+
+    @Override
+    public String getDebugInfo(Block obj) {
+        return moddedBlock.getTranslationKey();
+    }
 }

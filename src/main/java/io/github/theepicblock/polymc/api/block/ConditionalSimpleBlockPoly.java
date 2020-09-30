@@ -21,30 +21,25 @@ import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 
+import java.util.function.Predicate;
+
 /**
- * This poly simply replaces the block with another block
+ * This block poly replaces the the block it's registered to with another blockstate, but only if exempts returns false
  */
-public class SimpleReplacementPoly implements BlockPoly {
-    protected final BlockState state;
+public class ConditionalSimpleBlockPoly extends SimpleReplacementPoly {
+    private final Predicate<BlockState> exempts;
 
-    public SimpleReplacementPoly(BlockState state) {
-        this.state = state;
-    }
-
-    public SimpleReplacementPoly(Block block) {
-        this(block.getDefaultState());
+    public ConditionalSimpleBlockPoly(BlockState state, Predicate<BlockState> exempts) {
+        super(state);
+        this.exempts = exempts;
     }
 
     @Override
     public BlockState getClientBlock(BlockState input) {
-        return state;
+        return exempts.test(input) ? input : state;
     }
 
     @Override
-    public void AddToResourcePack(Block block, ResourcePackMaker pack) {}
-
-    @Override
-    public String getDebugInfo(Block obj) {
-        return state.toString();
+    public void AddToResourcePack(Block block, ResourcePackMaker pack) {
     }
 }

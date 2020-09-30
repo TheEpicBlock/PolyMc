@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.api.register;
 
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
+import io.github.theepicblock.polymc.api.block.BlockStateProfile;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.Block;
@@ -37,88 +38,43 @@ public class BlockStateManager {
     /**
      * The blockstateId we are currently at for a specified block
      */
-    private final Object2IntMap<Block> BlockStateIdIndex = new Object2IntOpenHashMap<>();
+    private final Object2IntMap<Block> blockStateUsageCounter = new Object2IntOpenHashMap<>();
+    private final PolyRegistry polyRegistry;
 
-    /**
-     * Request a blockstate value to be allocated for a specific block.
-     * @param block           the block you need a BlockState for
-     * @param filter          limits the blockstates that this function can return. A blockstate can only be used if {@link Predicate#test(Object)} returns true. A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
-     * @param onFirstRegister this will be called if this block is first used. Useful for registering a poly for it.
-     * @return the value you can use.
-     * @throws OutOfBoundsException if the limit of BlockStates is reached
-     */
-    public BlockState requestBlockState(Block block, PolyRegistry registry, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) throws OutOfBoundsException {
-        while (true) {
-            int current = getBlockStateIdIndex(block, registry, onFirstRegister);
-            try {
-                BlockState t = block.getStateManager().getStates().get(current);
-                BlockStateIdIndex.put(block,current+1);
-                if (filter.test(t)) {
-                    return t;
-                }
-            } catch (IndexOutOfBoundsException e) {
-                throw new OutOfBoundsException("Tried to access more BlockStates then block has: " + block.getTranslationKey());
-            }
-        }
+    public BlockStateManager(PolyRegistry polyRegistry) {
+        this.polyRegistry = polyRegistry;
     }
 
     /**
-     * Request a blockstate value to be allocated for any of a list of blocks.
-     * @param blocks          the blocks which can be used to pull blockstates from.
-     * @param filter          limits the blockstates that this function can return. A blockstate can only be used if {@link Predicate#test(Object)} returns true. A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
-     * @param onFirstRegister this will be called if this block is first used. Useful for registering a poly for it.
-     * @return the value you can use.
-     * @throws OutOfBoundsException if the limit of BlockStates is reached
+     * Request a blockstate value to be allocated in a profile.
+     * @param stateProfile the profile to use.
+     * @return the blockstate you can now use.
+     * @throws OutOfBoundsException if the limit of blockstates is reached
      */
-    public BlockState requestBlockState(Block[] blocks, PolyRegistry registry, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) throws OutOfBoundsException {
-        for (Block block : blocks) {
+    public BlockState requestBlockState(BlockStateProfile stateProfile) throws OutOfBoundsException {
+        for (Block block : stateProfile.blocks) {
             try {
-                return requestBlockState(block, registry, filter, onFirstRegister);
+                return requestBlockState(block, stateProfile.filter, stateProfile.onFirstRegister);
             } catch (OutOfBoundsException ignored) {}
         }
-        throw new OutOfBoundsException("Tried to access more BlockStates then block has: " + blocks[blocks.length-1].getTranslationKey() + " after iterating through others");
+        throw new OutOfBoundsException("Tried to access more BlockStates then block has. Profile: '"+stateProfile.name+"'");
     }
 
     /**
-     * Request multiple Blockstates for a single block
-     * @param block           the block you need a block state for
-     * @param amount          the amount of BlockStates you need
-     * @param filter          limits the blockstates that this function can return. A blockstate can only be used if {@link Predicate#test(Object)} returns true. A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
-     * @param onFirstRegister this will be called if this block is first used. Useful for registering a poly for it.
-     * @return the BlockStates you can do
+     * Request a certain amount blockstate values to be allocated in a profile.
+     * @param stateProfile the profile to use.
+     * @param amount how many blockstates you need.
+     * @return the blockstates you can now use.
      * @throws OutOfBoundsException if the limit of BlockStates is reached
      */
-    public List<BlockState> requestBlockState(Block block, int amount, PolyRegistry registry, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) throws OutOfBoundsException {
-        int initialValue = getBlockStateIdIndex(block, registry, onFirstRegister);
-
-        List<BlockState> ret = new ArrayList<>(amount);
-        for (int i = 0; i < amount; i++) {
-            try {
-                ret.add(requestBlockState(block, registry, filter, onFirstRegister));
-            } catch (OutOfBoundsException e) {
-                BlockStateIdIndex.put(block, initialValue);
-                throw e;
-            }
-        }
-        return ret;
-    }
-
-    /**
-     * Request multiple Blockstates for any of a list of blocks
-     * @param blocks          the blocks which can be used to pull blockstates from.
-     * @param amount          the amount of BlockStates you need
-     * @param filter          limits the blockstates that this function can return. A blockstate can only be used if {@link Predicate#test(Object)} returns true. A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
-     * @param onFirstRegister this will be called if this block is first used. Useful for registering a poly for it.
-     * @return the BlockStates you can do
-     * @throws OutOfBoundsException if the limit of BlockStates is reached
-     */
-    public List<BlockState> requestBlockState(Block[] blocks, int amount, PolyRegistry registry, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) throws OutOfBoundsException {
+    public List<BlockState> requestBlockStates(BlockStateProfile stateProfile, int amount) throws OutOfBoundsException {
+        Block[] blocks = stateProfile.blocks;
         List<BlockState> ret = new ArrayList<>(amount);
         int left = amount;
         for (Block block : blocks) {
             for (int i = 0; i < left; i++) {
                 try {
-                    ret.add(requestBlockState(block, registry, filter, onFirstRegister));
+                    ret.add(requestBlockState(block, stateProfile.filter, stateProfile.onFirstRegister));
                 } catch (OutOfBoundsException e) {
                     left -= (left - 1);
                 }
@@ -127,55 +83,29 @@ public class BlockStateManager {
         if (left != 0) {
             //We didn't reach the needed amount. We need to hack this in to un register the blockstates.
             for (BlockState state : ret) {
-                BlockStateIdIndex.put(state.getBlock(), BlockStateIdIndex.getInt(state.getBlock())-1);
+                blockStateUsageCounter.put(state.getBlock(), blockStateUsageCounter.getInt(state.getBlock())-1);
             }
-            throw new OutOfBoundsException("Tried to access more BlockStates then block has: " + blocks[blocks.length-1].getTranslationKey() + " after iterating through others. Blockstates have now been wasted.");
+            throw new OutOfBoundsException("Tried to access more BlockStates then block has. Profile: '"+stateProfile.name+"'");
         }
         return ret;
     }
 
     /**
-     * Checks how many blockstates are available for the specified block and compares that with the amount specified
-     * @param block  the blocks which can be used to pull blockstates from.
-     * @param filter limits which blockstates you're looking for. A blockstate can only be used if {@link Predicate#test(Object)} returns true. It is advised to use the same filter per block.
+     * Checks how many blockstates are available for a profile and compares that with the amount specified
+     * @param stateProfile the profile to use.
      * @param amount how many blockstates you need
      * @return true if that amount of blockstates are available
      */
-    public boolean isAvailable(Block block, int amount, Predicate<BlockState> filter) {
-        int current = BlockStateIdIndex.getOrDefault(block, 0); //this is the current blockstateId that we're at for this item/
-
+    public boolean isAvailable(BlockStateProfile stateProfile, int amount) {
         int goodBlocks = 0;
-        while (true) {
-            current++;
-            try {
-                BlockState t = block.getStateManager().getStates().get(current);
-                if (filter.test(t)) {
-                    goodBlocks++;
-                    if (goodBlocks == amount) return true;
-                }
-            } catch (IndexOutOfBoundsException e) {
-                return false;
-            }
-        }
-    }
-
-    /**
-     * Checks how many blockstates are available for a list of blocks and compares that with the amount specified
-     * @param blocks for which block to check
-     * @param filter limits which blockstates you're looking for. A blockstate can only be used if {@link Predicate#test(Object)} returns true. It is advised to use the same filter per block.
-     * @param amount how many blockstates you need
-     * @return true if that amount of blockstates are available
-     */
-    public boolean isAvailable(Block[] blocks, int amount, Predicate<BlockState> filter) {
-        int goodBlocks = 0;
-        for (Block block : blocks) {
-            int current = BlockStateIdIndex.getOrDefault(block,0); //this is the current blockstateId that we're at for this item/
+        for (Block block : stateProfile.blocks) {
+            int current = blockStateUsageCounter.getOrDefault(block,0); //this is the current blockstateId that we're at for this item/
 
             while (true) {
                 current++;
                 try {
                     BlockState t = block.getStateManager().getStates().get(current);
-                    if (filter.test(t)) {
+                    if (stateProfile.filter.test(t)) {
                         goodBlocks++;
                         if (goodBlocks == amount) return true;
                     }
@@ -187,11 +117,40 @@ public class BlockStateManager {
         return false;
     }
 
-    private int getBlockStateIdIndex(Block block, PolyRegistry registry, BiConsumer<Block,PolyRegistry> onFirstRegister) {
-        if (!BlockStateIdIndex.containsKey(block)) {
-            onFirstRegister.accept(block,registry);
-            BlockStateIdIndex.put(block,0);
+    /**
+     * Request a blockstate value to be allocated for a specific block.
+     * @param block           the block you need a BlockState for
+     * @param filter          limits the blockstates that this function can return. A blockstate can only be used if {@link Predicate#test(Object)} returns true. A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
+     * @param onFirstRegister this will be called if this block is first used. Useful for registering a poly for it.
+     * @return the value you can use.
+     * @throws OutOfBoundsException if the limit of BlockStates is reached
+     */
+    private BlockState requestBlockState(Block block, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) throws OutOfBoundsException {
+        while (true) {
+            int current = getBlockStateUsage(block, onFirstRegister);
+            try {
+                BlockState t = block.getStateManager().getStates().get(current);
+                blockStateUsageCounter.put(block,current+1);
+                if (filter.test(t)) {
+                    return t;
+                }
+            } catch (IndexOutOfBoundsException e) {
+                throw new OutOfBoundsException("Tried to access more BlockStates then block has: " + block.getTranslationKey());
+            }
         }
-        return BlockStateIdIndex.getInt(block);
+    }
+
+    /**
+     * Get's the usage index of the block.
+     * @param block block to check usage of.
+     * @param onFirstRegister method to use if this is the first time this block is used.
+     * @return the usage index of the block
+     */
+    private int getBlockStateUsage(Block block, BiConsumer<Block,PolyRegistry> onFirstRegister) {
+        if (!blockStateUsageCounter.containsKey(block)) {
+            onFirstRegister.accept(block,polyRegistry);
+            blockStateUsageCounter.put(block,0);
+        }
+        return blockStateUsageCounter.getInt(block);
     }
 }

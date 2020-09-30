@@ -22,10 +22,7 @@ import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.block.*;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.FluidBlock;
+import net.minecraft.block.*;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
@@ -64,20 +61,46 @@ public class BlockPolyGenerator {
             return new SimpleReplacementPoly(Blocks.STONE);
         }
 
-
+        //Handle fluids
         if (block instanceof FluidBlock) {
-            return new WaterPoly();
+            return new PropertyRetainingReplacementPoly(Blocks.WATER);
         }
+        //Handle leaves
+        if (block instanceof LeavesBlock) {
+            try {
+                return new PropertyIgnoringUnusedBlockStatePoly(builder, BlockStateProfile.LEAVES_PROFILE);
+            } catch (OutOfBoundsException ignored) {}
+        }
+        //Handle full blocks
         if (Block.isShapeFullCube(collisionShape)) {
             try {
-                return new UnusedBlockStatePoly(block,Blocks.NOTE_BLOCK,builder);
+                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NOTEBLOCK_PROFILE);
             } catch (OutOfBoundsException ignored) {}
         }
+        //Handle blocks without collision
         if (collisionShape.isEmpty()) {
+            if (block instanceof SaplingBlock) {
+                try {
+                    return new PropertyIgnoringUnusedBlockStatePoly(builder, BlockStateProfile.NO_COLLISION_PROFILE);
+                } catch (OutOfBoundsException ignored) {}
+            }
             try {
-                return NoCollisionBlockHelper.getPoly(block,builder);
+                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NO_COLLISION_PROFILE);
             } catch (OutOfBoundsException ignored) {}
         }
+        //Handle slabs
+        if (block instanceof SlabBlock) {
+            try {
+                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.PETRIFIED_OAK_SLAB_PROFILE);
+            } catch (OutOfBoundsException ignored) {}
+        }
+        //Handle blocks with same collision as farmland
+        if (collisionShape == Blocks.FARMLAND.getOutlineShape(null,null,null,null)) {
+            try {
+                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.FARMLAND_PROFILE);
+            } catch (OutOfBoundsException ignored) {}
+        }
+        //Odd cases
         return new SimpleReplacementPoly(Blocks.STONE); //TODO better implementation
     }
 
