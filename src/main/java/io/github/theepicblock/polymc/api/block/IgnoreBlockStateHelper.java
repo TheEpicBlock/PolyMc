@@ -39,16 +39,16 @@ public class IgnoreBlockStateHelper {
      */
     public static UnusedBlockStatePoly of(Block moddedBlock, Block clientSideBlock, PolyRegistry registry, Predicate<BlockState> ignored) throws OutOfBoundsException {
         return new UnusedBlockStatePoly(moddedBlock,clientSideBlock,registry,ignored.negate(),
-                (block, onFirstRegisterRegistry) -> onFirstRegisterRegistry.registerBlockPoly(block, new SimpleBlockPolyWithExempts(ignored, clientSideBlock.getDefaultState())));
+                (block, onFirstRegisterRegistry) -> onFirstRegisterRegistry.registerBlockPoly(block, new ConditionalSimpleBlockPoly(ignored, clientSideBlock.getDefaultState())));
     }
 
     /**
      * This block poly replaces the the block it's registered to with another blockstate, but only if exempts returns false
      */
-    public static class SimpleBlockPolyWithExempts extends SimpleReplacementPoly{
+    public static class ConditionalSimpleBlockPoly extends SimpleReplacementPoly{
         private final Predicate<BlockState> exempts;
 
-        public SimpleBlockPolyWithExempts(Predicate<BlockState> exempts, BlockState state) {
+        public ConditionalSimpleBlockPoly(Predicate<BlockState> exempts, BlockState state) {
             super(state);
             this.exempts = exempts;
         }

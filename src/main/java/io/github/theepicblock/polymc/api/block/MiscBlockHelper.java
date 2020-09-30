@@ -27,9 +27,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 /**
- * Helper to make block polys without collision.
+ * Contains some helper methods and fields for working with various blocks
  */
-public class NoCollisionBlockHelper {
+public class MiscBlockHelper {
+    private static final Block[] LEAF_BLOCKS = {Blocks.ACACIA_LEAVES,Blocks.BIRCH_LEAVES,Blocks.DARK_OAK_LEAVES,Blocks.JUNGLE_LEAVES,Blocks.OAK_LEAVES,Blocks.SPRUCE_LEAVES};
     private static final Block[] NO_COLLISION_BLOCKS = {Blocks.SUGAR_CANE,
             Blocks.ACACIA_SAPLING, Blocks.BIRCH_SAPLING, Blocks.DARK_OAK_SAPLING, Blocks.JUNGLE_SAPLING, Blocks.OAK_SAPLING,
             Blocks.CAVE_AIR, Blocks.VOID_AIR, Blocks.STRUCTURE_VOID};

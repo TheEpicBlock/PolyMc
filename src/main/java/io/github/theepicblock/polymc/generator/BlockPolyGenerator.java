@@ -65,6 +65,10 @@ public class BlockPolyGenerator {
         if (block instanceof FluidBlock) {
             return new BlockPropertyRetainingPoly(Blocks.WATER);
         }
+        //Handle leaves
+        if (block instanceof LeavesBlock) {
+
+        }
         //Handle full blocks
         if (Block.isShapeFullCube(collisionShape)) {
             try {
@@ -74,7 +78,7 @@ public class BlockPolyGenerator {
         //Handle blocks without collision
         if (collisionShape.isEmpty()) {
             try {
-                return NoCollisionBlockHelper.getPoly(block,builder);
+                return MiscBlockHelper.getPoly(block,builder);
             } catch (OutOfBoundsException ignored) {}
         }
         //Handle slabs
