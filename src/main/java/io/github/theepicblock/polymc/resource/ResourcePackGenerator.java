@@ -53,6 +53,11 @@ public class ResourcePackGenerator {
             }
         }
 
+        //Put the pack.mcmeta in there if it doesn't exist yet
+        if (!pack.BuildLocation.resolve("pack.mcmeta").toFile().exists()) {
+            pack.copyFileDirect("polymc", "pack.mcmeta");
+        }
+
         //Let mods register resources via the api
         List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("polymc", PolyMcEntrypoint.class);
         for (PolyMcEntrypoint entrypointEntry : entrypoints) {
