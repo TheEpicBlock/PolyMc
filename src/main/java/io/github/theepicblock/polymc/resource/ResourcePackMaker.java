@@ -410,12 +410,24 @@ public class ResourcePackMaker {
 
     /**
      * Get's a file from the resourcepack folder.
-     * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
+     * If you need to get something that isn't in the assets folder, use {@link #getFileDirect(String, String)} instead.
      * @param modId the mod who owns the file.
      * @param path  example: "asset/testmod/models/item/testitem.json".
      * @return A reader for this file. Can be null.
      */
     protected InputStreamReader getFile(String modId, String path) {
+        return getFileDirect(modId, path);
+    }
+
+    /**
+     * Get's a file from the resourcepack folder.
+     * This gets it directly from the jar, even if the resourcepackConfig is set to advanced.
+     * This should only be used if the thing you want to get is not in the assets folder.
+     * @param modId the mod who owns the file.
+     * @param path  example: "asset/testmod/models/item/testitem.json".
+     * @return A reader for this file. Can be null.
+     */
+    public final InputStreamReader getFileDirect(String modId, String path) {
         if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
@@ -435,12 +447,24 @@ public class ResourcePackMaker {
 
     /**
      * Checks if a file exists.
-     * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
+     * If you need to check something that isn't in the assets folder, use {@link #checkFileDirect(String, String)} instead.
      * @param modId the mod who owns the file.
      * @param path  example: "asset/testmod/models/item/testitem.json".
      * @return The path to the new file.
      */
     protected boolean checkFile(String modId, String path) {
+        return checkFileDirect(modId, path);
+    }
+
+    /**
+     * Checks if a file exists.
+     * This checks it directly from the jar, even if the resourcepackConfig is set to advanced.
+     * This should only be used if the thing you want to check is not in the assets folder.
+     * @param modId the mod who owns the file.
+     * @param path  example: "asset/testmod/models/item/testitem.json".
+     * @return The path to the new file.
+     */
+    public final boolean checkFileDirect(String modId, String path) {
         if (modId.equals("minecraft")) return false; //we can't access minecraft resources easily
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
@@ -454,12 +478,24 @@ public class ResourcePackMaker {
 
     /**
      * Copies a file into this resourcepack.
-     * Unless the resourcepackConfig is set to advanced, this can be used to pull other stuff from the mod jar too.
+     * If you need to copy something that isn't in the assets folder, use {@link #copyFileDirect(String, String)} instead.
      * @param modId the mod who owns the file.
      * @param path  example: "asset/testmod/models/item/testitem.json".
      * @return The path to the new file. Can be null.
      */
     protected Path copyFile(String modId, String path) {
+        return this.copyFileDirect(modId, path);
+    }
+
+    /**
+     * Copies a file into this resourcepack.
+     * This copies it directly from the jar, even if the resourcepackConfig is set to advanced.
+     * This should only be used if the thing you want to copy is not in the assets folder.
+     * @param modId the mod who owns the file.
+     * @param path  example: "asset/testmod/models/item/testitem.json".
+     * @return The path to the new file. Can be null.
+     */
+    public final Path copyFileDirect(String modId, String path) {
         if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
