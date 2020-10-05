@@ -22,6 +22,7 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,6 +51,16 @@ public class ResourcePackGenerator {
             if (FabricLoader.getInstance().getModContainer("artifice").isPresent()) {
                 PolyMc.LOGGER.error("Artifice was detected, but the default PolyMc resourcepack maker is not compatible with Artice");
                 PolyMc.LOGGER.error("Please switch to the advanced generator in the config.");
+            }
+        }
+
+        //Clear up the assets folder
+        File assetsFolder = pack.BuildLocation.resolve("assets").toFile();
+        if (assetsFolder.exists() && assetsFolder.isDirectory()) {
+            try {
+                FileUtils.deleteDirectory(assetsFolder);
+            } catch (IOException e) {
+                PolyMc.LOGGER.warn("Couldn't delete the assets folder. There may still be some unneeded files in there");
             }
         }
 
