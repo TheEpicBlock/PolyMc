@@ -28,7 +28,9 @@ import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -50,7 +52,7 @@ public class PropertyIgnoringUnusedBlockStatePoly implements BlockPoly{
     }
 
     @Override
-    public BlockState getClientBlock(BlockState input) {
+    public BlockState getClientBlock(BlockState input, BlockPos pos, World world) {
         return newBlockState;
     }
 

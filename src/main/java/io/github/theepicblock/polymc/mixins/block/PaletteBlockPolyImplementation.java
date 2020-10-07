@@ -37,7 +37,7 @@ public class PaletteBlockPolyImplementation<T> {
     public T GetIdRedirect(T object) {
         if (object instanceof BlockState) {
             //noinspection unchecked
-            return (T)PolyMc.getMap().getClientBlock((BlockState)object);
+            return (T)PolyMc.getMap().getClientBlock((BlockState)object, null, null);
         }
         return object;
     }

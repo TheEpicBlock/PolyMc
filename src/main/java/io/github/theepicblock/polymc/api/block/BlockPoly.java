@@ -21,14 +21,22 @@ import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 public interface BlockPoly extends DebugInfoProvider<Block> {
     /**
      * Transforms an BlockState to it's client version
      * @param input original BlockState
+     * @param pos   the position this block is in, may be null.
+     * @param world the world this block is in, may be null.
      * @return BlockState that should be sent to the client
      */
-    BlockState getClientBlock(BlockState input);
+    BlockState getClientBlock(BlockState input, BlockPos pos, World world);
+
+    default boolean blockStateNotConsistent() {
+        return false;
+    }
 
     /**
      * Callback to add all resources needed for this block to a resourcepack

@@ -26,6 +26,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 /**
  *
@@ -48,11 +50,15 @@ public class PolyMap {
         return poly.getClientItem(serverItem);
     }
 
-    public BlockState getClientBlock(BlockState serverBlock) {
+    public BlockState getClientBlock(BlockState serverBlock, BlockPos pos, World world) {
         BlockPoly poly = blockPolys.get(serverBlock.getBlock());
         if (poly == null) return serverBlock;
 
-        return poly.getClientBlock(serverBlock);
+        return poly.getClientBlock(serverBlock, pos, world);
+    }
+
+    public BlockPoly getBlockPoly(Block block) {
+        return blockPolys.get(block);
     }
 
     public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {

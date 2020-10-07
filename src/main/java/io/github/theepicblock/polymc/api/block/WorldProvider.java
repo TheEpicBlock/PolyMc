@@ -15,19 +15,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.block;
+package io.github.theepicblock.polymc.api.block;
 
-import io.github.theepicblock.polymc.PolyMc;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import net.minecraft.world.World;
 
-@Mixin(Block.class)
-public class BlockPolyImplementation {
-    @ModifyVariable(method = "getRawIdFromState(Lnet/minecraft/block/BlockState;)I", at = @At("HEAD"))
-    private static BlockState rawBlockStateOverwrite(BlockState state) {
-        return PolyMc.getMap().getClientBlock(state, null, null);
-    }
+public interface WorldProvider {
+    void polyMcSetWorld(World world);
+
+    World polyMcGetWorld();
 }
