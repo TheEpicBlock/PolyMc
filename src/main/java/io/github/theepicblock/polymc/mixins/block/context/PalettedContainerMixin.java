@@ -80,7 +80,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
         if (value instanceof BlockState) {
             PolyMap map = PolyMc.getMap();
             BlockPoly poly = map.getBlockPoly(((BlockState)value).getBlock());
-            if (poly != null && poly.blockStateNotConsistent()) {
+            if (poly != null && poly.isNotConsistent()) {
                 nonConsistentPolyCount++;
             }
 
@@ -88,7 +88,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
             if (retValue != this.defaultValue) {
                 Block block = ((BlockState)retValue).getBlock();
                 BlockPoly poly2 = map.getBlockPoly(block);
-                if (poly2 != null && poly2.blockStateNotConsistent()) {
+                if (poly2 != null && poly2.isNotConsistent()) {
                     nonConsistentPolyCount--;
                 }
             }
@@ -102,7 +102,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
             for (int i = 0; i < this.data.getSize(); i++) {
                 BlockState b = (BlockState)this.get(i);
                 BlockPoly poly = PolyMc.getMap().getBlockPoly(b.getBlock());
-                if (poly != null && poly.blockStateNotConsistent()) {
+                if (poly != null && poly.isNotConsistent()) {
                     nonConsistentPolyCount++;
                 }
             }
@@ -116,7 +116,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
             PalettedContainerMixin<T> clone2 = ((PalettedContainerMixin<T>)(Object)clone);
             for (int i = 0; i < this.data.getSize(); i++) {
                 BlockState b = (BlockState)this.get(i);
-                BlockState polyd = PolyMc.getMap().getClientBlock(b, null, world);
+                BlockState polyd = PolyMc.getMap().getClientBlockWithContext(b, null, world);
                 clone2.set(i, (T)polyd);
             }
             this.unlock();
@@ -135,7 +135,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
             for (int i = 0; i < this.data.getSize(); i++) {
                 BlockState b = (BlockState)this.get(i);
                 BlockPoly poly = PolyMc.getMap().getBlockPoly(b.getBlock());
-                if (poly != null && poly.blockStateNotConsistent()) {
+                if (poly != null && poly.isNotConsistent()) {
                     nonConsistentPolyCount++;
                 }
             }
@@ -149,7 +149,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
             PalettedContainerMixin<T> clone2 = ((PalettedContainerMixin<T>)(Object)clone);
             for (int i = 0; i < this.data.getSize(); i++) {
                 BlockState b = (BlockState)this.get(i);
-                BlockState polyd = PolyMc.getMap().getClientBlock(b, null, world);
+                BlockState polyd = PolyMc.getMap().getClientBlockWithContext(b, null, world);
                 clone2.set(i, (T)polyd);
             }
             this.unlock();

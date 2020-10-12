@@ -20,8 +20,6 @@ package io.github.theepicblock.polymc.api.block;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 /**
  * This poly simply replaces the block with another block
@@ -38,7 +36,7 @@ public class SimpleReplacementPoly implements BlockPoly {
     }
 
     @Override
-    public BlockState getClientBlock(BlockState input, BlockPos pos, World world) {
+    public BlockState getClientBlock(BlockState input) {
         return state;
     }
 

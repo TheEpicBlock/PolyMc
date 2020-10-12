@@ -50,11 +50,18 @@ public class PolyMap {
         return poly.getClientItem(serverItem);
     }
 
-    public BlockState getClientBlock(BlockState serverBlock, BlockPos pos, World world) {
+    public BlockState getClientBlock(BlockState serverBlock) {
         BlockPoly poly = blockPolys.get(serverBlock.getBlock());
         if (poly == null) return serverBlock;
 
-        return poly.getClientBlock(serverBlock, pos, world);
+        return poly.getClientBlock(serverBlock);
+    }
+
+    public BlockState getClientBlockWithContext(BlockState serverBlock, BlockPos pos, World world) {
+        BlockPoly poly = blockPolys.get(serverBlock.getBlock());
+        if (poly == null) return serverBlock;
+
+        return poly.getClientBlockWithContext(serverBlock, pos, world);
     }
 
     public BlockPoly getBlockPoly(Block block) {

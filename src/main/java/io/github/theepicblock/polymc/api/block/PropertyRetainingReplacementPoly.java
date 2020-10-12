@@ -21,8 +21,6 @@ import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.state.property.Property;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 /**
  * A block poly that replaces a block with another block, whilst retaining the properties
@@ -34,7 +32,7 @@ public class PropertyRetainingReplacementPoly implements BlockPoly{
         this.moddedBlock = moddedBlock;
     }
     @Override
-    public BlockState getClientBlock(BlockState input, BlockPos pos, World world) {
+    public BlockState getClientBlock(BlockState input) {
         BlockState output = moddedBlock.getDefaultState();
         for (Property<?> p : input.getProperties()) {
             output = copyProperty(output, input, p);

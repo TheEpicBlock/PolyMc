@@ -20,8 +20,6 @@ package io.github.theepicblock.polymc.api.block;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 import java.util.function.Predicate;
 
@@ -37,7 +35,7 @@ public class ConditionalSimpleBlockPoly extends SimpleReplacementPoly {
     }
 
     @Override
-    public BlockState getClientBlock(BlockState input, BlockPos pos, World world) {
+    public BlockState getClientBlock(BlockState input) {
         return exempts.test(input) ? input : state;
     }
 

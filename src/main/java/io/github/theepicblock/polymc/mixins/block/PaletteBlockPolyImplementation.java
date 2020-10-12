@@ -43,7 +43,7 @@ public abstract class PaletteBlockPolyImplementation<T> implements UnRemappedPac
     public T GetIdRedirect(T object) {
         if (!noRemaps && object instanceof BlockState) {
             //noinspection unchecked
-            return (T)PolyMc.getMap().getClientBlock((BlockState)object, null, null);
+            return (T)PolyMc.getMap().getClientBlock((BlockState)object);
         }
         return object;
     }
