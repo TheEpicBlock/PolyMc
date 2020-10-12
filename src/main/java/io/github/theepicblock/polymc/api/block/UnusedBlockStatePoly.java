@@ -71,9 +71,6 @@ public class UnusedBlockStatePoly implements BlockPoly {
 
     @Override
     public BlockState getClientBlock(BlockState input, BlockPos pos, World world) {
-        if (world != null) {
-            System.out.println(world); //TODO remove when done debugging
-        }
         return states.get(input);
     }
 

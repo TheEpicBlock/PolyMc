@@ -17,7 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins.block.context;
 
-import io.github.theepicblock.polymc.api.block.WorldProvider;
+import io.github.theepicblock.polymc.impl.WorldProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -28,6 +28,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(WorldChunk.class)
@@ -36,9 +37,17 @@ public class WorldChunkMixin {
     @Shadow @Final private World world;
 
     @Inject(method = "setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Z)Lnet/minecraft/block/BlockState;",
-            at = @At(value = "FIELD", ordinal = 1, target = "Lnet/minecraft/world/chunk/WorldChunk;sections:[Lnet/minecraft/world/chunk/ChunkSection;"))
+            at = @At("RETURN")) //TODO this can be better
     public void setChunkWorld(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> cir) {
-        System.out.println("Set world "+ world);
-        ((WorldProvider)sections[pos.getY() << 4]).polyMcSetWorld(this.world);
+        ((WorldProvider)sections[pos.getY() >> 4]).polyMcSetWorld(this.world);
+    }
+
+    @Inject(method = "<init>(Lnet/minecraft/world/World;Lnet/minecraft/util/math/ChunkPos;Lnet/minecraft/world/biome/source/BiomeArray;Lnet/minecraft/world/chunk/UpgradeData;Lnet/minecraft/world/TickScheduler;Lnet/minecraft/world/TickScheduler;J[Lnet/minecraft/world/chunk/ChunkSection;Ljava/util/function/Consumer;)V", at = @At("RETURN"))
+    public void onInit(CallbackInfo ci) {
+        for (ChunkSection s : this.sections) {
+            if (s != null) {
+                ((WorldProvider)s).polyMcSetWorld(this.world);
+            }
+        }
     }
 }

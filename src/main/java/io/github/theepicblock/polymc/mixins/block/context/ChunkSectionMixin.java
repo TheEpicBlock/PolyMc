@@ -17,38 +17,26 @@
  */
 package io.github.theepicblock.polymc.mixins.block.context;
 
-import io.github.theepicblock.polymc.api.block.WorldProvider;
+import io.github.theepicblock.polymc.impl.WorldProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.chunk.Palette;
 import net.minecraft.world.chunk.PalettedContainer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ChunkSection.class)
 public class ChunkSectionMixin implements WorldProvider {
-    @Shadow @Final private static Palette<BlockState> palette;
     @Shadow @Final private PalettedContainer<BlockState> container;
-    @Unique private World world;
 
     @Override
     public void polyMcSetWorld(World world) {
-        this.world = world;
+        ((WorldProvider)this.container).polyMcSetWorld(world);
     }
 
     @Override
     public World polyMcGetWorld() {
-        return world;
-    }
-
-    @Inject(method = "<init>", at = @At("TAIL"))
-    public void onInit(CallbackInfo ci) {
-        ((WorldProvider)this.container).polyMcSetWorld(world);
+        return ((WorldProvider)this.container).polyMcGetWorld();
     }
 }

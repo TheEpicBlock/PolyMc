@@ -20,7 +20,9 @@ package io.github.theepicblock.polymc.mixins.block.context;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.api.block.WorldProvider;
+import io.github.theepicblock.polymc.impl.HasNonConsistentBlockPolyProvider;
+import io.github.theepicblock.polymc.impl.UnRemappedPacketProvider;
+import io.github.theepicblock.polymc.impl.WorldProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketByteBuf;
@@ -41,7 +43,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.function.Predicate;
 
 @Mixin(PalettedContainer.class)
-public abstract class PalettedContainerMixin<T> implements WorldProvider {
+public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRemappedPacketProvider, HasNonConsistentBlockPolyProvider {
     @Shadow public abstract void lock();
 
     @Shadow public abstract void unlock();
@@ -109,32 +111,80 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider {
 
         if (nonConsistentPolyCount > 0) {
             this.lock();
-            PalettedContainer<T> clone = new PalettedContainer<>(this.fallbackPalette, this.idList, null, null, this.defaultValue);
+            PalettedContainer<T> clone = new PalettedContainer<>(null, this.idList, null, null, this.defaultValue);
+            //noinspection all
+            PalettedContainerMixin<T> clone2 = ((PalettedContainerMixin<T>)(Object)clone);
             for (int i = 0; i < this.data.getSize(); i++) {
                 BlockState b = (BlockState)this.get(i);
                 BlockState polyd = PolyMc.getMap().getClientBlock(b, null, world);
-                //noinspection all
-                ((PalettedContainerMixin<T>)(Object)clone).set(i, (T)polyd);
+                clone2.set(i, (T)polyd);
             }
             this.unlock();
-            clone.toPacket(buf);
+            //noinspection ConstantConditions
+            if (clone instanceof UnRemappedPacketProvider) {
+                ((UnRemappedPacketProvider)clone).toPacketUnRemapped(buf);
+            }
             ci.cancel();
         }
     }
 
     @Inject(method = "getPacketSize", at = @At("HEAD"), cancellable = true)
     public void getPacketSizeInject(CallbackInfoReturnable<Integer> cir) {
+        if (!hasSyncedConsistentPolyCount) {
+            nonConsistentPolyCount = 0;
+            for (int i = 0; i < this.data.getSize(); i++) {
+                BlockState b = (BlockState)this.get(i);
+                BlockPoly poly = PolyMc.getMap().getBlockPoly(b.getBlock());
+                if (poly != null && poly.blockStateNotConsistent()) {
+                    nonConsistentPolyCount++;
+                }
+            }
+            hasSyncedConsistentPolyCount = true;
+        }
+
         if (nonConsistentPolyCount > 0) {
             this.lock();
-            PalettedContainer<T> clone = new PalettedContainer<>(this.fallbackPalette, this.idList, null, null, this.defaultValue);
+            PalettedContainer<T> clone = new PalettedContainer<>(null, this.idList, null, null, this.defaultValue);
+            //noinspection all
+            PalettedContainerMixin<T> clone2 = ((PalettedContainerMixin<T>)(Object)clone);
             for (int i = 0; i < this.data.getSize(); i++) {
                 BlockState b = (BlockState)this.get(i);
                 BlockState polyd = PolyMc.getMap().getClientBlock(b, null, world);
-                //noinspection all
-                ((PalettedContainerMixin<T>)(Object)clone).set(i, (T)polyd);
+                clone2.set(i, (T)polyd);
             }
             this.unlock();
-            cir.setReturnValue(clone.getPacketSize());
+
+            //noinspection ConstantConditions
+            if (clone instanceof UnRemappedPacketProvider) {
+                cir.setReturnValue(((UnRemappedPacketProvider)clone).getUnRemappedPacketSize());
+            }
         }
+    }
+
+    @Override
+    public void toPacketUnRemapped(PacketByteBuf buf) {
+        this.lock();
+        buf.writeByte(this.paletteSize);
+        if (this.palette instanceof UnRemappedPacketProvider) {
+            ((UnRemappedPacketProvider)palette).toPacketUnRemapped(buf);
+        } else {
+            this.palette.toPacket(buf);
+        }
+        buf.writeLongArray(this.data.getStorage());
+        this.unlock();
+    }
+
+    @Override
+    public int getUnRemappedPacketSize() {
+        if (this.palette instanceof UnRemappedPacketProvider) {
+            UnRemappedPacketProvider palette2 = (UnRemappedPacketProvider)palette;
+            return 1 + palette2.getUnRemappedPacketSize() + PacketByteBuf.getVarIntSizeBytes(this.data.getSize()) + this.data.getStorage().length * 8;
+        }
+        return 1 + this.palette.getPacketSize() + PacketByteBuf.getVarIntSizeBytes(this.data.getSize()) + this.data.getStorage().length * 8;
+    }
+
+    @Override
+    public boolean hasNonConsistentBlockPolys() {
+        return nonConsistentPolyCount > 0;
     }
 }
