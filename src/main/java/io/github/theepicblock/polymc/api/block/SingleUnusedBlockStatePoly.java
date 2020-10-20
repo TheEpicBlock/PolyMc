@@ -34,16 +34,18 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PropertyIgnoringUnusedBlockStatePoly implements BlockPoly{
+/**
+ * Works the same as {@link UnusedBlockStatePoly}, but uses only a single output blockstate, instead of one per modded blockstate.
+ */
+public class SingleUnusedBlockStatePoly implements BlockPoly{
     private final BlockState newBlockState;
     
     /**
-     * @param moddedBlock     the block this poly represents
      * @param stateProfile    the profile to use.
      * @param registry        registry used to register this poly
      * @throws OutOfBoundsException when the clientSideBlock doesn't have any more BlockStates left.
      */
-    public PropertyIgnoringUnusedBlockStatePoly(PolyRegistry registry, BlockStateProfile stateProfile) throws OutOfBoundsException {
+    public SingleUnusedBlockStatePoly(PolyRegistry registry, BlockStateProfile stateProfile) throws OutOfBoundsException {
         BlockStateManager manager = registry.getBlockStateManager();
 
         newBlockState = manager.requestBlockState(stateProfile);
