@@ -61,7 +61,7 @@ public class BlockStateProfile {
     private static final Predicate<BlockState> DEFAULT_FILTER = (blockState) -> blockState != blockState.getBlock().getDefaultState();
     private static final Predicate<BlockState> NO_COLLISION_FILTER = (blockState) -> {
         if (isAir(blockState.getBlock())) return true;
-        return UnusedBlockStatePoly.DEFAULT_FILTER.test(blockState);
+        return DEFAULT_FILTER.test(blockState);
     };
     private static final Predicate<BlockState> ALWAYS_TRUE_FILTER = (blockState) -> true;
     private static final Predicate<BlockState> FARMLAND_FILTER = (blockstate) -> {

@@ -35,15 +35,11 @@ import net.minecraft.util.registry.Registry;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 
 /**
  * This poly uses unused blockstates to display blocks
  */
 public class UnusedBlockStatePoly implements BlockPoly {
-    public static final Predicate<BlockState> DEFAULT_FILTER = (blockState) -> blockState != blockState.getBlock().getDefaultState();
-    public static final BiConsumer<Block,PolyRegistry> DEFAULT_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
     private final ImmutableMap<BlockState,BlockState> states;
 
     /**
