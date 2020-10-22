@@ -71,6 +71,17 @@ public class BlockPolyGenerator {
                 return new SingleUnusedBlockStatePoly(builder, BlockStateProfile.LEAVES_PROFILE);
             } catch (OutOfBoundsException ignored) {}
         }
+        //Handle doors/trapdoors
+        if (block instanceof DoorBlock) {
+            try {
+                return new PoweredStateBlockPoly(builder, BlockStateProfile.DOOR_PROFILE);
+            } catch (OutOfBoundsException ignored) {}
+        }
+        if (block instanceof TrapdoorBlock) {
+            try {
+                return new PoweredStateBlockPoly(builder, BlockStateProfile.TRAPDOOR_PROFILE);
+            } catch (OutOfBoundsException ignored) {}
+        }
         //Handle full blocks
         if (Block.isShapeFullCube(collisionShape)) {
             try {
