@@ -22,6 +22,7 @@ import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.block.*;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
+import io.github.theepicblock.polymc.mixins.block.MaterialAccessor;
 import net.minecraft.block.*;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
@@ -68,7 +69,19 @@ public class BlockPolyGenerator {
         //Handle leaves
         if (block instanceof LeavesBlock) {
             try {
-                return new PropertyIgnoringUnusedBlockStatePoly(builder, BlockStateProfile.LEAVES_PROFILE);
+                return new SingleUnusedBlockStatePoly(builder, BlockStateProfile.LEAVES_PROFILE);
+            } catch (OutOfBoundsException ignored) {}
+        }
+        //Handle doors/trapdoors
+        boolean isMetal = ((MaterialAccessor)block).getMaterial() == Material.METAL;
+        if (block instanceof DoorBlock) {
+            try {
+                return new PoweredStateBlockPoly(builder, isMetal ? BlockStateProfile.METAL_DOOR_PROFILE : BlockStateProfile.DOOR_PROFILE);
+            } catch (OutOfBoundsException ignored) {}
+        }
+        if (block instanceof TrapdoorBlock) {
+            try {
+                return new PoweredStateBlockPoly(builder, isMetal ? BlockStateProfile.METAL_TRAPDOOR_PROFILE : BlockStateProfile.TRAPDOOR_PROFILE);
             } catch (OutOfBoundsException ignored) {}
         }
         //Handle full blocks
@@ -81,7 +94,7 @@ public class BlockPolyGenerator {
         if (collisionShape.isEmpty()) {
             if (block instanceof SaplingBlock) {
                 try {
-                    return new PropertyIgnoringUnusedBlockStatePoly(builder, BlockStateProfile.NO_COLLISION_PROFILE);
+                    return new SingleUnusedBlockStatePoly(builder, BlockStateProfile.NO_COLLISION_PROFILE);
                 } catch (OutOfBoundsException ignored) {}
             }
             try {

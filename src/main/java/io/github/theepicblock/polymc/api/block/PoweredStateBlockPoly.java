@@ -17,10 +17,9 @@
  */
 package io.github.theepicblock.polymc.api.block;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.register.BlockStateManager;
@@ -29,42 +28,32 @@ import io.github.theepicblock.polymc.resource.JsonBlockState;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 import java.io.InputStreamReader;
-import java.util.HashMap;
+import java.util.List;
 
-/**
- * This poly uses unused blockstates to display blocks
- */
-public class UnusedBlockStatePoly implements BlockPoly {
-    private final ImmutableMap<BlockState,BlockState> states;
+@SuppressWarnings("PointlessBooleanExpression")
+public class PoweredStateBlockPoly extends PropertyRetainingReplacementPoly{
+    public PoweredStateBlockPoly(PolyRegistry registry, BlockStateProfile profile) throws OutOfBoundsException {
+        super(getUnused(profile, registry));
+    }
 
-    /**
-     * @param moddedBlock     the block this poly represents
-     * @param stateProfile    the profile to use.
-     * @param registry        registry used to register this poly
-     * @throws OutOfBoundsException when the clientSideBlock doesn't have any more BlockStates left.
-     */
-    public UnusedBlockStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile) throws OutOfBoundsException {
-        BlockStateManager manager = registry.getBlockStateManager();
+    private static Block getUnused(BlockStateProfile profile, PolyRegistry registry) throws OutOfBoundsException {
+        BlockStateManager stateManager = registry.getBlockStateManager();
+        if (profile.blocks.length == 0) throw new IllegalArgumentException("profile "+profile.name+" contains no blocks");
+        int requiredStates = profile.blocks[0].getStateManager().getStates().size()/2; //divide by two to nullify the powered property
 
-        ImmutableList<BlockState> moddedStates = moddedBlock.getStateManager().getStates();
-        if (!manager.isAvailable(stateProfile, moddedStates.size())) {
-            throw new OutOfBoundsException("Block doesn't have enough blockstates left. Profile: '"+stateProfile.name+"'");
-        }
+        List<BlockState> blockStates = stateManager.requestBlockStates(profile, requiredStates);
 
-        HashMap<BlockState,BlockState> res = new HashMap<>();
-        for (BlockState state : moddedStates) {
-            res.put(state, manager.requestBlockState(stateProfile));
-        }
-        states = ImmutableMap.copyOf(res);
+        return blockStates.get(0).getBlock();
     }
 
     @Override
     public BlockState getClientBlock(BlockState input) {
-        return states.get(input);
+        return super.getClientBlock(input.with(Properties.POWERED, true));
     }
 
     @Override
@@ -73,12 +62,14 @@ public class UnusedBlockStatePoly implements BlockPoly {
         InputStreamReader blockStateReader = pack.getAsset(moddedBlockId.getNamespace(), ResourcePackMaker.BLOCKSTATES + moddedBlockId.getPath() + ".json");
         JsonBlockState moddedBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);
 
-        states.forEach((moddedState, clientState) -> {
-            Identifier clientBlockId = Registry.BLOCK.getId(clientState.getBlock());
-            JsonBlockState clientBlockStates = pack.getOrDefaultPendingBlockState(clientBlockId);
-            String clientStateString = Util.getPropertiesFromBlockState(clientState);
+        Identifier clientBlockId = Registry.BLOCK.getId(this.clientBlock);
+        JsonBlockState clientBlockStates = pack.getOrDefaultPendingBlockState(clientBlockId);
 
-            JsonElement moddedVariants = moddedBlockStates.get(moddedState);
+        clientBlock.getStateManager().getStates().stream().filter(state -> state.get(Properties.POWERED) == true).forEach((poweredState) -> {
+            String clientStateString = Util.getPropertiesFromBlockState(poweredState);
+
+            JsonElement moddedVariants = moddedBlockStates.get(poweredState);
+            if (moddedVariants == null) PolyMc.LOGGER.warn("Couldn't get blockstate definition for "+poweredState);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
 
             for (JsonBlockState.Variant v : JsonBlockState.getVariants(moddedVariants)) {
@@ -86,19 +77,5 @@ public class UnusedBlockStatePoly implements BlockPoly {
                 if (vId != null) pack.copyModel(new Identifier(v.model));
             }
         });
-    }
-
-    @Override
-    public String getDebugInfo(Block obj) {
-        StringBuilder out = new StringBuilder();
-        out.append(states.size()).append(" states");
-        states.forEach((moddedState, clientState) -> {
-            out.append("\n");
-            out.append("    #");
-            out.append(moddedState);
-            out.append(" -> ");
-            out.append(clientState);
-        });
-        return out.toString();
     }
 }

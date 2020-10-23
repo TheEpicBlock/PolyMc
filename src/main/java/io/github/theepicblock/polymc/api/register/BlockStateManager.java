@@ -72,11 +72,12 @@ public class BlockStateManager {
         List<BlockState> ret = new ArrayList<>(amount);
         int left = amount;
         for (Block block : blocks) {
-            for (int i = 0; i < left; i++) {
+            while(left != 0) {
                 try {
                     ret.add(requestBlockState(block, stateProfile.filter, stateProfile.onFirstRegister));
+                    left--;
                 } catch (OutOfBoundsException e) {
-                    left -= (left - 1);
+                    break;
                 }
             }
         }
