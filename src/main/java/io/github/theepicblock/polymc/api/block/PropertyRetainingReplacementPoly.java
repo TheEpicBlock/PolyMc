@@ -27,13 +27,13 @@ import net.minecraft.state.property.Property;
  * Only works if the clientside block has all the properties of the modded block
  */
 public class PropertyRetainingReplacementPoly implements BlockPoly{
-    private final Block moddedBlock;
-    public PropertyRetainingReplacementPoly(Block moddedBlock) {
-        this.moddedBlock = moddedBlock;
+    protected final Block clientBlock;
+    public PropertyRetainingReplacementPoly(Block clientBlock) {
+        this.clientBlock = clientBlock;
     }
     @Override
     public BlockState getClientBlock(BlockState input) {
-        BlockState output = moddedBlock.getDefaultState();
+        BlockState output = clientBlock.getDefaultState();
         for (Property<?> p : input.getProperties()) {
             output = copyProperty(output, input, p);
         }
@@ -54,6 +54,6 @@ public class PropertyRetainingReplacementPoly implements BlockPoly{
 
     @Override
     public String getDebugInfo(Block obj) {
-        return moddedBlock.getTranslationKey();
+        return clientBlock.getTranslationKey();
     }
 }

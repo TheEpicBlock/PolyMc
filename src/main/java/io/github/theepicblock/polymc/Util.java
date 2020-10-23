@@ -25,6 +25,7 @@ import net.minecraft.util.Identifier;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Map;
 import java.util.Optional;
 
 public class Util {
@@ -80,8 +81,12 @@ public class Util {
      * @return "facing=north,lit=false" for example
      */
     public static String getPropertiesFromBlockState(BlockState state) {
+        return getPropertiesFromEntries(state.getEntries());
+    }
+
+    public static String getPropertiesFromEntries(Map<Property<?>, Comparable<?>> entries) {
         StringBuilder v = new StringBuilder();
-        state.getEntries().forEach((property, value) -> {
+        entries.forEach((property, value) -> {
             v.append(property.getName());
             v.append("=");
             v.append(nameValue(property, value));
