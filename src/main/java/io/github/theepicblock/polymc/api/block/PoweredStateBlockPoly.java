@@ -19,6 +19,7 @@ package io.github.theepicblock.polymc.api.block;
 
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.register.BlockStateManager;
@@ -28,14 +29,11 @@ import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.state.property.Properties;
-import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @SuppressWarnings("PointlessBooleanExpression")
 public class PoweredStateBlockPoly extends PropertyRetainingReplacementPoly{
@@ -62,27 +60,18 @@ public class PoweredStateBlockPoly extends PropertyRetainingReplacementPoly{
     public void AddToResourcePack(Block block, ResourcePackMaker pack) {
         Identifier moddedBlockId = Registry.BLOCK.getId(block);
         InputStreamReader blockStateReader = pack.getAsset(moddedBlockId.getNamespace(), ResourcePackMaker.BLOCKSTATES + moddedBlockId.getPath() + ".json");
-        JsonBlockState originalBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);
-        Map<String,JsonElement> parsedOriginalVariants = new HashMap<>();
-        originalBlockStates.variants.forEach((string, element) -> {
-            parsedOriginalVariants.put(string.replace(" ", ""), element);
-        });
+        JsonBlockState moddedBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);
 
         Identifier clientBlockId = Registry.BLOCK.getId(this.clientBlock);
         JsonBlockState clientBlockStates = pack.getOrDefaultPendingBlockState(clientBlockId);
 
         clientBlock.getStateManager().getStates().stream().filter(state -> state.get(Properties.POWERED) == true).forEach((poweredState) -> {
-            Map<Property<?>,Comparable<?>> entriesWithoutPowered = poweredState.getEntries();
-            entriesWithoutPowered = new HashMap<>(entriesWithoutPowered);
-            entriesWithoutPowered.remove(Properties.POWERED);
-
             String clientStateString = Util.getPropertiesFromBlockState(poweredState);
-            String moddedStateString = Util.getPropertiesFromEntries(entriesWithoutPowered);
 
-            JsonElement moddedVariants = parsedOriginalVariants.get(moddedStateString);
-            System.out.println(moddedStateString+" -> "+moddedVariants);
-            if (moddedVariants == null) moddedVariants = parsedOriginalVariants.get(""); //TODO there should be a better way for this
+            JsonElement moddedVariants = moddedBlockStates.get(poweredState);
+            if (moddedVariants == null) PolyMc.LOGGER.warn("Couldn't get blockstate definition for "+poweredState);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
+
             for (JsonBlockState.Variant v : JsonBlockState.getVariants(moddedVariants)) {
                 Identifier vId = Identifier.tryParse(v.model);
                 if (vId != null) pack.copyModel(new Identifier(v.model));

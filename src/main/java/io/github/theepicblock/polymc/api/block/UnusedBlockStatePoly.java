@@ -34,7 +34,6 @@ import net.minecraft.util.registry.Registry;
 
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This poly uses unused blockstates to display blocks
@@ -72,21 +71,16 @@ public class UnusedBlockStatePoly implements BlockPoly {
     public void AddToResourcePack(Block block, ResourcePackMaker pack) {
         Identifier moddedBlockId = Registry.BLOCK.getId(block);
         InputStreamReader blockStateReader = pack.getAsset(moddedBlockId.getNamespace(), ResourcePackMaker.BLOCKSTATES + moddedBlockId.getPath() + ".json");
-        JsonBlockState originalBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);
-        Map<String,JsonElement> parsedOriginalVariants = new HashMap<>();
-        originalBlockStates.variants.forEach((string, element) -> {
-            parsedOriginalVariants.put(string.replace(" ", ""), element);
-        });
+        JsonBlockState moddedBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);
 
         states.forEach((moddedState, clientState) -> {
             Identifier clientBlockId = Registry.BLOCK.getId(clientState.getBlock());
             JsonBlockState clientBlockStates = pack.getOrDefaultPendingBlockState(clientBlockId);
             String clientStateString = Util.getPropertiesFromBlockState(clientState);
-            String moddedStateString = Util.getPropertiesFromBlockState(moddedState);
 
-            JsonElement moddedVariants = parsedOriginalVariants.get(moddedStateString);
-            if (moddedVariants == null) moddedVariants = parsedOriginalVariants.get(""); //TODO there should be a better way for this
+            JsonElement moddedVariants = moddedBlockStates.get(moddedState);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
+
             for (JsonBlockState.Variant v : JsonBlockState.getVariants(moddedVariants)) {
                 Identifier vId = Identifier.tryParse(v.model);
                 if (vId != null) pack.copyModel(new Identifier(v.model));

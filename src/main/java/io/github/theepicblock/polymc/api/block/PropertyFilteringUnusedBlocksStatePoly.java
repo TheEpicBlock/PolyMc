@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.register.BlockStateManager;
@@ -37,7 +38,6 @@ import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 public class PropertyFilteringUnusedBlocksStatePoly implements BlockPoly {
@@ -135,21 +135,17 @@ public class PropertyFilteringUnusedBlocksStatePoly implements BlockPoly {
     public void AddToResourcePack(Block block, ResourcePackMaker pack) {
         Identifier moddedBlockId = Registry.BLOCK.getId(block);
         InputStreamReader blockStateReader = pack.getAsset(moddedBlockId.getNamespace(), ResourcePackMaker.BLOCKSTATES + moddedBlockId.getPath() + ".json");
-        JsonBlockState originalBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);
-        Map<String,JsonElement> parsedOriginalVariants = new HashMap<>();
-        originalBlockStates.variants.forEach((string, element) -> {
-            parsedOriginalVariants.put(string.replace(" ", ""), element);
-        });
+        JsonBlockState moddedBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);
 
         states.forEach((moddedState, clientState) -> {
             Identifier clientBlockId = Registry.BLOCK.getId(clientState.getBlock());
             JsonBlockState clientBlockStates = pack.getOrDefaultPendingBlockState(clientBlockId);
             String clientStateString = Util.getPropertiesFromBlockState(clientState);
-            String moddedStateString = Util.getPropertiesFromBlockState(moddedState);
 
-            JsonElement moddedVariants = parsedOriginalVariants.get(moddedStateString);
-            if (moddedVariants == null) moddedVariants = parsedOriginalVariants.get(""); //TODO there should be a better way for this
+            JsonElement moddedVariants = moddedBlockStates.get(moddedState);
+            if (moddedVariants == null) PolyMc.LOGGER.warn("Couldn't get blockstate definition for "+moddedState);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
+
             for (JsonBlockState.Variant v : JsonBlockState.getVariants(moddedVariants)) {
                 Identifier vId = Identifier.tryParse(v.model);
                 if (vId != null) pack.copyModel(new Identifier(v.model));
