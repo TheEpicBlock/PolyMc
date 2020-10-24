@@ -106,16 +106,9 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
 
         if (nonConsistentPolyCount > 0) {
             this.lock();
-            PalettedContainer<T> clone = new PalettedContainer<>(null, this.idList, null, null, this.defaultValue);
-            //noinspection all
-            PalettedContainerMixin<T> clone2 = ((PalettedContainerMixin<T>)(Object)clone);
-            for (int i = 0; i < this.data.getSize(); i++) {
-                BlockState b = (BlockState)this.get(i);
-                BlockState polyd = PolyMc.getMap().getClientBlockWithContext(b, null, world);
-                clone2.set(i, (T)polyd);
-            }
+            PalettedContainer<T> clone = getPolydClone();
             this.unlock();
-            //noinspection ConstantConditions
+
             if (clone instanceof UnRemappedPacketProvider) {
                 ((UnRemappedPacketProvider)clone).toPacketUnRemapped(buf);
             }
@@ -131,21 +124,25 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
 
         if (nonConsistentPolyCount > 0) {
             this.lock();
-            PalettedContainer<T> clone = new PalettedContainer<>(null, this.idList, null, null, this.defaultValue);
-            //noinspection all
-            PalettedContainerMixin<T> clone2 = ((PalettedContainerMixin<T>)(Object)clone);
-            for (int i = 0; i < this.data.getSize(); i++) {
-                BlockState b = (BlockState)this.get(i);
-                BlockState polyd = PolyMc.getMap().getClientBlockWithContext(b, null, world);
-                clone2.set(i, (T)polyd);
-            }
-            this.unlock();
+            PalettedContainer<T> clone = getPolydClone();
 
-            //noinspection ConstantConditions
             if (clone instanceof UnRemappedPacketProvider) {
                 cir.setReturnValue(((UnRemappedPacketProvider)clone).getUnRemappedPacketSize());
             }
         }
+    }
+
+    @Unique
+    private PalettedContainer<T> getPolydClone() {
+        PalettedContainer<T> clone = new PalettedContainer<>(null, this.idList, null, null, this.defaultValue);
+
+        for (int i = 0; i < this.data.getSize(); i++) {
+            BlockState b = (BlockState)this.get(i);
+            BlockState polyd = PolyMc.getMap().getClientBlockWithContext(b, null, world);
+            //noinspection all
+            ((PalettedContainerMixin<T>)(Object)clone).set(i, (T)polyd);
+        }
+        return clone;
     }
 
     @Unique
