@@ -19,8 +19,8 @@ package io.github.theepicblock.polymc.impl;
 
 import net.minecraft.network.PacketByteBuf;
 
-public interface UnRemappedPacketProvider {
-    void toPacketUnRemapped(PacketByteBuf buf);
+public interface NonPolydPacketProvider {
+    void toPacketNoPoly(PacketByteBuf buf);
 
-    int getUnRemappedPacketSize();
+    int getPacketSizeNoPoly();
 }

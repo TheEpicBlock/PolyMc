@@ -18,7 +18,7 @@
 package io.github.theepicblock.polymc.mixins.block;
 
 import io.github.theepicblock.polymc.PolyMc;
-import io.github.theepicblock.polymc.impl.UnRemappedPacketProvider;
+import io.github.theepicblock.polymc.impl.NonPolydPacketProvider;
 import me.jellysquid.mods.lithium.common.world.chunk.LithiumHashPalette;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketByteBuf;
@@ -36,12 +36,12 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
  * This Mixin makes sure that the blocks are polyd before they get sent to the client.
  */
 @Mixin(value = {ArrayPalette.class, BiMapPalette.class, LithiumHashPalette.class})
-public abstract class PaletteBlockPolyImplementation<T> implements UnRemappedPacketProvider {
-    @Unique private boolean noRemaps;
+public abstract class PaletteBlockPolyImplementation<T> implements NonPolydPacketProvider {
+    @Unique private boolean noPoly;
 
     @ModifyArg(method = {"toPacket", "getPacketSize"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IdList;getRawId(Ljava/lang/Object;)I"))
     public T GetIdRedirect(T object) {
-        if (!noRemaps && object instanceof BlockState) {
+        if (!noPoly && object instanceof BlockState) {
             //noinspection unchecked
             return (T)PolyMc.getMap().getClientBlock((BlockState)object);
         }
@@ -50,17 +50,17 @@ public abstract class PaletteBlockPolyImplementation<T> implements UnRemappedPac
 
 
     @Override
-    public void toPacketUnRemapped(PacketByteBuf buf) {
-        noRemaps = true;
+    public void toPacketNoPoly(PacketByteBuf buf) {
+        noPoly = true;
         ((Palette<T>)this).toPacket(buf);
-        noRemaps = false;
+        noPoly = false;
     }
 
     @Override
-    public int getUnRemappedPacketSize() {
-        noRemaps = true;
+    public int getPacketSizeNoPoly() {
+        noPoly = true;
         int ret = ((Palette<T>)this).getPacketSize();
-        noRemaps = false;
+        noPoly = false;
         return ret;
     }
 }

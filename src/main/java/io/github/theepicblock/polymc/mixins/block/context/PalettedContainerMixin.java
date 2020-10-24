@@ -21,7 +21,7 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.impl.HasNonConsistentBlockPolyProvider;
-import io.github.theepicblock.polymc.impl.UnRemappedPacketProvider;
+import io.github.theepicblock.polymc.impl.NonPolydPacketProvider;
 import io.github.theepicblock.polymc.impl.WorldProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -43,7 +43,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.function.Predicate;
 
 @Mixin(PalettedContainer.class)
-public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRemappedPacketProvider, HasNonConsistentBlockPolyProvider {
+public abstract class PalettedContainerMixin<T> implements WorldProvider, NonPolydPacketProvider, HasNonConsistentBlockPolyProvider {
     @Shadow public abstract void lock();
 
     @Shadow public abstract void unlock();
@@ -109,8 +109,8 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
             PalettedContainer<T> clone = getPolydClone();
             this.unlock();
 
-            if (clone instanceof UnRemappedPacketProvider) {
-                ((UnRemappedPacketProvider)clone).toPacketUnRemapped(buf);
+            if (clone instanceof NonPolydPacketProvider) {
+                ((NonPolydPacketProvider)clone).toPacketNoPoly(buf);
             }
             ci.cancel();
         }
@@ -126,8 +126,8 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
             this.lock();
             PalettedContainer<T> clone = getPolydClone();
 
-            if (clone instanceof UnRemappedPacketProvider) {
-                cir.setReturnValue(((UnRemappedPacketProvider)clone).getUnRemappedPacketSize());
+            if (clone instanceof NonPolydPacketProvider) {
+                cir.setReturnValue(((NonPolydPacketProvider)clone).getPacketSizeNoPoly());
             }
         }
     }
@@ -159,11 +159,11 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
     }
 
     @Override
-    public void toPacketUnRemapped(PacketByteBuf buf) {
+    public void toPacketNoPoly(PacketByteBuf buf) {
         this.lock();
         buf.writeByte(this.paletteSize);
-        if (this.palette instanceof UnRemappedPacketProvider) {
-            ((UnRemappedPacketProvider)palette).toPacketUnRemapped(buf);
+        if (this.palette instanceof NonPolydPacketProvider) {
+            ((NonPolydPacketProvider)palette).toPacketNoPoly(buf);
         } else {
             this.palette.toPacket(buf);
         }
@@ -172,10 +172,10 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
     }
 
     @Override
-    public int getUnRemappedPacketSize() {
-        if (this.palette instanceof UnRemappedPacketProvider) {
-            UnRemappedPacketProvider palette2 = (UnRemappedPacketProvider)palette;
-            return 1 + palette2.getUnRemappedPacketSize() + PacketByteBuf.getVarIntSizeBytes(this.data.getSize()) + this.data.getStorage().length * 8;
+    public int getPacketSizeNoPoly() {
+        if (this.palette instanceof NonPolydPacketProvider) {
+            NonPolydPacketProvider palette2 = (NonPolydPacketProvider)palette;
+            return 1 + palette2.getPacketSizeNoPoly() + PacketByteBuf.getVarIntSizeBytes(this.data.getSize()) + this.data.getStorage().length * 8;
         }
         return 1 + this.palette.getPacketSize() + PacketByteBuf.getVarIntSizeBytes(this.data.getSize()) + this.data.getStorage().length * 8;
     }
