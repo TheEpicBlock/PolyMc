@@ -29,6 +29,7 @@ import io.github.theepicblock.polymc.resource.JsonBlockState;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
@@ -71,8 +72,8 @@ public class UnusedBlockStatePoly implements BlockPoly {
 
     @Override
     public BlockState getClientBlockWithContext(BlockState input, BlockPos pos, World world) {
-        System.out.println(pos+" -- "+world); //TODO remove when done dubugging
-        return states.get(input);
+        boolean isOdd = (pos.getX()%2 == 0) ^ (pos.getY()%2 == 0) ^ (pos.getZ()%2 == 0);
+        return isOdd ? Blocks.RED_WOOL.getDefaultState() : Blocks.YELLOW_WOOL.getDefaultState(); //TODO remove when done dubugging
     }
 
     @Override
