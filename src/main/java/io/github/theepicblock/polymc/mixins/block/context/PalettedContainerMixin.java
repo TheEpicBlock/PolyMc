@@ -75,6 +75,9 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
         return world;
     }
 
+    /**
+     * @reason listens to when blocks are set in this container in increments or decreases the nonConsistentPolyCount
+     */
     @Inject(method = "setAndGetOldValue(ILjava/lang/Object;)Ljava/lang/Object;", at = @At("RETURN"), cancellable = true)
     public void setInPaletteListener(int index, T value, CallbackInfoReturnable<T> cir) {
         if (value instanceof BlockState) {
@@ -98,15 +101,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
     @Inject(method = "toPacket(Lnet/minecraft/network/PacketByteBuf;)V", at = @At("HEAD"), cancellable = true)
     public void toPacketInject(PacketByteBuf buf, CallbackInfo ci) {
         if (!hasSyncedConsistentPolyCount) {
-            nonConsistentPolyCount = 0;
-            for (int i = 0; i < this.data.getSize(); i++) {
-                BlockState b = (BlockState)this.get(i);
-                BlockPoly poly = PolyMc.getMap().getBlockPoly(b.getBlock());
-                if (poly != null && poly.isNotConsistent()) {
-                    nonConsistentPolyCount++;
-                }
-            }
-            hasSyncedConsistentPolyCount = true;
+            syncConsistentPolyCount();
         }
 
         if (nonConsistentPolyCount > 0) {
@@ -131,15 +126,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
     @Inject(method = "getPacketSize", at = @At("HEAD"), cancellable = true)
     public void getPacketSizeInject(CallbackInfoReturnable<Integer> cir) {
         if (!hasSyncedConsistentPolyCount) {
-            nonConsistentPolyCount = 0;
-            for (int i = 0; i < this.data.getSize(); i++) {
-                BlockState b = (BlockState)this.get(i);
-                BlockPoly poly = PolyMc.getMap().getBlockPoly(b.getBlock());
-                if (poly != null && poly.isNotConsistent()) {
-                    nonConsistentPolyCount++;
-                }
-            }
-            hasSyncedConsistentPolyCount = true;
+            syncConsistentPolyCount();
         }
 
         if (nonConsistentPolyCount > 0) {
@@ -159,6 +146,19 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, UnRema
                 cir.setReturnValue(((UnRemappedPacketProvider)clone).getUnRemappedPacketSize());
             }
         }
+    }
+
+    @Unique
+    private void syncConsistentPolyCount() {
+        nonConsistentPolyCount = 0;
+        for (int i = 0; i < this.data.getSize(); i++) {
+            BlockState b = (BlockState)this.get(i);
+            BlockPoly poly = PolyMc.getMap().getBlockPoly(b.getBlock());
+            if (poly != null && poly.isNotConsistent()) {
+                nonConsistentPolyCount++;
+            }
+        }
+        hasSyncedConsistentPolyCount = true;
     }
 
     @Override
