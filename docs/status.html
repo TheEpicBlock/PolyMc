@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>PolyMc</title>
+    <meta property="og:title" content="PolyMc"/>
+    <link rel="stylesheet" href="./assets/styles.css">
+  </head>
+  <body>
+    <section class="title-section">
+      <h1 class="title">PolyMc</h1>
+      <h2 class="subtitle">The power of a modded server, without a modded client</h2>
+    </section>
+    <section class="body">
+      <div class="content">
+        <h2>What is currently working?</h2>
+        <div>
+          <span class="status-cube green"></span>
+          PolyMc provides good support for this. You can decently use a mod with these with a vanilla client, as far as that is possible.<br>
+          <span class="status-cube orange"></span>
+          These won't crash the client. You can still play with these but you might not be able to fully use them.<br>
+          <span class="status-cube red"></span>
+          PolyMc doesn't support this yet. They might crash the client, they might not.<br>
+          <em>all of the information here applies to the latest development build</em><br>
+        
+          <div class="status-header"><h3>Items</h3><span class="status-bar green"></span></div>
+          99% of items work fully on a vanilla client. 
+          You might encounter issues with items that use custom renders or edit their appearance with custom properties.
+          In general you should be completely fine with using items with PolyMc.
+          
+          <div class="status-header"><h3>Blocks</h3><span class="status-bar orange"></span></div>
+          Blocks need to consider their clientside collision shapes. And be careful not to replace any vanilla blocks. 
+          A few block shapes have been implemented in PolyMc:
+          <ul>
+            <li>Full blocks: 799</li>
+            <li>Doors: 8</li>
+            <li>Trapdoors: 8</li>
+            <li>Uncollidable blocks: 15</li>
+            <li>Path blocks: 5</li>
+          </ul>
+          Note that some transparant textures might display incorrectly.
+          
+          <div class="status-header"><h3>GUIs</h3><span class="status-bar red"></span></div>
+          GUIs do not work currently but are the next priority.
+          
+          <div class="status-header"><h3>Entities</h3><span class="status-bar red"></span></div>
+          There is no support for entities in PolyMc yet. Any modded entity will display as a pig.
+          
+          <div class="status-header"><h3>Recipes</h3><span class="status-bar green"></span></div>
+          Custom recipes will work in a crafting table, furnace or other.
+          
+          <div class="status-header"><h3>Packets</h3><span class="status-bar green"></span></div>
+          Custom packets don't do harm and will be ignored by the client. Using the config they can be disabled completely. 
+          Look <a href="https://github.com/TheEpicBlock/PolyMc/wiki/Config#custompacketdisabler">here</a> for the advantages of doing this.
+        </div>
+      </div>
+      <div class="links">
+        <h2>Links</h2>
+        <a href="./getting-started.html">Getting Started</a>
+        <a href="./status.html">Project Status</a>
+      </div>
+    </section>
+  </body>
+</html>
