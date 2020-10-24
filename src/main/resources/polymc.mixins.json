@@ -15,6 +15,7 @@
     "block.BlockBreakEventPatch",
     "block.BlockBreakingPatch",
     "block.BlockPolyImplementation",
+    "block.MaterialAccessor",
     "block.PaletteBlockPolyImplementation",
     "block.ProcessSyncedBlockEventServerSideImplementation",
     "block.context.ChunkSectionMixin",

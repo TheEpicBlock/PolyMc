@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.OutOfBoundsException;
 import io.github.theepicblock.polymc.api.register.BlockStateManager;
@@ -29,29 +30,91 @@ import io.github.theepicblock.polymc.resource.JsonBlockState;
 import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.function.Function;
 
-/**
- * This poly uses unused blockstates to display blocks
- */
-public class UnusedBlockStatePoly implements BlockPoly {
+public class PropertyFilteringUnusedBlocksStatePoly implements BlockPoly {
     private final ImmutableMap<BlockState,BlockState> states;
+    private final Function<BlockState, BlockState> filter;
 
     /**
      * @param moddedBlock     the block this poly represents
      * @param stateProfile    the profile to use.
      * @param registry        registry used to register this poly
+     * @param filter          function that should remove all blockstates that you want to filter
      * @throws OutOfBoundsException when the clientSideBlock doesn't have any more BlockStates left.
      */
-    public UnusedBlockStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile) throws OutOfBoundsException {
+    public PropertyFilteringUnusedBlocksStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile, List<Property<?>> filter) throws OutOfBoundsException {
+        this(moddedBlock, registry, stateProfile, (Property<?>[])filter.toArray());
+    }
+
+    /**
+     * @param moddedBlock     the block this poly represents
+     * @param stateProfile    the profile to use.
+     * @param registry        registry used to register this poly
+     * @param filter          function that should remove all blockstates that you want to filter
+     * @throws OutOfBoundsException when the clientSideBlock doesn't have any more BlockStates left.
+     */
+    public PropertyFilteringUnusedBlocksStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile, Property<?>[] filter) throws OutOfBoundsException {
+        Collection<Property<?>> moddedProperties = moddedBlock.getStateManager().getProperties();
+        for (Property<?> p : filter) {
+            if (!moddedProperties.contains(p)) {
+                throw new IllegalArgumentException(String.format("[%s]: %s doesn't have property %s", this.getClass().getName(), moddedBlock.getTranslationKey(), p.getName()));
+            }
+        }
+        Object[] defaultValues = new Object[filter.length];
+        int i = 0;
+        for (Property<?> p : filter) {
+            i++;
+            defaultValues[i] = (moddedBlock.getDefaultState().get(p));
+        }
+
+        Function<BlockState, BlockState> filterFunction = (blockstate) -> {
+            int i2 = 0;
+            for (Property<?> p : filter) {
+                i2++;
+                blockstate = with(blockstate, p, defaultValues[i2]);
+            }
+            return blockstate;
+        };
+
+        states = getBlockStateMap(moddedBlock, registry, stateProfile, filterFunction);
+        this.filter = filterFunction;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends Comparable<T>> BlockState with(BlockState b, Property<T> property, Object value) {
+        return b.with(property, (T)value);
+    }
+
+    /**
+     * @param moddedBlock     the block this poly represents
+     * @param stateProfile    the profile to use.
+     * @param registry        registry used to register this poly
+     * @param filter          function that should remove all blockstates that you want to filter
+     * @throws OutOfBoundsException when the clientSideBlock doesn't have any more BlockStates left.
+     */
+    public PropertyFilteringUnusedBlocksStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile, Function<BlockState, BlockState> filter) throws OutOfBoundsException {
+        states = getBlockStateMap(moddedBlock, registry, stateProfile, filter);
+        this.filter = filter;
+    }
+
+    private ImmutableMap<BlockState,BlockState> getBlockStateMap(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile, Function<BlockState,BlockState> filter) throws OutOfBoundsException {
+        ImmutableMap<BlockState,BlockState> states;
         BlockStateManager manager = registry.getBlockStateManager();
 
-        ImmutableList<BlockState> moddedStates = moddedBlock.getStateManager().getStates();
-        if (!manager.isAvailable(stateProfile, moddedStates.size())) {
+        ImmutableList<BlockState> unFilteredModdedStates = moddedBlock.getStateManager().getStates();
+
+        BlockState[] moddedStates = (BlockState[])unFilteredModdedStates.stream().map(filter).toArray();
+
+        if (!manager.isAvailable(stateProfile, moddedStates.length)) {
             throw new OutOfBoundsException("Block doesn't have enough blockstates left. Profile: '"+stateProfile.name+"'");
         }
 
@@ -60,16 +123,12 @@ public class UnusedBlockStatePoly implements BlockPoly {
             res.put(state, manager.requestBlockState(stateProfile));
         }
         states = ImmutableMap.copyOf(res);
+        return states;
     }
 
     @Override
     public BlockState getClientBlock(BlockState input) {
-        return states.get(input);
-    }
-
-    @Override
-    public boolean isNotConsistent() {
-        return true;
+        return states.get(filter.apply(input));
     }
 
     @Override
@@ -84,6 +143,7 @@ public class UnusedBlockStatePoly implements BlockPoly {
             String clientStateString = Util.getPropertiesFromBlockState(clientState);
 
             JsonElement moddedVariants = moddedBlockStates.get(moddedState);
+            if (moddedVariants == null) PolyMc.LOGGER.warn("Couldn't get blockstate definition for "+moddedState);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
 
             for (JsonBlockState.Variant v : JsonBlockState.getVariants(moddedVariants)) {

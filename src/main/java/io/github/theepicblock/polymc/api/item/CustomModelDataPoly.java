@@ -64,12 +64,13 @@ public class CustomModelDataPoly implements ItemPoly {
         defaultServerItem.setCustomName(new TranslatableText(base.getTranslationKey()).setStyle(Style.EMPTY.withItalic(false)));
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public ItemStack getClientItem(ItemStack input) {
         ItemStack serverItem = defaultServerItem;
         if (input.hasTag()) {
             serverItem = defaultServerItem.copy();
-            serverItem.setTag(input.getTag());
+            serverItem.setTag(input.getTag().copy());
             //doing this removes the CMD, so we should add that again
             serverItem.getTag().putInt("CustomModelData", CMDvalue);
             if (!input.hasCustomName()) { //It might be that the tags didn't include the name, so we should add them back in
