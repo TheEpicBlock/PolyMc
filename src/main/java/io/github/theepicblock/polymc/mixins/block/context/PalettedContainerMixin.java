@@ -28,6 +28,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.collection.IdList;
 import net.minecraft.util.collection.PackedIntegerArray;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Palette;
 import net.minecraft.world.chunk.PalettedContainer;
@@ -136,9 +137,11 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, NonPol
     private PalettedContainer<T> getPolydClone() {
         PalettedContainer<T> clone = new PalettedContainer<>(null, this.idList, null, null, this.defaultValue);
 
+        BlockPos.Mutable pos = new BlockPos.Mutable();
         for (int i = 0; i < this.data.getSize(); i++) {
             BlockState b = (BlockState)this.get(i);
-            BlockState polyd = PolyMc.getMap().getClientBlockWithContext(b, null, world);
+            pos.set(i & 0x00F, i >> 8, (i & 0x0F0) >> 4);
+            BlockState polyd = PolyMc.getMap().getClientBlockWithContext(b, pos, world);
             //noinspection all
             ((PalettedContainerMixin<T>)(Object)clone).set(i, (T)polyd);
         }
