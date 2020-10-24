@@ -30,7 +30,9 @@ import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -68,8 +70,14 @@ public class UnusedBlockStatePoly implements BlockPoly {
     }
 
     @Override
+    public BlockState getClientBlockWithContext(BlockState input, BlockPos pos, World world) {
+        System.out.println(pos+" -- "+world); //TODO remove when done dubugging
+        return states.get(input);
+    }
+
+    @Override
     public boolean isNotConsistent() {
-        return true;
+        return true; //TODO remove when done dubugging
     }
 
     @Override
