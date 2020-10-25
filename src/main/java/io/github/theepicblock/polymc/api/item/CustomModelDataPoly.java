@@ -24,7 +24,10 @@ import io.github.theepicblock.polymc.resource.ResourcePackMaker;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
@@ -76,10 +79,30 @@ public class CustomModelDataPoly implements ItemPoly {
             if (!input.hasCustomName()) { //It might be that the tags didn't include the name, so we should add them back in
                 serverItem.setCustomName(defaultServerItem.getName());
             }
+            portEnchantmentsToLore(serverItem);
         }
         serverItem.setCount(input.getCount());
         serverItem.setCooldown(input.getCooldown());
         return serverItem;
+    }
+
+    private static void portEnchantmentsToLore(ItemStack item) {
+        int hideFlags = item.hasTag() && item.getTag().contains("HideFlags", 99) ? item.getTag().getInt("HideFlags") : 0;
+        if ((hideFlags & ItemStack.TooltipSection.ENCHANTMENTS.getFlag())==0) {
+            ListTag enchantments = item.getEnchantments();
+            for(int i = 0; i < enchantments.size(); ++i) {
+                CompoundTag compoundTag = enchantments.getCompound(i);
+                Identifier id = Identifier.tryParse(compoundTag.getString("id"));
+
+                if (!Util.isVanilla(id) && id != null) {
+                    enchantments.remove(i);
+                    Registry.ENCHANTMENT.getOrEmpty(id).ifPresent((enchantment) -> {
+                        Text name = enchantment.getName(compoundTag.getInt("lvl"));
+                        compoundTag.getList("Lore",8).add(StringTag.of(Text.Serializer.toJson(name)));
+                    });
+                }
+            }
+        }
     }
 
     @Override
