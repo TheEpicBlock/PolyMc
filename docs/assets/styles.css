@@ -9,7 +9,7 @@ a {
 }
 
 .title {
-  color: white;
+  color: white !important;
   font-size: calc(2em + 2vw);
 }
 
