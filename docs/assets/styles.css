@@ -93,7 +93,7 @@ a {
   background-color: #f11b1b
 }
 
-@media screen and (max-width: 38em) {
+@media screen and (max-width: 500px) {
   .body {
     flex-wrap: wrap;
   }
