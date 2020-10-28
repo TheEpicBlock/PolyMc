@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.api;
 
 import com.google.common.collect.ImmutableMap;
+import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
@@ -42,10 +43,14 @@ public class PolyMap {
     }
 
     public ItemStack getClientItem(ItemStack serverItem) {
-        ItemPoly poly = itemPolys.get(serverItem.getItem());
-        if (poly == null) return serverItem;
+        ItemStack ret = serverItem;
 
-        return poly.getClientItem(serverItem);
+        ItemPoly poly = itemPolys.get(serverItem.getItem());
+        if (poly != null) ret = poly.getClientItem(serverItem);
+
+        ret = Util.portEnchantmentsToLore(ret);
+
+        return ret;
     }
 
     public BlockState getClientBlock(BlockState serverBlock) {
