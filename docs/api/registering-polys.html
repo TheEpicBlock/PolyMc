@@ -50,11 +50,11 @@
         <p>
             *note: if your modded item has damage, replace <code>CustomModelDataPoly</code> with <code>DamageableItemPoly</code>*
             Example: changing the item used on the client
-            <div class="c-block"><pre>
+<div class="c-block"><pre>
 <span class="c-red">public void</span> registerPolys(PolyRegistry registry) {
     registry.registerItemPoly(moddedItem, <span class="c-red">new</span> CustomModelDataPoly(registery.getCMDManager(), moddedItem, Items.<span class="c-blue">DIAMOND_SWORD</span>))
 }
-    </pre></div>
+</pre></div>
             This will Poly your item as usual, just using a diamond sword instead of a stick. It will automatically allocate a CMD value for it.
         </p>
     </div>

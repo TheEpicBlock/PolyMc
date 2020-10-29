@@ -49,32 +49,38 @@
         </p>
         <h2>getting set up</h2>
         <p>
-            Firstly you'll need to import the Api from Jitpack. VERSION is the version of PolyMc you need.
-            <a href="https://github.com/TheEpicBlock/PolyMc/releases/"><img src="https://img.shields.io/github/v/release/TheEpicBlock/PolyMc?style=flat-square&label=latest%20release"></a>
+Firstly you'll need to import the Api from Jitpack. VERSION is the version of PolyMc you need.
+<a href="https://github.com/TheEpicBlock/PolyMc/releases/"><img src="https://img.shields.io/github/v/release/TheEpicBlock/PolyMc?style=flat-square&label=latest%20release"></a>
 
-            repositories {
-            maven { url 'https://jitpack.io' }
-            }
+<div class="c-block"><pre>
+repositories {
+    maven { url 'https://jitpack.io' }
+}
 
-            dependencies {
-            modImplementation "com.github.TheEpicBlock:PolyMc:VERSION"
-            }
+dependencies {
+   modImplementation "com.github.TheEpicBlock:PolyMc:VERSION"
+}
+</pre></div>
 
-            Then register to the PolyMc entrypoint in the fabric.mod.json.
+Then register to the PolyMc entrypoint in the fabric.mod.json.
 
-            "entrypoints": {
-            "polymc": [
-            "io.github.theepicblock.ExampleEntrypoint"
-            ]
-            }
+<div class="c-block"><pre>
+"entrypoints": {
+    "polymc": [
+        "io.github.theepicblock.ExampleEntrypoint"
+    ]
+}
+</pre></div>
 
-            Optionally, you can also list PolyMc as a dependency if it's absolutely needed for your mod to function. This will cause a hard failure if PolyMc isn't present. Replace depends with recommends for a soft failure. See
+Optionally, you can also list PolyMc as a dependency if it's absolutely needed for your mod to function. This will cause a hard failure if PolyMc isn't present. Replace depends with recommends for a soft failure. See
 
-            "depends": {
-            "polymc": ">=2.3.0"
-            },
+<div class="c-block"><pre>
+"depends": {
+    "polymc": ">=2.3.0"
+},
+</pre></div>
 
-            PolyMc currently provides 2 hooks in the entrypoint. One is to register polys and one is to register mod specific resources.
+PolyMc currently provides 2 hooks in the entrypoint. One is to register polys and one is to register mod specific resources.
         </p>
     </div>
     <div class="links"></div>
