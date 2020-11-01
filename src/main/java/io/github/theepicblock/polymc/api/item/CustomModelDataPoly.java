@@ -60,7 +60,7 @@ public class CustomModelDataPoly implements ItemPoly {
      * @param targets         the serverside items that can be chosen from
      */
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item base, Item[] targets) {
-        Pair<Item,Integer> pair = registerManager.requestCMD();
+        Pair<Item,Integer> pair = registerManager.requestCMD(targets);
         CMDvalue = pair.getRight();
         defaultServerItem = new ItemStack(pair.getLeft());
         CompoundTag tag = new CompoundTag();
