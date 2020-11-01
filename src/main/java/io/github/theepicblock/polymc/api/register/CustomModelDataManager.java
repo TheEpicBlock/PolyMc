@@ -29,14 +29,25 @@ import net.minecraft.util.Pair;
  */
 public class CustomModelDataManager {
     private final Object2IntMap<Item> CustomModelDataCurrent = new Object2IntOpenHashMap<>();
-    private final Item[] DEFAULT_ITEMS = {
+    private int roundRobin = 0;
+    public final Item[] DEFAULT_ITEMS = {
             Items.STICK,
             Items.GLISTERING_MELON_SLICE,
             Items.EMERALD,
             Items.IRON_NUGGET,
             Items.GOLD_NUGGET,
             Items.GOLD_INGOT,
-            Items.NETHER_STAR
+            Items.DIRT,
+            Items.BRAIN_CORAL,
+            Items.BUBBLE_CORAL,
+            Items.FIRE_CORAL,
+            Items.HORN_CORAL,
+            Items.TUBE_CORAL,
+            Items.DEAD_BRAIN_CORAL,
+            Items.DEAD_BUBBLE_CORAL,
+            Items.DEAD_FIRE_CORAL,
+            Items.DEAD_HORN_CORAL,
+            Items.DEAD_TUBE_CORAL
     };
 
     /**
@@ -78,13 +89,17 @@ public class CustomModelDataManager {
      * @throws ArithmeticException if there have been a rediculous amount of CMD values allocated
      */
     public Pair<Item,Integer> RequestCMDwithItem(int amount) {
-        for (Item item : DEFAULT_ITEMS) {
+        int startingRR = roundRobin;
+        do {
+            roundRobin++;
+
             try {
-                int value = RequestCMDValue(item, amount);
-                return new Pair<>(item, value);
+                int value = RequestCMDValue(DEFAULT_ITEMS[roundRobin], amount);
+                return new Pair<>(DEFAULT_ITEMS[roundRobin], value);
             } catch (ArithmeticException ignored) {}
-        }
-        throw new ArithmeticException("Reached limit off CustomModelData items!");
+        } while (roundRobin != startingRR);
+
+        throw new ArithmeticException("Reached limit of CustomModelData items");
     }
 
     /**
