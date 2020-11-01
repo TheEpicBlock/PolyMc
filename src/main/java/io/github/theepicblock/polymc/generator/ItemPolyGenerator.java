@@ -73,6 +73,9 @@ public class ItemPolyGenerator {
         if (item instanceof DyeableItem) {
             return new CustomModelDataPoly(builder.getCMDManager(), item, Items.LEATHER_HORSE_ARMOR);
         }
+        if (item instanceof BlockItem) {
+            return new CustomModelDataPoly(builder.getCMDManager(), item, CustomModelDataManager.BLOCK_ITEMS);
+        }
         return new CustomModelDataPoly(builder.getCMDManager(), item);
     }
 

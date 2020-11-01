@@ -67,6 +67,10 @@ public class CustomModelDataManager {
             Items.BAKED_POTATO,
             Items.BREAD
     };
+    public final static Item[] BLOCK_ITEMS = {
+            Items.BARRIER,
+            Items.STRUCTURE_VOID
+    };
 
     /**
      * Request a certain amount of CMD values from the specified item
