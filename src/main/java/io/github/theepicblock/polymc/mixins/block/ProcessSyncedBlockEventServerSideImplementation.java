@@ -17,7 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins.block;
 
-import io.github.theepicblock.polymc.ConfigManager;
+import io.github.theepicblock.polymc.impl.ConfigManager;
 import net.minecraft.block.Block;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.WorldGenerationProgressListener;

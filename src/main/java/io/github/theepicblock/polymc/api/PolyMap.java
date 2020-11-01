@@ -18,10 +18,10 @@
 package io.github.theepicblock.polymc.api;
 
 import com.google.common.collect.ImmutableMap;
-import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;

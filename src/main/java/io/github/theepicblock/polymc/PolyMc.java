@@ -19,8 +19,9 @@ package io.github.theepicblock.polymc;
 
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
-import io.github.theepicblock.polymc.api.register.PolyRegistry;
-import io.github.theepicblock.polymc.generator.Generator;
+import io.github.theepicblock.polymc.api.PolyRegistry;
+import io.github.theepicblock.polymc.impl.PolyMcCommands;
+import io.github.theepicblock.polymc.impl.generator.Generator;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import org.apache.logging.log4j.LogManager;

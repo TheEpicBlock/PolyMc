@@ -15,25 +15,31 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.api.block;
+package io.github.theepicblock.polymc.impl.poly.block;
 
-import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 
-public interface BlockPoly extends DebugInfoProvider<Block> {
-    /**
-     * Transforms an BlockState to it's client version
-     * @param input original BlockState
-     * @return BlockState that should be sent to the client
-     */
-    BlockState getClientBlock(BlockState input);
+import java.util.function.Predicate;
 
-    /**
-     * Callback to add all resources needed for this block to a resourcepack
-     * @param block block this BlockPoly was registered to, for reference.
-     * @param pack  resourcepack to add to.
-     */
-    void AddToResourcePack(Block block, ResourcePackMaker pack);
+/**
+ * This block poly replaces the the block it's registered to with another blockstate, but only if exempts returns false
+ */
+public class ConditionalSimpleBlockPoly extends SimpleReplacementPoly {
+    private final Predicate<BlockState> exempts;
+
+    public ConditionalSimpleBlockPoly(BlockState state, Predicate<BlockState> exempts) {
+        super(state);
+        this.exempts = exempts;
+    }
+
+    @Override
+    public BlockState getClientBlock(BlockState input) {
+        return exempts.test(input) ? input : state;
+    }
+
+    @Override
+    public void AddToResourcePack(Block block, ResourcePackMaker pack) {
+    }
 }

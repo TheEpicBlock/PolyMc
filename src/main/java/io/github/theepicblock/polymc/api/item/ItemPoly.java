@@ -18,7 +18,7 @@
 package io.github.theepicblock.polymc.api.item;
 
 import io.github.theepicblock.polymc.api.DebugInfoProvider;
-import io.github.theepicblock.polymc.resource.ResourcePackMaker;
+import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 

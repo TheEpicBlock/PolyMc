@@ -15,19 +15,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.api.block;
+package io.github.theepicblock.polymc.impl.poly.gui;
 
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
-import net.minecraft.block.Block;
+import io.github.theepicblock.polymc.api.gui.GuiPoly;
+import net.minecraft.screen.ScreenHandlerType;
 
-public interface BlockPolyPredicate extends BlockPoly {
-    @Override
-    default void AddToResourcePack(Block block, ResourcePackMaker pack) {
-
-    }
+public class TestGuiPoly implements GuiPoly {
 
     @Override
-    default String getDebugInfo(Block obj) {
-        return "unknown predicate type";
+    public ScreenHandlerType<?> getClientSideType() {
+        return ScreenHandlerType.FURNACE;
     }
 }

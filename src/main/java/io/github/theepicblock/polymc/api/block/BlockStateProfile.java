@@ -17,7 +17,10 @@
  */
 package io.github.theepicblock.polymc.api.block;
 
-import io.github.theepicblock.polymc.api.register.PolyRegistry;
+import io.github.theepicblock.polymc.api.PolyRegistry;
+import io.github.theepicblock.polymc.impl.poly.block.ConditionalSimpleBlockPoly;
+import io.github.theepicblock.polymc.impl.poly.block.PropertyRetainingReplacementPoly;
+import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -29,7 +32,7 @@ import java.util.function.Predicate;
 
 /**
  * Defines a group of blocks and blockstates.
- * Is used by {@link io.github.theepicblock.polymc.api.register.BlockStateManager} to define which blockstates can be used and which not.
+ * Is used by {@link BlockStateManager} to define which blockstates can be used and which not.
  * Also includes info on how to handle these blockstate {@link #onFirstRegister}
  */
 @SuppressWarnings("PointlessBooleanExpression")

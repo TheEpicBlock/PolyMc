@@ -17,7 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins;
 
-import io.github.theepicblock.polymc.Util;
+import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.tag.Tag;
 import net.minecraft.tag.TagGroup;

@@ -15,19 +15,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.api.block;
+package io.github.theepicblock.polymc.impl.generator;
 
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
-import net.minecraft.block.Block;
+import io.github.theepicblock.polymc.api.PolyRegistry;
 
-public interface BlockPolyPredicate extends BlockPoly {
-    @Override
-    default void AddToResourcePack(Block block, ResourcePackMaker pack) {
-
-    }
-
-    @Override
-    default String getDebugInfo(Block obj) {
-        return "unknown predicate type";
+public class Generator {
+    /**
+     * Automatically generates all polys that are missing in the specified builder
+     * @param builder builder to add polys to
+     */
+    public static void generateMissing(PolyRegistry builder) {
+        ItemPolyGenerator.generateMissing(builder);
+        BlockPolyGenerator.generateMissing(builder);
+        GuiGenerator.generateMissing(builder);
     }
 }
