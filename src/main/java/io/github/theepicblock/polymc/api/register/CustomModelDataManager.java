@@ -38,21 +38,11 @@ public class CustomModelDataManager {
             Items.GOLD_NUGGET,
             Items.GOLD_INGOT,
             Items.NETHERITE_INGOT,
-            Items.DIRT,
-            Items.BRAIN_CORAL,
-            Items.BUBBLE_CORAL,
-            Items.FIRE_CORAL,
-            Items.HORN_CORAL,
-            Items.TUBE_CORAL,
-            Items.DEAD_BRAIN_CORAL,
-            Items.DEAD_BUBBLE_CORAL,
-            Items.DEAD_FIRE_CORAL,
-            Items.DEAD_HORN_CORAL,
-            Items.DEAD_TUBE_CORAL,
             Items.HEART_OF_THE_SEA,
             Items.PHANTOM_MEMBRANE,
             Items.BLAZE_POWDER,
-            Items.BLAZE_ROD
+            Items.BLAZE_ROD,
+            Items.PAPER
     };
     public final static Item[] FOOD_ITEMS = {
             Items.COOKED_BEEF,
