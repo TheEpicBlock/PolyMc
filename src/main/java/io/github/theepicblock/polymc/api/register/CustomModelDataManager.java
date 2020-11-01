@@ -37,6 +37,7 @@ public class CustomModelDataManager {
             Items.IRON_NUGGET,
             Items.GOLD_NUGGET,
             Items.GOLD_INGOT,
+            Items.NETHERITE_INGOT,
             Items.DIRT,
             Items.BRAIN_CORAL,
             Items.BUBBLE_CORAL,
@@ -47,7 +48,11 @@ public class CustomModelDataManager {
             Items.DEAD_BUBBLE_CORAL,
             Items.DEAD_FIRE_CORAL,
             Items.DEAD_HORN_CORAL,
-            Items.DEAD_TUBE_CORAL
+            Items.DEAD_TUBE_CORAL,
+            Items.HEART_OF_THE_SEA,
+            Items.PHANTOM_MEMBRANE,
+            Items.BLAZE_POWDER,
+            Items.BLAZE_ROD
     };
 
     /**
