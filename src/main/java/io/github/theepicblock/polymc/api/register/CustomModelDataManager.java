@@ -28,7 +28,7 @@ import net.minecraft.util.Pair;
  * For example, a mod can request 100 CustomModelData values for a specific item. Then those will be reserved and another mod will get different values
  */
 public class CustomModelDataManager {
-    private final Object2IntMap<Item> CustomModelDataCurrent = new Object2IntOpenHashMap<>();
+    private final Object2IntMap<Item> customModelDataCounter = new Object2IntOpenHashMap<>();
     private int roundRobin = 0;
     public final Item[] DEFAULT_ITEMS = {
             Items.STICK,
@@ -57,20 +57,20 @@ public class CustomModelDataManager {
 
     /**
      * Request an amount of CMD values you need for a specific item. To prevent CMD values from conflicting
-     * If you don't specifically need this item it's recommended to use {@link #RequestCMDwithItem}
+     * If you don't specifically need this item it's recommended to use {@link #requestCMDwithItem}
      * Example: you request 5 values for a carrot on a stick. You get the number 2 back. You can now use the values 2,3,4,5,6 in your code and resourcepack.
      * @param item   the item you need CMD for
      * @param amount the amount of CMD values you're requesting
      * @return the first value you can use.
      * @throws ArithmeticException if the limit of CustomModelData is reached
      */
-    public int RequestCMDValue(Item item, int amount) throws ArithmeticException {
-        int current = CustomModelDataCurrent.getInt(item); //this is the current CMD that we're at for this item/
+    public int requestCMDValue(Item item, int amount) throws ArithmeticException {
+        int current = customModelDataCounter.getInt(item); //this is the current CMD that we're at for this item/
         if (current == 0) {
             current = 1; //we should start at 1. Never 0
         }
         int newValue = Math.addExact(current, amount);
-        CustomModelDataCurrent.put(item, newValue);
+        customModelDataCounter.put(item, newValue);
         return current;
     }
 
@@ -80,8 +80,8 @@ public class CustomModelDataManager {
      * @param item the item you need CMD for
      * @return the value you can use.
      */
-    public int RequestCMDValue(Item item) {
-        return RequestCMDValue(item, 1);
+    public int requestCMDValue(Item item) {
+        return requestCMDValue(item, 1);
     }
 
     /**
@@ -93,13 +93,13 @@ public class CustomModelDataManager {
      * @return the first number you can use and for which item that is.
      * @throws ArithmeticException if there have been a rediculous amount of CMD values allocated
      */
-    public Pair<Item,Integer> RequestCMDwithItem(int amount) {
+    public Pair<Item,Integer> requestCMDwithItem(int amount) {
         int startingRR = roundRobin;
         do {
             roundRobin++;
 
             try {
-                int value = RequestCMDValue(DEFAULT_ITEMS[roundRobin], amount);
+                int value = requestCMDValue(DEFAULT_ITEMS[roundRobin], amount);
                 return new Pair<>(DEFAULT_ITEMS[roundRobin], value);
             } catch (ArithmeticException ignored) {}
         } while (roundRobin != startingRR);
@@ -114,7 +114,7 @@ public class CustomModelDataManager {
      * Items that will be used are in {@link #DEFAULT_ITEMS}
      * @return the number you can use and for which item.
      */
-    public Pair<Item,Integer> RequestCMDwithItem() {
-        return RequestCMDwithItem(1);
+    public Pair<Item,Integer> requestCMDwithItem() {
+        return requestCMDwithItem(1);
     }
 }

@@ -40,7 +40,7 @@ public class CustomModelDataPoly implements ItemPoly {
     protected final int CMDvalue;
 
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item base) {
-        Pair<Item,Integer> pair = registerManager.RequestCMDwithItem();
+        Pair<Item,Integer> pair = registerManager.requestCMDwithItem();
         CMDvalue = pair.getRight();
         defaultServerItem = new ItemStack(pair.getLeft());
         CompoundTag tag = new CompoundTag();
@@ -56,7 +56,7 @@ public class CustomModelDataPoly implements ItemPoly {
      * @param target          the serverside item will be of this type
      */
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item base, Item target) {
-        CMDvalue = registerManager.RequestCMDValue(target);
+        CMDvalue = registerManager.requestCMDValue(target);
         defaultServerItem = new ItemStack(target);
         CompoundTag tag = new CompoundTag();
         tag.putInt("CustomModelData", CMDvalue);
