@@ -62,17 +62,20 @@ public class CustomModelDataManager {
      * @return the first value you can use.
      *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13
      * @deprecated it is recommended to use multiple items. As to minimize recipe weirdness.
-     * @throws ArithmeticException if {@link Integer#MAX_VALUE} is reached.
      */
     @Deprecated
     public int requestCMD(Item item, int amount) throws ArithmeticException {
-        int current = customModelDataCounter.getInt(item); //this is the current CMD that we're at for this item/
-        if (current == 0) {
-            current = 1; //we should start at 1. Never 0
+        try {
+            int current = customModelDataCounter.getInt(item); //this is the current CMD that we're at for this item/
+            if (current == 0) {
+                current = 1; //we should start at 1. Never 0
+            }
+            int newValue = Math.addExact(current, amount);
+            customModelDataCounter.put(item, newValue);
+            return current;
+        } catch (ArithmeticException e) {
+            throw new OutOfCustomModelDataValuesException(amount, new Item[]{item});
         }
-        int newValue = Math.addExact(current, amount);
-        customModelDataCounter.put(item, newValue);
-        return current;
     }
 
     /**
@@ -92,7 +95,6 @@ public class CustomModelDataManager {
      * @param amount the amount of cmd values you need.
      * @return the item you may use and the CMD value. The CMD value returned is the first you may use, the rest can be derived.
      *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13
-     * @throws ArithmeticException if a ridiculous amount of CMD values has been reached.
      */
     public Pair<Item,Integer> requestCMD(Item[] items, int amount) {
         int startingRR = roundRobin;
@@ -105,7 +107,7 @@ public class CustomModelDataManager {
             } catch (ArithmeticException ignored) {}
         } while (roundRobin != startingRR);
 
-        throw new ArithmeticException("Reached limit of CustomModelData items");
+        throw new OutOfCustomModelDataValuesException(amount, items);
     }
 
     /**
@@ -139,5 +141,21 @@ public class CustomModelDataManager {
 
     private Item getRoundRobin(Item[] list) {
         return list[roundRobin % list.length];
+    }
+
+    public static class OutOfCustomModelDataValuesException extends RuntimeException {
+        public OutOfCustomModelDataValuesException(int amount, Item[] items) {
+            super(getString(amount, items));
+        }
+
+        private static String getString(int amount, Item[] items) {
+            StringBuilder b = new StringBuilder();
+            b.append("Ran out of custom model data values. ").append(amount).append(" item(s) where requested. Available items to choose from:");
+            for (Item item : items) {
+                b.append("\n - ");
+                b.append(item.getTranslationKey());
+            }
+            return b.toString();
+        }
     }
 }
