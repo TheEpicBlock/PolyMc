@@ -30,7 +30,7 @@ import net.minecraft.util.Pair;
 public class CustomModelDataManager {
     private final Object2IntMap<Item> customModelDataCounter = new Object2IntOpenHashMap<>();
     private int roundRobin = 0;
-    public final Item[] DEFAULT_ITEMS = {
+    public final static Item[] DEFAULT_ITEMS = {
             Items.STICK,
             Items.GLISTERING_MELON_SLICE,
             Items.EMERALD,
@@ -53,6 +53,29 @@ public class CustomModelDataManager {
             Items.PHANTOM_MEMBRANE,
             Items.BLAZE_POWDER,
             Items.BLAZE_ROD
+    };
+    public final static Item[] FOOD_ITEMS = {
+            Items.COOKED_BEEF,
+            Items.COOKED_CHICKEN,
+            Items.COOKED_COD,
+            Items.COOKED_MUTTON,
+            Items.COOKED_PORKCHOP,
+            Items.COOKED_RABBIT,
+            Items.COOKED_SALMON,
+            Items.BEEF,
+            Items.CHICKEN,
+            Items.COD,
+            Items.MUTTON,
+            Items.PORKCHOP,
+            Items.RABBIT,
+            Items.SALMON,
+            Items.CARROT,
+            Items.GOLDEN_CARROT,
+            Items.APPLE,
+            Items.BEETROOT,
+            Items.POTATO,
+            Items.BAKED_POTATO,
+            Items.BREAD
     };
 
     /**

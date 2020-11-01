@@ -19,6 +19,7 @@ package io.github.theepicblock.polymc.generator;
 
 import io.github.theepicblock.polymc.Util;
 import io.github.theepicblock.polymc.api.item.*;
+import io.github.theepicblock.polymc.api.register.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.register.PolyRegistry;
 import net.minecraft.item.*;
 import net.minecraft.util.Identifier;
@@ -67,7 +68,7 @@ public class ItemPolyGenerator {
             return new DamageableItemPoly(builder.getCMDManager(), item);
         }
         if (item.isFood()) {
-            return new CustomModelDataPoly(builder.getCMDManager(), item, Items.COOKED_BEEF);
+            return new CustomModelDataPoly(builder.getCMDManager(), item, CustomModelDataManager.FOOD_ITEMS);
         }
         if (item instanceof DyeableItem) {
             return new CustomModelDataPoly(builder.getCMDManager(), item, Items.LEATHER_HORSE_ARMOR);

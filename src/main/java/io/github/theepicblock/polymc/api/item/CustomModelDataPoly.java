@@ -40,13 +40,7 @@ public class CustomModelDataPoly implements ItemPoly {
     protected final int CMDvalue;
 
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item base) {
-        Pair<Item,Integer> pair = registerManager.requestCMD();
-        CMDvalue = pair.getRight();
-        defaultServerItem = new ItemStack(pair.getLeft());
-        CompoundTag tag = new CompoundTag();
-        tag.putInt("CustomModelData", CMDvalue);
-        defaultServerItem.setTag(tag);
-        defaultServerItem.setCustomName(new TranslatableText(base.getTranslationKey()).setStyle(Style.EMPTY.withItalic(false)));
+        this(registerManager, base, CustomModelDataManager.DEFAULT_ITEMS);
     }
 
     /**
@@ -56,8 +50,19 @@ public class CustomModelDataPoly implements ItemPoly {
      * @param target          the serverside item will be of this type
      */
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item base, Item target) {
-        CMDvalue = registerManager.requestCMD(target);
-        defaultServerItem = new ItemStack(target);
+        this(registerManager, base, new Item[]{target});
+    }
+
+    /**
+     * Makes a poly that generates the specified item with a custom model data value
+     * If the item used doesn't matter it is recommended to use the more generic method instead
+     * @param registerManager manager used to generate the CMD value
+     * @param targets         the serverside items that can be chosen from
+     */
+    public CustomModelDataPoly(CustomModelDataManager registerManager, Item base, Item[] targets) {
+        Pair<Item,Integer> pair = registerManager.requestCMD();
+        CMDvalue = pair.getRight();
+        defaultServerItem = new ItemStack(pair.getLeft());
         CompoundTag tag = new CompoundTag();
         tag.putInt("CustomModelData", CMDvalue);
         defaultServerItem.setTag(tag);
