@@ -28,73 +28,150 @@ import net.minecraft.util.Pair;
  * For example, a mod can request 100 CustomModelData values for a specific item. Then those will be reserved and another mod will get different values
  */
 public class CustomModelDataManager {
-    private final Object2IntMap<Item> CustomModelDataCurrent = new Object2IntOpenHashMap<>();
-    private final Item[] DEFAULT_ITEMS = {
+    private final Object2IntMap<Item> customModelDataCounter = new Object2IntOpenHashMap<>();
+    private int roundRobin = 0;
+    public final static Item[] DEFAULT_ITEMS = {
             Items.STICK,
             Items.GLISTERING_MELON_SLICE,
             Items.EMERALD,
             Items.IRON_NUGGET,
             Items.GOLD_NUGGET,
             Items.GOLD_INGOT,
-            Items.NETHER_STAR
+            Items.NETHERITE_INGOT,
+            Items.HEART_OF_THE_SEA,
+            Items.PHANTOM_MEMBRANE,
+            Items.BLAZE_POWDER,
+            Items.BLAZE_ROD,
+            Items.PAPER
+    };
+    public final static Item[] FOOD_ITEMS = {
+            Items.COOKED_BEEF,
+            Items.COOKED_CHICKEN,
+            Items.COOKED_COD,
+            Items.COOKED_MUTTON,
+            Items.COOKED_PORKCHOP,
+            Items.COOKED_RABBIT,
+            Items.COOKED_SALMON,
+            Items.BEEF,
+            Items.CHICKEN,
+            Items.COD,
+            Items.MUTTON,
+            Items.PORKCHOP,
+            Items.RABBIT,
+            Items.SALMON,
+            Items.CARROT,
+            Items.GOLDEN_CARROT,
+            Items.APPLE,
+            Items.BEETROOT,
+            Items.POTATO,
+            Items.BAKED_POTATO,
+            Items.BREAD
+    };
+    public final static Item[] BLOCK_ITEMS = {
+            Items.STRUCTURE_VOID
     };
 
     /**
-     * Request an amount of CMD values you need for a specific item. To prevent CMD values from conflicting
-     * If you don't specifically need this item it's recommended to use {@link #RequestCMDwithItem}
-     * Example: you request 5 values for a carrot on a stick. You get the number 2 back. You can now use the values 2,3,4,5,6 in your code and resourcepack.
+     * Request a certain amount of CMD values from the specified item
      * @param item   the item you need CMD for
-     * @param amount the amount of CMD values you're requesting
+     * @param amount the amount of cmd values you need.
      * @return the first value you can use.
-     * @throws ArithmeticException if the limit of CustomModelData is reached
+     *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13
+     * @deprecated it is recommended to use multiple items. As to minimize recipe weirdness.
      */
-    public int RequestCMDValue(Item item, int amount) throws ArithmeticException {
-        int current = CustomModelDataCurrent.getInt(item); //this is the current CMD that we're at for this item/
-        if (current == 0) {
-            current = 1; //we should start at 1. Never 0
+    @Deprecated
+    public int requestCMD(Item item, int amount) throws ArithmeticException {
+        try {
+            int current = customModelDataCounter.getInt(item); //this is the current CMD that we're at for this item/
+            if (current == 0) {
+                current = 1; //we should start at 1. Never 0
+            }
+            int newValue = Math.addExact(current, amount);
+            customModelDataCounter.put(item, newValue);
+            return current;
+        } catch (ArithmeticException e) {
+            throw new OutOfCustomModelDataValuesException(amount, new Item[]{item});
         }
-        int newValue = Math.addExact(current, amount);
-        CustomModelDataCurrent.put(item, newValue);
-        return current;
     }
 
     /**
-     * Request 1 CMD value for a specific item. To prevent CMD values from conflicting
-     * Example: you request 1 CMD value for a carrot on a stick. You get the number 5 back. You can now use that number in your code and resourcepacks.
+     * Request one CMD value for a specific item.
      * @param item the item you need CMD for
      * @return the value you can use.
+     * @deprecated it is recommended to use multiple items. As to minimize recipe weirdness.
      */
-    public int RequestCMDValue(Item item) {
-        return RequestCMDValue(item, 1);
+    @Deprecated
+    public int requestCMD(Item item) {
+        return requestCMD(item, 1);
     }
 
     /**
-     * Request an amount of CustomModelData values. To prevent CMD values from conflicting.
-     * This will also allocate an item, in case we run out of CMD values on one item.
-     * Example: you request 5 values. You get the number 2 and "stick" back. You can now use sticks with CMD values 2,3,4,5 and 6 in your code and resourcepack.
-     * Items that will be used are in {@link #DEFAULT_ITEMS}
-     * @param amount amount of CMD values you'd like to allocate
-     * @return the first number you can use and for which item that is.
-     * @throws ArithmeticException if there have been a rediculous amount of CMD values allocated
+     * Requests a certain amount of items from the specified array.
+     * @param items  the list of items to choose from.
+     * @param amount the amount of cmd values you need.
+     * @return the item you may use and the CMD value. The CMD value returned is the first you may use, the rest can be derived.
+     *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13
      */
-    public Pair<Item,Integer> RequestCMDwithItem(int amount) {
-        for (Item item : DEFAULT_ITEMS) {
+    public Pair<Item,Integer> requestCMD(Item[] items, int amount) {
+        int startingRR = roundRobin;
+        do {
+            roundRobin++;
+
             try {
-                int value = RequestCMDValue(item, amount);
-                return new Pair<>(item, value);
+                Item item = getRoundRobin(items);
+                return new Pair<>(item, requestCMD(item, amount));
             } catch (ArithmeticException ignored) {}
-        }
-        throw new ArithmeticException("Reached limit off CustomModelData items!");
+        } while (roundRobin != startingRR);
+
+        throw new OutOfCustomModelDataValuesException(amount, items);
+    }
+
+    /**
+     * Requests a certain amount of CMD values.
+     * This will use the {@link #DEFAULT_ITEMS} array.
+     * @param amount the amount of cmd values you need.
+     * @return the item you may use and the CMD value. The CMD value returned is the first you may use, the rest can be derived.
+     *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13
+     */
+    public Pair<Item,Integer> requestCMD(int amount) {
+        return requestCMD(DEFAULT_ITEMS, amount);
     }
 
     /**
      * Request an item with a CustomModelData. To prevent CMD values from conflicting.
-     * This will also allocate an item, in case we run out of CMD values on one item
-     * Example: you request an item. You get the number 5 and the Glistering water melon slice item back. You can now use glistering water melon slices with CMD of 5 in your code and resourcepack
-     * Items that will be used are in {@link #DEFAULT_ITEMS}
-     * @return the number you can use and for which item.
+     * @param items the list of items to choose from.
+     * @return the item you may use and the CMD value
      */
-    public Pair<Item,Integer> RequestCMDwithItem() {
-        return RequestCMDwithItem(1);
+    public Pair<Item,Integer> requestCMD(Item[] items) {
+        return requestCMD(items, 1);
+    }
+
+    /**
+     * Requests a single CMD value.
+     * This will use the {@link #DEFAULT_ITEMS} array
+     * @return the item you may use and the CMD value
+     */
+    public Pair<Item,Integer> requestCMD() {
+        return requestCMD(DEFAULT_ITEMS, 1);
+    }
+
+    private Item getRoundRobin(Item[] list) {
+        return list[roundRobin % list.length];
+    }
+
+    public static class OutOfCustomModelDataValuesException extends RuntimeException {
+        public OutOfCustomModelDataValuesException(int amount, Item[] items) {
+            super(getString(amount, items));
+        }
+
+        private static String getString(int amount, Item[] items) {
+            StringBuilder b = new StringBuilder();
+            b.append("Ran out of custom model data values. ").append(amount).append(" item(s) where requested. Available items to choose from:");
+            for (Item item : items) {
+                b.append("\n - ");
+                b.append(item.getTranslationKey());
+            }
+            return b.toString();
+        }
     }
 }
