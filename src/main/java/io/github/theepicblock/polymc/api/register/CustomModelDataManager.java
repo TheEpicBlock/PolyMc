@@ -68,7 +68,6 @@ public class CustomModelDataManager {
             Items.BREAD
     };
     public final static Item[] BLOCK_ITEMS = {
-            Items.BARRIER,
             Items.STRUCTURE_VOID
     };
 
