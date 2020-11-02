@@ -39,7 +39,7 @@ import static net.minecraft.server.command.CommandManager.literal;
  * Registers the polymc commands.
  */
 public class PolyMcCommands {
-    static void registerCommands() {
+    public static void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             dispatcher.register(literal("polymc").requires(source -> source.hasPermissionLevel(2))
                     .then(literal("item")
