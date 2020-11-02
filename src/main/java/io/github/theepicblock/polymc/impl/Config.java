@@ -31,8 +31,10 @@ import java.util.List;
  * It is based on removing and adding json.
  * Look at some of the previous ones to get an idea of how to do it.
  * The add section takes in a path and some json value/object. It adds the json value/object on that path
- * Check {@link ConfigManager#update(int, JsonObject, JsonObject)} for the exact implementation. Warning: ugly code
- * Optional: update the "defaultconfig.json" to reflect the changes
+ * Check {@link ConfigManager#update(int, JsonObject, JsonObject)} for the exact implementation. Warning: ugly code.
+ * Optional: update the "defaultconfig.json" to reflect the changes.
+ *
+ * Sorry for this absolute mess...
  */
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection", "JavadocReference"})
 public class Config {

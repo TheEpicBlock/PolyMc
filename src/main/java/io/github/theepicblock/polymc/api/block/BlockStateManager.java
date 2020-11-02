@@ -29,14 +29,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 /**
- * We can use (unused) vanilla blockstates to display different modded blocks.
- * This manager allocates blockstates to prevent them from conflicting.
- * It will also register a poly to prevent the blockstate from being used normally.
+ * Manages which blockstates are allocated to which polys.
  */
 public class BlockStateManager {
-    /**
-     * The blockstateId we are currently at for a specified block
-     */
     private final Object2IntMap<Block> blockStateUsageCounter = new Object2IntOpenHashMap<>();
     private final PolyRegistry polyRegistry;
 
@@ -47,8 +42,8 @@ public class BlockStateManager {
     /**
      * Request a blockstate value to be allocated in a profile.
      * @param stateProfile the profile to use.
-     * @return the blockstate you can now use.
-     * @throws StateLimitReachedException if the limit of blockstates is reached
+     * @return The blockstate you can now use.
+     * @throws StateLimitReachedException if the limit of blockstates is reached.
      */
     public BlockState requestBlockState(BlockStateProfile stateProfile) throws StateLimitReachedException {
         for (Block block : stateProfile.blocks) {
@@ -63,8 +58,8 @@ public class BlockStateManager {
      * Request a certain amount blockstate values to be allocated in a profile.
      * @param stateProfile the profile to use.
      * @param amount how many blockstates you need.
-     * @return the blockstates you can now use.
-     * @throws StateLimitReachedException if the limit of BlockStates is reached
+     * @return The blockstates you can now use.
+     * @throws StateLimitReachedException if the limit of BlockStates is reached.
      */
     public List<BlockState> requestBlockStates(BlockStateProfile stateProfile, int amount) throws StateLimitReachedException {
         Block[] blocks = stateProfile.blocks;
@@ -91,10 +86,10 @@ public class BlockStateManager {
     }
 
     /**
-     * Checks how many blockstates are available for a profile and compares that with the amount specified
+     * Checks how many blockstates are available for a profile and compares that with the amount specified.
      * @param stateProfile the profile to use.
-     * @param amount how many blockstates you need
-     * @return true if that amount of blockstates are available
+     * @param amount       how many blockstates you need.
+     * @return True if that amount of blockstates are available.
      */
     public boolean isAvailable(BlockStateProfile stateProfile, int amount) {
         int goodBlocks = 0;
@@ -119,10 +114,11 @@ public class BlockStateManager {
 
     /**
      * Request a blockstate value to be allocated for a specific block.
-     * @param block           the block you need a BlockState for
-     * @param filter          limits the blockstates that this function can return. A blockstate can only be used if {@link Predicate#test(Object)} returns true. A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
+     * @param block           the block you need a BlockState for.
+     * @param filter          limits the blockstates that this function can return. A blockstate can only be used if {@link Predicate#test(Object)} returns true.
+     *                        A blockstate that was rejected can't be used anymore, even when using a different filter. It is advised to use the same filter per block.
      * @param onFirstRegister this will be called if this block is first used. Useful for registering a poly for it.
-     * @return the value you can use.
+     * @return The value you can use.
      * @throws StateLimitReachedException if the limit of BlockStates is reached
      */
     private BlockState requestBlockState(Block block, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) throws StateLimitReachedException {
@@ -144,7 +140,7 @@ public class BlockStateManager {
      * Get's the usage index of the block.
      * @param block block to check usage of.
      * @param onFirstRegister method to use if this is the first time this block is used.
-     * @return the usage index of the block
+     * @return The usage index of the block
      */
     private int getBlockStateUsage(Block block, BiConsumer<Block,PolyRegistry> onFirstRegister) {
         if (!blockStateUsageCounter.containsKey(block)) {

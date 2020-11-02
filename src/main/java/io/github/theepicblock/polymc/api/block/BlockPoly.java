@@ -24,8 +24,8 @@ import net.minecraft.block.BlockState;
 
 public interface BlockPoly extends DebugInfoProvider<Block> {
     /**
-     * Transforms an BlockState to it's client version
-     * @param input original BlockState
+     * Transforms an BlockState to its clientside version.
+     * @param input the original {@link BlockState} that's used serverside.
      * @return BlockState that should be sent to the client
      */
     BlockState getClientBlock(BlockState input);

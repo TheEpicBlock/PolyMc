@@ -24,8 +24,8 @@ import net.minecraft.item.Items;
 import net.minecraft.util.Pair;
 
 /**
- * Helper class to prevent CustomModelData values from conflicting
- * For example, a mod can request 100 CustomModelData values for a specific item. Then those will be reserved and another mod will get different values
+ * Helper class to prevent CustomModelData values from conflicting.
+ * For example, a mod can request 100 CustomModelData values for a specific item. Then those will be reserved and another mod will get different values.
  */
 public class CustomModelDataManager {
     private final Object2IntMap<Item> customModelDataCounter = new Object2IntOpenHashMap<>();
@@ -72,11 +72,11 @@ public class CustomModelDataManager {
     };
 
     /**
-     * Request a certain amount of CMD values from the specified item
-     * @param item   the item you need CMD for
+     * Request a certain amount of CMD values from the specified item.
+     * @param item   the item you need CMD for.
      * @param amount the amount of cmd values you need.
-     * @return the first value you can use.
-     *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13
+     * @return The first value you can use.
+     *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13.
      * @deprecated it is recommended to use multiple items. As to minimize recipe weirdness.
      */
     @Deprecated
@@ -97,7 +97,7 @@ public class CustomModelDataManager {
     /**
      * Request one CMD value for a specific item.
      * @param item the item you need CMD for
-     * @return the value you can use.
+     * @return The value you can use.
      * @deprecated it is recommended to use multiple items. As to minimize recipe weirdness.
      */
     @Deprecated
@@ -109,8 +109,8 @@ public class CustomModelDataManager {
      * Requests a certain amount of items from the specified array.
      * @param items  the list of items to choose from.
      * @param amount the amount of cmd values you need.
-     * @return the item you may use and the CMD value. The CMD value returned is the first you may use, the rest can be derived.
-     *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13
+     * @return The item you may use and the CMD value. The CMD value returned is the first you may use, the rest can be derived.
+     *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13.
      */
     public Pair<Item,Integer> requestCMD(Item[] items, int amount) {
         int startingRR = roundRobin;
@@ -130,8 +130,8 @@ public class CustomModelDataManager {
      * Requests a certain amount of CMD values.
      * This will use the {@link #DEFAULT_ITEMS} array.
      * @param amount the amount of cmd values you need.
-     * @return the item you may use and the CMD value. The CMD value returned is the first you may use, the rest can be derived.
-     *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13
+     * @return The item you may use and the CMD value. The CMD value returned is the first you may use, the rest can be derived.
+     *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13.
      */
     public Pair<Item,Integer> requestCMD(int amount) {
         return requestCMD(DEFAULT_ITEMS, amount);
@@ -140,7 +140,7 @@ public class CustomModelDataManager {
     /**
      * Request an item with a CustomModelData. To prevent CMD values from conflicting.
      * @param items the list of items to choose from.
-     * @return the item you may use and the CMD value
+     * @return The item you may use and the CMD value.
      */
     public Pair<Item,Integer> requestCMD(Item[] items) {
         return requestCMD(items, 1);
@@ -149,7 +149,7 @@ public class CustomModelDataManager {
     /**
      * Requests a single CMD value.
      * This will use the {@link #DEFAULT_ITEMS} array
-     * @return the item you may use and the CMD value
+     * @return The item you may use and the CMD value.
      */
     public Pair<Item,Integer> requestCMD() {
         return requestCMD(DEFAULT_ITEMS, 1);

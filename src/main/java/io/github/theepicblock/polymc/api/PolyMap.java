@@ -29,7 +29,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
 
 /**
- *
+ * A map containing different types of polys
  */
 public class PolyMap {
     private final ImmutableMap<Item,ItemPoly> itemPolys;
@@ -42,6 +42,9 @@ public class PolyMap {
         this.guiPolys = guiPolys;
     }
 
+    /**
+     * Converts a serverside item into a clientside one using the corresponding {@link ItemPoly}.
+     */
     public ItemStack getClientItem(ItemStack serverItem) {
         ItemStack ret = serverItem;
 
@@ -53,6 +56,9 @@ public class PolyMap {
         return ret;
     }
 
+    /**
+     * Converts a serverside block into a clientside one using the corresponding {@link BlockPoly}.
+     */
     public BlockState getClientBlock(BlockState serverBlock) {
         BlockPoly poly = blockPolys.get(serverBlock.getBlock());
         if (poly == null) return serverBlock;
@@ -60,14 +66,24 @@ public class PolyMap {
         return poly.getClientBlock(serverBlock);
     }
 
+    /**
+     * Converts a serverside gui into a clientside one using the corresponding {@link GuiPoly}.
+     * Currently experimental
+     */
     public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {
         return guiPolys.get(serverGuiType);
     }
 
+    /**
+     * gets a map containing all itempolys in this map
+     */
     public ImmutableMap<Item,ItemPoly> getItemPolys() {
         return itemPolys;
     }
 
+    /**
+     * gets a map containing all blockpolys in this map
+     */
     public ImmutableMap<Block,BlockPoly> getBlockPolys() {
         return blockPolys;
     }

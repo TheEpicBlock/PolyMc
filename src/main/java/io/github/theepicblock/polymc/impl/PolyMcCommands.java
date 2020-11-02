@@ -36,7 +36,7 @@ import java.io.IOException;
 import static net.minecraft.server.command.CommandManager.literal;
 
 /**
- * Registers the polymc command
+ * Registers the polymc commands.
  */
 public class PolyMcCommands {
     static void registerCommands() {

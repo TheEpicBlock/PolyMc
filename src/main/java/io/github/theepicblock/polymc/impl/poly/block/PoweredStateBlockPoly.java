@@ -72,7 +72,7 @@ public class PoweredStateBlockPoly extends PropertyRetainingReplacementPoly{
             if (moddedVariants == null) PolyMc.LOGGER.warn("Couldn't get blockstate definition for "+poweredState);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
 
-            for (JsonBlockState.Variant v : JsonBlockState.getVariants(moddedVariants)) {
+            for (JsonBlockState.Variant v : JsonBlockState.getVariantsFromJsonElement(moddedVariants)) {
                 Identifier vId = Identifier.tryParse(v.model);
                 if (vId != null) pack.copyModel(new Identifier(v.model));
             }

@@ -33,7 +33,7 @@ import java.util.function.Predicate;
 /**
  * Defines a group of blocks and blockstates.
  * Is used by {@link BlockStateManager} to define which blockstates can be used and which not.
- * Also includes info on how to handle these blockstate {@link #onFirstRegister}
+ * Also includes info on how to handle these blockstate {@link #onFirstRegister}.
  */
 @SuppressWarnings("PointlessBooleanExpression")
 public class BlockStateProfile {

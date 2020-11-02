@@ -33,7 +33,7 @@ public class ConfigManager {
     private static Config config;
 
     /**
-     * loads the config
+     * Loads the config
      */
     public static void generateConfig() {
         File configDir = FabricLoader.getInstance().getConfigDirectory();

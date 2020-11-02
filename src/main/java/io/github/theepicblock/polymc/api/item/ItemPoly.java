@@ -19,21 +19,25 @@ package io.github.theepicblock.polymc.api.item;
 
 import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
+import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 public interface ItemPoly extends DebugInfoProvider<Item> {
     /**
-     * Transforms an ItemStack to it's client version
-     * @param input original ItemStack
-     * @return ItemStack that should be sent to the client
+     * Transforms an ItemStack to its clientside version.
+     *
+     * It's recommended to use {@link io.github.theepicblock.polymc.api.PolyMap#getClientBlock(BlockState)} when available instead of this method.
+     * @apiNote this method should never edit the incoming ItemStack. As that might have unspecified consequences for the actual serverside representation of the item.
+     * @param input the original {@link ItemStack} that's used serverside.
+     * @return The {@link ItemStack} that should be sent to the client.
      */
     ItemStack getClientItem(ItemStack input);
 
     /**
-     * Callback to add all resources needed for this item to a resourcepack
-     * @param item item this ItemPoly was registered to, for reference.
-     * @param pack resourcepack to add to.
+     * Callback to add all resources needed for this item to a resourcepack.
+     * @param item item this ItemPoly was registered to, for added context.
+     * @param pack resourcepack the assets should be added to.
      */
     void AddToResourcePack(Item item, ResourcePackMaker pack);
 }

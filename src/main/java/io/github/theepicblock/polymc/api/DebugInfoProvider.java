@@ -19,7 +19,7 @@ package io.github.theepicblock.polymc.api;
 
 public interface DebugInfoProvider<T> {
     /**
-     * Get's debug information to show in the PolyMap dump
+     * Gets debug information to show in the PolyMap dump
      * @param obj object this poly was registered to, for reference.
      * @return debug info for this poly, or null if no info is needed.
      */

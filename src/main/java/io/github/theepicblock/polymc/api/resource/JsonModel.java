@@ -24,6 +24,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Java representation of a blockstate json file.
+ * Note that it isn't completely accurate.
+ */
 public class JsonModel {
     public String parent;
     public String gui_light;
@@ -38,6 +42,9 @@ public class JsonModel {
         overrides.add(e);
     }
 
+    /**
+     * Please use instead of {@link Gson#toJson(Object)} as it makes sure the {@link #overrides} list is properly sorted before converting.
+     */
     public String toJson(Gson gson) {
         //Ensure that the overrides are in the correct order before converting
         Collections.sort(overrides, (o1, o2) -> {
