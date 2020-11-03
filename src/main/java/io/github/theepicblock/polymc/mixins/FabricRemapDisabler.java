@@ -22,22 +22,27 @@ import net.fabricmc.fabric.impl.registry.sync.RemapException;
 import net.fabricmc.fabric.impl.registry.sync.RemappableRegistry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.SimpleRegistry;
+import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
+@SuppressWarnings("OverwriteTarget")
 @Mixin(value = SimpleRegistry.class, priority = 2000)
 public class FabricRemapDisabler implements RemappableRegistry {
 
     /**
      * @author TheEpicBlock
-     * @reason vanilla ids should always be in the right place. The other ids aren't used for networking so this is not needed.
+     * @reason Vanilla ids should always be in the right place. The modded ids aren't used for networking so this is not needed.
      */
-    @SuppressWarnings("OverwriteTarget")
     @Overwrite(remap = false)
-    public void remap(String s, Object2IntMap<Identifier> object2IntMap, RemapMode remapMode) throws RemapException {
+    @Dynamic("remap is added at runtime by the fabric-registry-sync-v0 using `MixinIdRegistry`")
+    public void remap(String s, Object2IntMap<Identifier> object2IntMap, RemapMode remapMode) throws RemapException {}
 
-    }
-
-    @Override
+    /**
+     * @author TheEpicBlock
+     * @reason Vanilla ids should always be in the right place. The modded ids aren't used for networking so this is not needed.
+     */
+    @Overwrite(remap = false)
+    @Dynamic("unmap is added at runtime by the fabric-registry-sync-v0 using `MixinIdRegistry`")
     public void unmap(String s) throws RemapException {}
 }
