@@ -43,7 +43,7 @@ public class PolyMcCommands {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             dispatcher.register(literal("PolyMc").requires(source -> source.hasPermissionLevel(2))
                     .then(literal("debug")
-                        .then(literal("ClientItemNBT")
+                        .then(literal("clientItem")
                             .executes((context) -> {
                                 ItemStack heldItem = context.getSource().getPlayer().inventory.getMainHandStack();
                                 context.getSource().sendFeedback(PolyMc.getMap().getClientItem(heldItem).toTag(new CompoundTag()).toText(), false);
