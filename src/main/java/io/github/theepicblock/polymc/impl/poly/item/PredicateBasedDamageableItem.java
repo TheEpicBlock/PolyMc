@@ -29,7 +29,7 @@ import java.util.HashMap;
 
 /**
  * For items which render based on a predicate. It will also do damage calculations
- * It will copy predicate based models from the original item model into the resourcepack
+ * It will copy predicate based models from the original item model into the resource pack
  * This might need to be merged into {@link CustomModelDataPoly} at some point. Idk
  */
 public class PredicateBasedDamageableItem extends DamageableItemPoly {

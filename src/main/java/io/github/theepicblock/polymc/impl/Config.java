@@ -39,7 +39,7 @@ import java.util.List;
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection", "JavadocReference"})
 public class Config {
     public static final int LATEST_VERSION = 3;
-    public resourcepackConfig resourcepack;
+    public ResourcePackConfig resourcepack;
     public miscConfig misc;
     private int configVersion;
     private List<String> disabledMixins;
@@ -61,7 +61,7 @@ public class Config {
         return false;
     }
 
-    public static class resourcepackConfig {
+    public static class ResourcePackConfig {
         public boolean advancedDiscovery;
     }
 

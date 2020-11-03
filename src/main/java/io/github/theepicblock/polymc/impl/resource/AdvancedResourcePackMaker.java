@@ -39,7 +39,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
- * This class copies all assets into a temp folder. Then uses that to generate the resourcepack, instead of getting the assets straight from the jars.
+ * This class copies all assets into a temp folder. Then uses that to generate the resource pack, instead of getting the assets straight from the jars.
  * This is slower, but could help with finding assets.
  */
 public class AdvancedResourcePackMaker extends ResourcePackMaker {

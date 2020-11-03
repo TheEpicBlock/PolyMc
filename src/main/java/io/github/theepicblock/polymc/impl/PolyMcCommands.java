@@ -55,7 +55,7 @@ public class PolyMcCommands {
                                 try {
                                     ResourcePackGenerator.generate();
                                 } catch (Exception e) {
-                                    context.getSource().sendFeedback(new LiteralText("An error occurred whilst trying to generate the resourcepack! Please check the console."), true);
+                                    context.getSource().sendFeedback(new LiteralText("An error occurred whilst trying to generate the resource pack! Please check the console."), true);
                                     e.printStackTrace();
                                     return 0;
                                 }

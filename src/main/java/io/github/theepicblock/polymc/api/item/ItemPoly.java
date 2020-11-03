@@ -35,9 +35,9 @@ public interface ItemPoly extends DebugInfoProvider<Item> {
     ItemStack getClientItem(ItemStack input);
 
     /**
-     * Callback to add all resources needed for this item to a resourcepack.
+     * Callback to add all resources needed for this item to a resource pack.
      * @param item item this ItemPoly was registered to, for added context.
-     * @param pack resourcepack the assets should be added to.
+     * @param pack resource pack the assets should be added to.
      */
     void AddToResourcePack(Item item, ResourcePackMaker pack);
 }

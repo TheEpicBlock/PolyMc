@@ -257,10 +257,10 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Imports an Artifice resourcepack to be used when getting assets.
-     * This is not needed on the client. But it's the only way to support Artifice resourcepacks on servers.
+     * Imports an Artifice resource pack to be used when getting assets.
+     * This is not needed on the client. But it's the only way to support Artifice resource packs on servers.
      * This function won't do anything on the client since the pack will automatically be imported there from {@link com.swordglowsblue.artifice.common.ArtificeRegistry#ASSETS}.
-     * @param pack resourcepack to import.
+     * @param pack resource pack to import.
      * @see AdvancedResourcePackMaker#importArtificePack(Object)
      */
     public void importArtificePack(Object pack) {
@@ -268,14 +268,14 @@ public class ResourcePackMaker {
         if (pack instanceof ArtificeResourcePack) {
             packname = ((ArtificeResourcePack)pack).getName();
         }
-        PolyMc.LOGGER.warn(String.format("Tried to import Artifice resourcepack '%s' but this isn't supported with the default discovery method", packname));
+        PolyMc.LOGGER.warn(String.format("Tried to import Artifice resource pack '%s' but this isn't supported with the default discovery method", packname));
         PolyMc.LOGGER.warn("Please switch to the advancedDiscovery method. See https://github.com/TheEpicBlock/PolyMc/wiki/ModCompat#artifice");
     }
 
     /**
      * Imports a mod's entire asset folder.
      * <p>
-     * This can be useful for other serverside mods to import their resourcepack into PolyMc's system.
+     * This can be useful for other serverside mods to import their resource pack into PolyMc's system.
      * Do keep in mind that PolyMc has a lot of compatibility functionality for things like custommodeldata. It's recommended to use those to avoid cmd values from conflicting.
      * @param modId mod to import assets from.
      * @see #copyFolder(String, String, String) for more control of what you're copying.
@@ -285,7 +285,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Places the model of this item into this resourcepack. Together with everything this model depends on.
+     * Places the model of this item into this resource pack. Together with everything this model depends on.
      * @param item item whose model we should copy.
      */
     public void copyItemModel(Item item) {
@@ -294,7 +294,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Copies a model file into this resourcepack. Resolving all dependencies on the way.
+     * Copies a model file into this resource pack. Resolving all dependencies on the way.
      * @param modId the mod who owns the model.
      * @param path  path to model. Example "item/testitem".
      * @see #copyModel(Identifier)
@@ -330,7 +330,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Copies a model file into this resourcepack. Resolving all dependencies on the way.
+     * Copies a model file into this resource pack. Resolving all dependencies on the way.
      * @param id {@code namespace}: the mod who owns the model. {@code path}: path to model. Example "item/testitem".
      * @see #copyModel(String, String)
      */
@@ -342,7 +342,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Copies a texture file into this resourcepack. Resolving all dependencies on the way.
+     * Copies a texture file into this resource pack. Resolving all dependencies on the way.
      * @param modId the mod who owns the texture.
      * @param path  path to model. Example: "item/testtexture".
      */
@@ -355,7 +355,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Copies a file from the modId's jar's asset folder to this resourcepack.
+     * Copies a file from the modId's jar's asset folder to this resource pack.
      * @param modId the mod who owns the asset.
      * @param path  example: "models/item/testitem.json".
      * @return The path to the new file.
@@ -410,7 +410,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Get's a file from the resourcepack folder.
+     * Get's a file from the resource pack folder.
      * If you need to get something that isn't in the assets folder, use {@link #getFileDirect(String, String)} instead.
      * @param modId the mod who owns the file.
      * @param path  example: "asset/testmod/models/item/testitem.json".
@@ -421,8 +421,8 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Get's a file from the resourcepack folder.
-     * This gets it directly from the jar, even if the resourcepackConfig is set to advanced.
+     * Get's a file from the resource pack folder.
+     * This gets it directly from the jar, even if {@link io.github.theepicblock.polymc.impl.Config.ResourcePackConfig#advancedDiscovery} is set to true.
      * This should only be used if the thing you want to get is not in the assets folder.
      * @param modId the mod who owns the file.
      * @param path  example: "asset/testmod/models/item/testitem.json".
@@ -459,7 +459,7 @@ public class ResourcePackMaker {
 
     /**
      * Checks if a file exists.
-     * This checks it directly from the jar, even if the resourcepackConfig is set to advanced.
+     * This checks it directly from the jar, even if {@link io.github.theepicblock.polymc.impl.Config.ResourcePackConfig#advancedDiscovery} is set to true.
      * This should only be used if the thing you want to check is not in the assets folder.
      * @param modId the mod who owns the file.
      * @param path  example: "asset/testmod/models/item/testitem.json".
@@ -478,7 +478,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Copies a file into this resourcepack.
+     * Copies a file into this resource pack.
      * If you need to copy something that isn't in the assets folder, use {@link #copyFileDirect(String, String)} instead.
      * @param modId the mod who owns the file.
      * @param path  example: "asset/testmod/models/item/testitem.json".
@@ -489,8 +489,8 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Copies a file into this resourcepack.
-     * This copies it directly from the jar, even if the resourcepackConfig is set to advanced.
+     * Copies a file into this resource pack.
+     * This copies it directly from the jar, even if {@link io.github.theepicblock.polymc.impl.Config.ResourcePackConfig#advancedDiscovery} is set to true.
      * This should only be used if the thing you want to copy is not in the assets folder.
      * @param modId the mod who owns the file.
      * @param path  example: "asset/testmod/models/item/testitem.json".
