@@ -36,7 +36,7 @@ public class ConfigManager {
      * Loads the config
      */
     public static void generateConfig() {
-        File configDir = FabricLoader.getInstance().getConfigDirectory();
+        File configDir = FabricLoader.getInstance().getConfigDir().toFile();
         //noinspection ResultOfMethodCallIgnored
         configDir.mkdirs();
         File configFile = new File(configDir, "polymc.json");

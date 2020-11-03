@@ -35,19 +35,18 @@ import java.util.stream.Stream;
 public class ResourcePackGenerator {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void generate() {
-        File gameDir = FabricLoader.getInstance().getGameDirectory();
-        File resourceDir = new File(gameDir, "resource");
-        resourceDir.mkdirs();
-        Path path = resourceDir.toPath().toAbsolutePath();
+        Path gameDir = FabricLoader.getInstance().getGameDir();
+        Path resourcePath = gameDir.resolve("resource").toAbsolutePath();
+        resourcePath.toFile().mkdir();
 
         ResourcePackMaker pack;
         if (ConfigManager.getConfig().resourcepack.advancedDiscovery) {
-            File tempDir = new File(gameDir, "resource_temp");
+            File tempDir = gameDir.resolve("resource_temp").toFile();
             tempDir.mkdirs();
             Path tempPath = tempDir.toPath().toAbsolutePath();
-            pack = new AdvancedResourcePackMaker(path, tempPath);
+            pack = new AdvancedResourcePackMaker(resourcePath, tempPath);
         } else {
-            pack = new ResourcePackMaker(path);
+            pack = new ResourcePackMaker(resourcePath);
 
             if (FabricLoader.getInstance().getModContainer("artifice").isPresent()) {
                 PolyMc.LOGGER.error("Artifice was detected, but the default PolyMc resource pack maker is not compatible with Artifice");

@@ -36,7 +36,7 @@ public class PolyMc implements ModInitializer {
     /**
      * Builds the poly map, this should only be run when all blocks/items have been registered.
      * This will be called by PolyMc when the worlds are generated.
-     * @deprecated this is an internal method you shouldn't call
+     * @deprecated this is an internal method you shouldn't call.
      */
     @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated

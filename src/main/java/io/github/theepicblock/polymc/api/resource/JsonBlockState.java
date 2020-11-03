@@ -34,7 +34,7 @@ import java.util.Optional;
  */
 public class JsonBlockState {
     private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
-    public Map<String,JsonElement> variants;
+    public final Map<String,JsonElement> variants;
 
     public JsonBlockState() {
         this.variants = new HashMap<>();

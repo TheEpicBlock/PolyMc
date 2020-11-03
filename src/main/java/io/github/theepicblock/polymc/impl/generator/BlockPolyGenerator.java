@@ -31,6 +31,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 
 /**
  * Class to automatically generate BlockPolys for Blocks
@@ -57,12 +58,12 @@ public class BlockPolyGenerator {
      */
     public static BlockPoly generatePoly(Block block, PolyRegistry builder) {
         BlockState state = block.getDefaultState();
-        VoxelShape collisionShape = null;
+        VoxelShape collisionShape;
         try {
             collisionShape = state.getCollisionShape(null, null);
         } catch (Exception e) {
             PolyMc.LOGGER.warn("Failed to get collision shape for " + block.getTranslationKey() + ": " + e.getMessage());
-            return new SimpleReplacementPoly(Blocks.STONE);
+            collisionShape = VoxelShapes.UNBOUNDED;
         }
 
         //Handle fluids
@@ -90,7 +91,7 @@ public class BlockPolyGenerator {
         //Handle full blocks
         if (Block.isShapeFullCube(collisionShape)) {
             try {
-                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NOTEBLOCK_PROFILE);
+                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NOTE_BLOCK_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
         //Handle blocks without collision

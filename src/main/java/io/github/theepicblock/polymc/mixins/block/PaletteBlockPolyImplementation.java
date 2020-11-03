@@ -28,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 /**
  * Minecraft uses a different method to get ids when it sends chunks.
- * Therefor {@link BlockPolyImplementation} doesn't work on chunks.
+ * Therefore {@link BlockPolyImplementation} doesn't work on chunks.
  * This Mixin makes sure that the blocks are polyd before they get sent to the client.
  */
 @Mixin(value = {ArrayPalette.class, BiMapPalette.class, LithiumHashPalette.class})

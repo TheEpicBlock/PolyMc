@@ -17,8 +17,6 @@
  */
 package io.github.theepicblock.polymc.impl.poly.block;
 
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 
 import java.util.function.Predicate;
@@ -37,9 +35,5 @@ public class ConditionalSimpleBlockPoly extends SimpleReplacementPoly {
     @Override
     public BlockState getClientBlock(BlockState input) {
         return exempts.test(input) ? input : state;
-    }
-
-    @Override
-    public void AddToResourcePack(Block block, ResourcePackMaker pack) {
     }
 }

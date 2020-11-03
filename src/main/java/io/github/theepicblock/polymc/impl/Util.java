@@ -35,7 +35,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Map;
 import java.util.Optional;
 
-@SuppressWarnings("PointlessBooleanExpression")
 public class Util {
     public static final String MC_NAMESPACE = "minecraft";
     /**
@@ -105,6 +104,7 @@ public class Util {
         return res.substring(0, res.length() - 1); //this removes the last comma
     }
 
+    @SuppressWarnings("unchecked")
     private static <T extends Comparable<T>> String nameValue(Property<T> property, Comparable<?> value) {
         return property.name((T)value);
     }

@@ -62,7 +62,7 @@ public class ProcessSyncedBlockEventServerSideImplementation {
 
     @Inject(method = "addSyncedBlockEvent(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V", at = @At("HEAD"), cancellable = true)
     public void addSyncedBlockEventInject(BlockPos pos, Block block, int type, int data, CallbackInfo ci) {
-        //if the events for this block should be processed serverside, execute it immediatly. Instead of adding it to a queue to be sent to the client.
+        //if the events for this block should be processed serverside, execute it immediately. Instead of adding it to a queue to be sent to the client.
         if (ServerCalculatedBlockEvents.contains(block)) {
             ((ServerWorld)(Object)this).getBlockState(pos).onSyncedBlockEvent(((ServerWorld)(Object)this), pos, type, data);
             ci.cancel();

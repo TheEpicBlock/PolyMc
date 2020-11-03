@@ -75,7 +75,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
         if (pack instanceof ArtificeResourcePack) {
             ArtificeResourcePack aPack = (ArtificeResourcePack)pack;
             try {
-                Path artLoc = FabricLoader.getInstance().getGameDirectory().toPath().relativize(tempLocation);
+                Path artLoc = FabricLoader.getInstance().getGameDir().relativize(tempLocation);
                 aPack.dumpResources(artLoc.toString());
             } catch (IOException e) {
                 PolyMc.LOGGER.warn(String.format("Failed to get resources from artifice pack '%s'", aPack.getName()));
