@@ -41,7 +41,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class PolyMcCommands {
     public static void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-            dispatcher.register(literal("PolyMc").requires(source -> source.hasPermissionLevel(2))
+            dispatcher.register(literal("polymc").requires(source -> source.hasPermissionLevel(2))
                     .then(literal("debug")
                         .then(literal("clientItem")
                             .executes((context) -> {
