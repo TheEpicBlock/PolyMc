@@ -17,17 +17,18 @@
  */
 package io.github.theepicblock.polymc.api.block;
 
-import io.github.theepicblock.polymc.resource.ResourcePackMaker;
+import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 
+/**
+ * Allows you to use a lambda to define a {@link BlockPoly}
+ */
 public interface BlockPolyPredicate extends BlockPoly {
     @Override
-    default void AddToResourcePack(Block block, ResourcePackMaker pack) {
-
-    }
+    default void AddToResourcePack(Block block, ResourcePackMaker pack) {}
 
     @Override
     default String getDebugInfo(Block obj) {
-        return "unknown predicate type";
+        return "miscellaneous lambda poly";
     }
 }

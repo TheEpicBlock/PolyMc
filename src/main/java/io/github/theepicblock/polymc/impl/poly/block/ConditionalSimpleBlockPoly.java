@@ -15,15 +15,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.api;
+package io.github.theepicblock.polymc.impl.poly.block;
 
-public interface DebugInfoProvider<T> {
-    /**
-     * Gets debug information to show in the PolyMap dump
-     * @param obj object this poly was registered to, for reference.
-     * @return debug info for this poly, or null if no info is needed.
-     */
-    default String getDebugInfo(T obj) {
-        return null;
+import net.minecraft.block.BlockState;
+
+import java.util.function.Predicate;
+
+/**
+ * This block poly replaces the the block it's registered to with another blockstate, but only if exempts returns false
+ */
+public class ConditionalSimpleBlockPoly extends SimpleReplacementPoly {
+    private final Predicate<BlockState> exempts;
+
+    public ConditionalSimpleBlockPoly(BlockState state, Predicate<BlockState> exempts) {
+        super(state);
+        this.exempts = exempts;
+    }
+
+    @Override
+    public BlockState getClientBlock(BlockState input) {
+        return exempts.test(input) ? input : state;
     }
 }

@@ -17,8 +17,7 @@
  */
 package io.github.theepicblock.polymc.api;
 
-import io.github.theepicblock.polymc.api.register.PolyRegistry;
-import io.github.theepicblock.polymc.resource.ResourcePackMaker;
+import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 
 /**
  * The entrypoint for all PolyMc related stuff to hook into PolyMc.

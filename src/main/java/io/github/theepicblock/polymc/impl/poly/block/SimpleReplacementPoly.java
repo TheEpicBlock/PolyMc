@@ -15,25 +15,37 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.api.block;
+package io.github.theepicblock.polymc.impl.poly.block;
 
-import io.github.theepicblock.polymc.api.DebugInfoProvider;
+import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 
-public interface BlockPoly extends DebugInfoProvider<Block> {
-    /**
-     * Transforms an BlockState to its clientside version.
-     * @param input the original {@link BlockState} that's used serverside.
-     * @return BlockState that should be sent to the client
-     */
-    BlockState getClientBlock(BlockState input);
+/**
+ * This poly simply replaces the block with another block
+ */
+public class SimpleReplacementPoly implements BlockPoly {
+    protected final BlockState state;
 
-    /**
-     * Callback to add all resources needed for this block to a resource pack
-     * @param block block this BlockPoly was registered to, for reference.
-     * @param pack  resource pack to add to.
-     */
-    void AddToResourcePack(Block block, ResourcePackMaker pack);
+    public SimpleReplacementPoly(BlockState state) {
+        this.state = state;
+    }
+
+    public SimpleReplacementPoly(Block block) {
+        this(block.getDefaultState());
+    }
+
+    @Override
+    public BlockState getClientBlock(BlockState input) {
+        return state;
+    }
+
+    @Override
+    public void AddToResourcePack(Block block, ResourcePackMaker pack) {}
+
+    @Override
+    public String getDebugInfo(Block obj) {
+        return state.toString();
+    }
 }

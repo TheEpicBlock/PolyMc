@@ -17,9 +17,9 @@
  */
 package io.github.theepicblock.polymc.mixins;
 
-import io.github.theepicblock.polymc.Config;
-import io.github.theepicblock.polymc.ConfigManager;
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.impl.Config;
+import io.github.theepicblock.polymc.impl.ConfigManager;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;

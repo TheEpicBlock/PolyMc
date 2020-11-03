@@ -17,7 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins.item;
 
-import io.github.theepicblock.polymc.Util;
+import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.Recipe;

@@ -17,7 +17,10 @@
  */
 package io.github.theepicblock.polymc.api.block;
 
-import io.github.theepicblock.polymc.api.register.PolyRegistry;
+import io.github.theepicblock.polymc.api.PolyRegistry;
+import io.github.theepicblock.polymc.impl.poly.block.ConditionalSimpleBlockPoly;
+import io.github.theepicblock.polymc.impl.poly.block.PropertyRetainingReplacementPoly;
+import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -29,15 +32,15 @@ import java.util.function.Predicate;
 
 /**
  * Defines a group of blocks and blockstates.
- * Is used by {@link io.github.theepicblock.polymc.api.register.BlockStateManager} to define which blockstates can be used and which not.
- * Also includes info on how to handle these blockstate {@link #onFirstRegister}
+ * Is used by {@link BlockStateManager} to define which blockstates can be used and which not.
+ * Also includes info on how to handle these blockstate {@link #onFirstRegister}.
  */
 @SuppressWarnings("PointlessBooleanExpression")
 public class BlockStateProfile {
-    public Block[] blocks;
-    public Predicate<BlockState> filter;
-    public BiConsumer<Block,PolyRegistry> onFirstRegister;
-    public String name;
+    public final Block[] blocks;
+    public final Predicate<BlockState> filter;
+    public final BiConsumer<Block,PolyRegistry> onFirstRegister;
+    public final String name;
 
     public BlockStateProfile(String name, Block[] blocks, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) {
         this.blocks = blocks;
@@ -88,26 +91,22 @@ public class BlockStateProfile {
     private static final BiConsumer<Block,PolyRegistry> POWERED_BLOCK_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, (BlockPolyPredicate)(block2) -> block2.with(Properties.POWERED, false));
 
     //PROFILES
-    public static BlockStateProfile NOTEBLOCK_PROFILE = getDefaultedProfileFromBlock("noteblocks", Blocks.NOTE_BLOCK);
-    public static BlockStateProfile LEAVES_PROFILE = getDefaultedProfileFromBlock("leaves", LEAVES_BLOCKS);
-    public static BlockStateProfile NO_COLLISION_PROFILE = new BlockStateProfile("blocks without collisions", NO_COLLISION_BLOCKS, NO_COLLISION_FILTER, NO_COLLISION_ON_FIRST_REGISTER);
-    public static BlockStateProfile PETRIFIED_OAK_SLAB_PROFILE = new BlockStateProfile("petrified oak slab", Blocks.PETRIFIED_OAK_SLAB, ALWAYS_TRUE_FILTER, PETRIFIED_OAK_SLAB_ON_FIRST_REGISTER);
-    public static BlockStateProfile FARMLAND_PROFILE = new BlockStateProfile("farmland", Blocks.FARMLAND, FARMLAND_FILTER, FARMLAND_ON_FIRST_REGISTER);
-    public static BlockStateProfile DOOR_PROFILE = new BlockStateProfile("door", DOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
-    public static BlockStateProfile TRAPDOOR_PROFILE = new BlockStateProfile("trapdoor", TRAPDOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
-    public static BlockStateProfile METAL_DOOR_PROFILE = new BlockStateProfile("metal_door", Blocks.IRON_DOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
-    public static BlockStateProfile METAL_TRAPDOOR_PROFILE = new BlockStateProfile("metal_trapdoor", Blocks.IRON_TRAPDOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile NOTE_BLOCK_PROFILE = getProfileWithDefaultFilter("note block", Blocks.NOTE_BLOCK);
+    public static final BlockStateProfile LEAVES_PROFILE = getProfileWithDefaultFilter("leaves", LEAVES_BLOCKS);
+    public static final BlockStateProfile NO_COLLISION_PROFILE = new BlockStateProfile("blocks without collisions", NO_COLLISION_BLOCKS, NO_COLLISION_FILTER, NO_COLLISION_ON_FIRST_REGISTER);
+    public static final BlockStateProfile PETRIFIED_OAK_SLAB_PROFILE = new BlockStateProfile("petrified oak slab", Blocks.PETRIFIED_OAK_SLAB, ALWAYS_TRUE_FILTER, PETRIFIED_OAK_SLAB_ON_FIRST_REGISTER);
+    public static final BlockStateProfile FARMLAND_PROFILE = new BlockStateProfile("farmland", Blocks.FARMLAND, FARMLAND_FILTER, FARMLAND_ON_FIRST_REGISTER);
+    public static final BlockStateProfile DOOR_PROFILE = new BlockStateProfile("door", DOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile TRAPDOOR_PROFILE = new BlockStateProfile("trapdoor", TRAPDOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile METAL_DOOR_PROFILE = new BlockStateProfile("metal_door", Blocks.IRON_DOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile METAL_TRAPDOOR_PROFILE = new BlockStateProfile("metal_trapdoor", Blocks.IRON_TRAPDOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
 
     //OTHER CODE
-
-
-    @Deprecated
-    public static BlockStateProfile getDefaultedProfileFromBlock(String name, Block[] blocks) {
+    public static BlockStateProfile getProfileWithDefaultFilter(String name, Block[] blocks) {
         return new BlockStateProfile(name, blocks, DEFAULT_FILTER, DEFAULT_ON_FIRST_REGISTER);
     }
 
-    @Deprecated
-    public static BlockStateProfile getDefaultedProfileFromBlock(String name, Block block) {
+    public static BlockStateProfile getProfileWithDefaultFilter(String name, Block block) {
         return new BlockStateProfile(name, block, DEFAULT_FILTER, DEFAULT_ON_FIRST_REGISTER);
     }
 

@@ -31,7 +31,7 @@ public class FabricApiExtendedScreenImplementation {
      * @author TheEpicBlock
      * @reason The vanilla client can't understand the custom packet
      */
-    @Overwrite
+    @Overwrite(remap = false)
     public static void sendOpenPacket(ServerPlayerEntity player, ExtendedScreenHandlerFactory factory, ScreenHandler handler, int syncId) {
         player.networkHandler.sendPacket(new OpenScreenS2CPacket(syncId, handler.getType(), factory.getDisplayName()));
     }
