@@ -79,7 +79,7 @@ public class UnusedBlockStatePoly implements BlockPoly {
             JsonBlockState clientBlockStates = pack.getOrDefaultPendingBlockState(clientBlockId);
             String clientStateString = Util.getPropertiesFromBlockState(clientState);
 
-            JsonElement moddedVariants = moddedBlockStates.get(moddedState);
+            JsonElement moddedVariants = moddedBlockStates.getVariantBestMatching(moddedState);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
 
             for (JsonBlockState.Variant v : JsonBlockState.getVariantsFromJsonElement(moddedVariants)) {

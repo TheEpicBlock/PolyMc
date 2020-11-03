@@ -33,8 +33,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  *
  * My hacky solution:
  * When a packet is sent to void a slot. The item previously in there gets set in "polyMCrecentlyVoided".
- * Then when it tries to set a slot to an item. It first get's checked to see if the item it tries to set could be the poly of
- * We also check if the client tries to set a slot to it's polyd version.
+ * Then when it tries to set a slot to an item. It first gets checked to see if the item it tries to set could be the poly of
+ * We also check if the client tries to set a slot to its polyd version.
  */
 @Mixin(ServerPlayNetworkHandler.class)
 public class CreativeModeHotfix {

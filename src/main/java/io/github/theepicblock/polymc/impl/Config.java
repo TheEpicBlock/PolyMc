@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Hello, if you've come here, you might be wondering how to add something to this config.
  * Please increment the LATEST_VERSION in this class.
- * If you're adding a value, add it into this class so its parsed correctly.
+ * If you're adding a value, add it into this class so it's parsed correctly.
  * (the entire config is parsed using GSON)
  * Please add an entry in the "config_update.json" under the resources folder.
  * This file defines how to update the config for each version.
@@ -40,7 +40,7 @@ import java.util.List;
 public class Config {
     public static final int LATEST_VERSION = 3;
     public ResourcePackConfig resourcepack;
-    public miscConfig misc;
+    public MiscConfig misc;
     private int configVersion;
     private List<String> disabledMixins;
 
@@ -55,17 +55,16 @@ public class Config {
 
     public boolean isMixinAutoDisabled(String mixin) {
         //automatically disable mixins related to processSyncedBlockEventServerSide if it's empty
-        if (misc.processSyncedBlockEventServerSide.size() == 0 &&
-                (mixin.equals("block.ProcessSyncedBlockEventServerSideImplementation") ||
-                 mixin.equals("ServerParticlePatch"))) return true;
-        return false;
+        return (misc.processSyncedBlockEventServerSide.size() == 0 &&
+                   (mixin.equals("block.ProcessSyncedBlockEventServerSideImplementation") ||
+                   mixin.equals("ServerParticlePatch")));
     }
 
     public static class ResourcePackConfig {
         public boolean advancedDiscovery;
     }
 
-    public static class miscConfig {
+    public static class MiscConfig {
         private List<String> processSyncedBlockEventServerSide;
 
         public List<String> getProcessSyncedBlockEventServerSide() {

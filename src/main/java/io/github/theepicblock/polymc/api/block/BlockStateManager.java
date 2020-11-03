@@ -137,7 +137,7 @@ public class BlockStateManager {
     }
 
     /**
-     * Get's the usage index of the block.
+     * Gets the usage index of the block.
      * @param block block to check usage of.
      * @param onFirstRegister method to use if this is the first time this block is used.
      * @return The usage index of the block

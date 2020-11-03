@@ -65,11 +65,10 @@ public class JsonBlockState {
     }
 
     /**
-     * Get's
-     * @param state
+     * Gets the best {@link Variant} that best matches the properties of the state passed in.
      * @return Either a list of {@link Variant}s or a single {@link Variant}. See {@link #getVariantsFromJsonElement(JsonElement)}.
      */
-    public JsonElement get(BlockState state) {
+    public JsonElement getVariantBestMatching(BlockState state) {
         //our goal is to find a string which matches the state the best possible
         propertyPairsLoop:
         for (Map.Entry<String,JsonElement> entry : variants.entrySet()) {

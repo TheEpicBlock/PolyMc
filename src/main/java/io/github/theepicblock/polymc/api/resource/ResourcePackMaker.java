@@ -105,7 +105,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Get's the pending model for that Id if it exists, returns {@code null} otherwise.
+     * Gets the pending model for that Id if it exists, returns {@code null} otherwise.
      * @param id id whose associated model we should return. Example: "minecraft:item/stick".
      * @return The pending model for the specified id. Or {@code null} if there is none.
      */
@@ -207,7 +207,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Get's the pending model for that Id if it exists, returns {@code null} otherwise.
+     * Gets the pending model for that Id if it exists, returns {@code null} otherwise.
      * @param id id whose associated blockState we should return. Example: "minecraft:grass_block".
      * @return The pending model for the specified id. Or {@code null} if there is none.
      */
@@ -375,7 +375,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Get's a file from the modId's jar's asset folder.
+     * Gets a file from the modId's jar's asset folder.
      * @param modId the mod who owns the asset.
      * @param path  example: "models/item/testitem.json".
      * @return A reader for this file.
@@ -410,7 +410,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Get's a file from the resource pack folder.
+     * Gets a file from the resource pack folder.
      * If you need to get something that isn't in the assets folder, use {@link #getFileDirect(String, String)} instead.
      * @param modId the mod who owns the file.
      * @param path  example: "asset/testmod/models/item/testitem.json".
@@ -421,7 +421,7 @@ public class ResourcePackMaker {
     }
 
     /**
-     * Get's a file from the resource pack folder.
+     * Gets a file from the resource pack folder.
      * This gets it directly from the jar, even if {@link io.github.theepicblock.polymc.impl.Config.ResourcePackConfig#advancedDiscovery} is set to true.
      * This should only be used if the thing you want to get is not in the assets folder.
      * @param modId the mod who owns the file.
