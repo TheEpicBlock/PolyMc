@@ -41,61 +41,64 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class PolyMcCommands {
     public static void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-            dispatcher.register(literal("polymc").requires(source -> source.hasPermissionLevel(2))
-                    .then(literal("item")
+            dispatcher.register(literal("PolyMc").requires(source -> source.hasPermissionLevel(2))
+                    .then(literal("debug")
+                        .then(literal("ClientItemNBT")
                             .executes((context) -> {
                                 ItemStack heldItem = context.getSource().getPlayer().inventory.getMainHandStack();
                                 context.getSource().sendFeedback(PolyMc.getMap().getClientItem(heldItem).toTag(new CompoundTag()).toText(), false);
                                 return Command.SINGLE_SUCCESS;
-                            }))
-                    .then(literal("gen_resource")
+                            })))
+                    .then(literal("generate")
+                        .then(literal("resources")
                             .executes((context -> {
                                 try {
                                     ResourcePackGenerator.generate();
                                 } catch (Exception e) {
+                                    context.getSource().sendFeedback(new LiteralText("An error occurred whilst trying to generate the resourcepack! Please check the console."), true);
                                     e.printStackTrace();
+                                    return 0;
                                 }
                                 context.getSource().sendFeedback(new LiteralText("Finished generating"), true);
                                 return Command.SINGLE_SUCCESS;
                             })))
-                    .then(literal("dump_polyMap")
+                        .then(literal("polyDump")
                             .executes((context) -> {
-                                StringBuilder out = new StringBuilder();
+                                StringBuilder polyDump = new StringBuilder();
                                 PolyMap map = PolyMc.getMap();
-                                out.append("###########\n###ITEMS###\n###########\n");
+                                polyDump.append("###########\n## ITEMS ##\n###########\n");
                                 map.getItemPolys().forEach((item, poly) -> {
-                                    addAndFormatToBuilder(out, item, item.getTranslationKey(), poly);
+                                    addDebugProviderToDump(polyDump, item, item.getTranslationKey(), poly);
                                 });
-                                out.append("############\n###BLOCKS###\n############\n");
+                                polyDump.append("############\n## BLOCKS ##\n############\n");
                                 map.getBlockPolys().forEach((block, poly) -> {
-                                    addAndFormatToBuilder(out, block, block.getTranslationKey(), poly);
+                                    addDebugProviderToDump(polyDump, block, block.getTranslationKey(), poly);
                                 });
 
-                                File polyDump = new File(FabricLoader.getInstance().getGameDirectory(), "PolyDump.txt");
+                                File polyDumpFile = new File(FabricLoader.getInstance().getGameDir().toFile(), "PolyDump.txt");
                                 try {
-                                    if (polyDump.exists()) {
-                                        boolean a = polyDump.delete();
-                                        if (!a) {
-                                            throw new SimpleCommandExceptionType(new LiteralText("Failed to remove file so new one could be created")).create();
-                                        }
+                                    if (polyDumpFile.exists()) {
+                                        boolean a = polyDumpFile.delete();
+                                        if (!a) throw new SimpleCommandExceptionType(new LiteralText("Failed to remove old polyMap")).create();
                                     }
-                                    boolean b = polyDump.createNewFile();
-                                    if (!b) {
-                                        throw new SimpleCommandExceptionType(new LiteralText("couldn't create file")).create();
-                                    }
-                                    FileWriter writer = new FileWriter(polyDump);
-                                    writer.write(out.toString());
+                                    boolean b = polyDumpFile.createNewFile();
+                                    if (!b) throw new SimpleCommandExceptionType(new LiteralText("Couldn't create file")).create();
+
+                                    //Write the contents of polyDump to the polyDumpFile
+                                    FileWriter writer = new FileWriter(polyDumpFile);
+                                    writer.write(polyDump.toString());
                                     writer.close();
                                 } catch (IOException e) {
-                                    context.getSource().sendError(new LiteralText("an error occurred when trying to write the PolyDump. Please check the console"));
+                                    context.getSource().sendError(new LiteralText("An error occurred whilst trying to generate the polyDump! Please check the console."));
                                     e.printStackTrace();
+                                    return 0;
                                 }
                                 return Command.SINGLE_SUCCESS;
-                            })));
+                    }))));
         });
     }
 
-    private static <T> void addAndFormatToBuilder(StringBuilder b, T object, String key, DebugInfoProvider<T> poly) {
+    private static <T> void addDebugProviderToDump(StringBuilder b, T object, String key, DebugInfoProvider<T> poly) {
         b.append(Util.expandTo(key, 45));
         b.append(" --> ");
         b.append(Util.expandTo(poly.getClass().getName(), 60));
@@ -106,7 +109,7 @@ public class PolyMcCommands {
                 b.append(info);
             }
         } catch (Exception e) {
-            PolyMc.LOGGER.debug("Error whilst getting debug info from " + poly.getClass().getName() + " polying " + key);
+            PolyMc.LOGGER.debug(String.format("Error whilst getting debug info from '%s' which is registered to '%s'", poly.getClass().getName(), key));
             e.printStackTrace();
         }
         b.append("\n");
