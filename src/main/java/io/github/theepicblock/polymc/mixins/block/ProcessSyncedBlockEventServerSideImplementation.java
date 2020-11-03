@@ -44,7 +44,7 @@ import java.util.concurrent.Executor;
 /**
  * Synced block events are called on the server, but executed on the client.
  * But with PolyMc the client often doesn't have enough information to process this event.
- * This code let's users of polymc make certain blocks be calculated on the server instead of the client.
+ * This code let's users of PolyMc make certain blocks be calculated on the server instead of the client.
  * See: config; misc.processSyncedBlockEventServerSide
  */
 @Mixin(ServerWorld.class)
