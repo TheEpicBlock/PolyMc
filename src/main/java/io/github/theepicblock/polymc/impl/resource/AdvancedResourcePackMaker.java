@@ -61,7 +61,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
             }
         });
 
-        //Artifice provides a list with virtual resourcepacks. But it only exists on the client. We can import them to use the assets
+        //Artifice provides a list with virtual resource packs. But it only exists on the client. We can import them to use the assets
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
             Optional<ModContainer> artifice = FabricLoader.getInstance().getModContainer("artifice");
             if (artifice.isPresent()) {
