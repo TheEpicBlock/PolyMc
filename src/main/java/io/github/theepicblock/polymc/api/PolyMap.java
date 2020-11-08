@@ -27,6 +27,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 /**
  * A map containing different types of polys
@@ -66,12 +68,23 @@ public class PolyMap {
         return poly.getClientBlock(serverBlock);
     }
 
+    public BlockState getClientBlockWithContext(BlockState serverBlock, BlockPos pos, World world) {
+        BlockPoly poly = blockPolys.get(serverBlock.getBlock());
+        if (poly == null) return serverBlock;
+
+        return poly.getClientBlockWithContext(serverBlock, pos, world);
+    }
+
     /**
      * Converts a serverside gui into a clientside one using the corresponding {@link GuiPoly}.
      * Currently experimental
      */
     public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {
         return guiPolys.get(serverGuiType);
+    }
+
+    public BlockPoly getBlockPoly(Block block) {
+        return blockPolys.get(block);
     }
 
     /**
