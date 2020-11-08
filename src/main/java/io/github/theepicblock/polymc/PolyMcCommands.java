@@ -21,13 +21,11 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.api.PolyMap;
-import io.github.theepicblock.polymc.impl.HasNonConsistentBlockPolyProvider;
 import io.github.theepicblock.polymc.resource.ResourcePackGenerator;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 
 import java.io.File;
@@ -91,12 +89,6 @@ public class PolyMcCommands {
                                     context.getSource().sendError(new LiteralText("an error occurred when trying to write the PolyDump. Please check the console"));
                                     e.printStackTrace();
                                 }
-                                return Command.SINGLE_SUCCESS;
-                            }))
-                    .then(literal("aahhowmanywierdblockpolysdoesthisstupidthinghave")
-                            .executes((context) -> {
-                                ServerPlayerEntity player = context.getSource().getPlayer();
-                                context.getSource().sendFeedback(new LiteralText(((HasNonConsistentBlockPolyProvider)player.getServerWorld().getChunk(player.getBlockPos()).getSectionArray()[player.getBlockPos().getY() >> 4].getContainer()).hasNonConsistentBlockPolys() ? "yeah" : "nah"), false);
                                 return Command.SINGLE_SUCCESS;
                             })));
         });
