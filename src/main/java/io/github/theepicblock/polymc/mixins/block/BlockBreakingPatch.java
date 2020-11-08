@@ -75,7 +75,7 @@ public abstract class BlockBreakingPatch {
     }
 
     @Inject(method = "processBlockBreakingAction", at = @At("HEAD"))
-    public void packetRecievedInject(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
+    public void packetReceivedInject(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
         if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
             player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getEntityId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
         } else if (action == PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK) {

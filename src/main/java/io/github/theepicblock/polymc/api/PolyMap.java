@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
@@ -30,7 +31,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 /**
- *
+ * A map containing different types of polys
  */
 public class PolyMap {
     private final ImmutableMap<Item,ItemPoly> itemPolys;
@@ -43,13 +44,23 @@ public class PolyMap {
         this.guiPolys = guiPolys;
     }
 
+    /**
+     * Converts a serverside item into a clientside one using the corresponding {@link ItemPoly}.
+     */
     public ItemStack getClientItem(ItemStack serverItem) {
-        ItemPoly poly = itemPolys.get(serverItem.getItem());
-        if (poly == null) return serverItem;
+        ItemStack ret = serverItem;
 
-        return poly.getClientItem(serverItem);
+        ItemPoly poly = itemPolys.get(serverItem.getItem());
+        if (poly != null) ret = poly.getClientItem(serverItem);
+
+        ret = Util.portEnchantmentsToLore(ret);
+
+        return ret;
     }
 
+    /**
+     * Converts a serverside block into a clientside one using the corresponding {@link BlockPoly}.
+     */
     public BlockState getClientBlock(BlockState serverBlock) {
         BlockPoly poly = blockPolys.get(serverBlock.getBlock());
         if (poly == null) return serverBlock;
@@ -64,18 +75,28 @@ public class PolyMap {
         return poly.getClientBlockWithContext(serverBlock, pos, world);
     }
 
-    public BlockPoly getBlockPoly(Block block) {
-        return blockPolys.get(block);
-    }
-
+    /**
+     * Converts a serverside gui into a clientside one using the corresponding {@link GuiPoly}.
+     * Currently experimental
+     */
     public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {
         return guiPolys.get(serverGuiType);
     }
 
+    public BlockPoly getBlockPoly(Block block) {
+        return blockPolys.get(block);
+    }
+
+    /**
+     * gets a map containing all itempolys in this map
+     */
     public ImmutableMap<Item,ItemPoly> getItemPolys() {
         return itemPolys;
     }
 
+    /**
+     * gets a map containing all blockpolys in this map
+     */
     public ImmutableMap<Block,BlockPoly> getBlockPolys() {
         return blockPolys;
     }

@@ -15,15 +15,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.api;
+package io.github.theepicblock.polymc.impl.poly.gui;
 
-public interface DebugInfoProvider<T> {
-    /**
-     * Gets debug information to show in the PolyMap dump
-     * @param obj object this poly was registered to, for reference.
-     * @return debug info for this poly, or null if no info is needed.
-     */
-    default String getDebugInfo(T obj) {
-        return null;
+import io.github.theepicblock.polymc.api.gui.GuiPoly;
+import net.minecraft.screen.ScreenHandlerType;
+
+public class TestGuiPoly implements GuiPoly {
+
+    @Override
+    public ScreenHandlerType<?> getClientSideType() {
+        return ScreenHandlerType.FURNACE;
     }
 }

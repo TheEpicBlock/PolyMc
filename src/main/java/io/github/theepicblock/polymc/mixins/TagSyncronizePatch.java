@@ -17,7 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins;
 
-import io.github.theepicblock.polymc.Util;
+import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.tag.Tag;
 import net.minecraft.tag.TagGroup;
@@ -30,8 +30,8 @@ import java.util.*;
 /**
  * This patch prevents modded blocks/items from appearing in tags when they are synchronised to the client.
  * The client will replace any ids it doesn't recognize with minecraft:air.
- * This can cause issues. For example: a mod places a block in the swimmable tag.
- * It get's replaced with air and the client now thinks it can swim in air.
+ * This can cause issues. For example: a mod places a block in the {@code swimmable} tag.
+ * It gets replaced with minecraft:air and the client now thinks it can swim in air.
  * <p>
  * Note: we're not actually mixing into the interface, but we're mixing into the anonymous class in {@link TagGroup#create(Map)}
  * Because TagGroup is an interface, we can't use any injector type mixins on it. So we have to copy over the {@link #toPacket} method and change it manually
@@ -42,33 +42,29 @@ public abstract class TagSyncronizePatch<T> implements TagGroup<T> {
     private Map<Identifier,Tag<T>> cache;
 
     /**
-     * Get's all tags except those that are modded
+     * Gets all tags except those that are modded
      */
     public Map<Identifier,Tag<T>> getTagsWithoutModded(DefaultedRegistry<T> registry) {
-        if (cache != null) {
-            return cache;
-        }
+        if (cache != null) return cache;
 
         Map<Identifier,Tag<T>> original = this.getTags();
         Map<Identifier,Tag<T>> output = new HashMap<>();
 
-        for (Map.Entry<Identifier,Tag<T>> originalEntry : original.entrySet()) {
-            if (Util.isVanilla(originalEntry.getKey())) {
-                //This tag isn't modded, we now need to figure out if it has any modded values in it
-                Tag<T> originalTag = originalEntry.getValue();
-                List<T> newList = new ArrayList<>();
-                originalTag.values().forEach((tag) -> {
-                    //loop thru all the tags and only add it to the new list if it's vanilla
+        original.forEach((tagIdentifier, tagContents) -> {
+            //filter out any tags that have modded identifiers. As they won't be useful to the client anyway.
+            if (Util.isVanilla(tagIdentifier)) {
+                List<T> newContents = new ArrayList<>();
+                tagContents.values().forEach((tag) -> {
+                    //filter out any content (blocks, items, etc) that is non vanilla
                     if (Util.isVanilla(registry.getId(tag))) {
-                        newList.add(tag);
+                        newContents.add(tag);
                     }
                 });
-                Tag<T> newTag = new DumbListTag<>(newList);
-                output.put(originalEntry.getKey(), newTag);
+                output.put(tagIdentifier, new ListBackedTag<>(newContents));
             }
-        }
-        cache = output;
+        });
 
+        cache = output;
         return output;
     }
 
@@ -92,10 +88,10 @@ public abstract class TagSyncronizePatch<T> implements TagGroup<T> {
 
     }
 
-    public static class DumbListTag<T> implements Tag<T> {
+    public static class ListBackedTag<T> implements Tag<T> {
         final private List<T> list;
 
-        public DumbListTag(List<T> list) {
+        public ListBackedTag(List<T> list) {
             this.list = list;
         }
 

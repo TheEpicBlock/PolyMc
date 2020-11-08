@@ -19,8 +19,9 @@ package io.github.theepicblock.polymc;
 
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
-import io.github.theepicblock.polymc.api.register.PolyRegistry;
-import io.github.theepicblock.polymc.generator.Generator;
+import io.github.theepicblock.polymc.api.PolyRegistry;
+import io.github.theepicblock.polymc.impl.PolyMcCommands;
+import io.github.theepicblock.polymc.impl.generator.Generator;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import org.apache.logging.log4j.LogManager;
@@ -35,7 +36,7 @@ public class PolyMc implements ModInitializer {
     /**
      * Builds the poly map, this should only be run when all blocks/items have been registered.
      * This will be called by PolyMc when the worlds are generated.
-     * @deprecated this is an internal method you shouldn't call
+     * @deprecated this is an internal method you shouldn't call.
      */
     @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated

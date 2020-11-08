@@ -18,7 +18,7 @@
 package io.github.theepicblock.polymc.api.block;
 
 import io.github.theepicblock.polymc.api.DebugInfoProvider;
-import io.github.theepicblock.polymc.resource.ResourcePackMaker;
+import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
@@ -58,7 +58,7 @@ public interface BlockPoly extends DebugInfoProvider<Block> {
     /**
      * Callback to add all resources needed for this block to a resourcepack
      * @param block block this BlockPoly was registered to, for reference.
-     * @param pack  resourcepack to add to.
+     * @param pack  resource pack to add to.
      */
     void AddToResourcePack(Block block, ResourcePackMaker pack);
 }

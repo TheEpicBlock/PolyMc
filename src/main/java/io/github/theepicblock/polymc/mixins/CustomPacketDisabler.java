@@ -17,7 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins;
 
-import io.github.theepicblock.polymc.Util;
+import io.github.theepicblock.polymc.impl.Util;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.network.Packet;

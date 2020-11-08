@@ -15,20 +15,37 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.api.block;
+package io.github.theepicblock.polymc.impl.poly.block;
 
+import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 
 /**
- * Allows you to use a lambda to define a {@link BlockPoly}
+ * This poly simply replaces the block with another block
  */
-public interface BlockPolyPredicate extends BlockPoly {
-    @Override
-    default void AddToResourcePack(Block block, ResourcePackMaker pack) {}
+public class SimpleReplacementPoly implements BlockPoly {
+    protected final BlockState state;
+
+    public SimpleReplacementPoly(BlockState state) {
+        this.state = state;
+    }
+
+    public SimpleReplacementPoly(Block block) {
+        this(block.getDefaultState());
+    }
 
     @Override
-    default String getDebugInfo(Block obj) {
-        return "miscellaneous lambda poly";
+    public BlockState getClientBlock(BlockState input) {
+        return state;
+    }
+
+    @Override
+    public void AddToResourcePack(Block block, ResourcePackMaker pack) {}
+
+    @Override
+    public String getDebugInfo(Block obj) {
+        return state.toString();
     }
 }
