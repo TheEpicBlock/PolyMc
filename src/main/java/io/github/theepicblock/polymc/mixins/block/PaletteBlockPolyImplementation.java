@@ -18,7 +18,7 @@
 package io.github.theepicblock.polymc.mixins.block;
 
 import io.github.theepicblock.polymc.PolyMc;
-import io.github.theepicblock.polymc.impl.NonPolydPacketProvider;
+import io.github.theepicblock.polymc.impl.mixin.NonPolydPacketProvider;
 import me.jellysquid.mods.lithium.common.world.chunk.LithiumHashPalette;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketByteBuf;

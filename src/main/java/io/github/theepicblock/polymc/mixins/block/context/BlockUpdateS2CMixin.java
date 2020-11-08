@@ -19,7 +19,7 @@ package io.github.theepicblock.polymc.mixins.block.context;
 
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.impl.BlockUpdateS2CInterface;
+import io.github.theepicblock.polymc.impl.mixin.BlockUpdateS2CInterface;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;

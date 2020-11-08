@@ -17,7 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins.block.context;
 
-import io.github.theepicblock.polymc.impl.BlockUpdateS2CInterface;
+import io.github.theepicblock.polymc.impl.mixin.BlockUpdateS2CInterface;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.network.Packet;
