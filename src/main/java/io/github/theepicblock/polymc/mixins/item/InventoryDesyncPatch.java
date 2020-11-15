@@ -32,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(ServerPlayNetworkHandler.class)
 public class InventoryDesyncPatch {
 
-    @Redirect(method = "onClickWindow(Lnet/minecraft/network/packet/c2s/play/ClickWindowC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;areEqual(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z"))
+    @Redirect(method = "onClickSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;areEqual(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z"))
     public boolean areEqualRedirect(ItemStack left, ItemStack right) {
         return ItemStack.areEqual(left, PolyMc.getMap().getClientItem(right));
     }
