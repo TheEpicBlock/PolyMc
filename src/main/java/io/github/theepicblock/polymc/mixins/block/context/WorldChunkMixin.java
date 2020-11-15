@@ -39,7 +39,10 @@ public class WorldChunkMixin {
     @Inject(method = "setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Z)Lnet/minecraft/block/BlockState;",
             at = @At("RETURN")) //TODO this can be better
     public void setChunkWorld(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> cir) {
-        ((WorldProvider)sections[pos.getY() >> 4]).polyMcSetWorld(this.world);
+        ChunkSection chunkSection = sections[pos.getY() >> 4];
+        if(chunkSection != null) {
+            ((WorldProvider)chunkSection).polyMcSetWorld(this.world);
+        }
     }
 
     @Inject(method = "<init>(Lnet/minecraft/world/World;Lnet/minecraft/util/math/ChunkPos;Lnet/minecraft/world/biome/source/BiomeArray;Lnet/minecraft/world/chunk/UpgradeData;Lnet/minecraft/world/TickScheduler;Lnet/minecraft/world/TickScheduler;J[Lnet/minecraft/world/chunk/ChunkSection;Ljava/util/function/Consumer;)V", at = @At("RETURN"))
