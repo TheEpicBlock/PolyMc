@@ -27,7 +27,9 @@ import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -45,8 +47,10 @@ public class PolyMcCommands {
                     .then(literal("debug")
                         .then(literal("clientItem")
                             .executes((context) -> {
-                                ItemStack heldItem = context.getSource().getPlayer().inventory.getMainHandStack();
-                                context.getSource().sendFeedback(PolyMc.getMap().getClientItem(heldItem).toTag(new CompoundTag()).toText(), false);
+                                ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
+                                ItemStack polydItem = PolyMc.getMap().getClientItem(heldItem);
+                                Text nbtText = NbtHelper.method_32270(polydItem.toTag(new CompoundTag()));
+                                context.getSource().sendFeedback(nbtText, false);
                                 return Command.SINGLE_SUCCESS;
                             })))
                     .then(literal("generate")
