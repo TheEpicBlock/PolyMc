@@ -21,16 +21,9 @@ import io.github.theepicblock.polymc.api.gui.GuiManager;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import net.minecraft.screen.Generic3x3ContainerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public class TestGuiPoly implements GuiPoly {
-
-    @Override
-    public ScreenHandlerType<?> getClientSideType() {
-        return ScreenHandlerType.FURNACE;
-    }
-
     @Override
     public GuiManager createGuiManager(ScreenHandler base, ServerPlayerEntity player) {
         return new TestGuiManager(base, player);
