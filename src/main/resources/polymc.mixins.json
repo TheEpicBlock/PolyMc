@@ -18,6 +18,7 @@
     "block.MaterialAccessor",
     "block.PaletteBlockPolyImplementation",
     "block.ProcessSyncedBlockEventServerSideImplementation",
+    "block.ResyncImplementation",
     "block.context.BlockUpdateS2CMixin",
     "block.context.ChunkSectionMixin",
     "block.context.PalettedContainerMixin",
