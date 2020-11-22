@@ -46,6 +46,7 @@ public class StaticSlot extends Slot {
 	}
 
 	public boolean canTakeItems(PlayerEntity playerEntity) {
+		GuiUtils.resyncPlayerInventory(playerEntity);
 		return false;
 	}
 

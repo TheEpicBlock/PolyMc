@@ -17,8 +17,10 @@
  */
 package io.github.theepicblock.polymc.impl.poly.gui;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,5 +30,15 @@ public class GuiUtils {
 		return base.stream().filter(
 				(slot) -> !(slot.inventory instanceof PlayerInventory)
 		).collect(Collectors.toList());
+	}
+
+	public static void resyncPlayerInventory(PlayerEntity player) {
+		if (player instanceof ServerPlayerEntity) {
+			resyncPlayerInventory((ServerPlayerEntity)player);
+		}
+	}
+
+	public static void resyncPlayerInventory(ServerPlayerEntity player) {
+		player.onHandlerRegistered(player.currentScreenHandler, player.currentScreenHandler.getStacks());
 	}
 }
