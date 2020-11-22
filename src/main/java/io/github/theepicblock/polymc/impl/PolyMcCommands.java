@@ -55,7 +55,7 @@ public class PolyMcCommands {
                             .executes((context) -> {
                                 ServerPlayerEntity player = context.getSource().getPlayer();
                                 if (!player.isCreative()) {
-                                    throw new SimpleCommandExceptionType(new LiteralText("you must be in creative mode to execute this command. Keep in mind that this will wipe your inventory.")).create();
+                                    throw new SimpleCommandExceptionType(new LiteralText("You must be in creative mode to execute this command. Keep in mind that this will wipe your inventory.")).create();
                                 }
                                 for (int i = 0; i < player.inventory.size(); i++){
                                     if (i == 0) {
