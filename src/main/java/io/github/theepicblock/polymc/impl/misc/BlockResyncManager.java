@@ -24,9 +24,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public class BlockResyncManager {
 		return false;
 	}
 
-	public static void onBlockUpdate(BlockPos pos, ServerWorld world, ServerPlayerEntity player, List<BlockPos> exceptions) {
+	public static void onBlockUpdate(BlockPos pos, World world, ServerPlayerEntity player, List<BlockPos> exceptions) {
 		BlockPos.Mutable mPos = new BlockPos.Mutable();
 		for (Direction d : Direction.values()) {
 			mPos.set(pos.getX() + d.getOffsetX(), pos.getY() + d.getOffsetY(), pos.getZ() + d.getOffsetZ());
