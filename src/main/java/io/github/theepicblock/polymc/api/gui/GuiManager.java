@@ -29,5 +29,5 @@ public abstract class GuiManager {
 		this.player = player;
 	}
 
-	public abstract ScreenHandler getInitialHandler(int initialScreenId);
+	public abstract ScreenHandler getInitialHandler(int initialSyncId);
 }
