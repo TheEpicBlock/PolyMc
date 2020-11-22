@@ -17,7 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins.block.context;
 
-import io.github.theepicblock.polymc.impl.WorldProvider;
+import io.github.theepicblock.polymc.impl.mixin.WorldProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
