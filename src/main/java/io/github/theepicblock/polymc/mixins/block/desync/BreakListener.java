@@ -35,6 +35,6 @@ public class BreakListener {
 
 	@Inject(method = "tryBreakBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
 	private void onBlockBreakInject(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-		BlockDesyncManager.onBlockUpdate(pos, world, player);
+		BlockDesyncManager.onBlockUpdate(pos, world, player, null);
 	}
 }

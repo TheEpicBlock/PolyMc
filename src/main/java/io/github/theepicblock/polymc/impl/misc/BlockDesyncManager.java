@@ -28,6 +28,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BlockDesyncManager {
 	public static boolean shouldForceSync(BlockState serverSideState, Direction direction) {
 		Block block = serverSideState.getBlock();
@@ -37,16 +40,27 @@ public class BlockDesyncManager {
 		return false;
 	}
 
-	public static void onBlockUpdate(BlockPos pos, ServerWorld world, ServerPlayerEntity player) {
+	public static void onBlockUpdate(BlockPos pos, ServerWorld world, ServerPlayerEntity player, List<BlockPos> exceptions) {
 		BlockPos.Mutable mPos = new BlockPos.Mutable();
 		for (Direction d : Direction.values()) {
 			mPos.set(pos.getX() + d.getOffsetX(), pos.getY() + d.getOffsetY(), pos.getZ() + d.getOffsetZ());
+			if (exceptions != null && exceptions.contains(mPos)) continue;
 			BlockState state = world.getBlockState(mPos);
 			BlockPoly poly = PolyMc.getMap().getBlockPoly(state.getBlock());
 			if (poly != null) {
 				BlockState serverSideState = poly.getClientBlock(state);
 				if (BlockDesyncManager.shouldForceSync(serverSideState, d)) {
-					player.networkHandler.sendPacket(new BlockUpdateS2CPacket(mPos.toImmutable(), state));
+					BlockPos nPos = mPos.toImmutable();
+					player.networkHandler.sendPacket(new BlockUpdateS2CPacket(nPos, state));
+					List<BlockPos> newExceptions;
+					if (exceptions == null) {
+						newExceptions = new ArrayList<>();
+						newExceptions.add(pos);
+					} else {
+						exceptions.add(pos);
+						newExceptions = exceptions;
+					}
+					onBlockUpdate(nPos, world, player, newExceptions);
 				}
 			}
 		}
