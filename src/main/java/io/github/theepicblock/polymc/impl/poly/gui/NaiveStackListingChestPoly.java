@@ -54,7 +54,7 @@ public class NaiveStackListingChestPoly implements GuiPoly {
             super(type, syncId);
             this.base = base;
 
-            List<Slot> baseSlots = base.slots;
+            List<Slot> baseSlots = GuiUtils.removePlayerSlots(base.slots);
             for(int y = 0; y < width; ++y) {
                 for(int x = 0; x < height; ++x) {
                     int index = x + y * width;
