@@ -17,16 +17,11 @@
  */
 package io.github.theepicblock.polymc.mixins.block.desync;
 
-import io.github.theepicblock.polymc.PolyMc;
-import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.impl.misc.BlockDesyncManager;
-import net.minecraft.block.BlockState;
-import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -36,22 +31,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ServerPlayerInteractionManager.class)
 public class BreakListener {
 	@Shadow public ServerWorld world;
-
 	@Shadow public ServerPlayerEntity player;
 
 	@Inject(method = "tryBreakBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
 	private void onBlockBreakInject(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-		BlockPos.Mutable mPos = new BlockPos.Mutable();
-		for (Direction d : Direction.values()) {
-			mPos.set(pos.getX() + d.getOffsetX(), pos.getY() + d.getOffsetY(), pos.getZ() + d.getOffsetZ());
-			BlockState state = this.world.getBlockState(mPos);
-			BlockPoly poly = PolyMc.getMap().getBlockPoly(state.getBlock());
-			if (poly != null) {
-				BlockState serverSideState = poly.getClientBlock(state);
-				if (BlockDesyncManager.shouldForceSync(serverSideState, d)) {
-					player.networkHandler.sendPacket(new BlockUpdateS2CPacket(mPos.toImmutable(), state));
-				}
-			}
-		}
+		BlockDesyncManager.onBlockUpdate(pos, world, player);
 	}
 }

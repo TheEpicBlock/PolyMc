@@ -17,9 +17,15 @@
  */
 package io.github.theepicblock.polymc.impl.misc;
 
+import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.api.block.BlockPoly;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 public class BlockDesyncManager {
@@ -29,5 +35,20 @@ public class BlockDesyncManager {
 			return direction == Direction.UP;
 		}
 		return false;
+	}
+
+	public static void onBlockUpdate(BlockPos pos, ServerWorld world, ServerPlayerEntity player) {
+		BlockPos.Mutable mPos = new BlockPos.Mutable();
+		for (Direction d : Direction.values()) {
+			mPos.set(pos.getX() + d.getOffsetX(), pos.getY() + d.getOffsetY(), pos.getZ() + d.getOffsetZ());
+			BlockState state = world.getBlockState(mPos);
+			BlockPoly poly = PolyMc.getMap().getBlockPoly(state.getBlock());
+			if (poly != null) {
+				BlockState serverSideState = poly.getClientBlock(state);
+				if (BlockDesyncManager.shouldForceSync(serverSideState, d)) {
+					player.networkHandler.sendPacket(new BlockUpdateS2CPacket(mPos.toImmutable(), state));
+				}
+			}
+		}
 	}
 }
