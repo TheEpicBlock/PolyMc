@@ -31,7 +31,7 @@ import net.minecraft.util.math.Direction;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockDesyncManager {
+public class BlockResyncManager {
 	public static boolean shouldForceSync(BlockState serverSideState, Direction direction) {
 		Block block = serverSideState.getBlock();
 		if (block == Blocks.NOTE_BLOCK) {
@@ -49,7 +49,7 @@ public class BlockDesyncManager {
 			BlockPoly poly = PolyMc.getMap().getBlockPoly(state.getBlock());
 			if (poly != null) {
 				BlockState serverSideState = poly.getClientBlock(state);
-				if (BlockDesyncManager.shouldForceSync(serverSideState, d)) {
+				if (BlockResyncManager.shouldForceSync(serverSideState, d)) {
 					BlockPos nPos = mPos.toImmutable();
 					player.networkHandler.sendPacket(new BlockUpdateS2CPacket(nPos, state));
 					List<BlockPos> newExceptions;

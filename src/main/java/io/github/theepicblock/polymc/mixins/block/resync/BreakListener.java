@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.block.desync;
+package io.github.theepicblock.polymc.mixins.block.resync;
 
-import io.github.theepicblock.polymc.impl.misc.BlockDesyncManager;
+import io.github.theepicblock.polymc.impl.misc.BlockResyncManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
@@ -35,6 +35,6 @@ public class BreakListener {
 
 	@Inject(method = "tryBreakBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
 	private void onBlockBreakInject(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-		BlockDesyncManager.onBlockUpdate(pos, world, player, null);
+		BlockResyncManager.onBlockUpdate(pos, world, player, null);
 	}
 }
