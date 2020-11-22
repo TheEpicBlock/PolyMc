@@ -23,6 +23,7 @@
     "block.context.PalettedContainerMixin",
     "block.context.ServerPlayNetworkHandlerMixin",
     "block.context.WorldChunkMixin",
+    "block.desync.BreakListener",
     "gui.FabricApiExtendedScreenImplementation",
     "gui.GuiHandlerIdImplementation",
     "item.CreativeModeHotfix",
