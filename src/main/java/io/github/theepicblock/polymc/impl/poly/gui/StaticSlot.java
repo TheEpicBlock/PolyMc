@@ -53,6 +53,11 @@ public class StaticSlot extends Slot {
 		return this.stack;
 	}
 
+	@Override
+	public void setStack(ItemStack stack) {}
+
+	public void markDirty() {}
+
 	public int getMaxItemCount() {
 		return this.stack.getCount();
 	}
