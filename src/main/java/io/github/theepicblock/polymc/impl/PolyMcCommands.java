@@ -26,7 +26,9 @@ import io.github.theepicblock.polymc.impl.resource.ResourcePackGenerator;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 
 import java.io.File;
@@ -47,6 +49,21 @@ public class PolyMcCommands {
                             .executes((context) -> {
                                 ItemStack heldItem = context.getSource().getPlayer().inventory.getMainHandStack();
                                 context.getSource().sendFeedback(PolyMc.getMap().getClientItem(heldItem).toTag(new CompoundTag()).toText(), false);
+                                return Command.SINGLE_SUCCESS;
+                            }))
+                        .then(literal("replaceInventoryWithDebug")
+                            .executes((context) -> {
+                                ServerPlayerEntity player = context.getSource().getPlayer();
+                                if (!player.isCreative()) {
+                                    throw new SimpleCommandExceptionType(new LiteralText("you must be in creative mode to execute this command. Keep in mind that this will wipe your inventory.")).create();
+                                }
+                                for (int i = 0; i < player.inventory.size(); i++){
+                                    if (i == 0) {
+                                        player.inventory.setStack(i, new ItemStack(Items.GREEN_STAINED_GLASS_PANE));
+                                    } else {
+                                        player.inventory.setStack(i, new ItemStack(Items.RED_STAINED_GLASS_PANE, i));
+                                    }
+                                }
                                 return Command.SINGLE_SUCCESS;
                             })))
                     .then(literal("generate")
