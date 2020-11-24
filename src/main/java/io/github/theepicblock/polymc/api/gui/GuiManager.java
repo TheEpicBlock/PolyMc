@@ -15,15 +15,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.impl.poly.gui;
+package io.github.theepicblock.polymc.api.gui;
 
-import io.github.theepicblock.polymc.api.gui.GuiPoly;
-import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 
-public class TestGuiPoly implements GuiPoly {
+public abstract class GuiManager {
+	protected final ScreenHandler base;
+	protected final ServerPlayerEntity player;
 
-    @Override
-    public ScreenHandlerType<?> getClientSideType() {
-        return ScreenHandlerType.FURNACE;
-    }
+	public GuiManager(ScreenHandler base, ServerPlayerEntity player) {
+		this.base = base;
+		this.player = player;
+	}
+
+	public abstract ScreenHandler getInitialHandler(int initialSyncId);
 }

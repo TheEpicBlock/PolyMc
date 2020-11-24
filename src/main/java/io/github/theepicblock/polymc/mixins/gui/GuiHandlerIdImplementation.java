@@ -18,25 +18,42 @@
 package io.github.theepicblock.polymc.mixins.gui;
 
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.api.gui.GuiManager;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
-import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.util.registry.Registry;
+import io.github.theepicblock.polymc.impl.mixin.ScreenHandlerFactoryWrapperSoFabricApiDoesntDetectIt;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(OpenScreenS2CPacket.class)
+@Mixin(ServerPlayerEntity.class)
 public class GuiHandlerIdImplementation {
-    @Redirect(method = "<init>(ILnet/minecraft/screen/ScreenHandlerType;Lnet/minecraft/text/Text;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/registry/Registry;getRawId(Ljava/lang/Object;)I"))
-    public <T> int handlerId(Registry<T> registry, T entry) {
-        if (entry instanceof ScreenHandlerType<?>) {
-            GuiPoly poly = PolyMc.getMap().getGuiPoly((ScreenHandlerType<?>)entry);
-            if (poly != null) {
-                //noinspection unchecked
-                return registry.getRawId((T)poly.getClientSideType());
-            }
+    @Unique private GuiManager guiManager;
+
+    @Redirect(method = "openHandledScreen(Lnet/minecraft/screen/NamedScreenHandlerFactory;)Ljava/util/OptionalInt;", at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/NamedScreenHandlerFactory;createMenu(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/entity/player/PlayerEntity;)Lnet/minecraft/screen/ScreenHandler;"))
+    public ScreenHandler handlerId(NamedScreenHandlerFactory namedScreenHandlerFactory, int syncId, PlayerInventory inv, PlayerEntity player) {
+        ScreenHandler base = namedScreenHandlerFactory.createMenu(syncId, inv, player);
+        if (base == null) return null;
+        GuiPoly poly = PolyMc.getMap().getGuiPoly(base.getType());
+        if (poly != null) {
+            this.guiManager = poly.createGuiManager(base, (ServerPlayerEntity)player);
+            return guiManager.getInitialHandler(syncId);
         }
-        return registry.getRawId(entry);
+        return base;
+    }
+
+    @ModifyVariable(method = "openHandledScreen(Lnet/minecraft/screen/NamedScreenHandlerFactory;)Ljava/util/OptionalInt;", at = @At("HEAD"))
+    private NamedScreenHandlerFactory hackForFabricApi(NamedScreenHandlerFactory factory) {
+        if (factory instanceof ExtendedScreenHandlerFactory) {
+            return new ScreenHandlerFactoryWrapperSoFabricApiDoesntDetectIt(factory);
+        }
+        return factory;
     }
 }

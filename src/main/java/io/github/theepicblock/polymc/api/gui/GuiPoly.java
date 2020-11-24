@@ -17,8 +17,9 @@
  */
 package io.github.theepicblock.polymc.api.gui;
 
-import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 
 public interface GuiPoly {
-    ScreenHandlerType<?> getClientSideType();
+    GuiManager createGuiManager(ScreenHandler base, ServerPlayerEntity player);
 }
