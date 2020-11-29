@@ -74,6 +74,15 @@ public class PolyRegistry {
     }
 
     /**
+     * Register a poly for an entity.
+     * @param entityType    entity type to associate poly with.
+     * @param poly          poly to register.
+     */
+    public void registerEntityPoly(EntityType<?> entityType, EntityPoly poly) {
+        entityPolys.put(entityType, poly);
+    }
+
+    /**
      * Checks if the item has a registered {@link ItemPoly}.
      * @param item item to check.
      * @return True if a {@link ItemPoly} exists for the given item.
@@ -98,6 +107,15 @@ public class PolyRegistry {
      */
     public boolean hasGuiPoly(ScreenHandlerType<?> screenHandler) {
         return guiPolys.containsKey(screenHandler);
+    }/**
+
+    /**
+     * Checks if the entity type has a registered {@link EntityPoly}.
+     * @param entityType entity type to check.
+     * @return True if a {@link EntityPoly} exists for the given screen handler.
+     */
+    public boolean hasEntityPoly(EntityType<?> entityType) {
+        return entityPolys.containsKey(entityType);
     }
 
     /**

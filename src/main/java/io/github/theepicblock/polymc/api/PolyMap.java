@@ -25,6 +25,7 @@ import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -79,6 +80,11 @@ public class PolyMap {
         return poly.getClientBlockWithContext(serverBlock, pos, world);
     }
 
+
+    public BlockPoly getBlockPoly(Block block) {
+        return blockPolys.get(block);
+    }
+
     /**
      * Converts a serverside gui into a clientside one using the corresponding {@link GuiPoly}.
      * Currently experimental
@@ -87,8 +93,12 @@ public class PolyMap {
         return guiPolys.get(serverGuiType);
     }
 
-    public BlockPoly getBlockPoly(Block block) {
-        return blockPolys.get(block);
+    public EntityPoly getEntityPoly(EntityType<?> type) {
+        return entityPolys.get(type);
+    }
+
+    public EntityPoly getEntityPoly(Entity entity) {
+        return entityPolys.get(entity.getType());
     }
 
     /**
