@@ -19,11 +19,13 @@ package io.github.theepicblock.polymc.api;
 
 import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
@@ -37,11 +39,13 @@ public class PolyMap {
     private final ImmutableMap<Item,ItemPoly> itemPolys;
     private final ImmutableMap<Block,BlockPoly> blockPolys;
     private final ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys;
+    private final ImmutableMap<EntityType<?>,EntityPoly> entityPolys;
 
-    public PolyMap(ImmutableMap<Item,ItemPoly> itemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys) {
+    public PolyMap(ImmutableMap<Item,ItemPoly> itemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys, ImmutableMap<EntityType<?>,EntityPoly> entityPolys) {
         this.itemPolys = itemPolys;
         this.blockPolys = blockPolys;
         this.guiPolys = guiPolys;
+        this.entityPolys = entityPolys;
     }
 
     /**

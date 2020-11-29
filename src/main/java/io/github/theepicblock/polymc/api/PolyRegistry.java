@@ -20,10 +20,12 @@ package io.github.theepicblock.polymc.api;
 import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockStateManager;
+import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import net.minecraft.block.Block;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.screen.ScreenHandlerType;
 
@@ -42,6 +44,7 @@ public class PolyRegistry {
     private final Map<Item,ItemPoly> itemPolys = new HashMap<>();
     private final Map<Block,BlockPoly> blockPolys = new HashMap<>();
     private final Map<ScreenHandlerType<?>,GuiPoly> guiPolys = new HashMap<>();
+    private final Map<EntityType<?>,EntityPoly> entityPolys = new HashMap<>();
 
     /**
      * Register a poly for an item.
@@ -118,6 +121,7 @@ public class PolyRegistry {
         ImmutableMap<Item,ItemPoly> itemMap = ImmutableMap.copyOf(itemPolys);
         ImmutableMap<Block,BlockPoly> blockMap = ImmutableMap.copyOf(blockPolys);
         ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiMap = ImmutableMap.copyOf(guiPolys);
-        return new PolyMap(itemMap, blockMap, guiMap);
+        ImmutableMap<EntityType<?>,EntityPoly> entityMap = ImmutableMap.copyOf(entityPolys);
+        return new PolyMap(itemMap, blockMap, guiMap, entityMap);
     }
 }
