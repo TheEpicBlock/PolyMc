@@ -24,6 +24,8 @@
     "block.context.PalettedContainerMixin",
     "block.context.ServerPlayNetworkHandlerMixin",
     "block.context.WorldChunkMixin",
+    "entity.MixinTACS",
+    "entity.MixinTACSEntityTracker",
     "gui.FabricApiExtendedScreenImplementation",
     "gui.GuiHandlerIdImplementation",
     "item.CreativeModeHotfix",

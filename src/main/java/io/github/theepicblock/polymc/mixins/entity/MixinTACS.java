@@ -15,10 +15,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.api.entity;
+package io.github.theepicblock.polymc.mixins.entity;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-public interface EntityPoly {
-	EntityManager getManager(Entity entity);
+@Mixin(ThreadedAnvilChunkStorage.class)
+public class MixinTACS {
+	@Inject(method = "tickPlayerMovement()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/EntityTrackerEntry;tick()V"), locals = LocalCapture.PRINT)
+	private void onIterEntityTracker(CallbackInfo ci) {
+
+	}
 }

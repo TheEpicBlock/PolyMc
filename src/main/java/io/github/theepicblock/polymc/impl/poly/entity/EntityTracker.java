@@ -15,10 +15,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.api.entity;
+package io.github.theepicblock.polymc.impl.poly.entity;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.server.network.ServerPlayerEntity;
 
-public interface EntityPoly {
-	EntityManager getManager(Entity entity);
+public interface EntityTracker {
+	void tick();
+	void startTracking(ServerPlayerEntity playerEntity);
+	void stopTracking(ServerPlayerEntity playerEntity);
 }

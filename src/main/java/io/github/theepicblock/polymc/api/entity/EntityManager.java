@@ -17,12 +17,10 @@
  */
 package io.github.theepicblock.polymc.api.entity;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.server.network.ServerPlayerEntity;
 
-public abstract class EntityManager {
-	protected final Entity base;
-
-	protected EntityManager(Entity base) {
-		this.base = base;
-	}
+public interface EntityManager {
+	void tickTrackers();
+	void addTracker(ServerPlayerEntity player);
+	void removeTracker(ServerPlayerEntity player);
 }
