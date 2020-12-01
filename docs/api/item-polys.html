@@ -19,11 +19,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Api | registering polys</title>
+    <title>Api | Item Polys</title>
     <meta property="og:site_name" content="PolyMc"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:title" content="Registering polys | PolyMc api"/>
-    <meta property="og:url" content="https://theepicblock.github.io/PolyMc/api/registering-polys.html"/>
+    <meta property="og:title" content="Item Polys | PolyMc api"/>
+    <meta property="og:url" content="https://theepicblock.github.io/PolyMc/api/item-polys.html"/>
     <meta property="og:description" content="The power of a modded server, without a modded client"/>
     <meta name="author" content="TheEpicBlock_TEB"/>
     <link rel="stylesheet" href="../assets/styles.css">
@@ -36,19 +36,13 @@
 </section>
 <section class="body">
     <div class="content">
-        <h1>Registering Polys</h1>
-        <p>
-            You register Polys in your entrypoint using the PolyRegistry class.
-            The PolyRegistry also contains some helper classes, like the CustomModelDataManager that prevents 2 polys using the same value.
-            Look at the PolyRegistry class to see the other classes available.
-        </p>
-        <h2>Item Polys</h2>
+        <h1>Item Polys</h1>
         <p>
             At a basic level item polys take in the servers sided item and output one to be displayed on the client.
             The default item poly, the <code>CustomModelDataPoly</code>, works quite well in most cases.
             All of PolyMc's item polys are based on the <code>CustomModelDataPoly</code>. The biggest reason for making a custom item poly is to customize the resources that get stored for that poly.
         </p>
-        <h3>Example: changing the item used on the client</h3>
+        <h2>Example: changing the item used on the client</h2>
 <div class="c-block"><pre>
 <span class="c-red">public void</span> registerPolys(PolyRegistry registry) {
     registry.registerItemPoly(moddedItem, <span class="c-red">new</span> CustomModelDataPoly(registery.getCMDManager(), moddedItem, Items.<span class="c-blue">DIAMOND_SWORD</span>))
