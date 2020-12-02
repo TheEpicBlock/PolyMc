@@ -26,7 +26,9 @@ import io.github.theepicblock.polymc.impl.resource.ResourcePackGenerator;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -47,6 +49,24 @@ public class PolyMcCommands {
                     .then(literal("debug")
                         .then(literal("clientItem")
                             .executes((context) -> {
+                                ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
+                                ItemStack polydItem = PolyMc.getMap().getClientItem(heldItem);
+                                Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.toTag(new CompoundTag()));
+                                context.getSource().sendFeedback(nbtText, false);return Command.SINGLE_SUCCESS;
+                            }))
+                        .then(literal("replaceInventoryWithDebug")
+                            .executes((context) -> {
+                                ServerPlayerEntity player = context.getSource().getPlayer();
+                                if (!player.isCreative()) {
+                                    throw new SimpleCommandExceptionType(new LiteralText("You must be in creative mode to execute this command. Keep in mind that this will wipe your inventory.")).create();
+                                }
+                                for (int i = 0; i < player.inventory.size(); i++){
+                                    if (i == 0) {
+                                        player.inventory.setStack(i, new ItemStack(Items.GREEN_STAINED_GLASS_PANE));
+                                    } else {
+                                        player.inventory.setStack(i, new ItemStack(Items.RED_STAINED_GLASS_PANE, i));
+                                    }
+                                }
                                 ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
                                 ItemStack polydItem = PolyMc.getMap().getClientItem(heldItem);
                                 Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.toTag(new CompoundTag()));

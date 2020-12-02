@@ -15,15 +15,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.impl.poly.gui;
+package io.github.theepicblock.polymc.impl.mixin;
 
-import io.github.theepicblock.polymc.api.gui.GuiPoly;
-import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.world.World;
 
-public class TestGuiPoly implements GuiPoly {
+public interface WorldProvider {
+    void polyMcSetWorld(World world);
 
-    @Override
-    public ScreenHandlerType<?> getClientSideType() {
-        return ScreenHandlerType.FURNACE;
-    }
+    World polyMcGetWorld();
 }

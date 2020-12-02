@@ -15,12 +15,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.impl;
+package io.github.theepicblock.polymc.api.gui;
 
-import net.minecraft.world.World;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 
-public interface WorldProvider {
-    void polyMcSetWorld(World world);
+public abstract class GuiManager {
+	protected final ScreenHandler base;
+	protected final ServerPlayerEntity player;
 
-    World polyMcGetWorld();
+	public GuiManager(ScreenHandler base, ServerPlayerEntity player) {
+		this.base = base;
+		this.player = player;
+	}
+
+	public abstract ScreenHandler getInitialHandler(int initialSyncId);
 }

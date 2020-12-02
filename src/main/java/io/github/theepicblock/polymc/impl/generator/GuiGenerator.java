@@ -20,7 +20,7 @@ package io.github.theepicblock.polymc.impl.generator;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.poly.gui.TestGuiPoly;
+import io.github.theepicblock.polymc.impl.poly.gui.NaiveStackListingChestPoly;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -45,7 +45,7 @@ public class GuiGenerator {
      * Generates the most suitable BlockPoly for a given block
      */
     public static GuiPoly generatePoly(ScreenHandlerType<?> gui, PolyRegistry builder) {
-        return new TestGuiPoly();
+        return new NaiveStackListingChestPoly();
     }
 
     /**
