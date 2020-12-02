@@ -26,7 +26,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
 @Mixin(Networking.class)
-public class FabricApiExtendedScreenImplementation {
+public class FApiExtendedScreenHandlerPatch {
     /**
      * @author TheEpicBlock
      * @reason The vanilla client can't understand the custom packet
