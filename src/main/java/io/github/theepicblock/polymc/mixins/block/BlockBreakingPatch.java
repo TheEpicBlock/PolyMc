@@ -27,6 +27,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -36,13 +37,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayerInteractionManager.class)
 public abstract class BlockBreakingPatch {
-    @Shadow
-    public ServerPlayerEntity player;
-    @Shadow
-    private int tickCounter;
-
-    @Shadow
-    public abstract void finishMining(BlockPos pos, PlayerActionC2SPacket.Action action, String reason);
+    @Shadow @Final protected ServerPlayerEntity player;
+    @Shadow private int tickCounter;
+    @Shadow public abstract void finishMining(BlockPos pos, PlayerActionC2SPacket.Action action, String reason);
 
     @Shadow
     private int startMiningTime;

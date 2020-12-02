@@ -49,7 +49,7 @@ public class PolyMcCommands {
                             .executes((context) -> {
                                 ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
                                 ItemStack polydItem = PolyMc.getMap().getClientItem(heldItem);
-                                Text nbtText = NbtHelper.method_32270(polydItem.toTag(new CompoundTag()));
+                                Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.toTag(new CompoundTag()));
                                 context.getSource().sendFeedback(nbtText, false);
                                 return Command.SINGLE_SUCCESS;
                             })))
