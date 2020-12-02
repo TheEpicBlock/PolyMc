@@ -1,0 +1,104 @@
+<!--
+  ~ PolyMc
+  ~ Copyright (C) 2020-2020 TheEpicBlock_TEB
+  ~
+  ~ This program is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 3 of the License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program; If not, see <https://www.gnu.org/licenses>.
+  -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The PolyMc api</title>
+    <meta property="og:site_name" content="PolyMc"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:title" content="The PolyMc api"/>
+    <meta property="og:url" content="https://theepicblock.github.io/PolyMc/api"/>
+    <meta property="og:description" content="The power of a modded server, without a modded client"/>
+    <meta name="author" content="TheEpicBlock_TEB"/>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <script src="../assets/load-links.js"></script>
+</head>
+<body>
+<section class="title-section">
+    <a href="../index.html"><h1 class="title">PolyMc</h1></a>
+    <h2 class="subtitle">The power of a modded server, without a modded client</h2>
+</section>
+<section class="body">
+    <div class="content">
+        <h1>The api</h1>
+        <p>
+            You don't need to implement the api to make your mod compatible with PolyMc.
+            PolyMc will try its best to convert modded items, blocks, etc into things the client can understand.
+            But it can't account for every edge case. That is what the PolyMc api is for.
+            It will allow you to use utilities in PolyMc to implement your mod's unique features in a vanilla compatible way.
+        </p>
+        <p>
+            For any questions, you can reach me in the #PolyMc channel in the badge below or ping me <em>(TheEpicBlock_TEB#0452)</em> on the main fabric discord.
+            <a href="https://discord.gg/hbp9Gv2"><img alt="link to the discord" src="https://img.shields.io/badge/Fabric_server--side_development-PolyMc-7289DA?logo=discord&logoColor=white&style=flat-square"></a>
+        </p>
+        <h2>Getting set up</h2>
+        <p>
+Firstly you'll need to import the Api from Jitpack. VERSION is the version of PolyMc you need.
+<a href="https://github.com/TheEpicBlock/PolyMc/releases/"><img src="https://img.shields.io/github/v/release/TheEpicBlock/PolyMc?style=flat-square&label=latest%20release"></a>
+
+<div class="c-block"><pre>
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+   modImplementation "com.github.TheEpicBlock:PolyMc:VERSION"
+}
+</pre></div>
+
+Then register to the PolyMc entrypoint in the fabric.mod.json.
+
+<div class="c-block"><pre>
+"entrypoints": {
+    "polymc": [
+        "io.github.theepicblock.ExampleEntrypoint"
+    ]
+}
+</pre></div>
+
+Optionally, you can also list PolyMc as a dependency if it's absolutely needed for your mod to function. This will cause a hard failure if PolyMc isn't present. Replace depends with recommends for a soft failure. See
+
+<div class="c-block"><pre>
+"depends": {
+    "polymc": ">=2.3.0"
+},
+</pre></div>
+
+        PolyMc currently provides 2 hooks in the entrypoint. One is to register polys and one is to register mod specific resources. See <a href="resourcepacks.html">resource packs</a>.
+        </p>
+        <h2>Polys</h2>
+        <p>
+            PolyMc uses the concept of a poly a lot.
+            A poly is a sort of configuration of how a block, item or other polyable should be converted from the serverside to the clientside.
+
+            Polys should be registered in the PolyMc entrypoint via the provided <code>PolyRegistry</code>.
+            The registry also contains some utility classes for various tasks. See the related poly's page for more info.
+
+            Types of polys
+            <ul>
+                <li><a href="item-polys.html">Item Polys</a></li>
+                <li>Block Polys (no documentation yet)</li>
+                <li>Gui Polys (no documentation yet)</li>
+            </ul>
+        </p>
+    </div>
+    <div class="links"></div>
+</section>
+</body>
+</html>

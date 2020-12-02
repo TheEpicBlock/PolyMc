@@ -5,7 +5,6 @@ body {
 
 a {
   color: black;
-  text-decoration: none;
 }
 
 .title {
@@ -25,6 +24,10 @@ a {
   /*background-image: linear-gradient(120deg, #7515d6, #9c15d6);*/
 }
 
+.title-section a {
+  text-decoration: none;
+}
+
 .body {
   display: flex;
   padding: 3rem;
@@ -32,6 +35,10 @@ a {
 }
 
 .content div {
+  color: #262525;
+}
+
+.content p {
   color: #262525;
 }
 
@@ -44,6 +51,7 @@ a {
   display: block;
   white-space: nowrap;
   padding-bottom: 0.4rem;
+  text-decoration: none;
 }
 
 .links a:hover {
@@ -52,6 +60,12 @@ a {
   text-decoration-skip-ink: none;
   text-decoration-thickness: 5px;
   text-decoration-color: yellow;
+}
+
+.second-layer-link {
+  font-size: 1em !important;
+  text-decoration-thickness: 3px !important;
+  padding-left: 0.5rem;
 }
 
 .status-cube {
@@ -84,16 +98,33 @@ a {
 }
 
 .green {
-  background-color: #54aa2f
+  background-color: #54aa2f;
 }
 .orange {
-  background-color: #f3ad15
+  background-color: #f3ad15;
 }
 .red {
-  background-color: #f11b1b
+  background-color: #f11b1b;
 }
 
-@media screen and (max-width: 500px) {
+.c-red {
+  color: #db2024;
+}
+.c-blue {
+  color: #1571c6;
+}
+
+.c-block {
+  background-color: whitesmoke;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.c-block pre {
+  width: 1px;
+}
+
+@media screen and (max-width: 900px) {
   .body {
     flex-wrap: wrap;
   }
