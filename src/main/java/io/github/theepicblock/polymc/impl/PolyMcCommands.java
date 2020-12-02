@@ -28,8 +28,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
@@ -60,11 +60,11 @@ public class PolyMcCommands {
                                 if (!player.isCreative()) {
                                     throw new SimpleCommandExceptionType(new LiteralText("You must be in creative mode to execute this command. Keep in mind that this will wipe your inventory.")).create();
                                 }
-                                for (int i = 0; i < player.inventory.size(); i++){
+                                for (int i = 0; i < player.getInventory().size(); i++){
                                     if (i == 0) {
-                                        player.inventory.setStack(i, new ItemStack(Items.GREEN_STAINED_GLASS_PANE));
+                                        player.getInventory().setStack(i, new ItemStack(Items.GREEN_STAINED_GLASS_PANE));
                                     } else {
-                                        player.inventory.setStack(i, new ItemStack(Items.RED_STAINED_GLASS_PANE, i));
+                                        player.getInventory().setStack(i, new ItemStack(Items.RED_STAINED_GLASS_PANE, i));
                                     }
                                 }
                                 ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
