@@ -52,6 +52,14 @@
             <em>note: if your modded item is damageable, replace <code>CustomModelDataPoly</code> with <code>DamageableItemPoly</code></em><br>
             This will Poly your item as usual, just using a diamond sword instead of a stick. It will automatically allocate a CMD value for it.
         </p>
+        <h1>The CustomModelDataManager</h1>
+        <p>
+            The CMD manager is made to prevent polys from using the same CMD values on the same items.
+            At the simplest level, you can request a CMD value to use for a specific item.
+            You can also request a number of values, the number returned is the first value you may used, see the javadoc for more detail.
+            The CMD manager can also round robin from a list of items.
+            This is the preferred way of doing things as this prevents recipe conflicts (the recipe book doesn't take the CMD value into account, this isn't a huge deal but is a minor annoyance to clients).
+        </p>
     </div>
     <div class="links"></div>
 </section>
