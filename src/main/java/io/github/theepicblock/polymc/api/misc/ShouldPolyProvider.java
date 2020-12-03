@@ -15,11 +15,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.api;
+package io.github.theepicblock.polymc.api.misc;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public interface ShouldPolyProvider {
+	ShouldPolyEvent EVENT = new ShouldPolyEvent();
+
 	/**
 	 * Queries if the packets sent to this source are being polyd or not.
 	 * @return {@code true} if the packets are being polyd. {@code false} otherwise.
@@ -41,5 +43,46 @@ public interface ShouldPolyProvider {
 	 */
 	static boolean hasPolying(ServerPlayerEntity player) {
 		return ((ShouldPolyProvider)player).hasPolying();
+	}
+
+	enum Action {
+		/**
+		 * Overrides all other handlers and forces polying. (unless a handler called {@link #DONT_POLY} before your handler got executed)
+		 * In general, you should use {@link #PASS} instead.
+		 */
+		DEFINITELY_POLY,
+		/**
+		 * Don't take any action. Let another handler decide. If there are no handlers left, polys will be enabled
+		 */
+		PASS,
+		/**
+		 * Disables polying for this client. (unless a handler called {@link #DEFINITELY_POLY} before your handler got executed)
+		 */
+		DONT_POLY
+	}
+
+	class ShouldPolyEvent extends Event<ShouldPolyHandler> {
+		public ShouldPolyEvent() {
+			super(new ShouldPolyHandler[]{});
+		}
+
+		public boolean invoke(ServerPlayerEntity playerEntity) {
+			for (ShouldPolyHandler handler : handlers) {
+				Action a = handler.apply(playerEntity);
+				switch (a) {
+					case DEFINITELY_POLY:
+						return true;
+					case DONT_POLY:
+						return false;
+					case PASS:
+					default:
+				}
+			}
+			return true;
+		}
+	}
+
+	interface ShouldPolyHandler {
+		Action apply(ServerPlayerEntity player);
 	}
 }
