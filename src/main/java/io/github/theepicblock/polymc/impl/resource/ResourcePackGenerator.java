@@ -17,19 +17,24 @@
  */
 package io.github.theepicblock.polymc.impl.resource;
 
+import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
+import io.github.theepicblock.polymc.api.resource.JsonSoundsRegistry;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.ConfigManager;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.util.Identifier;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class ResourcePackGenerator {
@@ -108,6 +113,32 @@ public class ResourcePackGenerator {
             } catch (IOException e) {
                 PolyMc.LOGGER.warn("Exception whilst copying lang files from " + modId);
                 e.printStackTrace();
+            }
+        }
+
+        //Copy over sound files
+        for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
+            String modId = mod.getMetadata().getId();
+            if (pack.checkAsset(modId,"sounds.json")) {
+                pack.copyAsset(modId,"sounds.json"); //copy over the sounds.json file to the pack
+
+                //read the sounds.json file to parse the needed sound files.
+                InputStreamReader reader = pack.getAsset(modId,"sounds.json");
+                JsonReader jReader = new JsonReader(reader);
+                Map<String,JsonSoundsRegistry.SoundEntry> sounds = pack.getGson().fromJson(jReader, JsonSoundsRegistry.TYPE);
+
+                //copy the individual ogg files specified in the sounds.json
+                sounds.values().forEach(soundEntry -> {
+                    for (String soundString : soundEntry.sounds) {
+                        Identifier soundId = Identifier.tryParse(soundString);
+                        if (soundId == null) {
+                            PolyMc.LOGGER.warn(String.format("Invalid sound id %s in %s provided by %s", soundString, soundEntry.category, modId));
+                            continue;
+                        }
+
+                        pack.copySound(soundId.getNamespace(), soundId.getPath());
+                    }
+                });
             }
         }
 
