@@ -61,7 +61,8 @@ public interface PolyMapProvider {
 		}
 
 		public PolyMap invoke(ServerPlayerEntity playerEntity) {
-			for (PolyMapGetter handler : handlers) {
+			for (int i = handlers.length-1; i >= 0; i--) {
+				PolyMapGetter handler = handlers[i];
 				PolyMap map = handler.getMap(playerEntity);
 				if (map != null) return map;
 			}
