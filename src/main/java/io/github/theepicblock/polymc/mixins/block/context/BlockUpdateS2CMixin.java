@@ -35,7 +35,7 @@ public class BlockUpdateS2CMixin implements BlockUpdateS2CInterface {
 
     @Override
     public void poly(ServerPlayerEntity playerEntity) {
-        BlockPoly poly = PolyMc.getMap().getBlockPoly(state.getBlock());
+        BlockPoly poly = PolyMc.getMainMap().getBlockPoly(state.getBlock());
         if (poly != null && poly.isNotConsistent()) {
             state = poly.getClientBlockWithContext(state, pos, playerEntity.getServerWorld());
         }

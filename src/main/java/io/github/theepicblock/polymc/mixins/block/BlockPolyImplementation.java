@@ -28,6 +28,6 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 public class BlockPolyImplementation {
     @ModifyVariable(method = "getRawIdFromState(Lnet/minecraft/block/BlockState;)I", at = @At("HEAD"))
     private static BlockState rawBlockStateOverwrite(BlockState state) {
-        return PolyMc.getMap().getClientBlock(state);
+        return PolyMc.getMainMap().getClientBlock(state);
     }
 }

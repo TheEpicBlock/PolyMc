@@ -46,7 +46,7 @@ public class BlockResyncManager {
 			mPos.set(pos.getX() + d.getOffsetX(), pos.getY() + d.getOffsetY(), pos.getZ() + d.getOffsetZ());
 			if (exceptions != null && exceptions.contains(mPos)) continue;
 			BlockState state = world.getBlockState(mPos);
-			BlockPoly poly = PolyMc.getMap().getBlockPoly(state.getBlock());
+			BlockPoly poly = PolyMc.getMainMap().getBlockPoly(state.getBlock());
 			if (poly != null) {
 				BlockState serverSideState = poly.getClientBlock(state);
 				if (BlockResyncManager.shouldForceSync(serverSideState, d)) {

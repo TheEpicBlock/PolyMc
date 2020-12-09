@@ -31,6 +31,6 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 public class ItemPolyImplementation {
     @ModifyVariable(method = "writeItemStack(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/network/PacketByteBuf;", at = @At("HEAD"))
     public ItemStack writeItemStackHook(ItemStack itemStack) {
-        return PolyMc.getMap().getClientItem(itemStack);
+        return PolyMc.getMainMap().getClientItem(itemStack);
     }
 }

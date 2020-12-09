@@ -47,7 +47,7 @@ public class CreativeModeHotfix {
             if (setStack.isEmpty()) {
                 polyMCrecentlyVoided = slotStack;
             } else {
-                if (ItemStack.areEqual(setStack, PolyMc.getMap().getClientItem(slotStack))) {
+                if (ItemStack.areEqual(setStack, PolyMc.getMainMap().getClientItem(slotStack))) {
                     //the item the client is trying to set is actually a the polyd version of the item in the same slot.
                     return;
                 }
@@ -63,7 +63,7 @@ public class CreativeModeHotfix {
 
         if (polyMCrecentlyVoided == null) return original;
 
-        if (ItemStack.areEqual(original, PolyMc.getMap().getClientItem(polyMCrecentlyVoided))) {
+        if (ItemStack.areEqual(original, PolyMc.getMainMap().getClientItem(polyMCrecentlyVoided))) {
             //the item the client is trying to set is actually a polyd version of polyMCrecentlyVoided.
             return polyMCrecentlyVoided;
         }

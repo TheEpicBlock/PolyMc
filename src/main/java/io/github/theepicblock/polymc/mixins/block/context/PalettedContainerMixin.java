@@ -82,7 +82,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, NonPol
     @Inject(method = "setAndGetOldValue(ILjava/lang/Object;)Ljava/lang/Object;", at = @At("RETURN"), cancellable = true)
     public void setInPaletteListener(int index, T value, CallbackInfoReturnable<T> cir) {
         if (value instanceof BlockState) {
-            PolyMap map = PolyMc.getMap();
+            PolyMap map = PolyMc.getMainMap();
             BlockPoly poly = map.getBlockPoly(((BlockState)value).getBlock());
             if (poly != null && poly.isNotConsistent()) {
                 nonConsistentPolyCount++;
@@ -141,7 +141,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, NonPol
         for (int i = 0; i < this.data.getSize(); i++) {
             BlockState b = (BlockState)this.get(i);
             pos.set(i & 0x00F, i >> 8, (i & 0x0F0) >> 4);
-            BlockState polyd = PolyMc.getMap().getClientBlockWithContext(b, pos, world);
+            BlockState polyd = PolyMc.getMainMap().getClientBlockWithContext(b, pos, world);
             //noinspection all
             ((PalettedContainerMixin<T>)(Object)clone).set(i, (T)polyd);
         }
@@ -153,7 +153,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, NonPol
         nonConsistentPolyCount = 0;
         for (int i = 0; i < this.data.getSize(); i++) {
             BlockState b = (BlockState)this.get(i);
-            BlockPoly poly = PolyMc.getMap().getBlockPoly(b.getBlock());
+            BlockPoly poly = PolyMc.getMainMap().getBlockPoly(b.getBlock());
             if (poly != null && poly.isNotConsistent()) {
                 nonConsistentPolyCount++;
             }

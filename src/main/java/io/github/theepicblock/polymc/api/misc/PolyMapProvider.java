@@ -55,7 +55,7 @@ public interface PolyMapProvider {
 				PolyMap map = handler.getMap(playerEntity);
 				if (map == null) continue;
 			}
-			return PolyMc.getMap();
+			return PolyMc.getMainMap();
 		}
 	}
 

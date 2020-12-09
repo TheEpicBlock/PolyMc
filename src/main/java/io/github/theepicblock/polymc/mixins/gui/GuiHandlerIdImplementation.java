@@ -41,7 +41,7 @@ public class GuiHandlerIdImplementation {
     public ScreenHandler handlerId(NamedScreenHandlerFactory namedScreenHandlerFactory, int syncId, PlayerInventory inv, PlayerEntity player) {
         ScreenHandler base = namedScreenHandlerFactory.createMenu(syncId, inv, player);
         if (base == null) return null;
-        GuiPoly poly = PolyMc.getMap().getGuiPoly(base.getType());
+        GuiPoly poly = PolyMc.getMainMap().getGuiPoly(base.getType());
         if (poly != null) {
             this.guiManager = poly.createGuiManager(base, (ServerPlayerEntity)player);
             return guiManager.getInitialHandler(syncId);

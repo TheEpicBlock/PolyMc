@@ -34,6 +34,6 @@ public class InventoryDesyncPatch {
 
     @Redirect(method = "onClickSlot(Lnet/minecraft/network/packet/c2s/play/ClickSlotC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;areEqual(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z"))
     public boolean areEqualRedirect(ItemStack left, ItemStack right) {
-        return ItemStack.areEqual(left, PolyMc.getMap().getClientItem(right));
+        return ItemStack.areEqual(left, PolyMc.getMainMap().getClientItem(right));
     }
 }

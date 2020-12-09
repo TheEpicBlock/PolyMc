@@ -43,7 +43,7 @@ public abstract class PaletteBlockPolyImplementation<T> implements NonPolydPacke
     public T GetIdRedirect(T object) {
         if (!noPoly && object instanceof BlockState) {
             //noinspection unchecked
-            return (T)PolyMc.getMap().getClientBlock((BlockState)object);
+            return (T)PolyMc.getMainMap().getClientBlock((BlockState)object);
         }
         return object;
     }
