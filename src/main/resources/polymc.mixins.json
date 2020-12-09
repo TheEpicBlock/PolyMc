@@ -9,6 +9,7 @@
     "CustomPacketDisabler",
     "FabricRegistrySyncDisabler",
     "FabricRemapDisabler",
+    "PolyMapProviderImplementation",
     "ServerParticlePatch",
     "ServerStartMixin",
     "TagSyncronizePatch",

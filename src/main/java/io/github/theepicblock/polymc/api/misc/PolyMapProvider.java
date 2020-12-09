@@ -30,13 +30,23 @@ public interface PolyMapProvider {
 	PolyMap getPolyMap();
 
 	/**
+	 * Directly sets the PolyMap used by this provider.
+	 * @param map map to use
+	 * @deprecated this method should <em>not</em> be used directly! Please create an entry in {@link #EVENT} instead.
+	 */
+	@Deprecated
+	void setPolyMap(PolyMap map);
+
+	/**
 	 * Refreshes the map used by this player. It will call {@link #EVENT} again.
 	 * <p>
 	 * Warning: whilst this method allows you to refresh the {@link PolyMap} on the fly it is *not* recommended.
 	 * This function won't affect new packets!
 	 * </p>
 	 */
-	void refreshUsedPolyMap();
+	default void refreshUsedPolyMap() {
+		this.setPolyMap(EVENT.invoke((ServerPlayerEntity)this));
+	}
 
 	/**
 	 * @return the {@link PolyMap} that is used for this player.
@@ -53,13 +63,21 @@ public interface PolyMapProvider {
 		public PolyMap invoke(ServerPlayerEntity playerEntity) {
 			for (PolyMapGetter handler : handlers) {
 				PolyMap map = handler.getMap(playerEntity);
-				if (map == null) continue;
+				if (map != null) return map;
 			}
 			return PolyMc.getMainMap();
 		}
 	}
 
+	/**
+	 * Represents an entry in {@link #EVENT}
+	 * {@link #getMap(ServerPlayerEntity)} should return {@code null} to pass through to the next entry.
+	 */
 	interface PolyMapGetter {
+		/**
+		 * Returns a PolyMap for this entry. Returns `null` when unspecified.
+		 * @return the map that should be used for this player.
+		 */
 		PolyMap getMap(ServerPlayerEntity player);
 	}
 }
