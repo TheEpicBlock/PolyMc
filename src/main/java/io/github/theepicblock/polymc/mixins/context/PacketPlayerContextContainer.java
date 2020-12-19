@@ -15,27 +15,39 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.item;
+package io.github.theepicblock.polymc.mixins.context;
 
-import io.github.theepicblock.polymc.PolyMc;
-import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.s2c.play.AdvancementUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * This is the class responsible for replacing the serverside items with the clientside items
- */
-@Mixin(PacketByteBuf.class)
-public class ItemPolyImplementation {
-    @ModifyVariable(method = "writeItemStack(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/network/PacketByteBuf;", at = @At("HEAD"))
-    public ItemStack writeItemStackHook(ItemStack itemStack) {
-        ServerPlayerEntity player = ((PlayerContextContainer)this).getPolyMcProvidedPlayer();
-        if (player == null) return PolyMc.getMainMap().getClientItem(itemStack);
-        return PolyMapProvider.getPolyMap(player).getClientItem(itemStack);
-    }
+@Mixin({AdvancementUpdateS2CPacket.class})
+public class PacketPlayerContextContainer implements PlayerContextContainer {
+	@Unique
+	private ServerPlayerEntity player;
+
+	@Override
+	public ServerPlayerEntity getPolyMcProvidedPlayer() {
+		return player;
+	}
+
+	@Override
+	public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
+		player = v;
+	}
+
+	/**
+	 * This mixin passes the player context onto the ByteBuffer
+	 * @see ByteBufPlayerContextContainer
+	 */
+	@Inject(method = "write(Lnet/minecraft/network/PacketByteBuf;)V", at = @At("HEAD"))
+	private void writeInject(PacketByteBuf buf, CallbackInfo ci) {
+		((PlayerContextContainer)buf).setPolyMcProvidedPlayer(player);
+	}
 }
