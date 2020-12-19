@@ -59,6 +59,7 @@ public class BlockPolyGenerator {
     public static BlockPoly generatePoly(Block block, PolyRegistry builder) {
         BlockState state = block.getDefaultState();
         VoxelShape collisionShape;
+        //Get the block's collision shape for the default state.
         try {
             collisionShape = state.getCollisionShape(null, null);
         } catch (Exception e) {
@@ -66,16 +67,44 @@ public class BlockPolyGenerator {
             collisionShape = VoxelShapes.UNBOUNDED;
         }
 
+        if (block.getRenderType(state) == BlockRenderType.INVISIBLE) {
+            //This block is supposed to be invisible anyway
+
+            if (Block.isShapeFullCube(collisionShape)) {
+                return new SimpleReplacementPoly(Blocks.BARRIER);
+            }
+
+            if (collisionShape.isEmpty()) {
+                //Try to get its selection shape so we can decide between a structure void (which has a selection box) and air (which doesn't)
+                try {
+                    VoxelShape outlineShape = state.getOutlineShape(null, null);
+
+                    if (outlineShape.isEmpty()) {
+                        return new SimpleReplacementPoly(Blocks.VOID_AIR);
+                    } else {
+                        return new SimpleReplacementPoly(Blocks.STRUCTURE_VOID);
+                    }
+                } catch (Exception e) {
+                    PolyMc.LOGGER.warn("Failed to get outline shape for " + block.getTranslationKey() + ": " + e.getMessage());
+                }
+            }
+
+            //This block has odd collisions. We'll just default it to stone.
+            return new SimpleReplacementPoly(Blocks.STONE);
+         } //End of invisible block handling
+
         //Handle fluids
         if (block instanceof FluidBlock) {
             return new PropertyRetainingReplacementPoly(Blocks.WATER);
         }
+
         //Handle leaves
         if (block instanceof LeavesBlock || block.isIn(BlockTags.LEAVES)) { //TODO I don't like that leaves can be set tags in datapacks, it might cause issues. However, as not every leaf block extends LeavesBlock I can't see much of a better option. Except to maybe check the id if it ends on "_leaves"
             try {
                 return new SingleUnusedBlockStatePoly(builder, BlockStateProfile.LEAVES_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
+
         //Handle doors/trapdoors
         boolean isMetal = ((MaterialAccessor)block).getMaterial() == Material.METAL;
         if (block instanceof DoorBlock) {
@@ -88,12 +117,14 @@ public class BlockPolyGenerator {
                 return new PoweredStateBlockPoly(builder, isMetal ? BlockStateProfile.METAL_TRAPDOOR_PROFILE : BlockStateProfile.TRAPDOOR_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
+
         //Handle full blocks
         if (Block.isShapeFullCube(collisionShape)) {
             try {
                 return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NOTE_BLOCK_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
+
         //Handle blocks without collision
         if (collisionShape.isEmpty()) {
             if (block instanceof SaplingBlock) {
@@ -105,18 +136,21 @@ public class BlockPolyGenerator {
                 return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NO_COLLISION_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
+
         //Handle slabs
         if (block instanceof SlabBlock) {
             try {
                 return new UnusedBlockStatePoly(block, builder, BlockStateProfile.PETRIFIED_OAK_SLAB_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
+
         //Handle blocks with same collision as farmland
         if (collisionShape == Blocks.FARMLAND.getOutlineShape(null,null,null,null)) {
             try {
                 return new UnusedBlockStatePoly(block, builder, BlockStateProfile.FARMLAND_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
+
         //Odd cases
         return new SimpleReplacementPoly(Blocks.STONE); //TODO better implementation
     }
