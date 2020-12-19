@@ -22,18 +22,18 @@ import net.minecraft.block.BlockState;
 import java.util.function.Predicate;
 
 /**
- * This block poly replaces the the block it's registered to with another blockstate, but only if exempts returns false
+ * This block poly replaces the the block it's registered to with another blockstate, but only if condition returns true
  */
 public class ConditionalSimpleBlockPoly extends SimpleReplacementPoly {
-    private final Predicate<BlockState> exempts;
+    private final Predicate<BlockState> condition;
 
-    public ConditionalSimpleBlockPoly(BlockState state, Predicate<BlockState> exempts) {
+    public ConditionalSimpleBlockPoly(BlockState state, Predicate<BlockState> condition) {
         super(state);
-        this.exempts = exempts;
+        this.condition = condition;
     }
 
     @Override
     public BlockState getClientBlock(BlockState input) {
-        return exempts.test(input) ? input : state;
+        return condition.test(input) ? state : input;
     }
 }
