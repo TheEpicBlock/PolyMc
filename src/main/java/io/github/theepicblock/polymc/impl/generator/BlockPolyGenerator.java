@@ -128,7 +128,7 @@ public class BlockPolyGenerator {
         //Handle blocks without collision
         if (collisionShape.isEmpty()) {
             if (block instanceof SaplingBlock) {
-                try {
+                try { //prevents saplings using 2 states when it isn't needed
                     return new SingleUnusedBlockStatePoly(builder, BlockStateProfile.NO_COLLISION_PROFILE);
                 } catch (BlockStateManager.StateLimitReachedException ignored) {}
             }
