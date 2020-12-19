@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.api.block;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
+import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.poly.block.ConditionalSimpleBlockPoly;
 import io.github.theepicblock.polymc.impl.poly.block.PropertyRetainingReplacementPoly;
 import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
@@ -81,7 +82,13 @@ public class BlockStateProfile {
     private static final BiConsumer<Block,PolyRegistry> DEFAULT_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
     private static final BiConsumer<Block,PolyRegistry> NO_COLLISION_ON_FIRST_REGISTER = (block, polyRegistry) -> {
         if (block == Blocks.TRIPWIRE) {
-            polyRegistry.registerBlockPoly(block, new ConditionalSimpleBlockPoly(Blocks.TRIPWIRE.getDefaultState(), BlockStateProfile::isStringUseable));
+            polyRegistry.registerBlockPoly(block, new BlockPoly() {
+                @Override
+                public BlockState getClientBlock(BlockState input) {
+                    return input.with(Properties.POWERED, false).with(Properties.DISARMED,false);
+                }
+                @Override public void AddToResourcePack(Block block, ResourcePackMaker pack) {}
+            });
         } else {
             polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
         }
@@ -112,11 +119,6 @@ public class BlockStateProfile {
 
     private static boolean isStringUseable(BlockState state) {
         return  state.get(Properties.POWERED) == true ||
-                state.get(TripwireBlock.DISARMED) == true ||
-                // V checks if there's exactly 1 or less sides active V
-                ((state.get(TripwireBlock.NORTH) ? 1 : 0)
-                +(state.get(TripwireBlock.SOUTH) ? 1 : 0)
-                +(state.get(TripwireBlock.WEST) ? 1 : 0)
-                +(state.get(TripwireBlock.EAST) ? 1 : 0) <= 1);
+                state.get(TripwireBlock.DISARMED) == true;
     }
 }
