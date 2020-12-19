@@ -71,8 +71,8 @@ public class BlockStateProfile {
         }
     };
     private static final Predicate<BlockState> ALWAYS_TRUE_FILTER = (blockState) -> true;
-    private static final Predicate<BlockState> FARMLAND_FILTER = (blockstate) -> {
-        int moisture = blockstate.get(FarmlandBlock.MOISTURE);
+    private static final Predicate<BlockState> FARMLAND_FILTER = (blockState) -> {
+        int moisture = blockState.get(FarmlandBlock.MOISTURE);
         return moisture != 0 && moisture != 7;
     };
     private static final Predicate<BlockState> POWERED_FILTER = (blockState) -> blockState.get(Properties.POWERED) == true;
