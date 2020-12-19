@@ -110,10 +110,6 @@ public class BlockStateProfile {
         return new BlockStateProfile(name, block, DEFAULT_FILTER, DEFAULT_ON_FIRST_REGISTER);
     }
 
-    private static boolean isAir(Block b) {
-        return b == Blocks.CAVE_AIR || b == Blocks.VOID_AIR || b == Blocks.STRUCTURE_VOID;
-    }
-
     private static boolean isStringUseable(BlockState state) {
         return  state.get(Properties.POWERED) == true ||
                 state.get(TripwireBlock.DISARMED) == true ||
