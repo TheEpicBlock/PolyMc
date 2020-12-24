@@ -19,7 +19,7 @@ package io.github.theepicblock.polymc.mixins.context;
 
 import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.s2c.play.AdvancementUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -27,7 +27,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin({AdvancementUpdateS2CPacket.class})
+@Mixin({AdvancementUpdateS2CPacket.class,
+		EntityEquipmentUpdateS2CPacket.class,
+		InventoryS2CPacket.class,
+		ScreenHandlerSlotUpdateS2CPacket.class,
+		SynchronizeRecipesS2CPacket.class,
+		SetTradeOffersS2CPacket.class,
+		EntityTrackerUpdateS2CPacket.class,
+		ParticleS2CPacket.class})
 public class PacketPlayerContextContainer implements PlayerContextContainer {
 	@Unique
 	private ServerPlayerEntity player;
