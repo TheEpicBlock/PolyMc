@@ -1,7 +1,14 @@
+---
+layout: default
+title: Status of the project so far
+nav_order: 2
+---
+
 # Status of the project so far
 <img align="left" width="20" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Green.png"> PolyMc provides good support for this. You can decently use a mod with these with a vanilla client, as far as that is possible.  
 <img align="left" width="20" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Orange.png"> These won't crash the client. You can still play with these but you might not be able to fully use them.  
 <img align="left" width="20" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Red.png"> PolyMc doesn't support this yet. They might crash the client, they might not.
+
 *all of the information here applies to the latest development build*
 
 ## Items <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Green.png">

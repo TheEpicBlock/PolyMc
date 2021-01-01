@@ -1,3 +1,9 @@
+---
+layout: default
+title: Getting started with using PolyMc
+nav_order: 3
+---
+
 # Installing PolyMc
 PolyMc works with the fabric modloader. You can install it as a server <a href="https://fabricmc.net/wiki/tutorial:installing_minecraft_fabric_server">here</a>.
 Install the latest PolyMc version [from here](https://theepicblock.nl/builds) and place it in the mods folder. Together with any mod you'd like to use with PolyMc. 

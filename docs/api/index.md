@@ -1,3 +1,8 @@
+---
+layout: default
+title: The PolyMc api
+nav_order: 1
+---
 
 # The api
 You don't need to implement the api to make your mod compatible with PolyMc.

@@ -1,3 +1,9 @@
+---
+layout: default
+title: Resources and Resource packs
+nav_order: 3
+---
+
 # Resources and Resource packs
 Resource packs are essential to PolyMc. That's why PolyMc includes a lot of helper methods for working with them.
 

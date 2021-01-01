@@ -1,3 +1,9 @@
+---
+layout: default
+title: Item Polys
+nav_order: 2
+---
+
 # Item Polys
 At a basic level item polys take in the servers sided item and output one to be displayed on the client.
 The default item poly, the `CustomModelDataPoly`, works quite well in most cases.
