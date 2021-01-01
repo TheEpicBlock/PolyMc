@@ -18,11 +18,12 @@
 package io.github.theepicblock.polymc.mixins.context;
 
 import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-@Mixin(ServerPlayerEntity.class)
+@Mixin(PacketByteBuf.class)
 public class ByteBufPlayerContextContainer implements PlayerContextContainer {
 	@Unique private ServerPlayerEntity player;
 
