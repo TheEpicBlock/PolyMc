@@ -25,7 +25,7 @@ The ResourcePackMaker has, in general, 3 types of methods. `getX`, `hasX` and `c
 ```
 *An overview of classes in the `ResourcePackMaker`.*
 
-# Pending system™
+## Pending system™
 Sometimes a file needs to be appended to and edited by multiple locations.
 Take CustomModelData for example. Every CMD value that's used needs to be registered to the source item.
 That's why the pending system™ exists.
