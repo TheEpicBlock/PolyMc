@@ -4,7 +4,7 @@ description: The power of a modded server, without a modded client
 remote_theme: carlosperate/jekyll-theme-rtd
 
 # Theme settings:
-site_author: Carlos Pereira Atencio
+site_author: TheEpicBlock
 repo_url: "https://github.com/theepicblock/polymc"
 edit_on_github: true
 github_docs_folder: true
