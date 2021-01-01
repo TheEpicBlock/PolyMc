@@ -17,9 +17,12 @@
  */
 package io.github.theepicblock.polymc.api.misc;
 
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.impl.DebugPolyMap;
 import net.minecraft.server.network.ServerPlayerEntity;
+
+import java.util.Random;
 
 public interface PolyMapProvider {
 	PolyMapProviderEvent EVENT = new PolyMapProviderEvent();
@@ -46,6 +49,7 @@ public interface PolyMapProvider {
 	 */
 	default void refreshUsedPolyMap() {
 		this.setPolyMap(EVENT.invoke((ServerPlayerEntity)this));
+		System.out.println("Set poly for "+this+": "+this.getPolyMap());
 	}
 
 	/**
@@ -67,7 +71,7 @@ public interface PolyMapProvider {
 				if (map != null) return map;
 			}
 //			return PolyMc.getMainMap();
-			return new DebugPolyMap();
+			return new Random().nextBoolean() ? new DebugPolyMap() : PolyMc.getMainMap();
 		}
 	}
 

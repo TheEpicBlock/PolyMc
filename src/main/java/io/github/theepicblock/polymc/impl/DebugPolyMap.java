@@ -35,7 +35,11 @@ import net.minecraft.world.World;
 public class DebugPolyMap implements PolyMap {
 	@Override
 	public ItemStack getClientItem(ItemStack serverItem) {
-		return new ItemStack(Items.STICK);
+		if (serverItem.getItem() == Items.AIR) {
+			return serverItem;
+		} else {
+			return new ItemStack(Items.STICK);
+		}
 	}
 
 	@Override
