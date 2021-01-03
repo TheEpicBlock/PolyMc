@@ -16,7 +16,7 @@ nav_order: 2
 You might encounter issues with items that use custom renders or edit their appearance with custom properties.
 In general, you should be completely fine with using items with PolyMc.
 
-## Blocks <img align="right" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Orange.png">
+## Blocks <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Orange.png">
 Blocks need to consider their clientside collision shapes. And be careful not to replace any vanilla blocks.
 A few block shapes have been implemented in PolyMc:
 * Full blocks: 799
