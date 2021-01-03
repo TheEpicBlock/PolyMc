@@ -13,7 +13,7 @@ It will allow you to use utilities in PolyMc to implement your mod's unique feat
 For any questions, you can reach me in the #PolyMc channel in the badge below or ping me <em>(TheEpicBlock_TEB#0452)</em> on the main fabric discord.
 <a href="https://discord.gg/hbp9Gv2"><img alt="link to the discord" src="https://img.shields.io/badge/Fabric_server--side_development-PolyMc-7289DA?logo=discord&logoColor=white&style=flat-square"></a>
 
-## Getting set up
+## Importing PolyMc into gradle
 Firstly you'll need to import the Api from Jitpack. VERSION is the version of PolyMc you need.
 <a href="https://github.com/TheEpicBlock/PolyMc/releases/"><img src="https://img.shields.io/github/v/release/TheEpicBlock/PolyMc?style=flat-square&label=latest%20release"></a>
 

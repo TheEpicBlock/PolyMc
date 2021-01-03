@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Resources and Resource packs
-nav_order: 3
+nav_order: 30
 ---
 
 # Resources and Resource packs
