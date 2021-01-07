@@ -17,6 +17,8 @@
  */
 package io.github.theepicblock.polymc.impl;
 
+import io.github.theepicblock.polymc.api.PolyMap;
+import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
@@ -24,9 +26,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 
 import java.io.IOException;
@@ -183,5 +187,34 @@ public class Util {
             }
         }
         return item;
+    }
+
+    /**
+     * Utility method to get the polyd raw id.
+     * PolyMc also redirects {@link Block#getRawIdFromState(BlockState)} but that doesn't respect the player's {@link PolyMap}.
+     * This method does.
+     * @param state the BlockState who's raw id is being queried
+     * @param playerEntity the player who's {@link PolyMap} we should be using
+     * @return the int associated with the state after being transformed by the players {@link PolyMap}
+     */
+    public static int getPolydRawIdFromState(BlockState state, ServerPlayerEntity playerEntity) {
+        PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
+        BlockState clientState = map.getClientBlock(state);
+        return Block.STATE_IDS.getRawId(clientState);
+    }
+
+    /**
+     * Utility method to get the polyd raw id whilst providing extra context to the {@link io.github.theepicblock.polymc.api.block.BlockPoly}
+     * PolyMc also redirects {@link Block#getRawIdFromState(BlockState)} but that doesn't respect the player's {@link PolyMap}.
+     * This method does
+     * @param state the BlockState who's raw id is being queried
+     * @param pos the position this block is in
+     * @param playerEntity the player who's {@link PolyMap} we should be using
+     * @return the int associated with the state after being transformed by the players {@link PolyMap}
+     */
+    public static int getPolydRawIdFromStateWithContext(BlockState state, BlockPos pos, ServerPlayerEntity playerEntity) {
+        PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
+        BlockState clientState = map.getClientBlockWithContext(state, pos, playerEntity.world);
+        return Block.STATE_IDS.getRawId(clientState);
     }
 }
