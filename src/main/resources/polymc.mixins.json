@@ -28,6 +28,7 @@
     "context.ByteBufPlayerContextContainer",
     "context.NetworkHandlerContextProvider",
     "context.PacketPlayerContextContainer",
+    "context.block.BedBlockMixin",
     "gui.FabricApiExtendedScreenImplementation",
     "gui.GuiHandlerIdImplementation",
     "item.CreativeModeHotfix",
