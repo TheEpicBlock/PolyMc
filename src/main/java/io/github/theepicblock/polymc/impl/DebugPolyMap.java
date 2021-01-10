@@ -44,7 +44,7 @@ public class DebugPolyMap implements PolyMap {
 
 	@Override
 	public BlockState getClientBlock(BlockState serverBlock) {
-		return Blocks.CRAFTING_TABLE.getDefaultState();
+		return serverBlock.isAir() ? serverBlock : Blocks.CRAFTING_TABLE.getDefaultState();
 	}
 
 	@Override
