@@ -17,11 +17,14 @@
  */
 package io.github.theepicblock.polymc.mixins.block;
 
-import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.api.PolyMap;
+import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.mixin.NonPolydPacketProvider;
+import io.github.theepicblock.polymc.impl.mixin.PacketSizeProvider;
 import me.jellysquid.mods.lithium.common.world.chunk.LithiumHashPalette;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.chunk.ArrayPalette;
 import net.minecraft.world.chunk.BiMapPalette;
 import net.minecraft.world.chunk.Palette;
@@ -36,18 +39,25 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
  * This Mixin makes sure that the blocks are polyd before they get sent to the client.
  */
 @Mixin(value = {ArrayPalette.class, BiMapPalette.class, LithiumHashPalette.class})
-public abstract class PaletteBlockPolyImplementation<T> implements NonPolydPacketProvider {
+public abstract class PaletteBlockPolyImplementation<T> implements NonPolydPacketProvider, PacketSizeProvider {
     @Unique private boolean noPoly;
+    @Unique private ServerPlayerEntity playerEntity;
 
     @ModifyArg(method = {"toPacket", "getPacketSize"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IdList;getRawId(Ljava/lang/Object;)I"))
     public T GetIdRedirect(T object) {
         if (!noPoly && object instanceof BlockState) {
+            PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
             //noinspection unchecked
-            return (T)PolyMc.getMainMap().getClientBlock((BlockState)object);
+            return (T)map.getClientBlock((BlockState)object);
         }
         return object;
     }
 
+    @Override
+    public int getPacketSize(ServerPlayerEntity playerEntity) {
+        this.playerEntity = playerEntity;
+        return ((Palette<T>)this).getPacketSize();
+    }
 
     @Override
     public void toPacketNoPoly(PacketByteBuf buf) {
