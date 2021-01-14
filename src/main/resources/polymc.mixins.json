@@ -30,6 +30,7 @@
     "context.block.BlockMixin",
     "context.block.BlockUpdatePacketMixin",
     "context.block.ChunkDataPacketMixin",
+    "context.block.PlayerActionResponsePacketMixin",
     "context.block.TACSMixin",
     "gui.FabricApiExtendedScreenImplementation",
     "gui.GuiHandlerIdImplementation",
