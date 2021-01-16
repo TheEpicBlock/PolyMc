@@ -15,7 +15,7 @@ repositories {
 		url "https://jitpack.io"
 	}
 	maven {
-		url "https://maven.swordglowsblue.com"
+		url "https://dl.bintray.com/natanfudge/libs"
 	}
 }
 
