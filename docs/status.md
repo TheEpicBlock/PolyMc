@@ -22,8 +22,8 @@ A few block shapes have been implemented in PolyMc:
 * Full blocks: 799
 * Doors: 8
 * Trapdoors: 8
-* Uncollidable blocks: 15
-* Path blocks: 5
+* Uncollidable blocks: 116
+* Path blocks: 5  
 Note that some transparent textures might display incorrectly.
 
 ## GUIs <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Red.png">
