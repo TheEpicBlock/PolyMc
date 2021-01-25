@@ -26,12 +26,16 @@ import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.poly.block.*;
 import io.github.theepicblock.polymc.mixins.block.MaterialAccessor;
 import net.minecraft.block.*;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 
 /**
  * Class to automatically generate BlockPolys for Blocks
@@ -58,12 +62,15 @@ public class BlockPolyGenerator {
      */
     public static BlockPoly generatePoly(Block block, PolyRegistry builder) {
         BlockState state = block.getDefaultState();
-        VoxelShape collisionShape;
+        FakedWorld fakeWorld = new FakedWorld(state);
+
         //Get the block's collision shape for the default state.
+        VoxelShape collisionShape;
         try {
-            collisionShape = state.getCollisionShape(null, null);
+            collisionShape = state.getCollisionShape(fakeWorld, BlockPos.ORIGIN);
         } catch (Exception e) {
-            PolyMc.LOGGER.warn("Failed to get collision shape for " + block.getTranslationKey() + ": " + e.getMessage());
+            PolyMc.LOGGER.warn("Failed to get collision shape for " + block.getTranslationKey());
+            e.printStackTrace();
             collisionShape = VoxelShapes.UNBOUNDED;
         }
 
@@ -77,7 +84,7 @@ public class BlockPolyGenerator {
             if (collisionShape.isEmpty()) {
                 //Try to get its selection shape so we can decide between a structure void (which has a selection box) and air (which doesn't)
                 try {
-                    VoxelShape outlineShape = state.getOutlineShape(null, null);
+                    VoxelShape outlineShape = state.getOutlineShape(fakeWorld, BlockPos.ORIGIN);
 
                     if (outlineShape.isEmpty()) {
                         return new SimpleReplacementPoly(Blocks.VOID_AIR);
@@ -85,7 +92,8 @@ public class BlockPolyGenerator {
                         return new SimpleReplacementPoly(Blocks.STRUCTURE_VOID);
                     }
                 } catch (Exception e) {
-                    PolyMc.LOGGER.warn("Failed to get outline shape for " + block.getTranslationKey() + ": " + e.getMessage());
+                    PolyMc.LOGGER.warn("Failed to get outline shape for " + block.getTranslationKey());
+
                 }
             }
 
@@ -168,5 +176,53 @@ public class BlockPolyGenerator {
      */
     private static DefaultedRegistry<Block> getBlockRegistry() {
         return Registry.BLOCK;
+    }
+
+    /**
+     * A world filled with air except for a single block at 0,0,0.
+     */
+    public static class FakedWorld implements BlockView {
+        public final BlockState OriginBlockState;
+        public final BlockEntity OriginBlocKEntity;
+
+        /**
+         * Initializes a new fake world. This world is filled with air except for 0,0,0
+         * @param block The block that will be used at 0,0,0
+         */
+        public FakedWorld(BlockState block) {
+            OriginBlockState = block;
+
+            if (OriginBlockState.getBlock() instanceof BlockEntityProvider) {
+                BlockEntityProvider BEP = (BlockEntityProvider)OriginBlockState.getBlock();
+
+                OriginBlocKEntity = BEP.createBlockEntity(this);
+            } else {
+                OriginBlocKEntity = null;
+            }
+        }
+
+        @Override
+        public BlockEntity getBlockEntity(BlockPos pos) {
+            if (pos.equals(BlockPos.ORIGIN)) {
+                return OriginBlocKEntity;
+            }
+            return null;
+        }
+
+        @Override
+        public BlockState getBlockState(BlockPos pos) {
+            if (pos.equals(BlockPos.ORIGIN)) {
+                return OriginBlockState;
+            }
+            return null;
+        }
+
+        @Override
+        public FluidState getFluidState(BlockPos pos) {
+            if (pos.equals(BlockPos.ORIGIN)) {
+                return OriginBlockState.getFluidState();
+            }
+            return null;
+        }
     }
 }
