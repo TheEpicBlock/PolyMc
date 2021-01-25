@@ -19,6 +19,10 @@ Check the <a href="https://discord.gg/hbp9Gv2">#PolyMc channel</a> in the Fabric
 <a href="https://theepicblock.nl/builds/">                         <img alt="latest build version" src="https://img.shields.io/endpoint?url=https://theepicblock.nl/builds/shield.json&style=flat-square&label=Latest%20Build"></a>
 <a href="https://github.com/TheEpicBlock/PolyMc/commits/master">   <img alt="Time since last commit on github" src="https://img.shields.io/github/last-commit/TheEpicBlock/PolyMc?style=flat-square"></a>
 
-*\* It's technically possible to use PolyMc without a resource pack. But it would require some extreme hacks and usage of the api. You're on your own.*
+## Tweaking things
+If you've got a relatively stable modpack, and you would like to tweak things to work better, I highly suggest creating a mod and interfacing through the [PolyMc api](https://theepicblock.github.io/PolyMc/api/)!  
+There are quite some blocks that can be used but aren't used by default, such as command or jigsaw blocks
+
+*\* It's technically possible to use PolyMc without a resource pack, but it would require some extreme hacks and usage of the api. You're on your own.*
 
 
