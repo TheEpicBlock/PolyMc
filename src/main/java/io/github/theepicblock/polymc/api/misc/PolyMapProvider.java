@@ -19,7 +19,6 @@ package io.github.theepicblock.polymc.api.misc;
 
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
-import io.github.theepicblock.polymc.impl.DebugPolyMap;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.Random;
@@ -70,8 +69,7 @@ public interface PolyMapProvider {
 				PolyMap map = handler.getMap(playerEntity);
 				if (map != null) return map;
 			}
-//			return PolyMc.getMainMap();
-			return new Random().nextBoolean() ? new DebugPolyMap() : PolyMc.getMainMap();
+			return PolyMc.getMainMap();
 		}
 	}
 
