@@ -100,4 +100,9 @@ public class PolyMapImpl implements PolyMap {
     @Override public ImmutableMap<Block,BlockPoly> getBlockPolys() {
         return blockPolys;
     }
+
+    @Override
+    public boolean isVanillaLikeMap() {
+        return true;
+    }
 }

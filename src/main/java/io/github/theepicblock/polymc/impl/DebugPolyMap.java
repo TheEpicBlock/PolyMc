@@ -71,4 +71,9 @@ public class DebugPolyMap implements PolyMap {
 	public ImmutableMap<Block,BlockPoly> getBlockPolys() {
 		return ImmutableMap.of();
 	}
+
+	@Override
+	public boolean isVanillaLikeMap() {
+		return true;
+	}
 }

@@ -48,4 +48,9 @@ public class NOPPolyMap implements PolyMap {
 	public ImmutableMap<Block,BlockPoly> getBlockPolys() {
 		return null;
 	}
+
+	@Override
+	public boolean isVanillaLikeMap() {
+		return false; //This disables patches meant for vanilla clients
+	}
 }

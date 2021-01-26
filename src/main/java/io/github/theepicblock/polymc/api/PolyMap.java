@@ -59,4 +59,10 @@ public interface PolyMap {
 	 * gets a map containing all blockpolys in this map
 	 */
 	ImmutableMap<Block,BlockPoly> getBlockPolys();
+
+	/**
+	 * Specifies if this map is meant for vanilla-like clients
+	 * This is used to disable/enable miscellaneous patches
+	 */
+	boolean isVanillaLikeMap();
 }
