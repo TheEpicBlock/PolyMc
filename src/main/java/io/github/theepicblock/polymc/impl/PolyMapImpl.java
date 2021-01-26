@@ -47,7 +47,8 @@ public class PolyMapImpl implements PolyMap {
     /**
      * Converts a serverside item into a clientside one using the corresponding {@link ItemPoly}.
      */
-    @Override public ItemStack getClientItem(ItemStack serverItem) {
+    @Override
+    public ItemStack getClientItem(ItemStack serverItem) {
         ItemStack ret = serverItem;
 
         ItemPoly poly = itemPolys.get(serverItem.getItem());
@@ -61,14 +62,16 @@ public class PolyMapImpl implements PolyMap {
     /**
      * Converts a serverside block into a clientside one using the corresponding {@link BlockPoly}.
      */
-    @Override public BlockState getClientBlock(BlockState serverBlock) {
+    @Override
+    public BlockState getClientBlock(BlockState serverBlock) {
         BlockPoly poly = blockPolys.get(serverBlock.getBlock());
         if (poly == null) return serverBlock;
 
         return poly.getClientBlock(serverBlock);
     }
 
-    @Override public BlockState getClientBlockWithContext(BlockState serverBlock, BlockPos pos, World world) {
+    @Override
+    public BlockState getClientBlockWithContext(BlockState serverBlock, BlockPos pos, World world) {
         BlockPoly poly = blockPolys.get(serverBlock.getBlock());
         if (poly == null) return serverBlock;
 
@@ -79,25 +82,29 @@ public class PolyMapImpl implements PolyMap {
      * Converts a serverside gui into a clientside one using the corresponding {@link GuiPoly}.
      * Currently experimental
      */
-    @Override public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {
+    @Override
+    public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {
         return guiPolys.get(serverGuiType);
     }
 
-    @Override public BlockPoly getBlockPoly(Block block) {
+    @Override
+    public BlockPoly getBlockPoly(Block block) {
         return blockPolys.get(block);
     }
 
     /**
      * gets a map containing all itempolys in this map
      */
-    @Override public ImmutableMap<Item,ItemPoly> getItemPolys() {
+    @Override
+    public ImmutableMap<Item,ItemPoly> getItemPolys() {
         return itemPolys;
     }
 
     /**
      * gets a map containing all blockpolys in this map
      */
-    @Override public ImmutableMap<Block,BlockPoly> getBlockPolys() {
+    @Override
+    public ImmutableMap<Block,BlockPoly> getBlockPolys() {
         return blockPolys;
     }
 
