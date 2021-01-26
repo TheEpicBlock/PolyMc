@@ -44,6 +44,7 @@ public class ResourcePackMaker {
     public static final String ASSETS = "assets/";
     public static final String MODELS = "models/";
     public static final String TEXTURES = "textures/";
+    public static final String SOUNDS = "sounds/";
     public static final String BLOCKSTATES = "blockstates/";
 
     protected final Path BuildLocation;
@@ -352,6 +353,15 @@ public class ResourcePackMaker {
         if (checkAsset(modId,mcMetaPath)) {
             copyAsset(modId, mcMetaPath);
         }
+    }
+
+    /**
+     * Copies a sound file into this resource pack.
+     * @param modId the mod who owns the texture.
+     * @param path  path to sound. Example: "menu_open".
+     */
+    public void copySound(String modId, String path) {
+        copyAsset(modId, SOUNDS+path+".ogg");
     }
 
     /**

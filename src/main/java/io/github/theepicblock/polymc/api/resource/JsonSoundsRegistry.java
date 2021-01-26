@@ -15,25 +15,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.impl.poly.block;
+package io.github.theepicblock.polymc.api.resource;
 
-import net.minecraft.block.BlockState;
+import com.google.gson.reflect.TypeToken;
 
-import java.util.function.Predicate;
+import java.lang.reflect.Type;
+import java.util.Map;
 
-/**
- * This block poly replaces the the block it's registered to with another blockstate, but only if condition returns true
- */
-public class ConditionalSimpleBlockPoly extends SimpleReplacementPoly {
-    private final Predicate<BlockState> condition;
-
-    public ConditionalSimpleBlockPoly(BlockState state, Predicate<BlockState> condition) {
-        super(state);
-        this.condition = condition;
-    }
-
-    @Override
-    public BlockState getClientBlock(BlockState input) {
-        return condition.test(input) ? state : input;
-    }
+public interface JsonSoundsRegistry extends Map<String,JsonSoundsRegistry.SoundEntry> {
+	Type TYPE = new TypeToken<Map<String,SoundEntry>>() {}.getType();
+	class SoundEntry {
+		public String category;
+		public String[] sounds;
+	}
 }

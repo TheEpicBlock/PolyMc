@@ -21,15 +21,15 @@ import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.Recipe;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Minecraft syncs the entire recipe library when the client joins.
@@ -38,19 +38,13 @@ import java.util.List;
  */
 @Mixin(SynchronizeRecipesS2CPacket.class)
 public class CustomRecipeFix {
-    @Inject(method = "writeRecipe(Lnet/minecraft/recipe/Recipe;Lnet/minecraft/network/PacketByteBuf;)V",
-            at = @At("HEAD"),
-            cancellable = true)
-    private static <T extends Recipe<?>> void writeInject(T recipe, PacketByteBuf buf, CallbackInfo ci) {
-        Identifier recipeId = Registry.RECIPE_SERIALIZER.getId(recipe.getSerializer());
-        if (!Util.isVanilla(recipeId)) {
-            ci.cancel();
-        }
-    }
+    @Shadow
+    private List<Recipe<?>> recipes;
 
-    @Redirect(method = "write(Lnet/minecraft/network/PacketByteBuf;)V",
-            at = @At(value = "INVOKE", target = "Ljava/util/List;size()I"))
-    public int sizeRedirect(List<Recipe<?>> list) {
-        return (int) list.stream().map(recipe -> Registry.RECIPE_SERIALIZER.getId(recipe.getSerializer())).filter(Util::isVanilla).count();
+    @Inject(method = "write", at = @At("HEAD"), cancellable = true)
+    public void onWrite(PacketByteBuf buf, CallbackInfo callbackInfo) {
+        recipes = recipes.stream()
+                .filter(recipe -> Util.isVanilla(Registry.RECIPE_SERIALIZER.getId(recipe.getSerializer())))
+                .collect(Collectors.toList());
     }
 }
