@@ -18,7 +18,9 @@
 package io.github.theepicblock.polymc.mixins;
 
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.tag.Tag;
 import net.minecraft.tag.TagGroup;
 import net.minecraft.util.Identifier;
@@ -70,7 +72,11 @@ public abstract class TagSyncronizePatch<T> implements TagGroup<T> {
 
     @SuppressWarnings({"unchecked", "WhileLoopReplaceableByForEach"})
     public void toPacket(PacketByteBuf buf, DefaultedRegistry<T> registry) {
-        Map<Identifier,Tag<T>> map = this.getTagsWithoutModded(registry); //Only actually changed statement
+        ServerPlayerEntity player = ((PlayerContextContainer)buf).getPolyMcProvidedPlayer(); //See mixins.context.ByteBufPlayerContextContainer
+        boolean shouldBePatched = Util.isPolyMapVanillaLike(player);
+        Map<Identifier,Tag<T>> map = shouldBePatched ? this.getTagsWithoutModded(registry) : this.getTags();
+
+        //vanilla code:
         buf.writeVarInt(map.size());
         Iterator<?> var4 = map.entrySet().iterator();
 
