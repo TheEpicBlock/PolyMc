@@ -217,4 +217,14 @@ public class Util {
         BlockState clientState = map.getClientBlockWithContext(state, pos, playerEntity.world);
         return Block.STATE_IDS.getRawId(clientState);
     }
+
+    /**
+     * Returns whether the client provided is vanilla-like. As defined in {@link PolyMap#isVanillaLikeMap()}
+     * @param client the client who is being checked
+     * @return true if the client is vanilla-like, false otherwise
+     * @see PolyMap#isVanillaLikeMap()
+     */
+    public static boolean isPolyMapVanillaLike(ServerPlayerEntity client) {
+        return PolyMapProvider.getPolyMap(client).isVanillaLikeMap();
+    }
 }

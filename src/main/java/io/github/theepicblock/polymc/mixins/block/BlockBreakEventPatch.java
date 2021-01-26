@@ -17,8 +17,10 @@
  */
 package io.github.theepicblock.polymc.mixins.block;
 
+import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -26,11 +28,16 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 @Mixin(Block.class)
 public class BlockBreakEventPatch {
     /**
-     * @reason Minecraft assumes the client knows when it breaks a block. And passes in the player to be excluded from the packet.
-     *          But with our custom block breaking the client doesn't know. So we should inform him.
+     * @reason Minecraft assumes the client knows when it breaks a block. The {@code input} argument is used to exclude the player from the packet.
+     *          However, PolyMc reimplements block breaking server-side for vanilla-like clients. Therefore we need to change the argument to be null so the packet is also sent to the player initiating the packet.
+     *          This makes sure the player receives the block breaking animation even though the server handled the breaking.
      */
     @ModifyArg(method = "onBreak(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/entity/player/PlayerEntity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;syncWorldEvent(Lnet/minecraft/entity/player/PlayerEntity;ILnet/minecraft/util/math/BlockPos;I)V"))
     public PlayerEntity modifyPlayer(PlayerEntity input) {
-        return null;
+        if (Util.isPolyMapVanillaLike((ServerPlayerEntity)input)) {
+            return null;
+        } else {
+            return input;
+        }
     }
 }
