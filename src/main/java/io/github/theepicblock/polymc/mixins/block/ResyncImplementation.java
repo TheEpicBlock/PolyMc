@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins.block;
 
+import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.BlockResyncManager;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
@@ -41,12 +42,14 @@ public class ResyncImplementation {
 
 	@Inject(method = "tryBreakBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
 	private void onBlockBreakInject(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-		BlockResyncManager.onBlockUpdate(pos, world, player, null);
+		if (Util.isPolyMapVanillaLike(player)) {
+			BlockResyncManager.onBlockUpdate(pos, world, player, null);
+		}
 	}
 
 	@Inject(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;useOnBlock(Lnet/minecraft/item/ItemUsageContext;)Lnet/minecraft/util/ActionResult;"))
 	private void onBlockPlaceInject(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
-		if (stack.getItem() instanceof BlockItem) {
+		if (Util.isPolyMapVanillaLike(player) && stack.getItem() instanceof BlockItem) {
 			BlockResyncManager.onBlockUpdate(hitResult.getBlockPos().offset(hitResult.getSide()), world, player, null);
 		}
 	}
