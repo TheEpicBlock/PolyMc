@@ -155,9 +155,16 @@ public class BlockPolyGenerator {
         }
 
         //=== FARMLAND-LIKE BLOCKS ===
-        if (collisionShape == Blocks.FARMLAND.getOutlineShape(null,null,null,null)) {
+        if (Util.areEqual(collisionShape, Blocks.FARMLAND.getCollisionShape(Blocks.FARMLAND.getDefaultState(),fakeWorld,BlockPos.ORIGIN,ShapeContext.absent()))) {
             try {
                 return new UnusedBlockStatePoly(block, builder, BlockStateProfile.FARMLAND_PROFILE);
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+        }
+
+        //=== CACTUS-LIKE BLOCKS ===
+        if (Util.areEqual(collisionShape, Blocks.CACTUS.getCollisionShape(Blocks.CACTUS.getDefaultState(),fakeWorld,BlockPos.ORIGIN,ShapeContext.absent()))) {
+            try {
+                return new SingleUnusedBlockStatePoly(builder, BlockStateProfile.CACTUS_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
