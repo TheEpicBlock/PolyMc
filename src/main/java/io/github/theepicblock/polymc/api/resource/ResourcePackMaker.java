@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.api.resource;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.swordglowsblue.artifice.api.ArtificeResourcePack;
 import io.github.theepicblock.polymc.PolyMc;
@@ -48,7 +49,7 @@ public class ResourcePackMaker {
     public static final String BLOCKSTATES = "blockstates/";
 
     protected final Path BuildLocation;
-    protected final Gson gson = new Gson();
+    protected final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
     private final List<Identifier> copiedModels = new ArrayList<>();
     private final Map<Identifier,JsonModel> modelsToSave = new HashMap<>();
