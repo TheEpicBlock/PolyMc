@@ -75,4 +75,9 @@ public class SingleUnusedBlockStatePoly implements BlockPoly {
             if (vId != null) pack.copyModel(new Identifier(v.model));
         }
     }
+
+    @Override
+    public String getDebugInfo(Block obj) {
+        return newBlockState.toString();
+    }
 }
