@@ -110,7 +110,7 @@ public class ResourcePackGenerator {
                 pathStream.forEach((langFile) -> {
                     pack.copyAsset(modId, "lang/" + langPath.relativize(langFile));
                 });
-            } catch (IOException e) {
+            } catch (Exception e) {
                 PolyMc.LOGGER.warn("Exception whilst copying lang files from " + modId);
                 e.printStackTrace();
             }
@@ -120,25 +120,30 @@ public class ResourcePackGenerator {
         for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
             String modId = mod.getMetadata().getId();
             if (pack.checkAsset(modId,"sounds.json")) {
-                pack.copyAsset(modId,"sounds.json"); //copy over the sounds.json file to the pack
+                try {
+                    pack.copyAsset(modId,"sounds.json"); //copy over the sounds.json file to the pack
 
-                //read the sounds.json file to parse the needed sound files.
-                InputStreamReader reader = pack.getAsset(modId,"sounds.json");
-                JsonReader jReader = new JsonReader(reader);
-                Map<String,JsonSoundsRegistry.SoundEntry> sounds = pack.getGson().fromJson(jReader, JsonSoundsRegistry.TYPE);
+                    //read the sounds.json file to parse the needed sound files.
+                    InputStreamReader reader = pack.getAsset(modId,"sounds.json");
+                    JsonReader jReader = new JsonReader(reader);
+                    Map<String,JsonSoundsRegistry.SoundEntry> sounds = pack.getGson().fromJson(jReader, JsonSoundsRegistry.TYPE);
 
-                //copy the individual ogg files specified in the sounds.json
-                sounds.values().forEach(soundEntry -> {
-                    for (String soundString : soundEntry.sounds) {
-                        Identifier soundId = Identifier.tryParse(soundString);
-                        if (soundId == null) {
-                            PolyMc.LOGGER.warn(String.format("Invalid sound id %s in %s provided by %s", soundString, soundEntry.category, modId));
-                            continue;
+                    //copy the individual ogg files specified in the sounds.json
+                    sounds.values().forEach(soundEntry -> {
+                        for (String soundString : soundEntry.sounds) {
+                            Identifier soundId = Identifier.tryParse(soundString);
+                            if (soundId == null) {
+                                PolyMc.LOGGER.warn(String.format("Invalid sound id %s in %s provided by %s", soundString, soundEntry.category, modId));
+                                continue;
+                            }
+
+                            pack.copySound(soundId.getNamespace(), soundId.getPath());
                         }
-
-                        pack.copySound(soundId.getNamespace(), soundId.getPath());
-                    }
-                });
+                    });
+                } catch (Exception e) {
+                    PolyMc.LOGGER.error("Failed to copy sounds.json for mod: "+modId);
+                    e.printStackTrace();
+                }
             }
         }
 
