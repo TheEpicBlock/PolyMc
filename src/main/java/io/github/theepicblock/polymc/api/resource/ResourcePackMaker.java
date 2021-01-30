@@ -283,7 +283,7 @@ public class ResourcePackMaker {
      * @see #copyFolder(String, String, String) for more control of what you're copying.
      */
     public void importAssetFolder(String modId) {
-        this.copyFolder(modId, "assets", "assets");
+        this.copyFolder(modId, "assets", "");
     }
 
     /**
