@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.impl.resource;
 
+import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
@@ -126,18 +127,19 @@ public class ResourcePackGenerator {
                     //read the sounds.json file to parse the needed sound files.
                     InputStreamReader reader = pack.getAsset(modId,"sounds.json");
                     JsonReader jReader = new JsonReader(reader);
-                    Map<String,JsonSoundsRegistry.SoundEntry> sounds = pack.getGson().fromJson(jReader, JsonSoundsRegistry.TYPE);
+                    Map<String,JsonSoundsRegistry.SoundEventEntry> sounds = pack.getGson().fromJson(jReader, JsonSoundsRegistry.TYPE);
 
                     //copy the individual ogg files specified in the sounds.json
-                    sounds.values().forEach(soundEntry -> {
-                        for (String soundString : soundEntry.sounds) {
-                            Identifier soundId = Identifier.tryParse(soundString);
-                            if (soundId == null) {
-                                PolyMc.LOGGER.warn(String.format("Invalid sound id %s in %s provided by %s", soundString, soundEntry.category, modId));
+                    sounds.values().forEach(soundEventEntry -> {
+                        for (JsonElement soundEntry : soundEventEntry.sounds) {
+                            String namespaceString = JsonSoundsRegistry.getNamespace(soundEntry);
+                            Identifier namespace = Identifier.tryParse(namespaceString);
+                            if (namespace == null) {
+                                PolyMc.LOGGER.warn(String.format("Invalid sound id %s in %s provided by %s", namespaceString, soundEventEntry.category, modId));
                                 continue;
                             }
 
-                            pack.copySound(soundId.getNamespace(), soundId.getPath());
+                            pack.copySound(namespace.getNamespace(), namespace.getPath());
                         }
                     });
                 } catch (Exception e) {
