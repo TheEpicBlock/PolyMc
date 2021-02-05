@@ -518,13 +518,15 @@ public class ResourcePackMaker {
         ModContainer mod = modOpt.get();
         Path pathInJar = mod.getPath(path);
         Path newLoc = BuildLocation.resolve(path);
+        if (Files.exists(newLoc)) {return newLoc;} //Avoid copying twice
+
         boolean c = newLoc.toFile().getParentFile().mkdirs();
         try {
             return Files.copy(pathInJar, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             PolyMc.LOGGER.warn(String.format("Failed to get resource from mod jar '%s' path: %s", modId, path));
+            return null;
         }
-        return null;
     }
 
     /**
