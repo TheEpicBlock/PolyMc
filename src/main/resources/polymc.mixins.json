@@ -10,6 +10,7 @@
     "FabricRegistrySyncDisabler",
     "FabricRemapDisabler",
     "PolyMapProviderImplementation",
+    "PolyMapProviderImplementation$NetworkHandlerMixin",
     "ServerParticlePatch",
     "ServerStartMixin",
     "TagSyncronizePatch",
