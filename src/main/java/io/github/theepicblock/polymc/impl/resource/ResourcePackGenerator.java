@@ -82,7 +82,7 @@ public class ResourcePackGenerator {
         }
 
         //Hooks for all itempolys
-        PolyMc.getMap().getItemPolys().forEach((item, itemPoly) -> {
+        PolyMc.getMainMap().getItemPolys().forEach((item, itemPoly) -> {
             try {
                 itemPoly.AddToResourcePack(item, pack);
             } catch (Exception e) {
@@ -92,7 +92,7 @@ public class ResourcePackGenerator {
         });
 
         //Hooks for all blockpolys
-        PolyMc.getMap().getBlockPolys().forEach((block, blockPoly) -> {
+        PolyMc.getMainMap().getBlockPolys().forEach((block, blockPoly) -> {
             try {
                 blockPoly.AddToResourcePack(block, pack);
             } catch (Exception e) {

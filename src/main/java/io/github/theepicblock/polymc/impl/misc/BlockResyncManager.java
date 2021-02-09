@@ -19,6 +19,7 @@ package io.github.theepicblock.polymc.impl.misc;
 
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import net.minecraft.block.*;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -51,7 +52,7 @@ public class BlockResyncManager {
 			mPos.set(pos.getX() + d.getOffsetX(), pos.getY() + d.getOffsetY(), pos.getZ() + d.getOffsetZ());
 			if (exceptions != null && exceptions.contains(mPos)) continue;
 			BlockState state = world.getBlockState(mPos);
-			BlockPoly poly = PolyMc.getMap().getBlockPoly(state.getBlock());
+			BlockPoly poly = PolyMapProvider.getPolyMap(player).getBlockPoly(state.getBlock());
 			if (poly != null) {
 				BlockState clientState = poly.getClientBlock(state);
 				if (BlockResyncManager.shouldForceSync(sourceState, clientState, d)) {

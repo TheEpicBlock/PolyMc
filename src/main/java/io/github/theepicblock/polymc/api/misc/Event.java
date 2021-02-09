@@ -15,19 +15,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.block;
+package io.github.theepicblock.polymc.api.misc;
 
-import io.github.theepicblock.polymc.PolyMc;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import java.util.Arrays;
 
-@Mixin(Block.class)
-public class BlockPolyImplementation {
-    @ModifyVariable(method = "getRawIdFromState(Lnet/minecraft/block/BlockState;)I", at = @At("HEAD"))
-    private static BlockState rawBlockStateOverwrite(BlockState state) {
-        return PolyMc.getMainMap().getClientBlock(state);
-    }
+public abstract class Event<INTERFACE> {
+	protected INTERFACE[] handlers;
+
+	public Event(INTERFACE[] i) {
+		this.handlers = i;
+	}
+
+	public void register(INTERFACE listener) {
+		if (listener == null) {
+			throw new NullPointerException("Tried to register a null listener");
+		}
+		this.handlers = Arrays.copyOf(this.handlers, this.handlers.length + 1);
+		this.handlers[this.handlers.length - 1] = listener;
+	}
 }

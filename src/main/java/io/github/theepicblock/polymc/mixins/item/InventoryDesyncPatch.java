@@ -18,9 +18,12 @@
 package io.github.theepicblock.polymc.mixins.item;
 
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -32,8 +35,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(ServerPlayNetworkHandler.class)
 public class InventoryDesyncPatch {
 
+    @Shadow public ServerPlayerEntity player;
+
     @Redirect(method = "onClickSlot(Lnet/minecraft/network/packet/c2s/play/ClickSlotC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;areEqual(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z"))
     public boolean areEqualRedirect(ItemStack left, ItemStack right) {
-        return ItemStack.areEqual(left, PolyMc.getMap().getClientItem(right));
+        return ItemStack.areEqual(left, PolyMapProvider.getPolyMap(this.player).getClientItem(right));
     }
 }

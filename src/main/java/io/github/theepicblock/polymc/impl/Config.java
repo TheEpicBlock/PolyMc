@@ -38,7 +38,7 @@ import java.util.List;
  */
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection", "JavadocReference"})
 public class Config {
-    public static final int LATEST_VERSION = 3;
+    public static final int LATEST_VERSION = 4;
     public ResourcePackConfig resourcepack;
     public MiscConfig misc;
     private int configVersion;

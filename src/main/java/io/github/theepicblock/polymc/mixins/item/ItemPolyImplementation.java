@@ -18,8 +18,11 @@
 package io.github.theepicblock.polymc.mixins.item;
 
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -31,6 +34,8 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 public class ItemPolyImplementation {
     @ModifyVariable(method = "writeItemStack(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/network/PacketByteBuf;", at = @At("HEAD"))
     public ItemStack writeItemStackHook(ItemStack itemStack) {
-        return PolyMc.getMap().getClientItem(itemStack);
+        ServerPlayerEntity player = ((PlayerContextContainer)this).getPolyMcProvidedPlayer();
+        if (player == null) return PolyMc.getMainMap().getClientItem(itemStack);
+        return PolyMapProvider.getPolyMap(player).getClientItem(itemStack);
     }
 }

@@ -18,11 +18,15 @@
 package io.github.theepicblock.polymc.mixins.item;
 
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -38,16 +42,18 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  */
 @Mixin(ServerPlayNetworkHandler.class)
 public class CreativeModeHotfix {
+    @Shadow public ServerPlayerEntity player;
     private ItemStack polyMCrecentlyVoided;
 
     @Redirect(method = "onCreativeInventoryAction(Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/PlayerScreenHandler;setStackInSlot(ILnet/minecraft/item/ItemStack;)V"))
     public void creativemodeSetSlotRedirect(PlayerScreenHandler screenHandler, int slot, ItemStack setStack) {
+        if (!Util.isPolyMapVanillaLike(this.player)) return; //This patch doesn't make sense for modded clients
         ItemStack slotStack = screenHandler.getSlot(slot).getStack();
         if (!slotStack.isEmpty()) {
             if (setStack.isEmpty()) {
                 polyMCrecentlyVoided = slotStack;
             } else {
-                if (ItemStack.areEqual(setStack, PolyMc.getMap().getClientItem(slotStack))) {
+                if (ItemStack.areEqual(setStack, PolyMapProvider.getPolyMap(this.player).getClientItem(slotStack))) {
                     //the item the client is trying to set is actually a the polyd version of the item in the same slot.
                     return;
                 }
@@ -63,7 +69,7 @@ public class CreativeModeHotfix {
 
         if (polyMCrecentlyVoided == null) return original;
 
-        if (ItemStack.areEqual(original, PolyMc.getMap().getClientItem(polyMCrecentlyVoided))) {
+        if (ItemStack.areEqual(original, PolyMapProvider.getPolyMap(this.player).getClientItem(polyMCrecentlyVoided))) {
             //the item the client is trying to set is actually a polyd version of polyMCrecentlyVoided.
             return polyMCrecentlyVoided;
         }

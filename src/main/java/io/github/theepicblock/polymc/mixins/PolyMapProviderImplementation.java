@@ -15,28 +15,46 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.block.context;
+package io.github.theepicblock.polymc.mixins;
 
-import io.github.theepicblock.polymc.impl.mixin.BlockUpdateS2CInterface;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
-import net.minecraft.network.Packet;
+import com.mojang.authlib.GameProfile;
+import io.github.theepicblock.polymc.api.PolyMap;
+import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.netty.channel.ChannelHandlerContext;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.network.ServerPlayerInteractionManager;
+import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ServerPlayNetworkHandler.class)
-public class ServerPlayNetworkHandlerMixin {
-    @Shadow public ServerPlayerEntity player;
+@Mixin(ServerPlayerEntity.class)
+public class PolyMapProviderImplementation implements PolyMapProvider {
+	@Unique private PolyMap polyMap;
 
-    @Inject(method = "sendPacket(Lnet/minecraft/network/Packet;Lio/netty/util/concurrent/GenericFutureListener;)V", at = @At("HEAD"))
-    public void onSendPacket(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>> listener, CallbackInfo ci) {
-        if (packet instanceof BlockUpdateS2CInterface) {
-            ((BlockUpdateS2CInterface)packet).poly(this.player);
-        }
-    }
+	@Override
+	public PolyMap getPolyMap() {
+		return polyMap;
+	}
+
+	@Override
+	public void setPolyMap(PolyMap map) {
+		polyMap = map;
+	}
+
+	@Mixin(ServerPlayNetworkHandler.class)
+	private static class NetworkHandlerMixin {
+		@Shadow public ServerPlayerEntity player;
+
+		@Inject(method = "<init>", at = @At("RETURN"))
+		private void initInject(CallbackInfo ci) {
+			((PolyMapProvider)(player)).refreshUsedPolyMap();
+		}
+	}
 }

@@ -48,7 +48,7 @@ public class PolyMcCommands {
                         .then(literal("clientItem")
                             .executes((context) -> {
                                 ItemStack heldItem = context.getSource().getPlayer().inventory.getMainHandStack();
-                                context.getSource().sendFeedback(PolyMc.getMap().getClientItem(heldItem).toTag(new CompoundTag()).toText(), false);
+                                context.getSource().sendFeedback(PolyMc.getMainMap().getClientItem(heldItem).toTag(new CompoundTag()).toText(), false);
                                 return Command.SINGLE_SUCCESS;
                             }))
                         .then(literal("replaceInventoryWithDebug")
@@ -82,7 +82,7 @@ public class PolyMcCommands {
                         .then(literal("polyDump")
                             .executes((context) -> {
                                 StringBuilder polyDump = new StringBuilder();
-                                PolyMap map = PolyMc.getMap();
+                                PolyMap map = PolyMc.getMainMap();
                                 polyDump.append("###########\n## ITEMS ##\n###########\n");
                                 map.getItemPolys().forEach((item, poly) -> {
                                     addDebugProviderToDump(polyDump, item, item.getTranslationKey(), poly);

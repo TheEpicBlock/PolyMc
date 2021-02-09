@@ -1,6 +1,6 @@
 /*
  * PolyMc
- * Copyright (C) 2020-2020 TheEpicBlock_TEB
+ * Copyright (C) 2020-2021 TheEpicBlock_TEB
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,19 +15,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.block;
+package io.github.theepicblock.polymc.impl.mixin;
 
-import io.github.theepicblock.polymc.PolyMc;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import net.minecraft.server.network.ServerPlayerEntity;
 
-@Mixin(Block.class)
-public class BlockPolyImplementation {
-    @ModifyVariable(method = "getRawIdFromState(Lnet/minecraft/block/BlockState;)I", at = @At("HEAD"))
-    private static BlockState rawBlockStateOverwrite(BlockState state) {
-        return PolyMc.getMainMap().getClientBlock(state);
-    }
+public interface PacketSizeProvider {
+	int getPacketSize(ServerPlayerEntity playerEntity);
 }

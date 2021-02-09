@@ -23,6 +23,7 @@ import io.github.theepicblock.polymc.api.block.BlockStateManager;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.impl.PolyMapImpl;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.screen.ScreenHandlerType;
@@ -118,6 +119,6 @@ public class PolyRegistry {
         ImmutableMap<Item,ItemPoly> itemMap = ImmutableMap.copyOf(itemPolys);
         ImmutableMap<Block,BlockPoly> blockMap = ImmutableMap.copyOf(blockPolys);
         ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiMap = ImmutableMap.copyOf(guiPolys);
-        return new PolyMap(itemMap, blockMap, guiMap);
+        return new PolyMapImpl(itemMap, blockMap, guiMap);
     }
 }

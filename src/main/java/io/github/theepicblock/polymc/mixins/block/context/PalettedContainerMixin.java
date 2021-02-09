@@ -22,10 +22,12 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.impl.mixin.HasNonConsistentBlockPolyProvider;
 import io.github.theepicblock.polymc.impl.mixin.NonPolydPacketProvider;
+import io.github.theepicblock.polymc.impl.mixin.PacketSizeProvider;
 import io.github.theepicblock.polymc.impl.mixin.WorldProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.collection.IdList;
 import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.util.math.BlockPos;
@@ -44,7 +46,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.function.Predicate;
 
 @Mixin(PalettedContainer.class)
-public abstract class PalettedContainerMixin<T> implements WorldProvider, NonPolydPacketProvider, HasNonConsistentBlockPolyProvider {
+public abstract class PalettedContainerMixin<T> implements WorldProvider, NonPolydPacketProvider, HasNonConsistentBlockPolyProvider, PacketSizeProvider {
     @Shadow public abstract void lock();
 
     @Shadow public abstract void unlock();
@@ -82,7 +84,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, NonPol
     @Inject(method = "setAndGetOldValue(ILjava/lang/Object;)Ljava/lang/Object;", at = @At("RETURN"), cancellable = true)
     public void setInPaletteListener(int index, T value, CallbackInfoReturnable<T> cir) {
         if (value instanceof BlockState) {
-            PolyMap map = PolyMc.getMap();
+            PolyMap map = PolyMc.getMainMap();
             BlockPoly poly = map.getBlockPoly(((BlockState)value).getBlock());
             if (poly != null && poly.isNotConsistent()) {
                 nonConsistentPolyCount++;
@@ -141,7 +143,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, NonPol
         for (int i = 0; i < this.data.getSize(); i++) {
             BlockState b = (BlockState)this.get(i);
             pos.set(i & 0x00F, i >> 8, (i & 0x0F0) >> 4);
-            BlockState polyd = PolyMc.getMap().getClientBlockWithContext(b, pos, world);
+            BlockState polyd = PolyMc.getMainMap().getClientBlockWithContext(b, pos, world);
             //noinspection all
             ((PalettedContainerMixin<T>)(Object)clone).set(i, (T)polyd);
         }
@@ -153,7 +155,7 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, NonPol
         nonConsistentPolyCount = 0;
         for (int i = 0; i < this.data.getSize(); i++) {
             BlockState b = (BlockState)this.get(i);
-            BlockPoly poly = PolyMc.getMap().getBlockPoly(b.getBlock());
+            BlockPoly poly = PolyMc.getMainMap().getBlockPoly(b.getBlock());
             if (poly != null && poly.isNotConsistent()) {
                 nonConsistentPolyCount++;
             }
@@ -172,6 +174,15 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, NonPol
         }
         buf.writeLongArray(this.data.getStorage());
         this.unlock();
+    }
+
+    @Override
+    public int getPacketSize(ServerPlayerEntity playerEntity) {
+        if (this.palette instanceof PacketSizeProvider) {
+            PacketSizeProvider palette2 = (PacketSizeProvider)palette;
+            return 1 + palette2.getPacketSize(playerEntity) + PacketByteBuf.getVarIntSizeBytes(this.data.getSize()) + this.data.getStorage().length * 8;
+        }
+        return 1 + this.palette.getPacketSize() + PacketByteBuf.getVarIntSizeBytes(this.data.getSize()) + this.data.getStorage().length * 8;
     }
 
     @Override

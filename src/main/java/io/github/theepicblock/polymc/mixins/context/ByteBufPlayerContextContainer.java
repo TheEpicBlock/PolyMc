@@ -15,19 +15,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.block;
+package io.github.theepicblock.polymc.mixins.context;
 
-import io.github.theepicblock.polymc.PolyMc;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.Unique;
 
-@Mixin(Block.class)
-public class BlockPolyImplementation {
-    @ModifyVariable(method = "getRawIdFromState(Lnet/minecraft/block/BlockState;)I", at = @At("HEAD"))
-    private static BlockState rawBlockStateOverwrite(BlockState state) {
-        return PolyMc.getMainMap().getClientBlock(state);
-    }
+@Mixin(PacketByteBuf.class)
+public class ByteBufPlayerContextContainer implements PlayerContextContainer {
+	@Unique private ServerPlayerEntity player;
+
+	@Override
+	public ServerPlayerEntity getPolyMcProvidedPlayer() {
+		return player;
+	}
+
+	@Override
+	public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
+		player = v;
+	}
 }

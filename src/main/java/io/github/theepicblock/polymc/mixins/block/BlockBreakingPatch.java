@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins.block;
 
+import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -50,43 +51,50 @@ public abstract class BlockBreakingPatch {
 
     @Inject(method = "continueMining", at = @At("TAIL"))
     public void breakIfTakingTooLong(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
-        int j = tickCounter - i;
-        float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j);
+        if (Util.isPolyMapVanillaLike(player)) {
+            int j = tickCounter - i;
+            float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j);
 
-        if (blockBreakingCooldown > 0) {
-            --blockBreakingCooldown;
-        }
+            if (blockBreakingCooldown > 0) {
+                --blockBreakingCooldown;
+            }
 
-        if (f >= 1.0F) {
-            blockBreakingCooldown = 5;
-            //player.networkHandler.sendPacket(new WorldEventS2CPacket(2001, pos, Block.getRawIdFromState(state), false));
-            player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, -1));
-            finishMining(pos, PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, "destroyed");
+            if (f >= 1.0F) {
+                blockBreakingCooldown = 5;
+                player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, -1));
+                finishMining(pos, PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, "destroyed");
+            }
         }
     }
 
     @Inject(method = "continueMining", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockBreakingInfo(ILnet/minecraft/util/math/BlockPos;I)V"))
     public void onUpdateBreakStatus(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
-        int j = tickCounter - i;
-        float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j + 1);
-        int k = (int)(f * 10.0F);
-        //TODO Replace with a local capture
-        player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(123, pos, k));
+        if (Util.isPolyMapVanillaLike(player)) {
+            int j = tickCounter - i;
+            float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j + 1);
+            int k = (int)(f * 10.0F);
+            //TODO Replace with a local capture
+            player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(123, pos, k));
+        }
     }
 
     @Inject(method = "processBlockBreakingAction", at = @At("HEAD"))
     public void packetReceivedInject(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
-        if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
-            player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getEntityId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
-        } else if (action == PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK) {
-            player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(123, pos, -1));
+        if (Util.isPolyMapVanillaLike(player)) {
+            if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
+                player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getEntityId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
+            } else if (action == PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK) {
+                player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(123, pos, -1));
+            }
         }
     }
 
     @Inject(method = "processBlockBreakingAction", at = @At("TAIL"))
     public void enforceBlockBreakingCooldown(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
-        if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
-            this.startMiningTime += blockBreakingCooldown;
+        if (Util.isPolyMapVanillaLike(player)) {
+            if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
+                this.startMiningTime += blockBreakingCooldown;
+            }
         }
     }
 }
