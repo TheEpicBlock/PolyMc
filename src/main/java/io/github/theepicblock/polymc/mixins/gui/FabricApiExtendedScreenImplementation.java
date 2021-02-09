@@ -34,7 +34,7 @@ public class FabricApiExtendedScreenImplementation {
     /**
      * @reason The vanilla client can't understand the custom packet
      */
-    @Inject(method = "sendOpenPacket", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "sendOpenPacket", at = @At("HEAD"), cancellable = true, remap = false)
     private static void sendOpenPacket(ServerPlayerEntity player, ExtendedScreenHandlerFactory factory, ScreenHandler handler, int syncId, CallbackInfo ci) {
         if (Util.isPolyMapVanillaLike(player)) {
             player.networkHandler.sendPacket(new OpenScreenS2CPacket(syncId, handler.getType(), factory.getDisplayName()));
