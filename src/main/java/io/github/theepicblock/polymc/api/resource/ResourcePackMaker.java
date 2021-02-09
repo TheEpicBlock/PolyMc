@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.api.resource;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.swordglowsblue.artifice.api.ArtificeResourcePack;
 import io.github.theepicblock.polymc.PolyMc;
@@ -48,7 +49,7 @@ public class ResourcePackMaker {
     public static final String BLOCKSTATES = "blockstates/";
 
     protected final Path BuildLocation;
-    protected final Gson gson = new Gson();
+    protected final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
     private final List<Identifier> copiedModels = new ArrayList<>();
     private final Map<Identifier,JsonModel> modelsToSave = new HashMap<>();
@@ -282,7 +283,7 @@ public class ResourcePackMaker {
      * @see #copyFolder(String, String, String) for more control of what you're copying.
      */
     public void importAssetFolder(String modId) {
-        this.copyFolder(modId, "assets", "assets");
+        this.copyFolder(modId, "assets", "");
     }
 
     /**
@@ -517,13 +518,15 @@ public class ResourcePackMaker {
         ModContainer mod = modOpt.get();
         Path pathInJar = mod.getPath(path);
         Path newLoc = BuildLocation.resolve(path);
+        if (Files.exists(newLoc)) {return newLoc;} //Avoid copying twice
+
         boolean c = newLoc.toFile().getParentFile().mkdirs();
         try {
             return Files.copy(pathInJar, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             PolyMc.LOGGER.warn(String.format("Failed to get resource from mod jar '%s' path: %s", modId, path));
+            return null;
         }
-        return null;
     }
 
     /**

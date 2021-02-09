@@ -53,7 +53,7 @@ public class ConfigManager {
                 e.printStackTrace();
             }
         }
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
         try {
             JsonReader reader = new JsonReader(new FileReader(configFile));

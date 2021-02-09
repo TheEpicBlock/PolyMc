@@ -32,6 +32,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.shape.VoxelShape;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -147,6 +148,22 @@ public class Util {
         };
 
         Files.walkFileTree(from,visitor);
+    }
+
+    /**
+     * Checks if 2 voxelshapes are the same
+     */
+    public static boolean areEqual(VoxelShape a, VoxelShape b) {
+        if (a == b) {
+            return true;
+        }
+        if (a.isEmpty() && b.isEmpty()) {
+            return true;
+        }
+        if (a.isEmpty() || b.isEmpty()) {
+            return false;
+        }
+        return a.getBoundingBox().equals(b.getBoundingBox());
     }
 
     /**

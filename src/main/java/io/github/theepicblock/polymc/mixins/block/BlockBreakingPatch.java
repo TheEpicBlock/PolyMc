@@ -61,7 +61,7 @@ public abstract class BlockBreakingPatch {
 
             if (f >= 1.0F) {
                 blockBreakingCooldown = 5;
-                player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(123, pos, -1));
+                player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, -1));
                 finishMining(pos, PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, "destroyed");
             }
         }

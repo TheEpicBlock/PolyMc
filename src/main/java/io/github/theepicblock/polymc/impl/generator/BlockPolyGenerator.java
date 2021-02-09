@@ -26,12 +26,16 @@ import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.poly.block.*;
 import io.github.theepicblock.polymc.mixins.block.MaterialAccessor;
 import net.minecraft.block.*;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 
 /**
  * Class to automatically generate BlockPolys for Blocks
@@ -58,15 +62,19 @@ public class BlockPolyGenerator {
      */
     public static BlockPoly generatePoly(Block block, PolyRegistry builder) {
         BlockState state = block.getDefaultState();
+        FakedWorld fakeWorld = new FakedWorld(state);
+
+        //Get the block's collision shape.
         VoxelShape collisionShape;
-        //Get the block's collision shape for the default state.
         try {
-            collisionShape = state.getCollisionShape(null, null);
+            collisionShape = state.getCollisionShape(fakeWorld, BlockPos.ORIGIN);
         } catch (Exception e) {
-            PolyMc.LOGGER.warn("Failed to get collision shape for " + block.getTranslationKey() + ": " + e.getMessage());
+            PolyMc.LOGGER.warn("Failed to get collision shape for " + block.getTranslationKey());
+            e.printStackTrace();
             collisionShape = VoxelShapes.UNBOUNDED;
         }
 
+        //=== INVISIBLE BLOCKS ===
         if (block.getRenderType(state) == BlockRenderType.INVISIBLE) {
             //This block is supposed to be invisible anyway
 
@@ -77,7 +85,7 @@ public class BlockPolyGenerator {
             if (collisionShape.isEmpty()) {
                 //Try to get its selection shape so we can decide between a structure void (which has a selection box) and air (which doesn't)
                 try {
-                    VoxelShape outlineShape = state.getOutlineShape(null, null);
+                    VoxelShape outlineShape = state.getOutlineShape(fakeWorld, BlockPos.ORIGIN);
 
                     if (outlineShape.isEmpty()) {
                         return new SimpleReplacementPoly(Blocks.VOID_AIR);
@@ -85,27 +93,29 @@ public class BlockPolyGenerator {
                         return new SimpleReplacementPoly(Blocks.STRUCTURE_VOID);
                     }
                 } catch (Exception e) {
-                    PolyMc.LOGGER.warn("Failed to get outline shape for " + block.getTranslationKey() + ": " + e.getMessage());
+                    PolyMc.LOGGER.warn("Failed to get outline shape for " + block.getTranslationKey());
+                    e.printStackTrace();
                 }
             }
 
-            //This block has odd collisions. We'll just default it to stone.
+            //This is neither full not empty, yet it's invisible. So the other strategies won't work.
+            //Default to stone
             return new SimpleReplacementPoly(Blocks.STONE);
-         } //End of invisible block handling
+         }
 
-        //Handle fluids
+        //=== FLUIDS ===
         if (block instanceof FluidBlock) {
             return new PropertyRetainingReplacementPoly(Blocks.WATER);
         }
 
-        //Handle leaves
+        //=== LEAVES ===
         if (block instanceof LeavesBlock || block.isIn(BlockTags.LEAVES)) { //TODO I don't like that leaves can be set tags in datapacks, it might cause issues. However, as not every leaf block extends LeavesBlock I can't see much of a better option. Except to maybe check the id if it ends on "_leaves"
             try {
                 return new SingleUnusedBlockStatePoly(builder, BlockStateProfile.LEAVES_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
-        //Handle doors/trapdoors
+        //=== (TRAP)DOORS ===
         boolean isMetal = ((MaterialAccessor)block).getMaterial() == Material.METAL;
         if (block instanceof DoorBlock) {
             try {
@@ -118,14 +128,14 @@ public class BlockPolyGenerator {
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
-        //Handle full blocks
+        //=== FULL BLOCKS ===
         if (Block.isShapeFullCube(collisionShape)) {
             try {
                 return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NOTE_BLOCK_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
-        //Handle blocks without collision
+        //=== NO COLLISION BLOCKS ===
         if (collisionShape.isEmpty()) {
             if (block instanceof SaplingBlock) {
                 try { //prevents saplings using 2 states when it isn't needed
@@ -137,22 +147,30 @@ public class BlockPolyGenerator {
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
-        //Handle slabs
+        //=== SLABS ===
         if (block instanceof SlabBlock) {
             try {
                 return new UnusedBlockStatePoly(block, builder, BlockStateProfile.PETRIFIED_OAK_SLAB_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
-        //Handle blocks with same collision as farmland
-        if (collisionShape == Blocks.FARMLAND.getOutlineShape(null,null,null,null)) {
+        //=== FARMLAND-LIKE BLOCKS ===
+        if (Util.areEqual(collisionShape, Blocks.FARMLAND.getCollisionShape(Blocks.FARMLAND.getDefaultState(),fakeWorld,BlockPos.ORIGIN,ShapeContext.absent()))) {
             try {
                 return new UnusedBlockStatePoly(block, builder, BlockStateProfile.FARMLAND_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
-        //Odd cases
-        return new SimpleReplacementPoly(Blocks.STONE); //TODO better implementation
+        //=== CACTUS-LIKE BLOCKS ===
+        if (Util.areEqual(collisionShape, Blocks.CACTUS.getCollisionShape(Blocks.CACTUS.getDefaultState(),fakeWorld,BlockPos.ORIGIN,ShapeContext.absent()))) {
+            try {
+                return new SingleUnusedBlockStatePoly(builder, BlockStateProfile.CACTUS_PROFILE);
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+        }
+
+        //=== DEFAULT ===
+        //PolyMc can't handle this block. TODO implement more general polys to more of these cases
+        return new SimpleReplacementPoly(Blocks.STONE);
     }
 
     /**
@@ -168,5 +186,53 @@ public class BlockPolyGenerator {
      */
     private static DefaultedRegistry<Block> getBlockRegistry() {
         return Registry.BLOCK;
+    }
+
+    /**
+     * A world filled with air except for a single block at 0,0,0.
+     */
+    public static class FakedWorld implements BlockView {
+        public final BlockState OriginBlockState;
+        public final BlockEntity OriginBlocKEntity;
+
+        /**
+         * Initializes a new fake world. This world is filled with air except for 0,0,0
+         * @param block The block that will be used at 0,0,0
+         */
+        public FakedWorld(BlockState block) {
+            OriginBlockState = block;
+
+            if (OriginBlockState.getBlock() instanceof BlockEntityProvider) {
+                BlockEntityProvider BEP = (BlockEntityProvider)OriginBlockState.getBlock();
+
+                OriginBlocKEntity = BEP.createBlockEntity(this);
+            } else {
+                OriginBlocKEntity = null;
+            }
+        }
+
+        @Override
+        public BlockEntity getBlockEntity(BlockPos pos) {
+            if (pos.equals(BlockPos.ORIGIN)) {
+                return OriginBlocKEntity;
+            }
+            return null;
+        }
+
+        @Override
+        public BlockState getBlockState(BlockPos pos) {
+            if (pos.equals(BlockPos.ORIGIN)) {
+                return OriginBlockState;
+            }
+            return null;
+        }
+
+        @Override
+        public FluidState getFluidState(BlockPos pos) {
+            if (pos.equals(BlockPos.ORIGIN)) {
+                return OriginBlockState.getFluidState();
+            }
+            return null;
+        }
     }
 }

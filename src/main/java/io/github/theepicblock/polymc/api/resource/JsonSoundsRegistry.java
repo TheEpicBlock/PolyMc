@@ -17,15 +17,36 @@
  */
 package io.github.theepicblock.polymc.api.resource;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.Map;
 
-public interface JsonSoundsRegistry extends Map<String,JsonSoundsRegistry.SoundEntry> {
-	Type TYPE = new TypeToken<Map<String,SoundEntry>>() {}.getType();
-	class SoundEntry {
+public class JsonSoundsRegistry {
+	public static final Type TYPE = new TypeToken<Map<String,SoundEventEntry>>() {}.getType();
+
+	public static String getNamespace(JsonElement soundEventEntry) {
+		if (soundEventEntry.isJsonPrimitive()) {
+			return soundEventEntry.getAsString();
+		} else if (soundEventEntry.isJsonObject()) {
+			return new Gson().fromJson(soundEventEntry, Sound.class).name;
+		}
+		throw new JsonParseException("Sounds array contains an object that's neither a string nor a Sound object");
+	}
+
+	public static class SoundEventEntry {
 		public String category;
-		public String[] sounds;
+		public JsonElement[] sounds; //can be either a string or a Sound object
+	}
+
+	public static class Sound {
+		public String name;
+		public float volume;
+		public float pitch;
+		public int weight;
+		public boolean stream;
 	}
 }
