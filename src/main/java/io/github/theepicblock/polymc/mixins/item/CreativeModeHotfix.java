@@ -17,7 +17,6 @@
  */
 package io.github.theepicblock.polymc.mixins.item;
 
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.item.ItemStack;

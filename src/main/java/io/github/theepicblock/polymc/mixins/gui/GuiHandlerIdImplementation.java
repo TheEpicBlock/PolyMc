@@ -17,7 +17,6 @@
  */
 package io.github.theepicblock.polymc.mixins.gui;
 
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.gui.GuiManager;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;

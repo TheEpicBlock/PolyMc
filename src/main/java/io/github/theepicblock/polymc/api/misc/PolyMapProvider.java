@@ -21,8 +21,6 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-import java.util.Random;
-
 public interface PolyMapProvider {
 	PolyMapProviderEvent EVENT = new PolyMapProviderEvent();
 
