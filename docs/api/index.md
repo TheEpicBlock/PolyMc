@@ -46,16 +46,3 @@ Optionally, you can also list PolyMc as a dependency if it's absolutely needed f
 ```
 
 PolyMc currently provides 2 hooks in the entrypoint. One is to register polys and one is to register mod specific resources. See <a href="resourcepacks.html">resource packs</a>.
-
-## Polys
-
-PolyMc uses the concept of a poly a lot.
-A poly is a sort of configuration of how a block, item or other polyable should be converted from the serverside to the clientside.
-
-Polys should be registered in the PolyMc entrypoint via the provided <code>PolyRegistry</code>.
-The registry also contains some utility classes for various tasks. See the related poly's page for more info.
-
-### Types of polys
-* [Item Polys](item-polys.html)
-* Block Polys (no documentation yet)
-* Gui Polys (no documentation yet)
