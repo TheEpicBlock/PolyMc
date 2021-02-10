@@ -42,6 +42,11 @@ public class PolyMapProviderImplementation implements PolyMapProvider {
 		polyMap = map;
 	}
 
+	@Inject(method = "copyFrom", at = @At("RETURN"))
+	private void copyInject(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
+		this.refreshUsedPolyMap();
+	}
+
 	@Mixin(ServerPlayNetworkHandler.class)
 	private static class NetworkHandlerMixin {
 		@Shadow public ServerPlayerEntity player;
