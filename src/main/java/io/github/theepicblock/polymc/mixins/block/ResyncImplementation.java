@@ -35,6 +35,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * Vanilla clients do client-side prediction when placing and removing blocks.
+ * These predictions are wrong.
+ * This mixin allows PolyMc to resync the client using {@link BlockResyncManager}
+ */
 @Mixin(ServerPlayerInteractionManager.class)
 public class ResyncImplementation {
 	@Shadow public ServerWorld world;

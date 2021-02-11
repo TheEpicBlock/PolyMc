@@ -18,12 +18,14 @@
 package io.github.theepicblock.polymc.mixins.block;
 
 import io.github.theepicblock.polymc.impl.Util;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityStatusEffectS2CPacket;
+import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.util.math.BlockPos;
@@ -35,20 +37,24 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * Vanilla-like clients usually process block breaking client-side.
+ * These mixins give vanilla-like clients mining fatigue and reimplement the block breaking server-side.
+ */
 @Mixin(ServerPlayerInteractionManager.class)
 public abstract class BlockBreakingPatch {
-    @Shadow
-    public ServerPlayerEntity player;
-    @Shadow
-    private int tickCounter;
+    @Shadow public ServerPlayerEntity player;
+    @Shadow private int tickCounter;
+    @Shadow private int startMiningTime;
 
     @Shadow
     public abstract void finishMining(BlockPos pos, PlayerActionC2SPacket.Action action, String reason);
 
-    @Shadow
-    private int startMiningTime;
     private int blockBreakingCooldown;
 
+    /**
+     * This breaks the block serverside if the client hasn't broken it already
+     */
     @Inject(method = "continueMining", at = @At("TAIL"))
     public void breakIfTakingTooLong(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
         if (Util.isPolyMapVanillaLike(player)) {
@@ -74,7 +80,8 @@ public abstract class BlockBreakingPatch {
             float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j + 1);
             int k = (int)(f * 10.0F);
             //TODO Replace with a local capture
-            player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(123, pos, k));
+            //Send a packet that resembles the current mining progress
+            player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, k));
         }
     }
 
@@ -82,9 +89,10 @@ public abstract class BlockBreakingPatch {
     public void packetReceivedInject(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
         if (Util.isPolyMapVanillaLike(player)) {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
+                //We give the player near-permanent mining fatigue. This prevents them from trying to break the block themselves.
                 player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getEntityId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
             } else if (action == PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK) {
-                player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(123, pos, -1));
+                player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, -1));
             }
         }
     }

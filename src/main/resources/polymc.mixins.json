@@ -14,7 +14,6 @@
     "ServerParticlePatch",
     "ServerStartMixin",
     "TagSyncronizePatch",
-    "block.BlockBreakEventPatch",
     "block.BlockBreakingPatch",
     "block.BlockPolyImplementation",
     "block.MaterialAccessor",

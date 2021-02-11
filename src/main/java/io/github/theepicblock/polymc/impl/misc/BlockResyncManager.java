@@ -29,6 +29,11 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Vanilla clients do client-side prediction when placing and removing blocks.
+ * These predictions are wrong.
+ * These methods are called by {@link io.github.theepicblock.polymc.mixins.block.ResyncImplementation} to resync the blocks with the server's state.
+ */
 public class BlockResyncManager {
 	public static boolean shouldForceSync(BlockState sourceState, BlockState clientState, Direction direction) {
 		Block block = clientState.getBlock();
