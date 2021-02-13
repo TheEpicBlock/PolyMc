@@ -178,7 +178,14 @@ public class BlockPolyGenerator {
      * @see #generatePoly(Block, PolyRegistry)
      */
     private static void addBlockToBuilder(Block block, PolyRegistry builder) {
-        builder.registerBlockPoly(block, generatePoly(block, builder));
+        try {
+            builder.registerBlockPoly(block, generatePoly(block, builder));
+        } catch (Exception e) {
+            PolyMc.LOGGER.error("Failed to generate a poly for block "+block.getTranslationKey());
+            e.printStackTrace();
+            PolyMc.LOGGER.error("Attempting to recover by using a default poly. Please report this");
+            builder.registerBlockPoly(block, new SimpleReplacementPoly(Blocks.RED_STAINED_GLASS));
+        }
     }
 
     /**
