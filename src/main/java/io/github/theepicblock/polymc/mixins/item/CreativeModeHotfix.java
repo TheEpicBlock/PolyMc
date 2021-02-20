@@ -46,19 +46,19 @@ public class CreativeModeHotfix {
 
     @Redirect(method = "onCreativeInventoryAction(Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/PlayerScreenHandler;setStackInSlot(ILnet/minecraft/item/ItemStack;)V"))
     public void creativemodeSetSlotRedirect(PlayerScreenHandler screenHandler, int slot, ItemStack setStack) {
-        if (!Util.isPolyMapVanillaLike(this.player)) return; //This patch doesn't make sense for modded clients
-        ItemStack slotStack = screenHandler.getSlot(slot).getStack();
-        if (!slotStack.isEmpty()) {
-            if (setStack.isEmpty()) {
-                polyMCrecentlyVoided = slotStack;
-            } else {
-                if (ItemStack.areEqual(setStack, PolyMapProvider.getPolyMap(this.player).getClientItem(slotStack))) {
-                    //the item the client is trying to set is actually a the polyd version of the item in the same slot.
-                    return;
+        if (!Util.isPolyMapVanillaLike(this.player)) {//This patch doesn't make sense for modded clients
+            ItemStack slotStack = screenHandler.getSlot(slot).getStack();
+            if (!slotStack.isEmpty()) {
+                if (setStack.isEmpty()) {
+                    polyMCrecentlyVoided = slotStack;
+                } else {
+                    if (ItemStack.areEqual(setStack, PolyMapProvider.getPolyMap(this.player).getClientItem(slotStack))) {
+                        //the item the client is trying to set is actually a the polyd version of the item in the same slot.
+                        return;
+                    }
                 }
             }
         }
-
         screenHandler.setStackInSlot(slot, setStack);
     }
 
