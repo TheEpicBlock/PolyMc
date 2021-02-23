@@ -17,32 +17,14 @@
  */
 package io.github.theepicblock.polymc.mixins.block.context;
 
-import io.github.theepicblock.polymc.PolyMc;
-import io.github.theepicblock.polymc.api.PolyMap;
-import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.impl.mixin.HasNonConsistentBlockPolyProvider;
-import io.github.theepicblock.polymc.impl.mixin.NonPolydPacketProvider;
 import io.github.theepicblock.polymc.impl.mixin.PacketSizeProvider;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.collection.IdList;
 import net.minecraft.util.collection.PackedIntegerArray;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.Palette;
 import net.minecraft.world.chunk.PalettedContainer;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.function.Predicate;
 
 @Mixin(PalettedContainer.class)
 public abstract class PalettedContainerMixin<T> implements PacketSizeProvider {

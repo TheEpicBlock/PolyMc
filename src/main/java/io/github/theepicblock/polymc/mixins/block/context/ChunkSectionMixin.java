@@ -20,7 +20,6 @@ package io.github.theepicblock.polymc.mixins.block.context;
 import io.github.theepicblock.polymc.impl.mixin.PacketSizeProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.PalettedContainer;
 import org.spongepowered.asm.mixin.Final;
