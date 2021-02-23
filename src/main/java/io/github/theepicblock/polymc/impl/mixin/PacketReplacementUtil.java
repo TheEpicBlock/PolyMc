@@ -33,7 +33,7 @@ public class PacketReplacementUtil {
 	public static void syncWorldEvent(World world, PlayerEntity exception, int eventId, BlockPos pos, BlockState data) {
 		if (world.getServer() != null) {
 			sendToAround(world.getServer().getPlayerManager(), exception, pos.getX(), pos.getY(), pos.getZ(), 64, world.getRegistryKey(), (playerEntity) -> {
-				playerEntity.networkHandler.sendPacket(new WorldEventS2CPacket(eventId, pos, Util.getPolydRawIdFromStateWithContext(data, pos, playerEntity), false));
+				playerEntity.networkHandler.sendPacket(new WorldEventS2CPacket(eventId, pos, Util.getPolydRawIdFromState(data, playerEntity), false));
 			});
 		}
 	}

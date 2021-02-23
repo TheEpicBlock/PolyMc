@@ -40,8 +40,6 @@ public interface PolyMap {
 	 */
 	BlockState getClientBlock(BlockState serverBlock);
 
-	BlockState getClientBlockWithContext(BlockState serverBlock, BlockPos pos, World world);
-
 	/**
 	 * Converts a serverside gui into a clientside one using the corresponding {@link GuiPoly}.
 	 * Currently experimental

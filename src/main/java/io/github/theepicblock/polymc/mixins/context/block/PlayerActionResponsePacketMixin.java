@@ -47,6 +47,6 @@ public class PlayerActionResponsePacketMixin implements PlayerContextContainer {
 
 	@Redirect(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getRawIdFromState(Lnet/minecraft/block/BlockState;)I"))
 	public int getRawIdFromStateRedirect(BlockState state) {
-		return Util.getPolydRawIdFromStateWithContext(state, this.pos, this.player);
+		return Util.getPolydRawIdFromState(state, this.player);
 	}
 }

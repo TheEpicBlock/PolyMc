@@ -22,7 +22,6 @@
     "block.ResyncImplementation",
     "block.context.ChunkSectionMixin",
     "block.context.PalettedContainerMixin",
-    "block.context.WorldChunkMixin",
     "context.ByteBufPlayerContextContainer",
     "context.NetworkHandlerContextProvider",
     "context.PacketPlayerContextContainer",

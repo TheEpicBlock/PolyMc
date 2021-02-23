@@ -70,14 +70,6 @@ public class PolyMapImpl implements PolyMap {
         return poly.getClientBlock(serverBlock);
     }
 
-    @Override
-    public BlockState getClientBlockWithContext(BlockState serverBlock, BlockPos pos, World world) {
-        BlockPoly poly = blockPolys.get(serverBlock.getBlock());
-        if (poly == null) return serverBlock;
-
-        return poly.getClientBlockWithContext(serverBlock, pos, world);
-    }
-
     /**
      * Converts a serverside gui into a clientside one using the corresponding {@link GuiPoly}.
      * Currently experimental

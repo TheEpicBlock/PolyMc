@@ -23,7 +23,6 @@ import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.impl.mixin.HasNonConsistentBlockPolyProvider;
 import io.github.theepicblock.polymc.impl.mixin.NonPolydPacketProvider;
 import io.github.theepicblock.polymc.impl.mixin.PacketSizeProvider;
-import io.github.theepicblock.polymc.impl.mixin.WorldProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketByteBuf;
@@ -46,135 +45,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.function.Predicate;
 
 @Mixin(PalettedContainer.class)
-public abstract class PalettedContainerMixin<T> implements WorldProvider, NonPolydPacketProvider, HasNonConsistentBlockPolyProvider, PacketSizeProvider {
-    @Shadow public abstract void lock();
-
-    @Shadow public abstract void unlock();
+public abstract class PalettedContainerMixin<T> implements PacketSizeProvider {
 
     @Shadow private Palette<T> palette;
-    @Shadow private int paletteSize;
     @Shadow protected PackedIntegerArray data;
-    @Shadow @Final private Palette<T> fallbackPalette;
-    @Shadow @Final private IdList<T> idList;
-    @Shadow @Final private T defaultValue;
-
-    @Shadow protected abstract T get(int index);
-
-    @Shadow protected abstract void set(int i, T object);
-
-    @Shadow public abstract boolean hasAny(Predicate<T> predicate);
-
-    @Unique private World world;
-    @Unique private int nonConsistentPolyCount;
-    @Unique private boolean hasSyncedConsistentPolyCount = false;
-
-    @Override
-    public void polyMcSetWorld(World world) {
-        this.world = world;
-    }
-
-    @Override
-    public World polyMcGetWorld() {
-        return world;
-    }
-
-    /**
-     * @reason listens to when blocks are set in this container in increments or decreases the nonConsistentPolyCount
-     */
-    @Inject(method = "setAndGetOldValue(ILjava/lang/Object;)Ljava/lang/Object;", at = @At("RETURN"), cancellable = true)
-    public void setInPaletteListener(int index, T value, CallbackInfoReturnable<T> cir) {
-        if (value instanceof BlockState) {
-            PolyMap map = PolyMc.getMainMap();
-            BlockPoly poly = map.getBlockPoly(((BlockState)value).getBlock());
-            if (poly != null && poly.isNotConsistent()) {
-                nonConsistentPolyCount++;
-            }
-
-            T retValue = cir.getReturnValue();
-            if (retValue != this.defaultValue) {
-                Block block = ((BlockState)retValue).getBlock();
-                BlockPoly poly2 = map.getBlockPoly(block);
-                if (poly2 != null && poly2.isNotConsistent()) {
-                    nonConsistentPolyCount--;
-                }
-            }
-        }
-    }
-
-    @Inject(method = "toPacket(Lnet/minecraft/network/PacketByteBuf;)V", at = @At("HEAD"), cancellable = true)
-    public void toPacketInject(PacketByteBuf buf, CallbackInfo ci) {
-        if (!hasSyncedConsistentPolyCount) {
-            syncConsistentPolyCount();
-        }
-
-        if (nonConsistentPolyCount > 0) {
-            this.lock();
-            PalettedContainer<T> clone = getPolydClone();
-            this.unlock();
-
-            if (clone instanceof NonPolydPacketProvider) {
-                ((NonPolydPacketProvider)clone).toPacketNoPoly(buf);
-            }
-            ci.cancel();
-        }
-    }
-
-    @Inject(method = "getPacketSize", at = @At("HEAD"), cancellable = true)
-    public void getPacketSizeInject(CallbackInfoReturnable<Integer> cir) {
-        if (!hasSyncedConsistentPolyCount) {
-            syncConsistentPolyCount();
-        }
-
-        if (nonConsistentPolyCount > 0) {
-            this.lock();
-            PalettedContainer<T> clone = getPolydClone();
-
-            if (clone instanceof NonPolydPacketProvider) {
-                cir.setReturnValue(((NonPolydPacketProvider)clone).getPacketSizeNoPoly());
-            }
-        }
-    }
-
-    @Unique
-    private PalettedContainer<T> getPolydClone() {
-        PalettedContainer<T> clone = new PalettedContainer<>(null, this.idList, null, null, this.defaultValue);
-
-        BlockPos.Mutable pos = new BlockPos.Mutable();
-        for (int i = 0; i < this.data.getSize(); i++) {
-            BlockState b = (BlockState)this.get(i);
-            pos.set(i & 0x00F, i >> 8, (i & 0x0F0) >> 4);
-            BlockState polyd = PolyMc.getMainMap().getClientBlockWithContext(b, pos, world);
-            //noinspection all
-            ((PalettedContainerMixin<T>)(Object)clone).set(i, (T)polyd);
-        }
-        return clone;
-    }
-
-    @Unique
-    private void syncConsistentPolyCount() {
-        nonConsistentPolyCount = 0;
-        for (int i = 0; i < this.data.getSize(); i++) {
-            BlockState b = (BlockState)this.get(i);
-            BlockPoly poly = PolyMc.getMainMap().getBlockPoly(b.getBlock());
-            if (poly != null && poly.isNotConsistent()) {
-                nonConsistentPolyCount++;
-            }
-        }
-        hasSyncedConsistentPolyCount = true;
-    }
-
-    @Override
-    public void toPacketNoPoly(PacketByteBuf buf) {
-        this.lock();
-        buf.writeByte(this.paletteSize);
-        if (this.palette instanceof NonPolydPacketProvider) {
-            ((NonPolydPacketProvider)palette).toPacketNoPoly(buf);
-        } else {
-            this.palette.toPacket(buf);
-        }
-        buf.writeLongArray(this.data.getStorage());
-        this.unlock();
-    }
 
     @Override
     public int getPacketSize(ServerPlayerEntity playerEntity) {
@@ -183,19 +57,5 @@ public abstract class PalettedContainerMixin<T> implements WorldProvider, NonPol
             return 1 + palette2.getPacketSize(playerEntity) + PacketByteBuf.getVarIntSizeBytes(this.data.getSize()) + this.data.getStorage().length * 8;
         }
         return 1 + this.palette.getPacketSize() + PacketByteBuf.getVarIntSizeBytes(this.data.getSize()) + this.data.getStorage().length * 8;
-    }
-
-    @Override
-    public int getPacketSizeNoPoly() {
-        if (this.palette instanceof NonPolydPacketProvider) {
-            NonPolydPacketProvider palette2 = (NonPolydPacketProvider)palette;
-            return 1 + palette2.getPacketSizeNoPoly() + PacketByteBuf.getVarIntSizeBytes(this.data.getSize()) + this.data.getStorage().length * 8;
-        }
-        return 1 + this.palette.getPacketSize() + PacketByteBuf.getVarIntSizeBytes(this.data.getSize()) + this.data.getStorage().length * 8;
-    }
-
-    @Override
-    public boolean hasNonConsistentBlockPolys() {
-        return nonConsistentPolyCount > 0;
     }
 }

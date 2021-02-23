@@ -221,21 +221,6 @@ public class Util {
     }
 
     /**
-     * Utility method to get the polyd raw id whilst providing extra context to the {@link io.github.theepicblock.polymc.api.block.BlockPoly}
-     * PolyMc also redirects {@link Block#getRawIdFromState(BlockState)} but that doesn't respect the player's {@link PolyMap}.
-     * This method does
-     * @param state the BlockState who's raw id is being queried
-     * @param pos the position this block is in
-     * @param playerEntity the player who's {@link PolyMap} we should be using
-     * @return the int associated with the state after being transformed by the players {@link PolyMap}
-     */
-    public static int getPolydRawIdFromStateWithContext(BlockState state, BlockPos pos, ServerPlayerEntity playerEntity) {
-        PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
-        BlockState clientState = map.getClientBlockWithContext(state, pos, playerEntity.world);
-        return Block.STATE_IDS.getRawId(clientState);
-    }
-
-    /**
      * Returns whether the client provided is vanilla-like. As defined in {@link PolyMap#isVanillaLikeMap()}
      * @param client the client who is being checked
      * @return true if the client is vanilla-like, false otherwise

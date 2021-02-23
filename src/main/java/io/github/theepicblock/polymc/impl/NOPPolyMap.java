@@ -25,11 +25,6 @@ public class NOPPolyMap implements PolyMap {
 	}
 
 	@Override
-	public BlockState getClientBlockWithContext(BlockState serverBlock, BlockPos pos, World world) {
-		return serverBlock;
-	}
-
-	@Override
 	public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {
 		return null;
 	}
