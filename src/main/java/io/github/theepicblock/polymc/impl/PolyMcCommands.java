@@ -51,7 +51,7 @@ public class PolyMcCommands {
                             .executes((context) -> {
                                 ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
                                 ItemStack polydItem = PolyMc.getMap().getClientItem(heldItem);
-                                Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.toTag(new CompoundTag()));
+                                Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.writeNbt(new CompoundTag()));
                                 context.getSource().sendFeedback(nbtText, false);return Command.SINGLE_SUCCESS;
                             }))
                         .then(literal("replaceInventoryWithDebug")
@@ -69,7 +69,7 @@ public class PolyMcCommands {
                                 }
                                 ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
                                 ItemStack polydItem = PolyMc.getMap().getClientItem(heldItem);
-                                Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.toTag(new CompoundTag()));
+                                Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.writeNbt(new CompoundTag()));
                                 context.getSource().sendFeedback(nbtText, false);
                                 return Command.SINGLE_SUCCESS;
                             })))

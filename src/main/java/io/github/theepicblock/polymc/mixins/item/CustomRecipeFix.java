@@ -38,10 +38,10 @@ import java.util.List;
  */
 @Mixin(SynchronizeRecipesS2CPacket.class)
 public class CustomRecipeFix {
-    @Inject(method = "writeRecipe(Lnet/minecraft/recipe/Recipe;Lnet/minecraft/network/PacketByteBuf;)V",
+    @Inject(method = "writeRecipe(Lnet/minecraft/network/PacketByteBuf;Lnet/minecraft/recipe/Recipe;)V",
             at = @At("HEAD"),
             cancellable = true)
-    private static <T extends Recipe<?>> void writeInject(T recipe, PacketByteBuf buf, CallbackInfo ci) {
+    private static <T extends Recipe<?>> void writeInject(PacketByteBuf packetByteBuf, T recipe, CallbackInfo ci) {
         Identifier recipeId = Registry.RECIPE_SERIALIZER.getId(recipe.getSerializer());
         if (!Util.isVanilla(recipeId)) {
             ci.cancel();
