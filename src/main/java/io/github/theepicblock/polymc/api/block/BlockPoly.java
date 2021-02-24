@@ -36,4 +36,8 @@ public interface BlockPoly extends DebugInfoProvider<Block> {
      * @param pack  resource pack to add to.
      */
     void AddToResourcePack(Block block, ResourcePackMaker pack);
+
+    default BlockWizard getWizard() {
+        return null;
+    }
 }
