@@ -17,6 +17,8 @@
  */
 package io.github.theepicblock.polymc.impl;
 
+import io.github.theepicblock.polymc.api.PolyMap;
+import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
@@ -24,10 +26,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.shape.VoxelShape;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -146,6 +150,22 @@ public class Util {
     }
 
     /**
+     * Checks if 2 voxelshapes are the same
+     */
+    public static boolean areEqual(VoxelShape a, VoxelShape b) {
+        if (a == b) {
+            return true;
+        }
+        if (a.isEmpty() && b.isEmpty()) {
+            return true;
+        }
+        if (a.isEmpty() || b.isEmpty()) {
+            return false;
+        }
+        return a.getBoundingBox().equals(b.getBoundingBox());
+    }
+
+    /**
      * moves all modded enchantments into the lore tag
      * @param item item whose enchantments to move
      * @return the converted item
@@ -183,5 +203,29 @@ public class Util {
             }
         }
         return item;
+    }
+
+    /**
+     * Utility method to get the polyd raw id.
+     * PolyMc also redirects {@link Block#getRawIdFromState(BlockState)} but that doesn't respect the player's {@link PolyMap}.
+     * This method does.
+     * @param state the BlockState who's raw id is being queried
+     * @param playerEntity the player who's {@link PolyMap} we should be using
+     * @return the int associated with the state after being transformed by the players {@link PolyMap}
+     */
+    public static int getPolydRawIdFromState(BlockState state, ServerPlayerEntity playerEntity) {
+        PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
+        BlockState clientState = map.getClientBlock(state);
+        return Block.STATE_IDS.getRawId(clientState);
+    }
+
+    /**
+     * Returns whether the client provided is vanilla-like. As defined in {@link PolyMap#isVanillaLikeMap()}
+     * @param client the client who is being checked
+     * @return true if the client is vanilla-like, false otherwise
+     * @see PolyMap#isVanillaLikeMap()
+     */
+    public static boolean isPolyMapVanillaLike(ServerPlayerEntity client) {
+        return PolyMapProvider.getPolyMap(client).isVanillaLikeMap();
     }
 }

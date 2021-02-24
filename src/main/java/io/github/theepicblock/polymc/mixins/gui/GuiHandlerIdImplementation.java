@@ -17,9 +17,10 @@
  */
 package io.github.theepicblock.polymc.mixins.gui;
 
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.gui.GuiManager;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
+import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.mixin.ScreenHandlerFactoryWrapperSoFabricApiDoesntDetectIt;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.entity.player.PlayerEntity;
@@ -41,17 +42,19 @@ public class GuiHandlerIdImplementation {
     public ScreenHandler handlerId(NamedScreenHandlerFactory namedScreenHandlerFactory, int syncId, PlayerInventory inv, PlayerEntity player) {
         ScreenHandler base = namedScreenHandlerFactory.createMenu(syncId, inv, player);
         if (base == null) return null;
-        GuiPoly poly = PolyMc.getMap().getGuiPoly(base.getType());
+
+        GuiPoly poly = PolyMapProvider.getPolyMap((ServerPlayerEntity)player).getGuiPoly(base.getType());
         if (poly != null) {
             this.guiManager = poly.createGuiManager(base, (ServerPlayerEntity)player);
             return guiManager.getInitialHandler(syncId);
+        } else {
+            return base;
         }
-        return base;
     }
 
     @ModifyVariable(method = "openHandledScreen(Lnet/minecraft/screen/NamedScreenHandlerFactory;)Ljava/util/OptionalInt;", at = @At("HEAD"))
     private NamedScreenHandlerFactory hackForFabricApi(NamedScreenHandlerFactory factory) {
-        if (factory instanceof ExtendedScreenHandlerFactory) {
+        if (Util.isPolyMapVanillaLike((ServerPlayerEntity)(Object)this) && factory instanceof ExtendedScreenHandlerFactory) {
             return new ScreenHandlerFactoryWrapperSoFabricApiDoesntDetectIt(factory);
         }
         return factory;

@@ -18,18 +18,22 @@
 package io.github.theepicblock.polymc.mixins.item;
 
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.Recipe;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Minecraft syncs the entire recipe library when the client joins.
@@ -37,7 +41,20 @@ import java.util.List;
  * This fix prevents those from being sent
  */
 @Mixin(SynchronizeRecipesS2CPacket.class)
-public class CustomRecipeFix {
+public class CustomRecipeFix implements PlayerContextContainer {
+    @Unique
+    private ServerPlayerEntity player;
+
+    @Override
+    public ServerPlayerEntity getPolyMcProvidedPlayer() {
+        return player;
+    }
+
+    @Override
+    public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
+        player = v;
+    }
+
     @Inject(method = "writeRecipe(Lnet/minecraft/network/PacketByteBuf;Lnet/minecraft/recipe/Recipe;)V",
             at = @At("HEAD"),
             cancellable = true)
@@ -48,9 +65,15 @@ public class CustomRecipeFix {
         }
     }
 
-    @Redirect(method = "write(Lnet/minecraft/network/PacketByteBuf;)V",
-            at = @At(value = "INVOKE", target = "Ljava/util/List;size()I"))
-    public int sizeRedirect(List<Recipe<?>> list) {
-        return (int) list.stream().map(recipe -> Registry.RECIPE_SERIALIZER.getId(recipe.getSerializer())).filter(Util::isVanilla).count();
+    @Shadow
+    private List<Recipe<?>> recipes;
+
+    @Inject(method = "write", at = @At("HEAD"))
+    public void onWrite(PacketByteBuf buf, CallbackInfo callbackInfo) {
+        if (Util.isPolyMapVanillaLike(player)) {
+            recipes = recipes.stream()
+                    .filter(recipe -> Util.isVanilla(Registry.RECIPE_SERIALIZER.getId(recipe.getSerializer())))
+                    .collect(Collectors.toList());
+        }
     }
 }

@@ -17,9 +17,9 @@
  */
 package io.github.theepicblock.polymc.mixins.block.context;
 
-import io.github.theepicblock.polymc.impl.mixin.WorldProvider;
+import io.github.theepicblock.polymc.impl.mixin.PacketSizeProvider;
 import net.minecraft.block.BlockState;
-import net.minecraft.world.World;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.PalettedContainer;
 import org.spongepowered.asm.mixin.Final;
@@ -27,16 +27,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ChunkSection.class)
-public class ChunkSectionMixin implements WorldProvider {
+public class ChunkSectionMixin implements PacketSizeProvider {
     @Shadow @Final private PalettedContainer<BlockState> container;
 
     @Override
-    public void polyMcSetWorld(World world) {
-        ((WorldProvider)this.container).polyMcSetWorld(world);
-    }
-
-    @Override
-    public World polyMcGetWorld() {
-        return ((WorldProvider)this.container).polyMcGetWorld();
+    public int getPacketSize(ServerPlayerEntity playerEntity) {
+        return 2 + ((PacketSizeProvider)this.container).getPacketSize(playerEntity);
     }
 }

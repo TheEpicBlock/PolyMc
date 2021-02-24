@@ -1,7 +1,6 @@
 {
-  "configVersion": 2,
+  "configVersion": 4,
   "disabledMixins": [
-    "CustomPacketDisabler"
   ],
   "resourcepack": {
     "advancedDiscovery": false

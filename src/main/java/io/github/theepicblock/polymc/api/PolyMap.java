@@ -21,83 +21,44 @@ import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
-import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
-/**
- * A map containing different types of polys
- */
-public class PolyMap {
-    private final ImmutableMap<Item,ItemPoly> itemPolys;
-    private final ImmutableMap<Block,BlockPoly> blockPolys;
-    private final ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys;
+public interface PolyMap {
+	/**
+	 * Converts a serverside item into a clientside one using the corresponding {@link ItemPoly}.
+	 */
+	ItemStack getClientItem(ItemStack serverItem);
 
-    public PolyMap(ImmutableMap<Item,ItemPoly> itemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys) {
-        this.itemPolys = itemPolys;
-        this.blockPolys = blockPolys;
-        this.guiPolys = guiPolys;
-    }
+	/**
+	 * Converts a serverside block into a clientside one using the corresponding {@link BlockPoly}.
+	 */
+	BlockState getClientBlock(BlockState serverBlock);
 
-    /**
-     * Converts a serverside item into a clientside one using the corresponding {@link ItemPoly}.
-     */
-    public ItemStack getClientItem(ItemStack serverItem) {
-        ItemStack ret = serverItem;
+	/**
+	 * Converts a serverside gui into a clientside one using the corresponding {@link GuiPoly}.
+	 * Currently experimental
+	 */
+	GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType);
 
-        ItemPoly poly = itemPolys.get(serverItem.getItem());
-        if (poly != null) ret = poly.getClientItem(serverItem);
+	BlockPoly getBlockPoly(Block block);
 
-        ret = Util.portEnchantmentsToLore(ret);
+	/**
+	 * gets a map containing all itempolys in this map
+	 */
+	ImmutableMap<Item,ItemPoly> getItemPolys();
 
-        return ret;
-    }
+	/**
+	 * gets a map containing all blockpolys in this map
+	 */
+	ImmutableMap<Block,BlockPoly> getBlockPolys();
 
-    /**
-     * Converts a serverside block into a clientside one using the corresponding {@link BlockPoly}.
-     */
-    public BlockState getClientBlock(BlockState serverBlock) {
-        BlockPoly poly = blockPolys.get(serverBlock.getBlock());
-        if (poly == null) return serverBlock;
-
-        return poly.getClientBlock(serverBlock);
-    }
-
-    public BlockState getClientBlockWithContext(BlockState serverBlock, BlockPos pos, World world) {
-        BlockPoly poly = blockPolys.get(serverBlock.getBlock());
-        if (poly == null) return serverBlock;
-
-        return poly.getClientBlockWithContext(serverBlock, pos, world);
-    }
-
-    /**
-     * Converts a serverside gui into a clientside one using the corresponding {@link GuiPoly}.
-     * Currently experimental
-     */
-    public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {
-        return guiPolys.get(serverGuiType);
-    }
-
-    public BlockPoly getBlockPoly(Block block) {
-        return blockPolys.get(block);
-    }
-
-    /**
-     * gets a map containing all itempolys in this map
-     */
-    public ImmutableMap<Item,ItemPoly> getItemPolys() {
-        return itemPolys;
-    }
-
-    /**
-     * gets a map containing all blockpolys in this map
-     */
-    public ImmutableMap<Block,BlockPoly> getBlockPolys() {
-        return blockPolys;
-    }
+	/**
+	 * Specifies if this map is meant for vanilla-like clients
+	 * This is used to disable/enable miscellaneous patches
+	 */
+	boolean isVanillaLikeMap();
 }

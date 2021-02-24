@@ -1,6 +1,6 @@
 /*
  * PolyMc
- * Copyright (C) 2020-2020 TheEpicBlock_TEB
+ * Copyright (C) 2020-2021 TheEpicBlock_TEB
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,6 @@ package io.github.theepicblock.polymc.impl.mixin;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 
-public interface BlockUpdateS2CInterface {
-    void poly(ServerPlayerEntity playerEntity);
+public interface PacketSizeProvider {
+	int getPacketSize(ServerPlayerEntity playerEntity);
 }

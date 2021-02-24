@@ -18,13 +18,11 @@
 package io.github.theepicblock.polymc.api.block;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
+import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.poly.block.ConditionalSimpleBlockPoly;
 import io.github.theepicblock.polymc.impl.poly.block.PropertyRetainingReplacementPoly;
 import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.FarmlandBlock;
+import net.minecraft.block.*;
 import net.minecraft.state.property.Properties;
 
 import java.util.function.BiConsumer;
@@ -60,19 +58,22 @@ public class BlockStateProfile {
     private static final Block[] LEAVES_BLOCKS = {Blocks.ACACIA_LEAVES,Blocks.BIRCH_LEAVES,Blocks.DARK_OAK_LEAVES,Blocks.JUNGLE_LEAVES,Blocks.OAK_LEAVES,Blocks.SPRUCE_LEAVES};
     private static final Block[] NO_COLLISION_BLOCKS = {Blocks.SUGAR_CANE,
             Blocks.ACACIA_SAPLING, Blocks.BIRCH_SAPLING, Blocks.DARK_OAK_SAPLING, Blocks.JUNGLE_SAPLING, Blocks.OAK_SAPLING,
-            Blocks.CAVE_AIR, Blocks.VOID_AIR, Blocks.STRUCTURE_VOID};
+            Blocks.TRIPWIRE};
     private static final Block[] DOOR_BLOCKS = {Blocks.ACACIA_DOOR,Blocks.BIRCH_DOOR,Blocks.DARK_OAK_DOOR,Blocks.JUNGLE_DOOR,Blocks.OAK_DOOR,Blocks.SPRUCE_DOOR,Blocks.CRIMSON_DOOR,Blocks.WARPED_DOOR};
     private static final Block[] TRAPDOOR_BLOCKS = {Blocks.ACACIA_TRAPDOOR,Blocks.BIRCH_TRAPDOOR,Blocks.DARK_OAK_TRAPDOOR,Blocks.JUNGLE_TRAPDOOR,Blocks.OAK_TRAPDOOR,Blocks.SPRUCE_TRAPDOOR,Blocks.CRIMSON_TRAPDOOR,Blocks.WARPED_TRAPDOOR};
 
     //FILTERS
     private static final Predicate<BlockState> DEFAULT_FILTER = (blockState) -> blockState != blockState.getBlock().getDefaultState();
     private static final Predicate<BlockState> NO_COLLISION_FILTER = (blockState) -> {
-        if (isAir(blockState.getBlock())) return true;
-        return DEFAULT_FILTER.test(blockState);
+        if (blockState.getBlock() == Blocks.TRIPWIRE) {
+            return isStringUseable(blockState);
+        } else {
+            return DEFAULT_FILTER.test(blockState);
+        }
     };
     private static final Predicate<BlockState> ALWAYS_TRUE_FILTER = (blockState) -> true;
-    private static final Predicate<BlockState> FARMLAND_FILTER = (blockstate) -> {
-        int moisture = blockstate.get(FarmlandBlock.MOISTURE);
+    private static final Predicate<BlockState> FARMLAND_FILTER = (blockState) -> {
+        int moisture = blockState.get(FarmlandBlock.MOISTURE);
         return moisture != 0 && moisture != 7;
     };
     private static final Predicate<BlockState> POWERED_FILTER = (blockState) -> blockState.get(Properties.POWERED) == true;
@@ -80,14 +81,20 @@ public class BlockStateProfile {
     //ON FIRST REGISTERS
     private static final BiConsumer<Block,PolyRegistry> DEFAULT_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
     private static final BiConsumer<Block,PolyRegistry> NO_COLLISION_ON_FIRST_REGISTER = (block, polyRegistry) -> {
-        if (isAir(block)) {
-            polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(Blocks.AIR.getDefaultState()));
-            return;
+        if (block == Blocks.TRIPWIRE) {
+            polyRegistry.registerBlockPoly(block, new BlockPoly() {
+                @Override
+                public BlockState getClientBlock(BlockState input) {
+                    return input.with(Properties.POWERED, false).with(Properties.DISARMED,false);
+                }
+                @Override public void AddToResourcePack(Block block, ResourcePackMaker pack) {}
+            });
+        } else {
+            polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
         }
-        polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
     };
     private static final BiConsumer<Block,PolyRegistry> PETRIFIED_OAK_SLAB_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new PropertyRetainingReplacementPoly(Blocks.OAK_SLAB));
-    private static final BiConsumer<Block,PolyRegistry> FARMLAND_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new ConditionalSimpleBlockPoly(Blocks.FARMLAND.getDefaultState(), FARMLAND_FILTER.negate()));
+    private static final BiConsumer<Block,PolyRegistry> FARMLAND_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new ConditionalSimpleBlockPoly(Blocks.FARMLAND.getDefaultState(), FARMLAND_FILTER));
     private static final BiConsumer<Block,PolyRegistry> POWERED_BLOCK_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, (BlockPolyPredicate)(block2) -> block2.with(Properties.POWERED, false));
 
     //PROFILES
@@ -96,6 +103,7 @@ public class BlockStateProfile {
     public static final BlockStateProfile NO_COLLISION_PROFILE = new BlockStateProfile("blocks without collisions", NO_COLLISION_BLOCKS, NO_COLLISION_FILTER, NO_COLLISION_ON_FIRST_REGISTER);
     public static final BlockStateProfile PETRIFIED_OAK_SLAB_PROFILE = new BlockStateProfile("petrified oak slab", Blocks.PETRIFIED_OAK_SLAB, ALWAYS_TRUE_FILTER, PETRIFIED_OAK_SLAB_ON_FIRST_REGISTER);
     public static final BlockStateProfile FARMLAND_PROFILE = new BlockStateProfile("farmland", Blocks.FARMLAND, FARMLAND_FILTER, FARMLAND_ON_FIRST_REGISTER);
+    public static final BlockStateProfile CACTUS_PROFILE = getProfileWithDefaultFilter("cactus", Blocks.CACTUS);
     public static final BlockStateProfile DOOR_PROFILE = new BlockStateProfile("door", DOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile TRAPDOOR_PROFILE = new BlockStateProfile("trapdoor", TRAPDOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile METAL_DOOR_PROFILE = new BlockStateProfile("metal_door", Blocks.IRON_DOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
@@ -110,7 +118,8 @@ public class BlockStateProfile {
         return new BlockStateProfile(name, block, DEFAULT_FILTER, DEFAULT_ON_FIRST_REGISTER);
     }
 
-    private static boolean isAir(Block b) {
-        return b == Blocks.CAVE_AIR || b == Blocks.VOID_AIR || b == Blocks.STRUCTURE_VOID;
+    private static boolean isStringUseable(BlockState state) {
+        return  state.get(Properties.POWERED) == true ||
+                state.get(TripwireBlock.DISARMED) == true;
     }
 }

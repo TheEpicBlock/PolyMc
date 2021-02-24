@@ -17,19 +17,25 @@
  */
 package io.github.theepicblock.polymc.impl.resource;
 
+import com.google.gson.JsonElement;
+import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
+import io.github.theepicblock.polymc.api.resource.JsonSoundsRegistry;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.ConfigManager;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.util.Identifier;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class ResourcePackGenerator {
@@ -76,7 +82,7 @@ public class ResourcePackGenerator {
         }
 
         //Hooks for all itempolys
-        PolyMc.getMap().getItemPolys().forEach((item, itemPoly) -> {
+        PolyMc.getMainMap().getItemPolys().forEach((item, itemPoly) -> {
             try {
                 itemPoly.AddToResourcePack(item, pack);
             } catch (Exception e) {
@@ -86,7 +92,7 @@ public class ResourcePackGenerator {
         });
 
         //Hooks for all blockpolys
-        PolyMc.getMap().getBlockPolys().forEach((block, blockPoly) -> {
+        PolyMc.getMainMap().getBlockPolys().forEach((block, blockPoly) -> {
             try {
                 blockPoly.AddToResourcePack(block, pack);
             } catch (Exception e) {
@@ -105,9 +111,41 @@ public class ResourcePackGenerator {
                 pathStream.forEach((langFile) -> {
                     pack.copyAsset(modId, "lang/" + langPath.relativize(langFile));
                 });
-            } catch (IOException e) {
+            } catch (Exception e) {
                 PolyMc.LOGGER.warn("Exception whilst copying lang files from " + modId);
                 e.printStackTrace();
+            }
+        }
+
+        //Copy over sound files
+        for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
+            String modId = mod.getMetadata().getId();
+            if (pack.checkAsset(modId,"sounds.json")) {
+                try {
+                    pack.copyAsset(modId,"sounds.json"); //copy over the sounds.json file to the pack
+
+                    //read the sounds.json file to parse the needed sound files.
+                    InputStreamReader reader = pack.getAsset(modId,"sounds.json");
+                    JsonReader jReader = new JsonReader(reader);
+                    Map<String,JsonSoundsRegistry.SoundEventEntry> sounds = pack.getGson().fromJson(jReader, JsonSoundsRegistry.TYPE);
+
+                    //copy the individual ogg files specified in the sounds.json
+                    sounds.values().forEach(soundEventEntry -> {
+                        for (JsonElement soundEntry : soundEventEntry.sounds) {
+                            String namespaceString = JsonSoundsRegistry.getNamespace(soundEntry);
+                            Identifier namespace = Identifier.tryParse(namespaceString);
+                            if (namespace == null) {
+                                PolyMc.LOGGER.warn(String.format("Invalid sound id %s in %s provided by %s", namespaceString, soundEventEntry.category, modId));
+                                continue;
+                            }
+
+                            pack.copySound(namespace.getNamespace(), namespace.getPath());
+                        }
+                    });
+                } catch (Exception e) {
+                    PolyMc.LOGGER.error("Failed to copy sounds.json for mod: "+modId);
+                    e.printStackTrace();
+                }
             }
         }
 

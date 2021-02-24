@@ -38,7 +38,7 @@ import java.io.InputStreamReader;
  * Works the same as {@link UnusedBlockStatePoly}, but uses only a single output blockstate, instead of one per modded blockstate.
  */
 public class SingleUnusedBlockStatePoly implements BlockPoly {
-    private final BlockState newBlockState;
+    protected final BlockState newBlockState;
     
     /**
      * @param stateProfile    the profile to use.
@@ -74,5 +74,10 @@ public class SingleUnusedBlockStatePoly implements BlockPoly {
             Identifier vId = Identifier.tryParse(v.model);
             if (vId != null) pack.copyModel(new Identifier(v.model));
         }
+    }
+
+    @Override
+    public String getDebugInfo(Block obj) {
+        return newBlockState.toString();
     }
 }

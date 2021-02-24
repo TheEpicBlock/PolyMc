@@ -26,8 +26,13 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(Block.class)
 public class BlockPolyImplementation {
+    /**
+     * This is a fall-back implementation. It does not respect custom PolyMaps.
+     * There are more targeted mixins that do respect custom maps.
+     * But, due to how Minecraft's code is made, it's hard to catch all areas.
+     */
     @ModifyVariable(method = "getRawIdFromState(Lnet/minecraft/block/BlockState;)I", at = @At("HEAD"))
     private static BlockState rawBlockStateOverwrite(BlockState state) {
-        return PolyMc.getMap().getClientBlock(state);
+        return PolyMc.getMainMap().getClientBlock(state);
     }
 }

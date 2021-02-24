@@ -50,7 +50,7 @@ public class PolyMcCommands {
                         .then(literal("clientItem")
                             .executes((context) -> {
                                 ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
-                                ItemStack polydItem = PolyMc.getMap().getClientItem(heldItem);
+                                ItemStack polydItem = PolyMc.getMainMap().getClientItem(heldItem);
                                 Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.writeNbt(new CompoundTag()));
                                 context.getSource().sendFeedback(nbtText, false);return Command.SINGLE_SUCCESS;
                             }))
@@ -68,7 +68,7 @@ public class PolyMcCommands {
                                     }
                                 }
                                 ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
-                                ItemStack polydItem = PolyMc.getMap().getClientItem(heldItem);
+                                ItemStack polydItem = PolyMc.getMainMap().getClientItem(heldItem);
                                 Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.writeNbt(new CompoundTag()));
                                 context.getSource().sendFeedback(nbtText, false);
                                 return Command.SINGLE_SUCCESS;
@@ -89,7 +89,7 @@ public class PolyMcCommands {
                         .then(literal("polyDump")
                             .executes((context) -> {
                                 StringBuilder polyDump = new StringBuilder();
-                                PolyMap map = PolyMc.getMap();
+                                PolyMap map = PolyMc.getMainMap();
                                 polyDump.append("###########\n## ITEMS ##\n###########\n");
                                 map.getItemPolys().forEach((item, poly) -> {
                                     addDebugProviderToDump(polyDump, item, item.getTranslationKey(), poly);

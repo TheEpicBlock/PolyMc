@@ -17,9 +17,11 @@
  */
 package io.github.theepicblock.polymc.impl.generator;
 
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.poly.item.*;
 import net.minecraft.item.*;
@@ -85,7 +87,21 @@ public class ItemPolyGenerator {
      * @see #generatePoly(Item, PolyRegistry)
      */
     private static void addItemToBuilder(Item item, PolyRegistry builder) {
-        builder.registerItemPoly(item, generatePoly(item,builder));
+        try {
+            builder.registerItemPoly(item, generatePoly(item,builder));
+        } catch (Exception e) {
+            PolyMc.LOGGER.error("Failed to generate a poly for item "+item.getTranslationKey());
+            e.printStackTrace();
+            PolyMc.LOGGER.error("Attempting to recover by using a default poly. Please report this");
+            builder.registerItemPoly(item, new ItemPoly() {
+                @Override
+                public ItemStack getClientItem(ItemStack input) {
+                    return new ItemStack(Items.BARRIER);
+                }
+
+                @Override public void AddToResourcePack(Item item, ResourcePackMaker pack) {}
+            });
+        }
     }
 
     /**

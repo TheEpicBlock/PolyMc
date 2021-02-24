@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.4-SNAPSHOT'
+	id 'fabric-loom' version '0.5-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -15,7 +15,7 @@ repositories {
 		url "https://jitpack.io"
 	}
 	maven {
-		url "https://maven.swordglowsblue.com"
+		url "https://dl.bintray.com/natanfudge/libs"
 	}
 }
 
@@ -28,7 +28,7 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	modImplementation "com.lettuce.fudge:artifice:${project.artifice_version}"
-	modImplementation "com.github.jellysquid3:lithium-fabric:${project.lithium_version}"
+	modImplementation "com.github.CaffeineMC.lithium-fabric:lithium:${project.lithium_version}"
 }
 
 processResources {

@@ -15,12 +15,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.impl.mixin;
 
-import net.minecraft.world.World;
-
-public interface WorldProvider {
-    void polyMcSetWorld(World world);
-
-    World polyMcGetWorld();
-}
+/**
+ * The mixins in this package are meant to provide extra context about what they contain.
+ */
+package io.github.theepicblock.polymc.mixins.context;
