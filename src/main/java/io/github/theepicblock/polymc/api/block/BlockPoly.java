@@ -40,4 +40,8 @@ public interface BlockPoly extends DebugInfoProvider<Block> {
     default BlockWizard getWizard() {
         return null;
     }
+
+    default boolean hasWizard() {
+        return false;
+    }
 }

@@ -30,6 +30,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 
@@ -227,5 +228,9 @@ public class Util {
      */
     public static boolean isPolyMapVanillaLike(ServerPlayerEntity client) {
         return PolyMapProvider.getPolyMap(client).isVanillaLikeMap();
+    }
+
+    public static BlockPos fromPalettedContainerIndex(int index) {
+        return new BlockPos(index & 0xF,(index >> 4) & 0xF,(index >> 8) & 0xF);
     }
 }

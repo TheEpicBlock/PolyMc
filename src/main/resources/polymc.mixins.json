@@ -37,7 +37,9 @@
     "item.CreativeModeHotfix",
     "item.CustomRecipeFix",
     "item.InventoryDesyncPatch",
-    "item.ItemPolyImplementation"
+    "item.ItemPolyImplementation",
+    "wizards.block.PalettedContainerAccessor",
+    "wizards.block.WorldChunkMixin"
   ],
   "injectors": {
     "defaultRequire": 1
