@@ -36,7 +36,7 @@ import java.util.*;
  * It gets replaced with minecraft:air and the client now thinks it can swim in air.
  * <p>
  * Note: we're not actually mixing into the interface, but we're mixing into the anonymous class in {@link TagGroup#create(Map)}
- * Because TagGroup is an interface, we can't use any injector type mixins on it. So we have to copy over the {@link #toPacket} method and change it manually
+ * Because TagGroup is an interface, we can't use any injector type mixins on it. So we have to copy over the {@link #serialize} method and change it manually
  */
 @SuppressWarnings("MixinInnerClass")
 @Mixin(targets = "net/minecraft/tag/TagGroup$1")

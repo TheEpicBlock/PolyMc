@@ -33,7 +33,7 @@ public class StaticSlot extends Slot {
 		throw new AssertionError("PolyMc: the contents of a static, unchangeable slot were changed. Containing: "+stack.toString());
 	}
 
-	public ItemStack onTakeItem(PlayerEntity player, ItemStack stack) {
+	public void onTakeItem(PlayerEntity player, ItemStack stack) {
 		throw new AssertionError("PolyMc: tried to take item out of an static, unchangeable slot. Containing: "+stack.toString());
 	}
 

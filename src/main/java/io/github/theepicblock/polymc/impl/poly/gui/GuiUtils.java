@@ -19,6 +19,8 @@ package io.github.theepicblock.polymc.impl.poly.gui;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.network.packet.s2c.play.InventoryS2CPacket;
+import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
 
@@ -39,6 +41,8 @@ public class GuiUtils {
 	}
 
 	public static void resyncPlayerInventory(ServerPlayerEntity player) {
+		player.networkHandler.sendPacket(new InventoryS2CPacket(player.currentScreenHandler.syncId, stacks));
+		player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-1, -1, player.getInventory().get()));
 		player.onHandlerRegistered(player.currentScreenHandler, player.currentScreenHandler.getStacks());
 	}
 }
