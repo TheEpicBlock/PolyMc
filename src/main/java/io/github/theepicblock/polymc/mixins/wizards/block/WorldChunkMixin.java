@@ -5,9 +5,11 @@ import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockWizard;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.util.collection.Int2ObjectBiMap;
 import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.*;
@@ -16,7 +18,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +36,8 @@ public class WorldChunkMixin {
 			Palette<BlockState> palette = ((PalettedContainerAccessor<BlockState>)container).getPalette();
 			if (palette instanceof ArrayPalette) {
 				ret.putAll(createWizardsArrayPalette(map, (ArrayPalette<BlockState>)palette, container));
+			} else if (palette instanceof BiMapPalette) {
+				ret.putAll(createWizardsBiMapPalette(map, (BiMapPalette<BlockState>)palette, container));
 			}
 		}
 
@@ -42,25 +45,42 @@ public class WorldChunkMixin {
 	}
 
 	@Unique
+	private Map<BlockPos, BlockWizard> createWizardsBiMapPalette(PolyMap polyMap, BiMapPalette<BlockState> palette, PalettedContainer<BlockState> container) {
+		Int2ObjectMap<BlockPoly> idToWizMap = new Int2ObjectArrayMap<>(5);
+		Int2ObjectBiMap<BlockState> map = ((BiMapPaletteAccessor<BlockState>)palette).getMap();
+
+		int i = 0;
+		for (BlockState state : map) {
+			BlockPoly poly = polyMap.getBlockPoly(state.getBlock());
+			if (poly != null && poly.hasWizard()) {
+				idToWizMap.put(i, poly);
+			}
+			i++;
+		}
+
+		return createWizards(idToWizMap, container);
+	}
+
+	@Unique
 	private Map<BlockPos, BlockWizard> createWizardsArrayPalette(PolyMap map, ArrayPalette<BlockState> palette, PalettedContainer<BlockState> container) {
-		IntArrayList wizardBlockStates = new IntArrayList();
+		Int2ObjectMap<BlockPoly> idToWizMap = new Int2ObjectArrayMap<>(5);
 		for (int i = 0; i < palette.getSize(); i++) {
 			BlockState state = palette.getByIndex(i);
 			if (state == null) continue;
 
 			BlockPoly poly = map.getBlockPoly(state.getBlock());
 			if (poly != null && poly.hasWizard()) {
-				wizardBlockStates.add(i);
+				idToWizMap.put(i, poly);
 			}
 		}
 
-		return createWizardsByList(map, wizardBlockStates, container);
+		return createWizards(idToWizMap, container);
 	}
 
 	/**
 	 * @param knownWizards Integer ids inside this palettedContainer that are known to have wizards.
 	 */
-	private Map<BlockPos, BlockWizard> createWizardsByList(PolyMap map, IntArrayList knownWizards, PalettedContainer<BlockState> container) {
+	private Map<BlockPos, BlockWizard> createWizards(Int2ObjectMap<BlockPoly> knownWizards, PalettedContainer<BlockState> container) {
 		Map<BlockPos, BlockWizard> ret = new HashMap<>();
 
 		if (knownWizards.size() == 0) {
@@ -70,10 +90,9 @@ public class WorldChunkMixin {
 		PackedIntegerArray data = ((PalettedContainerAccessor<BlockState>)container).getData();
 		for (int i = 0; i < data.getSize(); i++) {
 			int id = data.get(i);
-			if (knownWizards.contains(id)) {
-				BlockState state = ((PalettedContainerAccessor<BlockState>)container).getPalette().getByIndex(id);
-				if (state == null) throw new IllegalStateException();
-				ret.put(Util.fromPalettedContainerIndex(i), map.getBlockPoly(state.getBlock()).getWizard());
+			BlockPoly wiz = knownWizards.get(id);
+			if (wiz != null) {
+				ret.put(Util.fromPalettedContainerIndex(i), wiz.getWizard());
 			}
 		}
 

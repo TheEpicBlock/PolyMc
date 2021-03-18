@@ -38,6 +38,7 @@
     "item.CustomRecipeFix",
     "item.InventoryDesyncPatch",
     "item.ItemPolyImplementation",
+    "wizards.block.BiMapPaletteAccessor",
     "wizards.block.PalettedContainerAccessor",
     "wizards.block.WorldChunkMixin"
   ],
