@@ -35,6 +35,8 @@ public class WorldChunkMixin implements WatchListener {
 		Map<BlockPos, BlockWizard> ret = new HashMap<>();
 
 		for (ChunkSection section : this.sections) {
+			if (section == null) continue;
+
 			PalettedContainer<BlockState> container = section.getContainer();
 			Palette<BlockState> palette = ((PalettedContainerAccessor<BlockState>)container).getPalette();
 			if (palette instanceof ArrayPalette) {
