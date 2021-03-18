@@ -12,8 +12,8 @@ public abstract class BlockWizard implements WatchListener {
         this.position = position;
     }
 
-    public abstract void onMove();
-    public abstract void onStateChange();
+    public void onMove() {}
+    public void onStateChange() {}
 
     public final Vec3d getPosition() {
         return position;
