@@ -28,10 +28,10 @@ import java.util.Map;
 @Mixin(WorldChunk.class)
 public class WorldChunkMixin implements WatchListener {
 	@Shadow @Final private ChunkSection[] sections;
-	@Unique private final PolyMapMap<Map<BlockPos,BlockWizard>> wizards = new PolyMapMap<>(this::createWizardsForMap);
+	@Unique private final PolyMapMap<Map<BlockPos,BlockWizard>> wizards = new PolyMapMap<>(this::createWizardsForChunk);
 
 	@Unique
-	private Map<BlockPos, BlockWizard> createWizardsForMap(PolyMap map) {
+	private Map<BlockPos, BlockWizard> createWizardsForChunk(PolyMap map) {
 		Map<BlockPos, BlockWizard> ret = new HashMap<>();
 
 		for (ChunkSection section : this.sections) {
