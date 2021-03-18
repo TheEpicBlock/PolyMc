@@ -27,12 +27,12 @@ public class WizardDebuggingPoly implements BlockPoly {
 
     @Override
     public BlockWizard createWizard(Vec3d pos) {
-        return null;
+        return new DebugWizard(original, pos);
     }
 
     @Override
     public boolean hasWizard() {
-        return false;
+        return true;
     }
 
     public class DebugWizard extends BlockWizard {
