@@ -39,6 +39,7 @@
     "item.InventoryDesyncPatch",
     "item.ItemPolyImplementation",
     "wizards.block.BiMapPaletteAccessor",
+    "wizards.block.ChunkHolderMixin",
     "wizards.block.PalettedContainerAccessor",
     "wizards.block.WatchProviderMixin",
     "wizards.block.WorldChunkMixin"

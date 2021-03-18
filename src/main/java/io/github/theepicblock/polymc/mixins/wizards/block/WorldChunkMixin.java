@@ -7,14 +7,20 @@ import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
+import io.github.theepicblock.polymc.impl.mixin.Ticker;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.util.collection.Int2ObjectBiMap;
 import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.*;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,12 +28,18 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
 @Mixin(WorldChunk.class)
-public class WorldChunkMixin implements WatchListener {
+public abstract class WorldChunkMixin implements WatchListener {
 	@Shadow @Final private ChunkSection[] sections;
+
+	@Shadow public abstract World getWorld();
+
+	@Shadow public abstract ChunkPos getPos();
+
 	@Unique private final PolyMapMap<Map<BlockPos,BlockWizard>> wizards = new PolyMapMap<>(this::createWizardsForChunk);
 
 	@Unique
@@ -138,5 +150,11 @@ public class WorldChunkMixin implements WatchListener {
 	public void removePlayer(ServerPlayerEntity playerEntity) {
 		PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
 		this.wizards.get(map).values().forEach((wizard) -> wizard.removePlayer(playerEntity));
+	}
+
+	@Override
+	public void removeAllPlayers() {
+		this.wizards.values().forEach((wizardMap) -> wizardMap.values().forEach(WatchListener::removeAllPlayers));
+		this.wizards.clear();
 	}
 }

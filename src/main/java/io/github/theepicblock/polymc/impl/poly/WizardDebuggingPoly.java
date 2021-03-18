@@ -9,6 +9,9 @@ import net.minecraft.block.Blocks;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.ArrayList;
+import java.util.List;
+
 //TODO remove once done debugging
 public class WizardDebuggingPoly implements BlockPoly {
     private final Block original;
@@ -37,6 +40,7 @@ public class WizardDebuggingPoly implements BlockPoly {
 
     public class DebugWizard extends BlockWizard {
         private final Block original;
+        private final List<ServerPlayerEntity> players = new ArrayList<>();
 
         public DebugWizard(Block original, Vec3d position) {
             super(position);
@@ -46,11 +50,20 @@ public class WizardDebuggingPoly implements BlockPoly {
         @Override
         public void addPlayer(ServerPlayerEntity playerEntity) {
             System.out.printf("%s at %s: I CAN SEE YOU, %s%n", original.getTranslationKey(), this.getPosition(), playerEntity);
+            players.add(playerEntity);
         }
 
         @Override
         public void removePlayer(ServerPlayerEntity playerEntity) {
             System.out.printf("%s at %s: GOODBYEEEE, %s%n", original.getTranslationKey(), this.getPosition(), playerEntity);
+            players.add(playerEntity);
+        }
+
+        @Override
+        public void removeAllPlayers() {
+            players.forEach((player) -> {
+                System.out.printf("%s at %s: GOODBYEEEE, %s%n", original.getTranslationKey(), this.getPosition(), player);
+            });
         }
     }
 }
