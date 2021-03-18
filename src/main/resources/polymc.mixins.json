@@ -40,6 +40,7 @@
     "item.ItemPolyImplementation",
     "wizards.block.BiMapPaletteAccessor",
     "wizards.block.PalettedContainerAccessor",
+    "wizards.block.WatchProviderMixin",
     "wizards.block.WorldChunkMixin"
   ],
   "injectors": {

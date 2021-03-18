@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+/**
+ * This class will automatically call a builder function when a polymap is attempted to be accessed that doesn't exist.
+ */
 public class PolyMapMap<K> extends Reference2ObjectArrayMap<PolyMap, K> {
 	private final Function<PolyMap, K> builder;
 

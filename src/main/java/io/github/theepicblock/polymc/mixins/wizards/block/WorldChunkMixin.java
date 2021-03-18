@@ -3,11 +3,14 @@ package io.github.theepicblock.polymc.mixins.wizards.block;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockWizard;
+import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
+import io.github.theepicblock.polymc.impl.misc.WatchListener;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.block.BlockState;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.collection.Int2ObjectBiMap;
 import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.util.math.BlockPos;
@@ -22,7 +25,7 @@ import java.util.Map;
 
 @SuppressWarnings("unchecked")
 @Mixin(WorldChunk.class)
-public class WorldChunkMixin {
+public class WorldChunkMixin implements WatchListener {
 	@Shadow @Final private ChunkSection[] sections;
 	@Unique private final PolyMapMap<Map<BlockPos,BlockWizard>> wizards = new PolyMapMap<>(this::createWizardsForMap);
 
@@ -118,5 +121,17 @@ public class WorldChunkMixin {
 		}
 
 		return ret;
+	}
+
+	@Override
+	public void addPlayer(ServerPlayerEntity playerEntity) {
+		PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
+		this.wizards.get(map).values().forEach((wizard) -> wizard.addPlayer(playerEntity));
+	}
+
+	@Override
+	public void removePlayer(ServerPlayerEntity playerEntity) {
+		PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
+		this.wizards.get(map).values().forEach((wizard) -> wizard.removePlayer(playerEntity));
 	}
 }
