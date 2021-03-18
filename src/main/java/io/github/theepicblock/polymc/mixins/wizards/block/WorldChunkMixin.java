@@ -14,6 +14,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.collection.Int2ObjectBiMap;
 import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.*;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -97,7 +98,8 @@ public class WorldChunkMixin implements WatchListener {
 			int id = data.get(i);
 			BlockPoly poly = knownWizards.get(id);
 			if (poly != null) {
-				ret.put(Util.fromPalettedContainerIndex(i), poly.createWizard());
+				BlockPos pos = Util.fromPalettedContainerIndex(i);
+				ret.put(pos, poly.createWizard(Vec3d.of(pos)));
 			}
 		}
 
@@ -116,7 +118,8 @@ public class WorldChunkMixin implements WatchListener {
 
 			BlockPoly poly = map.getBlockPoly(state.getBlock());
 			if (poly != null && poly.hasWizard()) {
-				ret.put(Util.fromPalettedContainerIndex(i), poly.createWizard());
+				BlockPos pos = Util.fromPalettedContainerIndex(i);
+				ret.put(pos, poly.createWizard(Vec3d.of(pos)));
 			}
 		}
 

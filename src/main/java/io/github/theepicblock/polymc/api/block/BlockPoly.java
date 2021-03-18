@@ -21,6 +21,7 @@ import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.util.math.Vec3d;
 
 public interface BlockPoly extends DebugInfoProvider<Block> {
     /**
@@ -37,7 +38,7 @@ public interface BlockPoly extends DebugInfoProvider<Block> {
      */
     void AddToResourcePack(Block block, ResourcePackMaker pack);
 
-    default BlockWizard createWizard() {
+    default BlockWizard createWizard(Vec3d pos) {
         return null;
     }
 
