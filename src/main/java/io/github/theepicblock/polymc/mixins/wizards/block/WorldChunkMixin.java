@@ -7,8 +7,6 @@ import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.collection.Int2ObjectBiMap;
 import net.minecraft.util.collection.PackedIntegerArray;
@@ -96,7 +94,7 @@ public class WorldChunkMixin {
 			int id = data.get(i);
 			BlockPoly poly = knownWizards.get(id);
 			if (poly != null) {
-				ret.put(Util.fromPalettedContainerIndex(i), poly.getWizard());
+				ret.put(Util.fromPalettedContainerIndex(i), poly.createWizard());
 			}
 		}
 
@@ -115,7 +113,7 @@ public class WorldChunkMixin {
 
 			BlockPoly poly = map.getBlockPoly(state.getBlock());
 			if (poly != null && poly.hasWizard()) {
-				ret.put(Util.fromPalettedContainerIndex(i), poly.getWizard());
+				ret.put(Util.fromPalettedContainerIndex(i), poly.createWizard());
 			}
 		}
 
