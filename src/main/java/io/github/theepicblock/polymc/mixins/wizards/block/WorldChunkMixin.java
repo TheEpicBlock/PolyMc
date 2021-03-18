@@ -8,6 +8,7 @@ import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.collection.Int2ObjectBiMap;
 import net.minecraft.util.collection.PackedIntegerArray;
@@ -38,7 +39,10 @@ public class WorldChunkMixin {
 				ret.putAll(createWizardsArrayPalette(map, (ArrayPalette<BlockState>)palette, container));
 			} else if (palette instanceof BiMapPalette) {
 				ret.putAll(createWizardsBiMapPalette(map, (BiMapPalette<BlockState>)palette, container));
+			} else {
+				ret.putAll(createWizardsBruteForce(map, palette, container));
 			}
+			//TODO implementation for Lithium's palette
 		}
 
 		return ret;
@@ -78,7 +82,7 @@ public class WorldChunkMixin {
 	}
 
 	/**
-	 * @param knownWizards Integer ids inside this palettedContainer that are known to have wizards.
+	 * @param knownWizards `ids -> polys` of blocks inside this palettedContainer that are known to have wizards. This should only contain polys with wizards, not all polys.
 	 */
 	private Map<BlockPos, BlockWizard> createWizards(Int2ObjectMap<BlockPoly> knownWizards, PalettedContainer<BlockState> container) {
 		Map<BlockPos, BlockWizard> ret = new HashMap<>();
@@ -90,9 +94,28 @@ public class WorldChunkMixin {
 		PackedIntegerArray data = ((PalettedContainerAccessor<BlockState>)container).getData();
 		for (int i = 0; i < data.getSize(); i++) {
 			int id = data.get(i);
-			BlockPoly wiz = knownWizards.get(id);
-			if (wiz != null) {
-				ret.put(Util.fromPalettedContainerIndex(i), wiz.getWizard());
+			BlockPoly poly = knownWizards.get(id);
+			if (poly != null) {
+				ret.put(Util.fromPalettedContainerIndex(i), poly.getWizard());
+			}
+		}
+
+		return ret;
+	}
+
+	private Map<BlockPos, BlockWizard> createWizardsBruteForce(PolyMap map, Palette<BlockState> palette, PalettedContainer<BlockState> container) {
+		Map<BlockPos, BlockWizard> ret = new HashMap<>();
+
+		PackedIntegerArray data = ((PalettedContainerAccessor<BlockState>)container).getData();
+		for (int i = 0; i < data.getSize(); i++) {
+			int id = data.get(i);
+
+			BlockState state = palette.getByIndex(id);
+			if (state == null) throw new IllegalStateException(String.format("Id exists in data but not in palette. (local)ID: %d CONTAINER: %s DATA: %s PALETTE: %s", id, container, data, palette));
+
+			BlockPoly poly = map.getBlockPoly(state.getBlock());
+			if (poly != null && poly.hasWizard()) {
+				ret.put(Util.fromPalettedContainerIndex(i), poly.getWizard());
 			}
 		}
 
