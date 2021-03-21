@@ -26,7 +26,11 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +39,10 @@ import java.util.Map;
 @Mixin(WorldChunk.class)
 public abstract class WorldChunkMixin implements WatchListener {
 	@Shadow @Final private ChunkSection[] sections;
-
 	@Shadow public abstract World getWorld();
-
 	@Shadow public abstract ChunkPos getPos();
-
 	@Unique private final PolyMapMap<Map<BlockPos,BlockWizard>> wizards = new PolyMapMap<>(this::createWizardsForChunk);
+	@Unique private final ArrayList<ServerPlayerEntity> players = new ArrayList<>();
 
 	@Unique
 	private Map<BlockPos, BlockWizard> createWizardsForChunk(PolyMap map) {
@@ -144,17 +146,37 @@ public abstract class WorldChunkMixin implements WatchListener {
 	public void addPlayer(ServerPlayerEntity playerEntity) {
 		PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
 		this.wizards.get(map).values().forEach((wizard) -> wizard.addPlayer(playerEntity));
+		players.add(playerEntity);
 	}
 
 	@Override
 	public void removePlayer(ServerPlayerEntity playerEntity) {
 		PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
 		this.wizards.get(map).values().forEach((wizard) -> wizard.removePlayer(playerEntity));
+		players.remove(playerEntity);
 	}
 
 	@Override
 	public void removeAllPlayers() {
 		this.wizards.values().forEach((wizardMap) -> wizardMap.values().forEach(WatchListener::removeAllPlayers));
 		this.wizards.clear();
+		this.players.clear();
+	}
+
+	@Inject(method = "setBlockState", at = @At("TAIL"))
+	private void onSet(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> cir) {
+		wizards.forEach((polyMap, wizardMap) -> {
+			BlockWizard oldWiz = wizardMap.remove(pos);
+			if (oldWiz != null) oldWiz.onRemove();
+
+			BlockPoly poly = polyMap.getBlockPoly(state.getBlock());
+			if (poly != null && poly.hasWizard()) {
+				BlockWizard wiz = poly.createWizard(Vec3d.of(pos));
+				wizardMap.put(pos, wiz);
+				for (ServerPlayerEntity player : players) {
+					wiz.addPlayer(player);
+				}
+			}
+		});
 	}
 }

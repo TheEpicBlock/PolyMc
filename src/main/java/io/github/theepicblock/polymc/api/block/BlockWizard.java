@@ -12,6 +12,10 @@ public abstract class BlockWizard implements WatchListener {
         this.position = position;
     }
 
+    public void onRemove() {
+        this.removeAllPlayers();
+    }
+
     public void onMove() {}
     public void onStateChange() {}
 
