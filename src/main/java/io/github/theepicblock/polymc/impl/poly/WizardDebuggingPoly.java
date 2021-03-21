@@ -3,14 +3,22 @@ package io.github.theepicblock.polymc.impl.poly;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockWizard;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
+import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.passive.PigEntity;
+import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
+import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 //TODO remove once done debugging
 public class WizardDebuggingPoly implements BlockPoly {
@@ -38,7 +46,9 @@ public class WizardDebuggingPoly implements BlockPoly {
         return true;
     }
 
-    public class DebugWizard extends BlockWizard {
+    public static class DebugWizard extends BlockWizard {
+        private final int entityId = Util.getNewEntityId();
+        private final UUID uuid = MathHelper.randomUuid(ThreadLocalRandom.current());
         private final Block original;
         private final List<ServerPlayerEntity> players = new ArrayList<>();
 
@@ -47,23 +57,40 @@ public class WizardDebuggingPoly implements BlockPoly {
             this.original = original;
         }
 
+        private void add(ServerPlayerEntity player) {
+            player.networkHandler.sendPacket(new EntitySpawnS2CPacket(
+                    entityId,
+                    uuid,
+                    this.getPosition().x,
+                    this.getPosition().y,
+                    this.getPosition().z,
+                    0,
+                    0,
+                    EntityType.MINECART,
+                    0,
+                    Vec3d.ZERO
+            ));
+        }
+
+        private void rem(ServerPlayerEntity player) {
+            player.networkHandler.sendPacket(new EntitiesDestroyS2CPacket(this.entityId));
+        }
+
         @Override
         public void addPlayer(ServerPlayerEntity playerEntity) {
-            System.out.printf("%s at %s: I CAN SEE YOU, %s%n", original.getTranslationKey(), this.getPosition(), playerEntity);
+            add(playerEntity);
             players.add(playerEntity);
         }
 
         @Override
         public void removePlayer(ServerPlayerEntity playerEntity) {
-            System.out.printf("%s at %s: GOODBYEEEE, %s%n", original.getTranslationKey(), this.getPosition(), playerEntity);
+            rem(playerEntity);
             players.add(playerEntity);
         }
 
         @Override
         public void removeAllPlayers() {
-            players.forEach((player) -> {
-                System.out.printf("%s at %s: GOODBYEEEE, %s%n", original.getTranslationKey(), this.getPosition(), player);
-            });
+            players.forEach(this::rem);
         }
     }
 }

@@ -19,6 +19,7 @@ package io.github.theepicblock.polymc.impl;
 
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.mixins.wizards.block.EntityAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
@@ -232,5 +233,9 @@ public class Util {
 
     public static BlockPos fromPalettedContainerIndex(int index) {
         return new BlockPos(index & 0xF,(index >> 4) & 0xF,(index >> 8) & 0xF);
+    }
+
+    public static int getNewEntityId() {
+        return EntityAccessor.getMaxEntityId().incrementAndGet();
     }
 }
