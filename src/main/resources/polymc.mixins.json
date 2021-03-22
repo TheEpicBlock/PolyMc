@@ -40,6 +40,7 @@
     "item.ItemPolyImplementation",
     "wizards.EntityAccessor",
     "wizards.FallingBlockEntityMixin",
+    "wizards.MixinPistonBlockEntity",
     "wizards.block.BiMapPaletteAccessor",
     "wizards.block.ChunkHolderMixin",
     "wizards.block.EntityPositionPacketAccessor",
