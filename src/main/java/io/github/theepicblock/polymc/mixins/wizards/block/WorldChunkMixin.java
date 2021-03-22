@@ -4,6 +4,7 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.api.wizard.WizardView;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
@@ -32,7 +33,7 @@ import java.util.Map;
 
 @SuppressWarnings("unchecked")
 @Mixin(WorldChunk.class)
-public abstract class WorldChunkMixin implements WatchListener {
+public abstract class WorldChunkMixin implements WatchListener, WizardView {
 	@Shadow @Final private ChunkSection[] sections;
 	@Shadow public abstract World getWorld();
 	@Shadow public abstract ChunkPos getPos();
@@ -112,7 +113,7 @@ public abstract class WorldChunkMixin implements WatchListener {
 			BlockPoly poly = knownWizards.get(id);
 			if (poly != null) {
 				BlockPos pos = Util.fromPalettedContainerIndex(i).add(this.pos.x*16, yOffset, this.pos.z*16);
-				ret.put(pos, poly.createWizard(Vec3d.of(pos)));
+				ret.put(pos, poly.createWizard(Vec3d.of(pos).add(0.5,0,0.5), Wizard.WizardState.BLOCK));
 			}
 		}
 
@@ -132,7 +133,7 @@ public abstract class WorldChunkMixin implements WatchListener {
 			BlockPoly poly = map.getBlockPoly(state.getBlock());
 			if (poly != null && poly.hasWizard()) {
 				BlockPos pos = Util.fromPalettedContainerIndex(i).add(this.pos.x*16, yOffset, this.pos.z*16);
-				ret.put(pos, poly.createWizard(Vec3d.of(pos)));
+				ret.put(pos, poly.createWizard(Vec3d.of(pos).add(0.5,0,0.5), Wizard.WizardState.BLOCK));
 			}
 		}
 
@@ -169,12 +170,36 @@ public abstract class WorldChunkMixin implements WatchListener {
 			BlockPoly poly = polyMap.getBlockPoly(state.getBlock());
 			if (poly != null && poly.hasWizard()) {
 				BlockPos ipos = pos.toImmutable();
-				Wizard wiz = poly.createWizard(Vec3d.of(ipos));
+				Wizard wiz = poly.createWizard(Vec3d.of(ipos).add(0.5,0,0.5), Wizard.WizardState.BLOCK);
 				wizardMap.put(ipos, wiz);
 				for (ServerPlayerEntity player : players) {
 					wiz.addPlayer(player);
 				}
 			}
 		});
+	}
+
+	@Override
+	public PolyMapMap<Wizard> getWizards(BlockPos pos) {
+		PolyMapMap<Wizard> ret = new PolyMapMap<>(null);
+		this.wizards.forEach((polyMap, wizardMap) -> {
+			Wizard wizard = wizardMap.get(pos);
+			if (wizard != null) ret.put(polyMap, wizard);
+		});
+		return ret;
+	}
+
+	@Override
+	public PolyMapMap<Wizard> removeWizards(BlockPos pos, boolean move) {
+		PolyMapMap<Wizard> ret = new PolyMapMap<>(null);
+
+		this.wizards.forEach((polyMap, wizardMap) -> {
+			Wizard wizard = wizardMap.remove(pos);
+			if (wizard != null) {
+				if (!move) wizard.onRemove();
+				ret.put(polyMap, wizard);
+			}
+		});
+		return ret;
 	}
 }

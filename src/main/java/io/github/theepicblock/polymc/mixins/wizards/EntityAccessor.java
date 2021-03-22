@@ -1,4 +1,4 @@
-package io.github.theepicblock.polymc.mixins.wizards.block;
+package io.github.theepicblock.polymc.mixins.wizards;
 
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;

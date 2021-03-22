@@ -39,7 +39,7 @@ public interface BlockPoly extends DebugInfoProvider<Block> {
      */
     void AddToResourcePack(Block block, ResourcePackMaker pack);
 
-    default Wizard createWizard(Vec3d pos) {
+    default Wizard createWizard(Vec3d pos, Wizard.WizardState state) {
         return null;
     }
 

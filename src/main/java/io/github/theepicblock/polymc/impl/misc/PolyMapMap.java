@@ -27,7 +27,7 @@ public class PolyMapMap<K> extends Reference2ObjectArrayMap<PolyMap, K> {
 	public K get(Object k) {
 		K returnValue = super.get(k);
 
-		if (returnValue == null) {
+		if (returnValue == null && builder != null) {
 			returnValue = builder.apply((PolyMap)k);
 			this.put((PolyMap)k, returnValue);
 		}

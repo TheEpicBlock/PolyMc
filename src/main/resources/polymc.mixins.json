@@ -38,12 +38,15 @@
     "item.CustomRecipeFix",
     "item.InventoryDesyncPatch",
     "item.ItemPolyImplementation",
+    "wizards.EntityAccessor",
+    "wizards.FallingBlockEntityMixin",
     "wizards.block.BiMapPaletteAccessor",
     "wizards.block.ChunkHolderMixin",
-    "wizards.block.EntityAccessor",
+    "wizards.block.EntityPositionPacketAccessor",
     "wizards.block.PalettedContainerAccessor",
     "wizards.block.WatchProviderMixin",
-    "wizards.block.WorldChunkMixin"
+    "wizards.block.WorldChunkMixin",
+    "wizards.block.WorldWizardViewProvider"
   ],
   "injectors": {
     "defaultRequire": 1

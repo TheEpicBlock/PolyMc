@@ -9,6 +9,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
+import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.MathHelper;
@@ -36,8 +37,8 @@ public class WizardDebuggingPoly implements BlockPoly {
     public void AddToResourcePack(Block block, ResourcePackMaker pack) {}
 
     @Override
-    public Wizard createWizard(Vec3d pos) {
-        return new DebugWizard(original, pos);
+    public Wizard createWizard(Vec3d pos, Wizard.WizardState state) {
+        return new DebugWizard(original, pos, state);
     }
 
     @Override
@@ -51,8 +52,8 @@ public class WizardDebuggingPoly implements BlockPoly {
         private final Block original;
         private final List<ServerPlayerEntity> players = new ArrayList<>();
 
-        public DebugWizard(Block original, Vec3d position) {
-            super(position);
+        public DebugWizard(Block original, Vec3d position, WizardState state) {
+            super(position, state);
             this.original = original;
         }
 
@@ -69,6 +70,22 @@ public class WizardDebuggingPoly implements BlockPoly {
                     0,
                     Vec3d.ZERO
             ));
+        }
+
+        @Override
+        public void onMove() {
+            players.forEach((player) -> {
+                add(player); //bypasses interpolation
+//                player.networkHandler.sendPacket(Util.createEntityPositionPacket(
+//                        this.entityId,
+//                        this.getPosition().x,
+//                        this.getPosition().y,
+//                        this.getPosition().z,
+//                        (byte)0,
+//                        (byte)0,
+//                        false
+//                ));
+            });
         }
 
         private void rem(ServerPlayerEntity player) {
