@@ -173,8 +173,9 @@ public abstract class WorldChunkMixin implements WatchListener {
 
 			BlockPoly poly = polyMap.getBlockPoly(state.getBlock());
 			if (poly != null && poly.hasWizard()) {
-				BlockWizard wiz = poly.createWizard(Vec3d.of(pos));
-				wizardMap.put(pos, wiz);
+				BlockPos ipos = pos.toImmutable();
+				BlockWizard wiz = poly.createWizard(Vec3d.of(ipos));
+				wizardMap.put(ipos, wiz);
 				for (ServerPlayerEntity player : players) {
 					wiz.addPlayer(player);
 				}
