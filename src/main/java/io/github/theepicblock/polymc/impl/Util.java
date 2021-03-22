@@ -232,7 +232,7 @@ public class Util {
     }
 
     public static BlockPos fromPalettedContainerIndex(int index) {
-        return new BlockPos(index & 0xF,(index >> 4) & 0xF,(index >> 8) & 0xF);
+        return new BlockPos(index & 0xF,(index >> 8) & 0xF, (index >> 4) & 0xF);
     }
 
     public static int getNewEntityId() {
