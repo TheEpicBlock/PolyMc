@@ -2,19 +2,15 @@ package io.github.theepicblock.polymc.mixins.wizards.block;
 
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.api.block.BlockWizard;
+import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
-import io.github.theepicblock.polymc.impl.mixin.Ticker;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.util.collection.Int2ObjectBiMap;
 import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.util.math.BlockPos;
@@ -32,7 +28,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
@@ -43,12 +38,12 @@ public abstract class WorldChunkMixin implements WatchListener {
 	@Shadow public abstract ChunkPos getPos();
 
 	@Shadow @Final private ChunkPos pos;
-	@Unique private final PolyMapMap<Map<BlockPos,BlockWizard>> wizards = new PolyMapMap<>(this::createWizardsForChunk);
+	@Unique private final PolyMapMap<Map<BlockPos,Wizard>> wizards = new PolyMapMap<>(this::createWizardsForChunk);
 	@Unique private final ArrayList<ServerPlayerEntity> players = new ArrayList<>();
 
 	@Unique
-	private Map<BlockPos, BlockWizard> createWizardsForChunk(PolyMap map) {
-		Map<BlockPos, BlockWizard> ret = new HashMap<>();
+	private Map<BlockPos,Wizard> createWizardsForChunk(PolyMap map) {
+		Map<BlockPos,Wizard> ret = new HashMap<>();
 
 		for (ChunkSection section : this.sections) {
 			if (section == null) continue;
@@ -69,7 +64,7 @@ public abstract class WorldChunkMixin implements WatchListener {
 	}
 
 	@Unique
-	private Map<BlockPos, BlockWizard> createWizardsBiMapPalette(PolyMap polyMap, BiMapPalette<BlockState> palette, PalettedContainer<BlockState> container, int yOffset) {
+	private Map<BlockPos,Wizard> createWizardsBiMapPalette(PolyMap polyMap, BiMapPalette<BlockState> palette, PalettedContainer<BlockState> container, int yOffset) {
 		Int2ObjectMap<BlockPoly> idToWizMap = new Int2ObjectArrayMap<>(5);
 		Int2ObjectBiMap<BlockState> map = ((BiMapPaletteAccessor<BlockState>)palette).getMap();
 
@@ -86,7 +81,7 @@ public abstract class WorldChunkMixin implements WatchListener {
 	}
 
 	@Unique
-	private Map<BlockPos, BlockWizard> createWizardsArrayPalette(PolyMap map, ArrayPalette<BlockState> palette, PalettedContainer<BlockState> container, int yOffset) {
+	private Map<BlockPos,Wizard> createWizardsArrayPalette(PolyMap map, ArrayPalette<BlockState> palette, PalettedContainer<BlockState> container, int yOffset) {
 		Int2ObjectMap<BlockPoly> idToWizMap = new Int2ObjectArrayMap<>(5);
 		for (int i = 0; i < palette.getSize(); i++) {
 			BlockState state = palette.getByIndex(i);
@@ -104,8 +99,8 @@ public abstract class WorldChunkMixin implements WatchListener {
 	/**
 	 * @param knownWizards `ids -> polys` of blocks inside this palettedContainer that are known to have wizards. This should only contain polys with wizards, not all polys.
 	 */
-	private Map<BlockPos, BlockWizard> createWizards(Int2ObjectMap<BlockPoly> knownWizards, PalettedContainer<BlockState> container, int yOffset) {
-		Map<BlockPos, BlockWizard> ret = new HashMap<>();
+	private Map<BlockPos,Wizard> createWizards(Int2ObjectMap<BlockPoly> knownWizards, PalettedContainer<BlockState> container, int yOffset) {
+		Map<BlockPos,Wizard> ret = new HashMap<>();
 
 		if (knownWizards.size() == 0) {
 			return ret;
@@ -124,8 +119,8 @@ public abstract class WorldChunkMixin implements WatchListener {
 		return ret;
 	}
 
-	private Map<BlockPos, BlockWizard> createWizardsBruteForce(PolyMap map, Palette<BlockState> palette, PalettedContainer<BlockState> container, int yOffset) {
-		Map<BlockPos, BlockWizard> ret = new HashMap<>();
+	private Map<BlockPos,Wizard> createWizardsBruteForce(PolyMap map, Palette<BlockState> palette, PalettedContainer<BlockState> container, int yOffset) {
+		Map<BlockPos,Wizard> ret = new HashMap<>();
 
 		PackedIntegerArray data = ((PalettedContainerAccessor<BlockState>)container).getData();
 		for (int i = 0; i < data.getSize(); i++) {
@@ -168,13 +163,13 @@ public abstract class WorldChunkMixin implements WatchListener {
 	@Inject(method = "setBlockState", at = @At("TAIL"))
 	private void onSet(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> cir) {
 		wizards.forEach((polyMap, wizardMap) -> {
-			BlockWizard oldWiz = wizardMap.remove(pos);
+			Wizard oldWiz = wizardMap.remove(pos);
 			if (oldWiz != null) oldWiz.onRemove();
 
 			BlockPoly poly = polyMap.getBlockPoly(state.getBlock());
 			if (poly != null && poly.hasWizard()) {
 				BlockPos ipos = pos.toImmutable();
-				BlockWizard wiz = poly.createWizard(Vec3d.of(ipos));
+				Wizard wiz = poly.createWizard(Vec3d.of(ipos));
 				wizardMap.put(ipos, wiz);
 				for (ServerPlayerEntity player : players) {
 					wiz.addPlayer(player);

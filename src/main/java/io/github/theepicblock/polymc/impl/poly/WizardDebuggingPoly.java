@@ -1,14 +1,13 @@
 package io.github.theepicblock.polymc.impl.poly;
 
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.api.block.BlockWizard;
+import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -37,7 +36,7 @@ public class WizardDebuggingPoly implements BlockPoly {
     public void AddToResourcePack(Block block, ResourcePackMaker pack) {}
 
     @Override
-    public BlockWizard createWizard(Vec3d pos) {
+    public Wizard createWizard(Vec3d pos) {
         return new DebugWizard(original, pos);
     }
 
@@ -46,7 +45,7 @@ public class WizardDebuggingPoly implements BlockPoly {
         return true;
     }
 
-    public static class DebugWizard extends BlockWizard {
+    public static class DebugWizard extends Wizard {
         private final int entityId = Util.getNewEntityId();
         private final UUID uuid = MathHelper.randomUuid(ThreadLocalRandom.current());
         private final Block original;

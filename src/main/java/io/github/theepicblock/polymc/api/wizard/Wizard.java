@@ -1,14 +1,14 @@
-package io.github.theepicblock.polymc.api.block;
+package io.github.theepicblock.polymc.api.wizard;
 
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
 
-public abstract class BlockWizard implements WatchListener {
+public abstract class Wizard implements WatchListener {
     private Vec3d position;
     private WizardState state;
 
-    public BlockWizard(Vec3d position) {
+    public Wizard(Vec3d position) {
         this.position = position;
     }
 
