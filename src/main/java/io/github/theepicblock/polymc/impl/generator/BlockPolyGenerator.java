@@ -142,6 +142,11 @@ public class BlockPolyGenerator {
                     return new SingleUnusedBlockStatePoly(builder, BlockStateProfile.NO_COLLISION_PROFILE);
                 } catch (BlockStateManager.StateLimitReachedException ignored) {}
             }
+            if (block instanceof FluidFillable && !block.getFluidState(state).isEmpty()) {
+                try { //handles waterloggable blocks
+                    return new UnusedBlockStatePoly(block, builder, BlockStateProfile.KELP_PROFILE);
+                } catch (BlockStateManager.StateLimitReachedException ignored) {}
+            }
             try {
                 return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NO_COLLISION_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
