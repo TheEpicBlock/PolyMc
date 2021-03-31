@@ -73,18 +73,19 @@ public class PolyMcCommands {
                     .then(literal("generate")
                         .then(literal("resources")
                             .executes((context -> {
-                                ErrorTrackerWrapper logger = new ErrorTrackerWrapper(new CommandSourceLogger(context.getSource(), true));
+                                SimpleLogger commandSource = new CommandSourceLogger(context.getSource(), true);
+                                ErrorTrackerWrapper logger = new ErrorTrackerWrapper(PolyMc.LOGGER);
                                 try {
                                     ResourcePackGenerator.generate(PolyMc.getMainMap(), "resource", logger);
                                 } catch (Exception e) {
-                                    logger.info("An error occurred whilst trying to generate the resource pack! Please check the console.");
+                                    commandSource.info("An error occurred whilst trying to generate the resource pack! Please check the console.");
                                     e.printStackTrace();
                                     return 0;
                                 }
                                 if (logger.errors != 0) {
-                                    logger.error("There have been errors whilst generating the resource pack. These are usually completely normal. It only means that PolyMc couldn't find some of the textures or models. See the console for more info.");
+                                    commandSource.error("There have been errors whilst generating the resource pack. These are usually completely normal. It only means that PolyMc couldn't find some of the textures or models. See the console for more info.");
                                 }
-                                logger.info("Finished generating resource pack");
+                                commandSource.info("Finished generating resource pack");
                                 return Command.SINGLE_SUCCESS;
                             })))
                         .then(literal("polyDump")

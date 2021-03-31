@@ -22,6 +22,8 @@ import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.impl.PolyMcCommands;
 import io.github.theepicblock.polymc.impl.generator.Generator;
+import io.github.theepicblock.polymc.impl.misc.logging.Log4JWrapper;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -31,7 +33,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 
 public class PolyMc implements ModInitializer {
-    public static final Logger LOGGER = LogManager.getLogger("PolyMc");
+    public static final SimpleLogger LOGGER = new Log4JWrapper(LogManager.getLogger("PolyMc"));
     private static PolyMap map;
 
     /**
