@@ -92,6 +92,7 @@ public class BlockStateManager {
      * @return True if that amount of blockstates are available.
      */
     public boolean isAvailable(BlockStateProfile stateProfile, int amount) {
+        if (amount == 0) return true;
         int goodBlocks = 0;
         for (Block block : stateProfile.blocks) {
             int current = blockStateUsageCounter.getOrDefault(block,0); //this is the current blockstateId that we're at for this item/

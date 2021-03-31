@@ -143,7 +143,10 @@ public class BlockPolyGenerator {
                 } catch (BlockStateManager.StateLimitReachedException ignored) {}
             }
             try {
-                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NO_COLLISION_PROFILE);
+                return new SwitchingUnusedBlockStatePoly(block, builder,
+                        BlockStateProfile.KELP_PROFILE, // Chosen if the block state has a fluid state. (For waterlogable blocks)
+                        BlockStateProfile.NO_COLLISION_PROFILE, // Chosen if the block state doesn't have a fluid state
+                        (blockState) -> ((BlockState)blockState).getFluidState().isEmpty());
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
