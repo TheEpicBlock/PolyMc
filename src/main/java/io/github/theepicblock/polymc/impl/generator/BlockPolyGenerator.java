@@ -23,7 +23,6 @@ import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockStateManager;
 import io.github.theepicblock.polymc.api.block.BlockStateProfile;
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.poly.WizardDebuggingPoly;
 import io.github.theepicblock.polymc.impl.poly.block.*;
 import io.github.theepicblock.polymc.mixins.block.MaterialAccessor;
 import net.minecraft.block.*;
@@ -62,10 +61,6 @@ public class BlockPolyGenerator {
      * Generates the most suitable BlockPoly for a given block
      */
     public static BlockPoly generatePoly(Block block, PolyRegistry builder) {
-        if (true) { //TODO remove once done debugging
-            return new WizardDebuggingPoly(block);
-        }
-
         BlockState state = block.getDefaultState();
         FakedWorld fakeWorld = new FakedWorld(state);
 
