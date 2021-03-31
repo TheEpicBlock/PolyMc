@@ -25,6 +25,7 @@ import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import io.github.theepicblock.polymc.api.resource.JsonSoundsRegistry;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.ConfigManager;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.util.Identifier;
@@ -44,9 +45,10 @@ public class ResourcePackGenerator {
      * Generates a resource pack
      * @param map {@link PolyMap} to generate the resource from
      * @param directory directory to output files in. Relative to the game directory
+     * @param logger output of the log messages
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static void generate(PolyMap map, String directory) {
+    public static void generate(PolyMap map, String directory, SimpleLogger logger) {
         Path gameDir = FabricLoader.getInstance().getGameDir();
         Path resourcePath = gameDir.resolve(directory).toAbsolutePath();
         resourcePath.toFile().mkdir();
@@ -56,9 +58,9 @@ public class ResourcePackGenerator {
             File tempDir = gameDir.resolve("resource_temp").toFile();
             tempDir.mkdirs();
             Path tempPath = tempDir.toPath().toAbsolutePath();
-            pack = new AdvancedResourcePackMaker(resourcePath, tempPath);
+            pack = new AdvancedResourcePackMaker(resourcePath, tempPath, logger);
         } else {
-            pack = new ResourcePackMaker(resourcePath);
+            pack = new ResourcePackMaker(resourcePath, logger);
 
             if (FabricLoader.getInstance().getModContainer("artifice").isPresent()) {
                 PolyMc.LOGGER.error("Artifice was detected, but the default PolyMc resource pack maker is not compatible with Artifice");

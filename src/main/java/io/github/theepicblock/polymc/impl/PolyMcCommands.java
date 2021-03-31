@@ -22,6 +22,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.api.PolyMap;
+import io.github.theepicblock.polymc.impl.misc.logging.CommandSourceLogger;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackGenerator;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
@@ -69,14 +71,15 @@ public class PolyMcCommands {
                     .then(literal("generate")
                         .then(literal("resources")
                             .executes((context -> {
+                                SimpleLogger logger = new CommandSourceLogger(context.getSource(), true);
                                 try {
-                                    ResourcePackGenerator.generate(PolyMc.getMainMap(), "resource");
+                                    ResourcePackGenerator.generate(PolyMc.getMainMap(), "resource", logger);
                                 } catch (Exception e) {
-                                    context.getSource().sendFeedback(new LiteralText("An error occurred whilst trying to generate the resource pack! Please check the console."), true);
+                                    logger.info("An error occurred whilst trying to generate the resource pack! Please check the console.");
                                     e.printStackTrace();
                                     return 0;
                                 }
-                                context.getSource().sendFeedback(new LiteralText("Finished generating"), true);
+                                logger.info("Finished generating");
                                 return Command.SINGLE_SUCCESS;
                             })))
                         .then(literal("polyDump")

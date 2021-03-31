@@ -23,6 +23,7 @@ import com.google.gson.stream.JsonReader;
 import com.swordglowsblue.artifice.api.ArtificeResourcePack;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.AdvancedResourcePackMaker;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -48,15 +49,17 @@ public class ResourcePackMaker {
     public static final String SOUNDS = "sounds/";
     public static final String BLOCKSTATES = "blockstates/";
 
-    protected final Path BuildLocation;
+    protected final Path buildLocation;
+    protected final SimpleLogger logger;
     protected final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
     private final List<Identifier> copiedModels = new ArrayList<>();
     private final Map<Identifier,JsonModel> modelsToSave = new HashMap<>();
     private final Map<Identifier,JsonBlockState> blockStatesToSave = new HashMap<>();
 
-    public ResourcePackMaker(Path buildLocation) {
-        BuildLocation = buildLocation;
+    public ResourcePackMaker(Path buildLocation, SimpleLogger logger) {
+        this.buildLocation = buildLocation;
+        this.logger = logger;
     }
 
     /**
@@ -270,8 +273,8 @@ public class ResourcePackMaker {
         if (pack instanceof ArtificeResourcePack) {
             packname = ((ArtificeResourcePack)pack).getName();
         }
-        PolyMc.LOGGER.warn(String.format("Tried to import Artifice resource pack '%s' but this isn't supported with the default discovery method", packname));
-        PolyMc.LOGGER.warn("Please switch to the advancedDiscovery method. See https://github.com/TheEpicBlock/PolyMc/wiki/ModCompat#artifice");
+        logger.warn(String.format("Tried to import Artifice resource pack '%s' but this isn't supported with the default discovery method", packname));
+        logger.warn("Please switch to the advancedDiscovery method. See https://github.com/TheEpicBlock/PolyMc/wiki/ModCompat#artifice");
     }
 
     /**
@@ -405,18 +408,18 @@ public class ResourcePackMaker {
         if (modId.equals("minecraft")) return; //we can't access minecraft resources easily
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
-            PolyMc.LOGGER.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
+            logger.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
             return;
         }
 
         ModContainer mod = modOpt.get();
         Path pathInJar = mod.getPath(path);
-        Path newLoc = BuildLocation.resolve(newLocation);
+        Path newLoc = buildLocation.resolve(newLocation);
         boolean c = newLoc.toFile().getParentFile().mkdirs();
         try {
             Util.copyAll(pathInJar, newLoc);
         } catch (IOException e) {
-            PolyMc.LOGGER.warn(String.format("Failed to get folder from mod jar '%s' path: %s", modId, path));
+            logger.warn(String.format("Failed to get folder from mod jar '%s' path: %s", modId, path));
         }
     }
 
@@ -443,7 +446,7 @@ public class ResourcePackMaker {
         if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
-            PolyMc.LOGGER.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
+            logger.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
             return null;
         }
 
@@ -452,7 +455,7 @@ public class ResourcePackMaker {
         try {
             return new InputStreamReader(Files.newInputStream(pathInJar, StandardOpenOption.READ));
         } catch (IOException e) {
-            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod jar '%s' path: '%s'", modId, path));
+            logger.warn(String.format("Failed to get resource from mod jar '%s' path: '%s'", modId, path));
         }
         return null;
     }
@@ -511,20 +514,20 @@ public class ResourcePackMaker {
         if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
-            PolyMc.LOGGER.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
+            logger.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
             return null;
         }
 
         ModContainer mod = modOpt.get();
         Path pathInJar = mod.getPath(path);
-        Path newLoc = BuildLocation.resolve(path);
+        Path newLoc = buildLocation.resolve(path);
         if (Files.exists(newLoc)) {return newLoc;} //Avoid copying twice
 
         boolean c = newLoc.toFile().getParentFile().mkdirs();
         try {
             return Files.copy(pathInJar, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod jar '%s' path: %s", modId, path));
+            logger.warn(String.format("Failed to get resource from mod jar '%s' path: %s", modId, path));
             return null;
         }
     }
@@ -542,7 +545,7 @@ public class ResourcePackMaker {
      * It is advised not to write directly into this directory unless there is no other method.
      */
     public Path getBuildLocation() {
-        return BuildLocation;
+        return buildLocation;
     }
 
     /**
@@ -552,7 +555,7 @@ public class ResourcePackMaker {
     public void saveAll() {
         modelsToSave.forEach((id, model) -> {
             String json = model.toJson(gson);
-            Path path = BuildLocation.resolve(String.format("%s%s/%s%s.json", ASSETS, id.getNamespace(), MODELS, id.getPath()));
+            Path path = buildLocation.resolve(String.format("%s%s/%s%s.json", ASSETS, id.getNamespace(), MODELS, id.getPath()));
             path.toFile().getParentFile().mkdirs();
             try {
                 Files.write(path, json.getBytes());
@@ -563,7 +566,7 @@ public class ResourcePackMaker {
 
         blockStatesToSave.forEach((id, blockState) -> {
             String json = gson.toJson(blockState);
-            Path path = BuildLocation.resolve(String.format("%s%s/%s%s.json", ASSETS, id.getNamespace(), BLOCKSTATES, id.getPath()));
+            Path path = buildLocation.resolve(String.format("%s%s/%s%s.json", ASSETS, id.getNamespace(), BLOCKSTATES, id.getPath()));
             path.toFile().getParentFile().mkdirs();
             try {
                 Files.write(path, json.getBytes());

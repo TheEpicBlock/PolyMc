@@ -23,6 +23,7 @@ import com.swordglowsblue.artifice.impl.ArtificeResourcePackImpl;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -45,8 +46,8 @@ import java.util.function.Consumer;
 public class AdvancedResourcePackMaker extends ResourcePackMaker {
     protected final Path tempLocation;
 
-    public AdvancedResourcePackMaker(Path buildLocation, Path tempLocation) {
-        super(buildLocation);
+    public AdvancedResourcePackMaker(Path buildLocation, Path tempLocation, SimpleLogger logger) {
+        super(buildLocation, logger);
         this.tempLocation = tempLocation;
 
         //Get all assets from all mods and copy it into a temporary location
@@ -93,7 +94,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
         if (modId.equals("minecraft")) return null;
 
         Path filePath = tempLocation.resolve(path);
-        Path newLoc = BuildLocation.resolve(path);
+        Path newLoc = buildLocation.resolve(path);
         //noinspection ResultOfMethodCallIgnored
         newLoc.toFile().getParentFile().mkdirs();
         try {
