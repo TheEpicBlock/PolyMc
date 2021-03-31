@@ -70,7 +70,7 @@ public class PolyMcCommands {
                         .then(literal("resources")
                             .executes((context -> {
                                 try {
-                                    ResourcePackGenerator.generate();
+                                    ResourcePackGenerator.generate(PolyMc.getMainMap(), "resource");
                                 } catch (Exception e) {
                                     context.getSource().sendFeedback(new LiteralText("An error occurred whilst trying to generate the resource pack! Please check the console."), true);
                                     e.printStackTrace();

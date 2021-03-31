@@ -20,6 +20,7 @@ package io.github.theepicblock.polymc.impl.resource;
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import io.github.theepicblock.polymc.api.resource.JsonSoundsRegistry;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
@@ -39,10 +40,15 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public class ResourcePackGenerator {
+    /**
+     * Generates a resource pack
+     * @param map {@link PolyMap} to generate the resource from
+     * @param directory directory to output files in. Relative to the game directory
+     */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static void generate() {
+    public static void generate(PolyMap map, String directory) {
         Path gameDir = FabricLoader.getInstance().getGameDir();
-        Path resourcePath = gameDir.resolve("resource").toAbsolutePath();
+        Path resourcePath = gameDir.resolve(directory).toAbsolutePath();
         resourcePath.toFile().mkdir();
 
         ResourcePackMaker pack;
@@ -82,7 +88,7 @@ public class ResourcePackGenerator {
         }
 
         //Hooks for all itempolys
-        PolyMc.getMainMap().getItemPolys().forEach((item, itemPoly) -> {
+        map.getItemPolys().forEach((item, itemPoly) -> {
             try {
                 itemPoly.AddToResourcePack(item, pack);
             } catch (Exception e) {
@@ -92,7 +98,7 @@ public class ResourcePackGenerator {
         });
 
         //Hooks for all blockpolys
-        PolyMc.getMainMap().getBlockPolys().forEach((block, blockPoly) -> {
+        map.getBlockPolys().forEach((block, blockPoly) -> {
             try {
                 blockPoly.AddToResourcePack(block, pack);
             } catch (Exception e) {
