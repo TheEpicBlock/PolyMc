@@ -57,7 +57,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
             try {
                 Util.copyAll(assets,tempLocation);
             } catch (IOException e) {
-                PolyMc.LOGGER.warn("Failed to get resources from mod " + mod.getMetadata().getId());
+                logger.warn("Failed to get resources from mod " + mod.getMetadata().getId());
                 e.printStackTrace();
             }
         });
@@ -79,8 +79,8 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
                 Path artLoc = FabricLoader.getInstance().getGameDir().relativize(tempLocation);
                 aPack.dumpResources(artLoc.toString());
             } catch (IOException e) {
-                PolyMc.LOGGER.warn(String.format("Failed to get resources from artifice pack '%s'", aPack.getName()));
-                PolyMc.LOGGER.warn(e);
+                logger.warn(String.format("Failed to get resources from artifice pack '%s'", aPack.getName()));
+                logger.warn(e);
             }
         }
         if (pack instanceof Consumer) {
@@ -100,7 +100,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
         try {
             return Files.copy(filePath, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod '%s' path: '%s'", modId, path));
+            logger.warn(String.format("Failed to get resource from mod '%s' path: '%s'", modId, path));
         }
         return null;
     }
@@ -121,7 +121,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
         try {
             return new InputStreamReader(Files.newInputStream(filePath, StandardOpenOption.READ));
         } catch (IOException e) {
-            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod '%s' path: '%s'", modId, path));
+            logger.warn(String.format("Failed to get resource from mod '%s' path: '%s'", modId, path));
         }
         return null;
     }
@@ -133,8 +133,8 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
         try {
             FileUtils.deleteDirectory(tempLocation.toFile());
         } catch (IOException e) {
-            PolyMc.LOGGER.warn("Couldn't delete temporary file");
-            PolyMc.LOGGER.warn(e);
+            logger.warn("Couldn't delete temporary file");
+            logger.warn(e);
         }
     }
 }

@@ -67,7 +67,7 @@ public class SingleUnusedBlockStatePoly implements BlockPoly {
         String clientStateString = Util.getPropertiesFromBlockState(newBlockState);
 
         JsonElement moddedVariants = moddedBlockStates.getVariantBestMatching(block.getDefaultState());
-        if (moddedVariants == null) PolyMc.LOGGER.warn("Couldn't get blockstate definition for "+block.getDefaultState());
+        if (moddedVariants == null) pack.getLogger().warn("Couldn't get blockstate definition for "+block.getDefaultState());
         clientBlockStates.variants.put(clientStateString, moddedVariants);
 
         for (JsonBlockState.Variant v : JsonBlockState.getVariantsFromJsonElement(moddedVariants)) {

@@ -63,8 +63,8 @@ public class ResourcePackGenerator {
             pack = new ResourcePackMaker(resourcePath, logger);
 
             if (FabricLoader.getInstance().getModContainer("artifice").isPresent()) {
-                PolyMc.LOGGER.error("Artifice was detected, but the default PolyMc resource pack maker is not compatible with Artifice");
-                PolyMc.LOGGER.error("Please switch to the advanced generator in the config.");
+                logger.error("Artifice was detected, but the default PolyMc resource pack maker is not compatible with Artifice");
+                logger.error("Please switch to the advanced generator in the config.");
             }
         }
 
@@ -74,7 +74,7 @@ public class ResourcePackGenerator {
             try {
                 FileUtils.deleteDirectory(assetsFolder);
             } catch (IOException e) {
-                PolyMc.LOGGER.warn("Couldn't delete the assets folder. There may still be some unneeded files in there");
+                logger.warn("Couldn't delete the assets folder. There may still be some unneeded files in there");
             }
         }
 
@@ -94,7 +94,7 @@ public class ResourcePackGenerator {
             try {
                 itemPoly.AddToResourcePack(item, pack);
             } catch (Exception e) {
-                PolyMc.LOGGER.warn("Exception whilst generating resources for " + item.getTranslationKey());
+                logger.warn("Exception whilst generating resources for " + item.getTranslationKey());
                 e.printStackTrace();
             }
         });
@@ -104,7 +104,7 @@ public class ResourcePackGenerator {
             try {
                 blockPoly.AddToResourcePack(block, pack);
             } catch (Exception e) {
-                PolyMc.LOGGER.warn("Exception whilst generating resources for " + block.getTranslationKey());
+                logger.warn("Exception whilst generating resources for " + block.getTranslationKey());
                 e.printStackTrace();
             }
         });
@@ -120,7 +120,7 @@ public class ResourcePackGenerator {
                     pack.copyAsset(modId, "lang/" + langPath.relativize(langFile));
                 });
             } catch (Exception e) {
-                PolyMc.LOGGER.warn("Exception whilst copying lang files from " + modId);
+                logger.warn("Exception whilst copying lang files from " + modId);
                 e.printStackTrace();
             }
         }
@@ -143,7 +143,7 @@ public class ResourcePackGenerator {
                             String namespaceString = JsonSoundsRegistry.getNamespace(soundEntry);
                             Identifier namespace = Identifier.tryParse(namespaceString);
                             if (namespace == null) {
-                                PolyMc.LOGGER.warn(String.format("Invalid sound id %s in %s provided by %s", namespaceString, soundEventEntry.category, modId));
+                                logger.warn(String.format("Invalid sound id %s in %s provided by %s", namespaceString, soundEventEntry.category, modId));
                                 continue;
                             }
 
@@ -151,7 +151,7 @@ public class ResourcePackGenerator {
                         }
                     });
                 } catch (Exception e) {
-                    PolyMc.LOGGER.error("Failed to copy sounds.json for mod: "+modId);
+                    logger.error("Failed to copy sounds.json for mod: "+modId);
                     e.printStackTrace();
                 }
             }

@@ -69,7 +69,7 @@ public class PoweredStateBlockPoly extends PropertyRetainingReplacementPoly{
             String clientStateString = Util.getPropertiesFromBlockState(poweredState);
 
             JsonElement moddedVariants = moddedBlockStates.getVariantBestMatching(poweredState);
-            if (moddedVariants == null) PolyMc.LOGGER.warn("Couldn't get blockstate definition for "+poweredState);
+            if (moddedVariants == null) pack.getLogger().warn("Couldn't get blockstate definition for "+poweredState);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
 
             for (JsonBlockState.Variant v : JsonBlockState.getVariantsFromJsonElement(moddedVariants)) {

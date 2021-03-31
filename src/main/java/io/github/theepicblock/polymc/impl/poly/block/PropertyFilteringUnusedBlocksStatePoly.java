@@ -144,7 +144,7 @@ public class PropertyFilteringUnusedBlocksStatePoly implements BlockPoly {
             String clientStateString = Util.getPropertiesFromBlockState(clientState);
 
             JsonElement moddedVariants = moddedBlockStates.getVariantBestMatching(moddedState);
-            if (moddedVariants == null) PolyMc.LOGGER.warn("Couldn't get blockstate definition for "+moddedState);
+            if (moddedVariants == null) pack.getLogger().warn("Couldn't get blockstate definition for "+moddedState);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
 
             for (JsonBlockState.Variant v : JsonBlockState.getVariantsFromJsonElement(moddedVariants)) {

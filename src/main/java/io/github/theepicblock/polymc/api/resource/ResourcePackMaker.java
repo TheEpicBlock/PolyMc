@@ -548,6 +548,10 @@ public class ResourcePackMaker {
         return buildLocation;
     }
 
+    public SimpleLogger getLogger() {
+        return logger;
+    }
+
     /**
      * Saves all in-memory changes to the disk.
      */
