@@ -24,6 +24,7 @@ import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.impl.misc.PolyDumper;
 import io.github.theepicblock.polymc.impl.misc.logging.CommandSourceLogger;
+import io.github.theepicblock.polymc.impl.misc.logging.ErrorTrackerWrapper;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackGenerator;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
@@ -72,13 +73,16 @@ public class PolyMcCommands {
                     .then(literal("generate")
                         .then(literal("resources")
                             .executes((context -> {
-                                SimpleLogger logger = new CommandSourceLogger(context.getSource(), true);
+                                ErrorTrackerWrapper logger = new ErrorTrackerWrapper(new CommandSourceLogger(context.getSource(), true));
                                 try {
                                     ResourcePackGenerator.generate(PolyMc.getMainMap(), "resource", logger);
                                 } catch (Exception e) {
                                     logger.info("An error occurred whilst trying to generate the resource pack! Please check the console.");
                                     e.printStackTrace();
                                     return 0;
+                                }
+                                if (logger.errors != 0) {
+                                    logger.error("There have been errors whilst generating the resource pack. These are usually completely normal. It only means that PolyMc couldn't find some of the textures or models. See the console for more info.");
                                 }
                                 logger.info("Finished generating resource pack");
                                 return Command.SINGLE_SUCCESS;
