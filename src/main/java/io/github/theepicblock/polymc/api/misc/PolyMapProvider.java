@@ -46,7 +46,6 @@ public interface PolyMapProvider {
 	 */
 	default void refreshUsedPolyMap() {
 		this.setPolyMap(EVENT.invoke((ServerPlayerEntity)this));
-		System.out.println("Set poly for "+this+": "+this.getPolyMap());
 	}
 
 	/**
