@@ -10,6 +10,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,9 +23,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class FallingBlockEntityMixin extends Entity implements WatchListener {
     @Shadow private BlockState block;
     @Unique private final PolyMapMap<Wizard> wizards = new PolyMapMap<>((map) -> {
+        if (!(world instanceof ServerWorld)) return null;
+
         BlockPoly poly = map.getBlockPoly(this.block.getBlock());
         if (poly != null && poly.hasWizard()) {
-            return poly.createWizard(this.getPos(), Wizard.WizardState.FALLING_BLOCK);
+            return poly.createWizard((ServerWorld)this.world, this.getPos(), Wizard.WizardState.FALLING_BLOCK);
         }
         return null;
     });

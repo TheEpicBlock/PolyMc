@@ -31,9 +31,13 @@ public abstract class MixinPistonBlockEntity extends BlockEntity {
     @Shadow private Direction facing;
     @Unique
     private final PolyMapMap<Wizard> wizards = new PolyMapMap<>((map) -> {
+        if (!(world instanceof ServerWorld)) return null;
+
         BlockPoly poly = map.getBlockPoly(this.pushedBlock.getBlock());
         if (poly != null && poly.hasWizard()) {
-            return poly.createWizard(Vec3d.of(this.getPos()).add(0.5,0,0.5), Wizard.WizardState.FALLING_BLOCK);
+            return poly.createWizard((ServerWorld)this.world,
+                    Vec3d.of(this.getPos()).add(0.5,0,0.5),
+                    Wizard.WizardState.FALLING_BLOCK);
         }
         return null;
     });

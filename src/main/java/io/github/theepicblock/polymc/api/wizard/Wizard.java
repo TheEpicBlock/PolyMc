@@ -2,13 +2,16 @@ package io.github.theepicblock.polymc.api.wizard;
 
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
 
 public abstract class Wizard implements WatchListener {
+    private final ServerWorld world;
     private Vec3d position;
     private WizardState state;
 
-    public Wizard(Vec3d position, WizardState state) {
+    public Wizard(ServerWorld world, Vec3d position, WizardState state) {
+        this.world = world;
         this.position = position;
         this.state = state;
     }
@@ -18,7 +21,12 @@ public abstract class Wizard implements WatchListener {
     }
 
     public void onMove() {}
+
     public void onStateChange() {}
+
+    public final ServerWorld getWorld() {
+        return world;
+    }
 
     public final Vec3d getPosition() {
         return position;

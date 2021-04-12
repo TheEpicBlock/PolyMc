@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.collection.Int2ObjectBiMap;
 import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.util.math.BlockPos;
@@ -39,12 +40,14 @@ public abstract class WorldChunkMixin implements WatchListener, WizardView {
 	@Shadow public abstract ChunkPos getPos();
 
 	@Shadow @Final private ChunkPos pos;
+	@Shadow @Final private World world;
 	@Unique private final PolyMapMap<Map<BlockPos,Wizard>> wizards = new PolyMapMap<>(this::createWizardsForChunk);
 	@Unique private final ArrayList<ServerPlayerEntity> players = new ArrayList<>();
 
 	@Unique
 	private Map<BlockPos,Wizard> createWizardsForChunk(PolyMap map) {
 		Map<BlockPos,Wizard> ret = new HashMap<>();
+		if (!(this.world instanceof ServerWorld)) return ret; //Wizards are only passed ServerWorlds, so we can't create any wizards here.
 
 		for (ChunkSection section : this.sections) {
 			if (section == null) continue;
@@ -113,7 +116,7 @@ public abstract class WorldChunkMixin implements WatchListener, WizardView {
 			BlockPoly poly = knownWizards.get(id);
 			if (poly != null) {
 				BlockPos pos = Util.fromPalettedContainerIndex(i).add(this.pos.x*16, yOffset, this.pos.z*16);
-				ret.put(pos, poly.createWizard(Vec3d.of(pos).add(0.5,0,0.5), Wizard.WizardState.BLOCK));
+				ret.put(pos, poly.createWizard((ServerWorld)this.world, Vec3d.of(pos).add(0.5,0,0.5), Wizard.WizardState.BLOCK));
 			}
 		}
 
@@ -133,7 +136,7 @@ public abstract class WorldChunkMixin implements WatchListener, WizardView {
 			BlockPoly poly = map.getBlockPoly(state.getBlock());
 			if (poly != null && poly.hasWizard()) {
 				BlockPos pos = Util.fromPalettedContainerIndex(i).add(this.pos.x*16, yOffset, this.pos.z*16);
-				ret.put(pos, poly.createWizard(Vec3d.of(pos).add(0.5,0,0.5), Wizard.WizardState.BLOCK));
+				ret.put(pos, poly.createWizard((ServerWorld)this.world, Vec3d.of(pos).add(0.5,0,0.5), Wizard.WizardState.BLOCK));
 			}
 		}
 
@@ -170,7 +173,7 @@ public abstract class WorldChunkMixin implements WatchListener, WizardView {
 			BlockPoly poly = polyMap.getBlockPoly(state.getBlock());
 			if (poly != null && poly.hasWizard()) {
 				BlockPos ipos = pos.toImmutable();
-				Wizard wiz = poly.createWizard(Vec3d.of(ipos).add(0.5,0,0.5), Wizard.WizardState.BLOCK);
+				Wizard wiz = poly.createWizard((ServerWorld)this.world, Vec3d.of(ipos).add(0.5,0,0.5), Wizard.WizardState.BLOCK);
 				wizardMap.put(ipos, wiz);
 				for (ServerPlayerEntity player : players) {
 					wiz.addPlayer(player);

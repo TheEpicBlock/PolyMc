@@ -22,6 +22,7 @@ import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
 
 public interface BlockPoly extends DebugInfoProvider<Block> {
@@ -39,7 +40,7 @@ public interface BlockPoly extends DebugInfoProvider<Block> {
      */
     void AddToResourcePack(Block block, ResourcePackMaker pack);
 
-    default Wizard createWizard(Vec3d pos, Wizard.WizardState state) {
+    default Wizard createWizard(ServerWorld world, Vec3d pos, Wizard.WizardState state) {
         return null;
     }
 
