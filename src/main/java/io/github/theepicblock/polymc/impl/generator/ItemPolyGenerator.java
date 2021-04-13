@@ -99,7 +99,7 @@ public class ItemPolyGenerator {
                     return new ItemStack(Items.BARRIER);
                 }
 
-                @Override public void AddToResourcePack(Item item, ResourcePackMaker pack) {}
+                @Override public void addToResourcePack(Item item, ResourcePackMaker pack) {}
             });
         }
     }

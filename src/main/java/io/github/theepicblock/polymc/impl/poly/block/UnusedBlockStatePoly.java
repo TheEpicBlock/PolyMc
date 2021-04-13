@@ -68,8 +68,7 @@ public class UnusedBlockStatePoly implements BlockPoly {
         return states.get(input);
     }
 
-    @Override
-    public void AddToResourcePack(Block block, ResourcePackMaker pack) {
+    public void addToResourcePack(Block block, ResourcePackMaker pack) {
         Identifier moddedBlockId = Registry.BLOCK.getId(block);
         InputStreamReader blockStateReader = pack.getAsset(moddedBlockId.getNamespace(), ResourcePackMaker.BLOCKSTATES + moddedBlockId.getPath() + ".json");
         JsonBlockState moddedBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);

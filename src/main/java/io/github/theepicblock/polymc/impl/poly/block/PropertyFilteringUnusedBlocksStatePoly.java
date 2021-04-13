@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockStateManager;
@@ -132,8 +131,7 @@ public class PropertyFilteringUnusedBlocksStatePoly implements BlockPoly {
         return states.get(filter.apply(input));
     }
 
-    @Override
-    public void AddToResourcePack(Block block, ResourcePackMaker pack) {
+    public void addToResourcePack(Block block, ResourcePackMaker pack) {
         Identifier moddedBlockId = Registry.BLOCK.getId(block);
         InputStreamReader blockStateReader = pack.getAsset(moddedBlockId.getNamespace(), ResourcePackMaker.BLOCKSTATES + moddedBlockId.getPath() + ".json");
         JsonBlockState moddedBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);

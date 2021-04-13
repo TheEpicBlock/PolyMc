@@ -12,7 +12,6 @@ import io.github.theepicblock.polymc.api.resource.JsonBlockState;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.Util;
 import it.unimi.dsi.fastutil.Function;
-import it.unimi.dsi.fastutil.objects.Object2BooleanFunction;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Identifier;
@@ -75,8 +74,7 @@ public class SwitchingUnusedBlockStatePoly implements BlockPoly {
         return states.get(input);
     }
 
-    @Override
-    public void AddToResourcePack(Block block, ResourcePackMaker pack) {
+    public void addToResourcePack(Block block, ResourcePackMaker pack) {
         Identifier moddedBlockId = Registry.BLOCK.getId(block);
         InputStreamReader blockStateReader = pack.getAsset(moddedBlockId.getNamespace(), ResourcePackMaker.BLOCKSTATES + moddedBlockId.getPath() + ".json");
         JsonBlockState moddedBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);

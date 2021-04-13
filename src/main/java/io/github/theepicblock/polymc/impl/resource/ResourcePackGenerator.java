@@ -19,7 +19,6 @@ package io.github.theepicblock.polymc.impl.resource;
 
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import io.github.theepicblock.polymc.api.resource.JsonSoundsRegistry;
@@ -92,7 +91,7 @@ public class ResourcePackGenerator {
         //Hooks for all itempolys
         map.getItemPolys().forEach((item, itemPoly) -> {
             try {
-                itemPoly.AddToResourcePack(item, pack);
+                itemPoly.addToResourcePack(item, pack);
             } catch (Exception e) {
                 logger.warn("Exception whilst generating resources for " + item.getTranslationKey());
                 e.printStackTrace();
@@ -102,7 +101,7 @@ public class ResourcePackGenerator {
         //Hooks for all blockpolys
         map.getBlockPolys().forEach((block, blockPoly) -> {
             try {
-                blockPoly.AddToResourcePack(block, pack);
+                blockPoly.addToResourcePack(block, pack);
             } catch (Exception e) {
                 logger.warn("Exception whilst generating resources for " + block.getTranslationKey());
                 e.printStackTrace();

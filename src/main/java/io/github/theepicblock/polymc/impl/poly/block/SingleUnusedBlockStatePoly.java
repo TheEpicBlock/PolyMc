@@ -19,7 +19,6 @@ package io.github.theepicblock.polymc.impl.poly.block;
 
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockStateManager;
@@ -56,8 +55,7 @@ public class SingleUnusedBlockStatePoly implements BlockPoly {
         return newBlockState;
     }
 
-    @Override
-    public void AddToResourcePack(Block block, ResourcePackMaker pack) {
+    public void addToResourcePack(Block block, ResourcePackMaker pack) {
         Identifier moddedBlockId = Registry.BLOCK.getId(block);
         InputStreamReader blockStateReader = pack.getAsset(moddedBlockId.getNamespace(), ResourcePackMaker.BLOCKSTATES + moddedBlockId.getPath() + ".json");
         JsonBlockState moddedBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);

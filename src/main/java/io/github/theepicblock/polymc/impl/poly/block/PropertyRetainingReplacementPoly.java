@@ -48,8 +48,7 @@ public class PropertyRetainingReplacementPoly implements BlockPoly {
         return a.with(p, b.get(p));
     }
 
-    @Override
-    public void AddToResourcePack(Block block, ResourcePackMaker pack) {
+    public void addToResourcePack(Block block, ResourcePackMaker pack) {
 
     }
 

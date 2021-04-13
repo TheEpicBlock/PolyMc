@@ -87,7 +87,7 @@ public class BlockStateProfile {
                 public BlockState getClientBlock(BlockState input) {
                     return input.with(Properties.POWERED, false).with(Properties.DISARMED,false);
                 }
-                @Override public void AddToResourcePack(Block block, ResourcePackMaker pack) {}
+                @Override public void addToResourcePack(Block block, ResourcePackMaker pack) {}
             });
         } else {
             polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));

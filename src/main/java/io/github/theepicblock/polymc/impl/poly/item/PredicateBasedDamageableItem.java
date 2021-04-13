@@ -42,7 +42,7 @@ public class PredicateBasedDamageableItem extends DamageableItemPoly {
     }
 
     @Override
-    public void AddToResourcePack(Item item, ResourcePackMaker pack) {
+    public void addToResourcePack(Item item, ResourcePackMaker pack) {
         JsonModel clientModelJson = pack.getOrDefaultPendingItemModel(Registry.ITEM.getId(defaultServerItem.getItem()).getPath());
         Identifier serverModelId = Registry.ITEM.getId(item);
 

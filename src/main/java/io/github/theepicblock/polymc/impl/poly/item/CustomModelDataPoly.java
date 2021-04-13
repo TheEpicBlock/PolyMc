@@ -89,7 +89,7 @@ public class CustomModelDataPoly implements ItemPoly {
     }
 
     @Override
-    public void AddToResourcePack(Item item, ResourcePackMaker pack) {
+    public void addToResourcePack(Item item, ResourcePackMaker pack) {
         //TODO this can be cleaner
         pack.copyItemModel(item);
         JsonModel itemModel = pack.getOrDefaultPendingItemModel(Registry.ITEM.getId(defaultServerItem.getItem()).getPath());
