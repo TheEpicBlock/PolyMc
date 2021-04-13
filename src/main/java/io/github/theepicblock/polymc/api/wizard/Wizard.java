@@ -1,9 +1,15 @@
 package io.github.theepicblock.polymc.api.wizard;
 
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
+
+import java.util.stream.Stream;
 
 public abstract class Wizard implements WatchListener {
     private final ServerWorld world;
@@ -23,6 +29,12 @@ public abstract class Wizard implements WatchListener {
     public void onMove() {}
 
     public void onStateChange() {}
+
+    @Override
+    public void removeAllPlayers() {
+        //Default implementation.
+        this.getPlayersWatchingChunk().forEach(this::removePlayer);
+    }
 
     public final ServerWorld getWorld() {
         return world;
@@ -46,6 +58,52 @@ public abstract class Wizard implements WatchListener {
         this.onStateChange();
     }
 
+    /**
+     * Attempts to retrieve the current block pos of this wizard
+     * @return the position as a block position
+     * @throws IllegalStateException if the wizard is not in a grid
+     */
+    public BlockPos getBlockPos() {
+        if (!this.getState().isStatic()) throw new IllegalStateException("attempted to access block pos of non-static wizard");
+        return new BlockPos(position);
+    }
+
+    /**
+     * Retrieves the {@link BlockState} of the block this wizard is occupying.
+     * @return a block state
+     * @throws IllegalStateException if the wizard is not in a grid
+     */
+    public BlockState getBlockState() {
+        return this.getWorld().getBlockState(this.getBlockPos());
+    }
+
+    /**
+     * Retrieves the {@link BlockEntity} of the block this wizard is occupying.
+     * @return a block entity, may be null if there is none at this location
+     * @throws IllegalStateException if the wizard is not in a grid
+     */
+    public BlockEntity getBlockEntity() {
+        return this.getWorld().getBlockEntity(this.getBlockPos());
+    }
+
+    /**
+     * Tries to retrieve the {@link BlockEntity} of the block this wizard is occupying.
+     * This method will return null instead of an {@link IllegalStateException} if the wizard is not in a grid.
+     * @return a block entity, may be null if there is none at this location or if the wizard is not in a grid.
+     */
+    public BlockEntity tryGetBlockEntity() {
+        try {
+            return this.getWorld().getBlockEntity(this.getBlockPos());
+        } catch (IllegalStateException ignored) {
+            return null;
+        }
+    }
+
+    public Stream<ServerPlayerEntity> getPlayersWatchingChunk() {
+        return this.getWorld().getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(
+                new ChunkPos((int)this.getPosition().x >> 4, (int)this.getPosition().y >> 4), false);
+    }
+
     public enum WizardState {
         /**
          * The wizard is a block in the world
@@ -60,10 +118,15 @@ public abstract class Wizard implements WatchListener {
          */
         MOVING_PISTON,
         /**
-         * The wizard is in some other state that can move
+         * The wizard is in a miscellaneous state that is not confined to a grid.
          */
-        MOVING_OTHER;
+        MISC_MOVING;
 
+        /**
+         * Checks whether the state is confined to a grid or not.
+         * If the state is static, {@link Wizard#position} will always be in the center of a block
+         * @return
+         */
         private boolean isStatic() {
             return this == BLOCK;
         }
