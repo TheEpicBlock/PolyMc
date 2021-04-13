@@ -39,6 +39,7 @@
     "item.InventoryDesyncPatch",
     "item.ItemPolyImplementation",
     "wizards.EntityAccessor",
+    "wizards.EntityTrackerAccessor",
     "wizards.FallingBlockEntityMixin",
     "wizards.MixinPistonBlockEntity",
     "wizards.block.BiMapPaletteAccessor",

@@ -19,8 +19,6 @@ package io.github.theepicblock.polymc.impl;
 
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
-import io.github.theepicblock.polymc.mixins.wizards.EntityAccessor;
-import io.github.theepicblock.polymc.mixins.wizards.block.EntityPositionPacketAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
@@ -28,7 +26,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
@@ -235,25 +232,5 @@ public class Util {
 
     public static BlockPos fromPalettedContainerIndex(int index) {
         return new BlockPos(index & 0xF,(index >> 8) & 0xF, (index >> 4) & 0xF);
-    }
-
-    public static int getNewEntityId() {
-        return EntityAccessor.getMaxEntityId().incrementAndGet();
-    }
-
-    public static EntityPositionS2CPacket createEntityPositionPacket(
-            int id, double x, double y, double z, byte yaw, byte pitch, boolean onGround) {
-        EntityPositionS2CPacket packet = new EntityPositionS2CPacket();
-        EntityPositionPacketAccessor accessor = ((EntityPositionPacketAccessor)packet);
-
-        accessor.setId(id);
-        accessor.setX(x);
-        accessor.setY(y);
-        accessor.setZ(z);
-        accessor.setYaw(yaw);
-        accessor.setPitch(pitch);
-        accessor.setOnGround(onGround);
-
-        return packet;
     }
 }
