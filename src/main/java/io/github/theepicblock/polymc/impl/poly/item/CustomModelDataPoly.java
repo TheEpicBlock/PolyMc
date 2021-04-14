@@ -89,7 +89,7 @@ public class CustomModelDataPoly implements ItemPoly {
     }
 
     @Override
-    public void AddToResourcePack(Item item, ResourcePackMaker pack) {
+    public void addToResourcePack(Item item, ResourcePackMaker pack) {
         pack.copyItemModel(item);
 
         Identifier modelId = Registry.ITEM.getId(item);

@@ -38,7 +38,7 @@ public interface BlockPoly extends DebugInfoProvider<Block> {
      * @param block block this BlockPoly was registered to, for reference.
      * @param pack  resource pack to add to.
      */
-    void AddToResourcePack(Block block, ResourcePackMaker pack);
+    void addToResourcePack(Block block, ResourcePackMaker pack);
 
     default Wizard createWizard(ServerWorld world, Vec3d pos, Wizard.WizardState state) {
         return null;

@@ -143,7 +143,10 @@ public class BlockPolyGenerator {
                 } catch (BlockStateManager.StateLimitReachedException ignored) {}
             }
             try {
-                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NO_COLLISION_PROFILE);
+                return new SwitchingUnusedBlockStatePoly(block, builder,
+                        BlockStateProfile.KELP_PROFILE, // Chosen if the block state has a fluid state. (For waterlogable blocks)
+                        BlockStateProfile.NO_COLLISION_PROFILE, // Chosen if the block state doesn't have a fluid state
+                        (blockState) -> ((BlockState)blockState).getFluidState().isEmpty());
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
@@ -199,29 +202,28 @@ public class BlockPolyGenerator {
      * A world filled with air except for a single block at 0,0,0.
      */
     public static class FakedWorld implements BlockView {
-        public final BlockState OriginBlockState;
-        public final BlockEntity OriginBlocKEntity;
+        public final BlockState blockState;
+        public final BlockEntity blockEntity;
 
         /**
          * Initializes a new fake world. This world is filled with air except for 0,0,0
          * @param block The block that will be used at 0,0,0
          */
         public FakedWorld(BlockState block) {
-            OriginBlockState = block;
+            blockState = block;
 
-            if (OriginBlockState.getBlock() instanceof BlockEntityProvider) {
-                BlockEntityProvider BEP = (BlockEntityProvider)OriginBlockState.getBlock();
-
-                OriginBlocKEntity = BEP.createBlockEntity(this);
+            if (blockState.getBlock() instanceof BlockEntityProvider) {
+                BlockEntityProvider provider = (BlockEntityProvider)blockState.getBlock();
+                blockEntity = provider.createBlockEntity(this);
             } else {
-                OriginBlocKEntity = null;
+                blockEntity = null;
             }
         }
 
         @Override
         public BlockEntity getBlockEntity(BlockPos pos) {
             if (pos.equals(BlockPos.ORIGIN)) {
-                return OriginBlocKEntity;
+                return blockEntity;
             }
             return null;
         }
@@ -229,7 +231,7 @@ public class BlockPolyGenerator {
         @Override
         public BlockState getBlockState(BlockPos pos) {
             if (pos.equals(BlockPos.ORIGIN)) {
-                return OriginBlockState;
+                return blockState;
             }
             return null;
         }
@@ -237,7 +239,7 @@ public class BlockPolyGenerator {
         @Override
         public FluidState getFluidState(BlockPos pos) {
             if (pos.equals(BlockPos.ORIGIN)) {
-                return OriginBlockState.getFluidState();
+                return blockState.getFluidState();
             }
             return null;
         }
