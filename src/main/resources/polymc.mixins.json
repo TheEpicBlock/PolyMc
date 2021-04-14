@@ -37,7 +37,18 @@
     "item.CreativeModeHotfix",
     "item.CustomRecipeFix",
     "item.InventoryDesyncPatch",
-    "item.ItemPolyImplementation"
+    "item.ItemPolyImplementation",
+    "wizards.EntityAccessor",
+    "wizards.EntityTrackerAccessor",
+    "wizards.FallingBlockEntityMixin",
+    "wizards.MixinPistonBlockEntity",
+    "wizards.block.BiMapPaletteAccessor",
+    "wizards.block.ChunkHolderMixin",
+    "wizards.block.EntityPositionPacketAccessor",
+    "wizards.block.PalettedContainerAccessor",
+    "wizards.block.WatchProviderMixin",
+    "wizards.block.WorldChunkMixin",
+    "wizards.block.WorldWizardViewProvider"
   ],
   "injectors": {
     "defaultRequire": 1
