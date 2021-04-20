@@ -41,8 +41,6 @@ public class GuiUtils {
 	}
 
 	public static void resyncPlayerInventory(ServerPlayerEntity player) {
-		player.networkHandler.sendPacket(new InventoryS2CPacket(player.currentScreenHandler.syncId, stacks));
-		player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-1, -1, player.getInventory().get()));
-		player.onHandlerRegistered(player.currentScreenHandler, player.currentScreenHandler.getStacks());
+		player.currentScreenHandler.syncState();
 	}
 }
