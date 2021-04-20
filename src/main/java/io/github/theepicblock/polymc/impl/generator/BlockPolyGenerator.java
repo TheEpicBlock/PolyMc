@@ -214,7 +214,7 @@ public class BlockPolyGenerator {
 
             if (blockState.getBlock() instanceof BlockEntityProvider) {
                 BlockEntityProvider provider = (BlockEntityProvider)blockState.getBlock();
-                blockEntity = provider.createBlockEntity(BlockPos.ORIGIN, OriginBlockState);
+                blockEntity = provider.createBlockEntity(BlockPos.ORIGIN, blockState);
             } else {
                 blockEntity = null;
             }

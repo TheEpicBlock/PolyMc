@@ -63,9 +63,10 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
         super.onStoppedTrackingBy(player);
     }
 
+    // FIXME there's now a setRemove function, this is used instead of this one in some cases. But it's awkward to mixin as it is final.
     @Override
-    public void remove() {
-        super.remove();
+    public void remove(RemovalReason reason) {
+        super.remove(reason);
     }
 
     @Inject(method = "onStartedTrackingBy(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At("RETURN"))
@@ -78,7 +79,7 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
         this.removePlayer(player);
     }
 
-    @Inject(method = "remove()V", at = @At("RETURN"))
+    @Inject(method = "remove(Lnet/minecraft/entity/Entity$RemovalReason;)V", at = @At("RETURN"))
     private void onRemove(CallbackInfo ci) {
         wizards.forEach(((polyMap, wizard) -> {
             if (wizard != null) wizard.onRemove();

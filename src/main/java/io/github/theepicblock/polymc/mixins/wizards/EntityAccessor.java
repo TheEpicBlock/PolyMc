@@ -9,8 +9,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Mixin(Entity.class)
 public interface EntityAccessor {
-    @Accessor("MAX_ENTITY_ID")
-    static AtomicInteger getMaxEntityId() {
+    @Accessor("ENTITY_ID_COUNTER")
+    static AtomicInteger getEntityIdCounter() {
         throw new IllegalStateException();
     }
 
