@@ -39,5 +39,5 @@ public interface ItemPoly extends DebugInfoProvider<Item> {
      * @param item item this ItemPoly was registered to, for added context.
      * @param pack resource pack the assets should be added to.
      */
-    void AddToResourcePack(Item item, ResourcePackMaker pack);
+    void addToResourcePack(Item item, ResourcePackMaker pack);
 }

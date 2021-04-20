@@ -36,7 +36,7 @@ public class BowPoly extends PredicateBasedDamageableItem {
     }
 
     @Override
-    public void AddToResourcePack(Item item, ResourcePackMaker pack) {
+    public void addToResourcePack(Item item, ResourcePackMaker pack) {
         pack.copyItemModel(item);
 
         Identifier serverItemId = Registry.ITEM.getId(defaultServerItem.getItem());
@@ -53,6 +53,6 @@ public class BowPoly extends PredicateBasedDamageableItem {
             bowModel.overrides = pack.getGson().fromJson("[{\"predicate\":{\"pulling\":1},\"model\":\"item\\/bow_pulling_0\"},{\"predicate\":{\"pulling\":1,\"pull\":0.65},\"model\":\"item\\/bow_pulling_1\"},{\"predicate\":{\"pulling\":1,\"pull\":0.9},\"model\":\"item\\/bow_pulling_2\"}]", overrideType);
         }
 
-        super.AddToResourcePack(item,pack);
+        super.addToResourcePack(item,pack);
     }
 }

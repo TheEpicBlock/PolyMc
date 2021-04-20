@@ -22,6 +22,10 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.api.PolyMap;
+import io.github.theepicblock.polymc.impl.misc.PolyDumper;
+import io.github.theepicblock.polymc.impl.misc.logging.CommandSourceLogger;
+import io.github.theepicblock.polymc.impl.misc.logging.ErrorTrackerWrapper;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackGenerator;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
@@ -76,66 +80,37 @@ public class PolyMcCommands {
                     .then(literal("generate")
                         .then(literal("resources")
                             .executes((context -> {
+                                SimpleLogger commandSource = new CommandSourceLogger(context.getSource(), true);
+                                ErrorTrackerWrapper logger = new ErrorTrackerWrapper(PolyMc.LOGGER);
                                 try {
-                                    ResourcePackGenerator.generate();
+                                    ResourcePackGenerator.generate(PolyMc.getMainMap(), "resource", logger);
                                 } catch (Exception e) {
-                                    context.getSource().sendFeedback(new LiteralText("An error occurred whilst trying to generate the resource pack! Please check the console."), true);
+                                    commandSource.info("An error occurred whilst trying to generate the resource pack! Please check the console.");
                                     e.printStackTrace();
                                     return 0;
                                 }
-                                context.getSource().sendFeedback(new LiteralText("Finished generating"), true);
+                                if (logger.errors != 0) {
+                                    commandSource.error("There have been errors whilst generating the resource pack. These are usually completely normal. It only means that PolyMc couldn't find some of the textures or models. See the console for more info.");
+                                }
+                                commandSource.info("Finished generating resource pack");
                                 return Command.SINGLE_SUCCESS;
                             })))
                         .then(literal("polyDump")
                             .executes((context) -> {
-                                StringBuilder polyDump = new StringBuilder();
-                                PolyMap map = PolyMc.getMainMap();
-                                polyDump.append("###########\n## ITEMS ##\n###########\n");
-                                map.getItemPolys().forEach((item, poly) -> {
-                                    addDebugProviderToDump(polyDump, item, item.getTranslationKey(), poly);
-                                });
-                                polyDump.append("############\n## BLOCKS ##\n############\n");
-                                map.getBlockPolys().forEach((block, poly) -> {
-                                    addDebugProviderToDump(polyDump, block, block.getTranslationKey(), poly);
-                                });
-
-                                File polyDumpFile = new File(FabricLoader.getInstance().getGameDir().toFile(), "PolyDump.txt");
+                                SimpleLogger logger = new CommandSourceLogger(context.getSource(), true);
                                 try {
-                                    if (polyDumpFile.exists()) {
-                                        boolean a = polyDumpFile.delete();
-                                        if (!a) throw new SimpleCommandExceptionType(new LiteralText("Failed to remove old polyMap")).create();
-                                    }
-                                    boolean b = polyDumpFile.createNewFile();
-                                    if (!b) throw new SimpleCommandExceptionType(new LiteralText("Couldn't create file")).create();
-
-                                    //Write the contents of polyDump to the polyDumpFile
-                                    FileWriter writer = new FileWriter(polyDumpFile);
-                                    writer.write(polyDump.toString());
-                                    writer.close();
+                                    PolyDumper.dumpPolyMap(PolyMc.getMainMap(), "PolyDump.txt", logger);
                                 } catch (IOException e) {
-                                    context.getSource().sendError(new LiteralText("An error occurred whilst trying to generate the polyDump! Please check the console."));
+                                    logger.error(e.getMessage());
+                                    return 0;
+                                } catch (Exception e) {
+                                    logger.info("An error occurred whilst trying to generate the poly dump! Please check the console.");
                                     e.printStackTrace();
                                     return 0;
                                 }
+                                logger.info("Finished generating poly dump");
                                 return Command.SINGLE_SUCCESS;
                     }))));
         });
-    }
-
-    private static <T> void addDebugProviderToDump(StringBuilder b, T object, String key, DebugInfoProvider<T> poly) {
-        b.append(Util.expandTo(key, 45));
-        b.append(" --> ");
-        b.append(Util.expandTo(poly.getClass().getName(), 60));
-        try {
-            String info = poly.getDebugInfo(object);
-            if (info != null) {
-                b.append("|");
-                b.append(info);
-            }
-        } catch (Exception e) {
-            PolyMc.LOGGER.debug(String.format("Error whilst getting debug info from '%s' which is registered to '%s'", poly.getClass().getName(), key));
-            e.printStackTrace();
-        }
-        b.append("\n");
     }
 }

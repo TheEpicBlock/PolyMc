@@ -1,20 +1,3 @@
-/*
- * PolyMc
- * Copyright (C) 2020-2020 TheEpicBlock_TEB
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; If not, see <https://www.gnu.org/licenses>.
- */
 package io.github.theepicblock.polymc.impl.poly.block;
 
 import com.google.common.collect.ImmutableList;
@@ -28,37 +11,60 @@ import io.github.theepicblock.polymc.api.block.BlockStateProfile;
 import io.github.theepicblock.polymc.api.resource.JsonBlockState;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.Util;
+import it.unimi.dsi.fastutil.Function;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
- * This poly uses unused blockstates to display blocks
+ * Chooses a different {@link io.github.theepicblock.polymc.api.block.BlockStateProfile} for each state based on a boolean
+ * @see UnusedBlockStatePoly
  */
-public class UnusedBlockStatePoly implements BlockPoly {
+public class SwitchingUnusedBlockStatePoly implements BlockPoly {
     private final ImmutableMap<BlockState,BlockState> states;
 
     /**
      * @param moddedBlock     the block this poly represents
-     * @param stateProfile    the profile to use.
+     * @param falseProfile    the profile to use.
      * @param registry        registry used to register this poly
      * @throws BlockStateManager.StateLimitReachedException when the clientSideBlock doesn't have any more BlockStates left.
      */
-    public UnusedBlockStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile) throws BlockStateManager.StateLimitReachedException {
+    public SwitchingUnusedBlockStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile falseProfile, BlockStateProfile trueProfile, Function<BlockState, Boolean> function) throws BlockStateManager.StateLimitReachedException {
         BlockStateManager manager = registry.getBlockStateManager();
 
+        // Sort states into true <-> false
         ImmutableList<BlockState> moddedStates = moddedBlock.getStateManager().getStates();
-        if (!manager.isAvailable(stateProfile, moddedStates.size())) {
-            throw new BlockStateManager.StateLimitReachedException("Block doesn't have enough blockstates left. Profile: '"+stateProfile.name+"'");
+        List<BlockState> falseStates = new ArrayList<>();
+        List<BlockState> trueStates = new ArrayList<>();
+        for (BlockState moddedState : moddedStates) {
+            if (function.apply(moddedState)) {
+                trueStates.add(moddedState);
+            } else {
+                falseStates.add(moddedState);
+            }
         }
 
+        // Check if both profiles have enough states
+        if (!manager.isAvailable(falseProfile, falseStates.size())) {
+            throw new BlockStateManager.StateLimitReachedException("Block doesn't have enough blockstates left for false profile: '"+falseProfile.name+"'");
+        }
+        if (!manager.isAvailable(trueProfile, trueStates.size())) {
+            throw new BlockStateManager.StateLimitReachedException("Block doesn't have enough blockstates left for true profile: '"+falseProfile.name+"'");
+        }
+
+        // Register the blocks to the correct profiles
         HashMap<BlockState,BlockState> res = new HashMap<>();
-        for (BlockState state : moddedStates) {
-            res.put(state, manager.requestBlockState(stateProfile));
+        for (BlockState state : falseStates) {
+            res.put(state, manager.requestBlockState(falseProfile));
+        }
+        for (BlockState state : trueStates) {
+            res.put(state, manager.requestBlockState(trueProfile));
         }
         states = ImmutableMap.copyOf(res);
     }

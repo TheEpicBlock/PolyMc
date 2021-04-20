@@ -19,7 +19,6 @@ package io.github.theepicblock.polymc.impl.poly.block;
 
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.block.BlockStateManager;
 import io.github.theepicblock.polymc.api.block.BlockStateProfile;
@@ -57,7 +56,7 @@ public class PoweredStateBlockPoly extends PropertyRetainingReplacementPoly{
     }
 
     @Override
-    public void AddToResourcePack(Block block, ResourcePackMaker pack) {
+    public void addToResourcePack(Block block, ResourcePackMaker pack) {
         Identifier moddedBlockId = Registry.BLOCK.getId(block);
         InputStreamReader blockStateReader = pack.getAsset(moddedBlockId.getNamespace(), ResourcePackMaker.BLOCKSTATES + moddedBlockId.getPath() + ".json");
         JsonBlockState moddedBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);
@@ -69,7 +68,7 @@ public class PoweredStateBlockPoly extends PropertyRetainingReplacementPoly{
             String clientStateString = Util.getPropertiesFromBlockState(poweredState);
 
             JsonElement moddedVariants = moddedBlockStates.getVariantBestMatching(poweredState);
-            if (moddedVariants == null) PolyMc.LOGGER.warn("Couldn't get blockstate definition for "+poweredState);
+            if (moddedVariants == null) pack.getLogger().warn("Couldn't get blockstate definition for "+poweredState);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
 
             for (JsonBlockState.Variant v : JsonBlockState.getVariantsFromJsonElement(moddedVariants)) {

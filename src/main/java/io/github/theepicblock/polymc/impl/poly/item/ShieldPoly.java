@@ -37,7 +37,7 @@ public class ShieldPoly extends PredicateBasedDamageableItem {
     }
 
     @Override
-    public void AddToResourcePack(Item item, ResourcePackMaker pack) {
+    public void addToResourcePack(Item item, ResourcePackMaker pack) {
         pack.copyItemModel(item);
 
         Identifier serverItemId = Registry.ITEM.getId(defaultServerItem.getItem());
@@ -63,6 +63,6 @@ public class ShieldPoly extends PredicateBasedDamageableItem {
             pack.putPendingModel(shieldModelPath, shieldModel);
         }
 
-        super.AddToResourcePack(item, pack);
+        super.addToResourcePack(item, pack);
     }
 }

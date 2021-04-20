@@ -23,6 +23,7 @@ import com.swordglowsblue.artifice.impl.ArtificeResourcePackImpl;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -45,8 +46,8 @@ import java.util.function.Consumer;
 public class AdvancedResourcePackMaker extends ResourcePackMaker {
     protected final Path tempLocation;
 
-    public AdvancedResourcePackMaker(Path buildLocation, Path tempLocation) {
-        super(buildLocation);
+    public AdvancedResourcePackMaker(Path buildLocation, Path tempLocation, SimpleLogger logger) {
+        super(buildLocation, logger);
         this.tempLocation = tempLocation;
 
         //Get all assets from all mods and copy it into a temporary location
@@ -56,7 +57,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
             try {
                 Util.copyAll(assets,tempLocation);
             } catch (IOException e) {
-                PolyMc.LOGGER.warn("Failed to get resources from mod " + mod.getMetadata().getId());
+                logger.warn("Failed to get resources from mod " + mod.getMetadata().getId());
                 e.printStackTrace();
             }
         });
@@ -78,8 +79,8 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
                 Path artLoc = FabricLoader.getInstance().getGameDir().relativize(tempLocation);
                 aPack.dumpResources(artLoc.toString());
             } catch (IOException e) {
-                PolyMc.LOGGER.warn(String.format("Failed to get resources from artifice pack '%s'", aPack.getName()));
-                PolyMc.LOGGER.warn(e);
+                logger.warn(String.format("Failed to get resources from artifice pack '%s'", aPack.getName()));
+                logger.warn(e);
             }
         }
         if (pack instanceof Consumer) {
@@ -93,13 +94,13 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
         if (modId.equals("minecraft")) return null;
 
         Path filePath = tempLocation.resolve(path);
-        Path newLoc = BuildLocation.resolve(path);
+        Path newLoc = buildLocation.resolve(path);
         //noinspection ResultOfMethodCallIgnored
         newLoc.toFile().getParentFile().mkdirs();
         try {
             return Files.copy(filePath, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod '%s' path: '%s'", modId, path));
+            logger.warn(String.format("Failed to get resource from mod '%s' path: '%s'", modId, path));
         }
         return null;
     }
@@ -120,7 +121,7 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
         try {
             return new InputStreamReader(Files.newInputStream(filePath, StandardOpenOption.READ));
         } catch (IOException e) {
-            PolyMc.LOGGER.warn(String.format("Failed to get resource from mod '%s' path: '%s'", modId, path));
+            logger.warn(String.format("Failed to get resource from mod '%s' path: '%s'", modId, path));
         }
         return null;
     }
@@ -132,8 +133,8 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
         try {
             FileUtils.deleteDirectory(tempLocation.toFile());
         } catch (IOException e) {
-            PolyMc.LOGGER.warn("Couldn't delete temporary file");
-            PolyMc.LOGGER.warn(e);
+            logger.warn("Couldn't delete temporary file");
+            logger.warn(e);
         }
     }
 }

@@ -89,15 +89,33 @@ public class CustomModelDataPoly implements ItemPoly {
     }
 
     @Override
-    public void AddToResourcePack(Item item, ResourcePackMaker pack) {
-        //TODO this can be cleaner
+    public void addToResourcePack(Item item, ResourcePackMaker pack) {
         pack.copyItemModel(item);
-        JsonModel itemModel = pack.getOrDefaultPendingItemModel(Registry.ITEM.getId(defaultServerItem.getItem()).getPath());
+
+        Identifier modelId = Registry.ITEM.getId(item);
+        addOverride(
+                pack,
+                defaultServerItem.getItem(),
+                CMDvalue,
+                String.format("%s:item/%s", modelId.getNamespace(), modelId.getPath())
+        );
+    }
+
+    /**
+     * Adds a cmd override to a vanilla item.
+     * Note: the {@link ResourcePackMaker#getOrDefaultPendingItemModel(String)} may not produce a correct json model for the vanilla item.
+     * @param pack pack to register to
+     * @param vanillaItem vanilla item which should receive the override
+     * @param cmdValue the cmd value to override
+     * @param modelPath the model to link this override to
+     */
+    public static void addOverride(ResourcePackMaker pack, Item vanillaItem, int cmdValue, String modelPath) {
+        JsonModel itemModel = pack.getOrDefaultPendingItemModel(Registry.ITEM.getId(vanillaItem));
+
         JsonModel.Override override = new JsonModel.Override();
         override.predicate = new HashMap<>();
-        override.predicate.put("custom_model_data", (double)CMDvalue);
-        Identifier modelId = Registry.ITEM.getId(item);
-        override.model = modelId.getNamespace() + ":item/" + modelId.getPath();
+        override.predicate.put("custom_model_data", (double)cmdValue);
+        override.model = modelPath;
         itemModel.addOverride(override);
     }
 

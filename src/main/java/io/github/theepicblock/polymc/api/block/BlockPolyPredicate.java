@@ -25,7 +25,7 @@ import net.minecraft.block.Block;
  */
 public interface BlockPolyPredicate extends BlockPoly {
     @Override
-    default void AddToResourcePack(Block block, ResourcePackMaker pack) {}
+    default void addToResourcePack(Block block, ResourcePackMaker pack) {}
 
     @Override
     default String getDebugInfo(Block obj) {

@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.api.resource;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,7 @@ public class JsonModel {
     public Map<String,String> textures;
     public Map<String,DisplayEntry> display;
     public List<Override> overrides;
+    public JsonArray elements; // Only exists for parsing.
 
     public void addOverride(Override e) {
         if (overrides == null) {
