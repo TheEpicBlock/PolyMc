@@ -22,10 +22,10 @@ import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
@@ -177,12 +177,12 @@ public class Util {
             int hideFlags = item.getTag().contains("HideFlags", 99) ? item.getTag().getInt("HideFlags") : 0;
             if ((hideFlags & ItemStack.TooltipSection.ENCHANTMENTS.getFlag()) == 0) {
                 ItemStack stack = item.copy();
-                ListTag enchantments = stack.getEnchantments();
+                NbtList enchantments = stack.getEnchantments();
 
                 //iterate through the enchantments
-                for (Tag tag : enchantments) {
+                for (NbtElement tag : enchantments) {
                     if (tag.getType() != 10) continue; //this is not a compound tag
-                    CompoundTag compoundTag = (CompoundTag)tag;
+                    NbtCompound compoundTag = (NbtCompound)tag;
 
                     Identifier id = Identifier.tryParse(compoundTag.getString("id"));
 
@@ -191,11 +191,11 @@ public class Util {
                             //iterator.remove();
                             Text name = enchantment.getName(compoundTag.getInt("lvl"));
 
-                            CompoundTag displayTag = stack.getOrCreateSubTag("display");
+                            NbtCompound displayTag = stack.getOrCreateSubTag("display");
                             if (!displayTag.contains("Lore")) {
-                                displayTag.put("Lore", new ListTag());
+                                displayTag.put("Lore", new NbtList());
                             }
-                            displayTag.getList("Lore", 8).add(StringTag.of(Text.Serializer.toJson(name)));
+                            displayTag.getList("Lore", 8).add(NbtString.of(Text.Serializer.toJson(name)));
                         });
                     }
                 }

@@ -36,8 +36,8 @@ public abstract class PalettedContainerMixin<T> implements PacketSizeProvider {
     public int getPacketSize(ServerPlayerEntity playerEntity) {
         if (this.palette instanceof PacketSizeProvider) {
             PacketSizeProvider palette2 = (PacketSizeProvider)palette;
-            return 1 + palette2.getPacketSize(playerEntity) + PacketByteBuf.getVarIntSizeBytes(this.data.getSize()) + this.data.getStorage().length * 8;
+            return 1 + palette2.getPacketSize(playerEntity) + PacketByteBuf.getVarIntLength(this.data.getSize()) + this.data.getStorage().length * 8;
         }
-        return 1 + this.palette.getPacketSize() + PacketByteBuf.getVarIntSizeBytes(this.data.getSize()) + this.data.getStorage().length * 8;
+        return 1 + this.palette.getPacketSize() + PacketByteBuf.getVarIntLength(this.data.getSize()) + this.data.getStorage().length * 8;
     }
 }

@@ -27,7 +27,7 @@ import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -51,7 +51,7 @@ public class PolyMcCommands {
                             .executes((context) -> {
                                 ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
                                 ItemStack polydItem = PolyMc.getMainMap().getClientItem(heldItem);
-                                Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.writeNbt(new CompoundTag()));
+                                Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.writeNbt(new NbtCompound()));
                                 context.getSource().sendFeedback(nbtText, false);return Command.SINGLE_SUCCESS;
                             }))
                         .then(literal("replaceInventoryWithDebug")
@@ -69,7 +69,7 @@ public class PolyMcCommands {
                                 }
                                 ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
                                 ItemStack polydItem = PolyMc.getMainMap().getClientItem(heldItem);
-                                Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.writeNbt(new CompoundTag()));
+                                Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.writeNbt(new NbtCompound()));
                                 context.getSource().sendFeedback(nbtText, false);
                                 return Command.SINGLE_SUCCESS;
                             })))

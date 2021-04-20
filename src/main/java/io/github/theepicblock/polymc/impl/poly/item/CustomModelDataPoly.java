@@ -24,7 +24,7 @@ import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Style;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
@@ -64,7 +64,7 @@ public class CustomModelDataPoly implements ItemPoly {
         Pair<Item,Integer> pair = registerManager.requestCMD(targets);
         CMDvalue = pair.getRight();
         defaultServerItem = new ItemStack(pair.getLeft());
-        CompoundTag tag = new CompoundTag();
+        NbtCompound tag = new NbtCompound();
         tag.putInt("CustomModelData", CMDvalue);
         defaultServerItem.setTag(tag);
         defaultServerItem.setCustomName(new TranslatableText(base.getTranslationKey()).setStyle(Style.EMPTY.withItalic(false)));
