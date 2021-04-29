@@ -10,10 +10,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.Nullable;
 
 public class NOPPolyMap implements PolyMap {
 	@Override
-	public ItemStack getClientItem(ItemStack serverItem) {
+	public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player) {
 		return serverItem;
 	}
 

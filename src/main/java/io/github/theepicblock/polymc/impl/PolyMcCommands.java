@@ -20,23 +20,19 @@ package io.github.theepicblock.polymc.impl;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.theepicblock.polymc.PolyMc;
-import io.github.theepicblock.polymc.api.DebugInfoProvider;
-import io.github.theepicblock.polymc.api.PolyMap;
+import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.misc.PolyDumper;
 import io.github.theepicblock.polymc.impl.misc.logging.CommandSourceLogger;
 import io.github.theepicblock.polymc.impl.misc.logging.ErrorTrackerWrapper;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackGenerator;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import static net.minecraft.server.command.CommandManager.literal;
@@ -51,8 +47,10 @@ public class PolyMcCommands {
                     .then(literal("debug")
                         .then(literal("clientItem")
                             .executes((context) -> {
-                                ItemStack heldItem = context.getSource().getPlayer().inventory.getMainHandStack();
-                                context.getSource().sendFeedback(PolyMc.getMainMap().getClientItem(heldItem).toTag(new CompoundTag()).toText(), false);
+                                ServerPlayerEntity player = context.getSource().getPlayer();
+                                ItemStack heldItem = player.inventory.getMainHandStack();
+                                CompoundTag itemTag = PolyMapProvider.getPolyMap(player).getClientItem(heldItem, player).toTag(new CompoundTag());
+                                context.getSource().sendFeedback(itemTag.toText(), false);
                                 return Command.SINGLE_SUCCESS;
                             }))
                         .then(literal("replaceInventoryWithDebug")

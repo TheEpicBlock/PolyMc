@@ -29,6 +29,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * This is the standard implementation of the PolyMap that PolyMc uses by default.
@@ -38,7 +40,7 @@ public class PolyMapImpl implements PolyMap {
     /**
      * The nbt tag name that stores the original item nbt so it can be restored
      *
-     * @see #getClientItem(ItemStack)
+     * @see PolyMap#getClientItem(ItemStack, ServerPlayerEntity)
      * @see #recoverOriginalItem(ItemStack)
      */
     private static final String ORIGINAL_ITEM_NBT = "PolyMcOriginal";
@@ -56,7 +58,7 @@ public class PolyMapImpl implements PolyMap {
     }
 
     @Override
-    public ItemStack getClientItem(ItemStack serverItem) {
+    public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player) {
         ItemStack ret = serverItem;
         CompoundTag originalNbt = serverItem.toTag(new CompoundTag());
 

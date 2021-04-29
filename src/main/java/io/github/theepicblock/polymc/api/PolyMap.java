@@ -27,12 +27,14 @@ import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.Nullable;
 
 public interface PolyMap {
 	/**
 	 * Converts the serverside representation of an item into a clientside one that should be sent to the client.
 	 */
-	ItemStack getClientItem(ItemStack serverItem);
+	ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player);
 
 	/**
 	 * Converts the serverside representation of a block into a clientside one that should be sent to the client.
@@ -65,7 +67,7 @@ public interface PolyMap {
 
 	/**
 	 * Reverts the clientside item into the serverside representation.
-	 * This should be the reverse of {@link #getClientItem(ItemStack)}.
+	 * This should be the reverse of {@link #getClientItem(ItemStack, ServerPlayerEntity)}.
 	 * For optimization reasons, this method only needs to be implemented for items gained by players in creative mode.
 	 *
 	 * @see CreativeItemStackFix
