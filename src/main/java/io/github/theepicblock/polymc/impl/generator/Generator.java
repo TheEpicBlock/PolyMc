@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.impl.generator;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
+import io.github.theepicblock.polymc.impl.poly.item.Enchantment2LorePoly;
 
 public class Generator {
     /**
@@ -28,5 +29,14 @@ public class Generator {
         ItemPolyGenerator.generateMissing(builder);
         BlockPolyGenerator.generateMissing(builder);
         GuiGenerator.generateMissing(builder);
+
+        addDefaultGlobalItemPolys(builder);
+    }
+
+    /**
+     * Registers global item polys that are included with PolyMc by default for vanilla compatibility
+     */
+    public static void addDefaultGlobalItemPolys(PolyRegistry registry) {
+        registry.registerGlobalItemPoly(new Enchantment2LorePoly());
     }
 }

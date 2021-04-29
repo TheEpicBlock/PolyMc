@@ -53,8 +53,6 @@ public class PolyMapImpl implements PolyMap {
         ItemPoly poly = itemPolys.get(serverItem.getItem());
         if (poly != null) ret = poly.getClientItem(serverItem);
 
-        ret = Util.portEnchantmentsToLore(ret);
-
         for (ItemPoly globalPoly : globalItemPolys) {
             ret = globalPoly.getClientItem(ret);
         }
