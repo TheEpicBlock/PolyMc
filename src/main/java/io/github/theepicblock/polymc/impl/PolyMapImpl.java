@@ -69,9 +69,11 @@ public class PolyMapImpl implements PolyMap {
             ret = globalPoly.getClientItem(ret);
         }
 
-        // Preserves the nbt of the original item so it can be reverted
-        ret = ret.copy();
-        ret.putSubTag(ORIGINAL_ITEM_NBT, originalNbt);
+        if (player == null || player.isCreative()) {
+            // Preserves the nbt of the original item so it can be reverted
+            ret = ret.copy();
+            ret.putSubTag(ORIGINAL_ITEM_NBT, originalNbt);
+        }
 
         return ret;
     }
@@ -111,7 +113,7 @@ public class PolyMapImpl implements PolyMap {
 
     public static ItemStack recoverOriginalItem(ItemStack input) {
         if (input.getTag() == null || !input.getTag().contains(ORIGINAL_ITEM_NBT, NbtType.COMPOUND)) {
-            return ItemStack.EMPTY;
+            return input;
         }
 
         return ItemStack.fromTag(input.getTag().getCompound(ORIGINAL_ITEM_NBT));
