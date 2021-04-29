@@ -27,9 +27,12 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -69,7 +72,7 @@ public class PolyMapImpl implements PolyMap {
             ret = globalPoly.getClientItem(ret);
         }
 
-        if (player == null || player.isCreative()) {
+        if ((player == null || player.isCreative()) && !serverItem.isItemEqual(ret) && !serverItem.isEmpty()) {
             // Preserves the nbt of the original item so it can be reverted
             ret = ret.copy();
             ret.putSubTag(ORIGINAL_ITEM_NBT, originalNbt);
@@ -116,7 +119,15 @@ public class PolyMapImpl implements PolyMap {
             return input;
         }
 
-        return ItemStack.fromTag(input.getTag().getCompound(ORIGINAL_ITEM_NBT));
+        CompoundTag tag = input.getTag().getCompound(ORIGINAL_ITEM_NBT);
+        ItemStack stack = ItemStack.fromTag(tag);
+        stack.setCount(input.getCount()); // The clientside count is leading, to support middle mouse button duplication and stack splitting and such
+
+        if (stack.isEmpty() && !input.isEmpty()) {
+            stack = new ItemStack(Items.CLAY_BALL);
+            stack.setCustomName(new LiteralText("Invalid Item").formatted(Formatting.ITALIC));
+        }
+        return stack;
     }
 
     @Override
