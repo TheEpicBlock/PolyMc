@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
@@ -33,11 +34,13 @@ import net.minecraft.screen.ScreenHandlerType;
  */
 public class PolyMapImpl implements PolyMap {
     private final ImmutableMap<Item,ItemPoly> itemPolys;
+    private final ItemPoly[] globalItemPolys;
     private final ImmutableMap<Block,BlockPoly> blockPolys;
     private final ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys;
 
-    public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys) {
+    public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys, ItemPoly[] globalItemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys) {
         this.itemPolys = itemPolys;
+        this.globalItemPolys = globalItemPolys;
         this.blockPolys = blockPolys;
         this.guiPolys = guiPolys;
     }
@@ -53,6 +56,10 @@ public class PolyMapImpl implements PolyMap {
         if (poly != null) ret = poly.getClientItem(serverItem);
 
         ret = Util.portEnchantmentsToLore(ret);
+
+        for (ItemPoly globalPoly : globalItemPolys) {
+            ret = globalPoly.getClientItem(ret);
+        }
 
         return ret;
     }
