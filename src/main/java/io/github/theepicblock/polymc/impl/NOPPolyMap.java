@@ -43,6 +43,11 @@ public class NOPPolyMap implements PolyMap {
 	}
 
 	@Override
+	public ItemStack reverseClientItem(ItemStack clientItem) {
+		return clientItem;
+	}
+
+	@Override
 	public boolean isVanillaLikeMap() {
 		return false; //This disables patches meant for vanilla clients
 	}

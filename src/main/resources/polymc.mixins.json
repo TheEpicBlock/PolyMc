@@ -34,7 +34,7 @@
     "context.block.TACSMixin",
     "gui.FabricApiExtendedScreenImplementation",
     "gui.GuiHandlerIdImplementation",
-    "item.CreativeModeHotfix",
+    "item.CreativeItemStackFix",
     "item.CustomRecipeFix",
     "item.InventoryDesyncPatch",
     "item.ItemPolyImplementation",

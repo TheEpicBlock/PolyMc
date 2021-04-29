@@ -21,14 +21,12 @@ import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.mixins.item.CreativeItemStackFix;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 public interface PolyMap {
 	/**
@@ -66,6 +64,15 @@ public interface PolyMap {
 	ImmutableMap<Block,BlockPoly> getBlockPolys();
 
 	/**
+	 * Reverts the clientside item into the serverside representation.
+	 * This should be the reverse of {@link #getClientItem(ItemStack)}.
+	 * For optimization reasons, this method only needs to be implemented for items gained by players in creative mode.
+	 *
+	 * @see CreativeItemStackFix
+	 */
+	ItemStack reverseClientItem(ItemStack clientItem);
+
+	/**
 	 * Specifies if this map is meant for vanilla-like clients
 	 * This is used to disable/enable miscellaneous patches
 	 *
@@ -75,7 +82,6 @@ public interface PolyMap {
 	 * @see io.github.theepicblock.polymc.mixins.block.ResyncImplementation
 	 * @see io.github.theepicblock.polymc.mixins.context.block.BlockMixin
 	 * @see io.github.theepicblock.polymc.mixins.gui.GuiHandlerIdImplementation
-	 * @see io.github.theepicblock.polymc.mixins.item.CreativeModeHotfix
 	 * @see io.github.theepicblock.polymc.mixins.item.CustomRecipeFix
 	 */
 	boolean isVanillaLikeMap();

@@ -28,6 +28,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * When items are moved around by a creative mode player, the client just tells the server to set a stack to a specific item.
@@ -40,38 +41,11 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * We also check if the client tries to set a slot to its polyd version.
  */
 @Mixin(ServerPlayNetworkHandler.class)
-public class CreativeModeHotfix {
+public class CreativeItemStackFix {
     @Shadow public ServerPlayerEntity player;
-    private ItemStack polyMCrecentlyVoided;
-
-    @Redirect(method = "onCreativeInventoryAction(Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/PlayerScreenHandler;setStackInSlot(ILnet/minecraft/item/ItemStack;)V"))
-    public void creativemodeSetSlotRedirect(PlayerScreenHandler screenHandler, int slot, ItemStack setStack) {
-        if (!Util.isPolyMapVanillaLike(this.player)) {//This patch doesn't make sense for modded clients
-            ItemStack slotStack = screenHandler.getSlot(slot).getStack();
-            if (!slotStack.isEmpty()) {
-                if (setStack.isEmpty()) {
-                    polyMCrecentlyVoided = slotStack;
-                } else {
-                    if (ItemStack.areEqual(setStack, PolyMapProvider.getPolyMap(this.player).getClientItem(slotStack))) {
-                        //the item the client is trying to set is actually a the polyd version of the item in the same slot.
-                        return;
-                    }
-                }
-            }
-        }
-        screenHandler.setStackInSlot(slot, setStack);
-    }
 
     @Redirect(method = "onCreativeInventoryAction(Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;getItemStack()Lnet/minecraft/item/ItemStack;"))
-    public ItemStack getItemStackRedirect(CreativeInventoryActionC2SPacket creativeInventoryActionC2SPacket) {
-        ItemStack original = creativeInventoryActionC2SPacket.getItemStack();
-
-        if (polyMCrecentlyVoided == null) return original;
-
-        if (ItemStack.areEqual(original, PolyMapProvider.getPolyMap(this.player).getClientItem(polyMCrecentlyVoided))) {
-            //the item the client is trying to set is actually a polyd version of polyMCrecentlyVoided.
-            return polyMCrecentlyVoided;
-        }
-        return original;
+    public ItemStack creativemodeSetSlotRedirect(CreativeInventoryActionC2SPacket packet) {
+        return PolyMapProvider.getPolyMap(player).reverseClientItem(packet.getItemStack());
     }
 }

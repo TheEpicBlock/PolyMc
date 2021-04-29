@@ -23,6 +23,7 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.impl.poly.item.Original2NbtPoly;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
@@ -50,12 +51,12 @@ public class PolyMapImpl implements PolyMap {
     public ItemStack getClientItem(ItemStack serverItem) {
         ItemStack ret = serverItem;
 
-        ItemPoly poly = itemPolys.get(serverItem.getItem());
-        if (poly != null) ret = poly.getClientItem(serverItem);
-
         for (ItemPoly globalPoly : globalItemPolys) {
             ret = globalPoly.getClientItem(ret);
         }
+
+        ItemPoly poly = itemPolys.get(serverItem.getItem());
+        if (poly != null) ret = poly.getClientItem(serverItem);
 
         return ret;
     }
@@ -86,6 +87,17 @@ public class PolyMapImpl implements PolyMap {
     @Override
     public ImmutableMap<Block,BlockPoly> getBlockPolys() {
         return blockPolys;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation relies on the {@link Original2NbtPoly} global poly being installed.
+     * It should be the first registered global poly to avoid any errors in the nbt
+     */
+    @Override
+    public ItemStack reverseClientItem(ItemStack clientItem) {
+        return Original2NbtPoly.reverse(clientItem);
     }
 
     @Override

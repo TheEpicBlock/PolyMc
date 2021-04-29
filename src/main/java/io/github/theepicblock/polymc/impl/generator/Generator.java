@@ -18,7 +18,13 @@
 package io.github.theepicblock.polymc.impl.generator;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
+import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.poly.item.Enchantment2LorePoly;
+import io.github.theepicblock.polymc.impl.poly.item.Original2NbtPoly;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 
 public class Generator {
     /**
@@ -29,14 +35,13 @@ public class Generator {
         ItemPolyGenerator.generateMissing(builder);
         BlockPolyGenerator.generateMissing(builder);
         GuiGenerator.generateMissing(builder);
-
-        addDefaultGlobalItemPolys(builder);
     }
 
     /**
      * Registers global item polys that are included with PolyMc by default for vanilla compatibility
      */
     public static void addDefaultGlobalItemPolys(PolyRegistry registry) {
+        registry.registerGlobalItemPoly(new Original2NbtPoly()); // This *needs* to be the first global so it can capture the completely original ItemStack
         registry.registerGlobalItemPoly(new Enchantment2LorePoly());
     }
 }
