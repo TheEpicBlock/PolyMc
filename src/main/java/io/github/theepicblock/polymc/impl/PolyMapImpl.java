@@ -17,17 +17,17 @@
  */
 package io.github.theepicblock.polymc.impl;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
-import io.github.theepicblock.polymc.impl.poly.item.Original2NbtPoly;
+import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.screen.ScreenHandlerType;
 
 /**
@@ -35,6 +35,14 @@ import net.minecraft.screen.ScreenHandlerType;
  * You can use a {@link io.github.theepicblock.polymc.api.PolyRegistry} to build one of these more easily.
  */
 public class PolyMapImpl implements PolyMap {
+    /**
+     * The nbt tag name that stores the original item nbt so it can be restored
+     *
+     * @see #getClientItem(ItemStack)
+     * @see #recoverOriginalItem(ItemStack)
+     */
+    private static final String ORIGINAL_ITEM_NBT = "PolyMcOriginal";
+
     private final ImmutableMap<Item,ItemPoly> itemPolys;
     private final ItemPoly[] globalItemPolys;
     private final ImmutableMap<Block,BlockPoly> blockPolys;
@@ -50,13 +58,18 @@ public class PolyMapImpl implements PolyMap {
     @Override
     public ItemStack getClientItem(ItemStack serverItem) {
         ItemStack ret = serverItem;
+        CompoundTag originalNbt = serverItem.toTag(new CompoundTag());
+
+        ItemPoly poly = itemPolys.get(serverItem.getItem());
+        if (poly != null) ret = poly.getClientItem(serverItem);
 
         for (ItemPoly globalPoly : globalItemPolys) {
             ret = globalPoly.getClientItem(ret);
         }
 
-        ItemPoly poly = itemPolys.get(serverItem.getItem());
-        if (poly != null) ret = poly.getClientItem(serverItem);
+        // Preserves the nbt of the original item so it can be reverted
+        ret = ret.copy();
+        ret.putSubTag(ORIGINAL_ITEM_NBT, originalNbt);
 
         return ret;
     }
@@ -89,15 +102,17 @@ public class PolyMapImpl implements PolyMap {
         return blockPolys;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * This implementation relies on the {@link Original2NbtPoly} global poly being installed.
-     * It should be the first registered global poly to avoid any errors in the nbt
-     */
     @Override
     public ItemStack reverseClientItem(ItemStack clientItem) {
-        return Original2NbtPoly.reverse(clientItem);
+        return recoverOriginalItem(clientItem);
+    }
+
+    public static ItemStack recoverOriginalItem(ItemStack input) {
+        if (input.getTag() == null || !input.getTag().contains(ORIGINAL_ITEM_NBT, NbtType.COMPOUND)) {
+            return ItemStack.EMPTY;
+        }
+
+        return ItemStack.fromTag(input.getTag().getCompound(ORIGINAL_ITEM_NBT));
     }
 
     @Override
