@@ -30,7 +30,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
 
 /**
- * A map containing different types of polys
+ * This is the standard implementation of the PolyMap that PolyMc uses by default.
+ * You can use a {@link io.github.theepicblock.polymc.api.PolyRegistry} to build one of these more easily.
  */
 public class PolyMapImpl implements PolyMap {
     private final ImmutableMap<Item,ItemPoly> itemPolys;
@@ -45,9 +46,6 @@ public class PolyMapImpl implements PolyMap {
         this.guiPolys = guiPolys;
     }
 
-    /**
-     * Converts a serverside item into a clientside one using the corresponding {@link ItemPoly}.
-     */
     @Override
     public ItemStack getClientItem(ItemStack serverItem) {
         ItemStack ret = serverItem;
@@ -64,9 +62,6 @@ public class PolyMapImpl implements PolyMap {
         return ret;
     }
 
-    /**
-     * Converts a serverside block into a clientside one using the corresponding {@link BlockPoly}.
-     */
     @Override
     public BlockState getClientBlock(BlockState serverBlock) {
         BlockPoly poly = blockPolys.get(serverBlock.getBlock());
@@ -75,10 +70,6 @@ public class PolyMapImpl implements PolyMap {
         return poly.getClientBlock(serverBlock);
     }
 
-    /**
-     * Converts a serverside gui into a clientside one using the corresponding {@link GuiPoly}.
-     * Currently experimental
-     */
     @Override
     public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {
         return guiPolys.get(serverGuiType);
@@ -89,17 +80,11 @@ public class PolyMapImpl implements PolyMap {
         return blockPolys.get(block);
     }
 
-    /**
-     * gets a map containing all itempolys in this map
-     */
     @Override
     public ImmutableMap<Item,ItemPoly> getItemPolys() {
         return itemPolys;
     }
 
-    /**
-     * gets a map containing all blockpolys in this map
-     */
     @Override
     public ImmutableMap<Block,BlockPoly> getBlockPolys() {
         return blockPolys;

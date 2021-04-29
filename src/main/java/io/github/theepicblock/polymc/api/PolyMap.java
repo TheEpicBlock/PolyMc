@@ -23,42 +23,60 @@ import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 public interface PolyMap {
 	/**
-	 * Converts a serverside item into a clientside one using the corresponding {@link ItemPoly}.
+	 * Converts the serverside representation of an item into a clientside one that should be sent to the client.
 	 */
 	ItemStack getClientItem(ItemStack serverItem);
 
 	/**
-	 * Converts a serverside block into a clientside one using the corresponding {@link BlockPoly}.
+	 * Converts the serverside representation of a block into a clientside one that should be sent to the client.
 	 */
 	BlockState getClientBlock(BlockState serverBlock);
 
 	/**
-	 * Converts a serverside gui into a clientside one using the corresponding {@link GuiPoly}.
-	 * Currently experimental
+	 * Gets the {@link GuiPoly} that this PolyMap associates with this {@link ScreenHandlerType}.
+	 *
+	 * @return A {@link GuiPoly} describing how to display this screen type on the client.
 	 */
 	GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType);
 
+	/**
+	 * Gets the {@link BlockPoly} that this PolyMap associates with this {@link Block}.
+	 *
+	 * @return A {@link BlockPoly} describing how to display this screen type on the client.
+	 */
 	BlockPoly getBlockPoly(Block block);
 
 	/**
-	 * gets a map containing all itempolys in this map
+	 * gets a map containing all itempolys that are registered in this map.
 	 */
 	ImmutableMap<Item,ItemPoly> getItemPolys();
 
 	/**
-	 * gets a map containing all blockpolys in this map
+	 * gets a map containing all blockpolys that are registered in this map.
 	 */
 	ImmutableMap<Block,BlockPoly> getBlockPolys();
 
 	/**
 	 * Specifies if this map is meant for vanilla-like clients
 	 * This is used to disable/enable miscellaneous patches
+	 *
+	 * @see io.github.theepicblock.polymc.mixins.block.BlockBreakingPatch
+	 * @see io.github.theepicblock.polymc.mixins.CustomPacketDisabler
+	 * @see io.github.theepicblock.polymc.mixins.TagSyncronizePatch
+	 * @see io.github.theepicblock.polymc.mixins.block.ResyncImplementation
+	 * @see io.github.theepicblock.polymc.mixins.context.block.BlockMixin
+	 * @see io.github.theepicblock.polymc.mixins.gui.GuiHandlerIdImplementation
+	 * @see io.github.theepicblock.polymc.mixins.item.CreativeModeHotfix
+	 * @see io.github.theepicblock.polymc.mixins.item.CustomRecipeFix
 	 */
 	boolean isVanillaLikeMap();
 }
