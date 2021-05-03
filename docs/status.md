@@ -26,8 +26,9 @@ A few block shapes have been implemented in PolyMc:
 * Path blocks: 5  
 Note that some transparent textures might display incorrectly.
 
-## GUIs <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Red.png">
-GUIs do not work currently but are the next priority.
+## GUIs <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Orange.png">
+GUIs do work currently but out of the box do not function as well as other parts of PolyMc.
+Currently it can only copy over the inventory slots of screens. Other functionality can be implemented manually through PolyMc's api but is not done automatically.
 
 ## Entities <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Red.png">
 There is no support for entities in PolyMc yet. Any modded entity will display as a pig.
@@ -36,8 +37,9 @@ There is no support for entities in PolyMc yet. Any modded entity will display a
 Custom enchantments are supported and should display correctly on the item.
 Unless the enchantment has some clientside ability, it should also be fully functional.
 
-## Sounds <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Red.png">
-Custom sounds won't crash the client and won't do anything. PolyMc will provide support for custom sounds soon.
+## Sounds <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Green.png">
+PolyMc supports custom sounds.
+Unless a mod uses its own sound system it should work without issues.
 
 ## Recipes <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Green.png">
 Custom recipes will work in a crafting table or other crafting station.
