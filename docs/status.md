@@ -28,7 +28,7 @@ Note that some transparent textures might display incorrectly.
 
 ## GUIs <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Orange.png">
 GUIs do work currently but out of the box do not function as well as other parts of PolyMc.
-Currently it can only copy over the inventory slots of screens. other functionality can be implemented manually through PolyMc's api but is not done automatically.
+Currently it can only copy over the inventory slots of screens. Other functionality can be implemented manually through PolyMc's api but is not done automatically.
 
 ## Entities <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Red.png">
 There is no support for entities in PolyMc yet. Any modded entity will display as a pig.
@@ -39,7 +39,7 @@ Unless the enchantment has some clientside ability, it should also be fully func
 
 ## Sounds <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Green.png">
 PolyMc supports custom sounds.
-unless a mod uses its own sound system it should work without issues.
+Unless a mod uses its own sound system it should work without issues.
 
 ## Recipes <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Green.png">
 Custom recipes will work in a crafting table or other crafting station.
