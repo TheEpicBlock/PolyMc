@@ -41,6 +41,7 @@
     "wizards.EntityAccessor",
     "wizards.EntityTrackerAccessor",
     "wizards.FallingBlockEntityMixin",
+    "wizards.ItemFrameEntityAccessor",
     "wizards.MixinPistonBlockEntity",
     "wizards.block.BiMapPaletteAccessor",
     "wizards.block.ChunkHolderMixin",
