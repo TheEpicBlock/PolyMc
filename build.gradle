@@ -27,8 +27,8 @@ dependencies {
 
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation "com.lettuce.fudge:artifice:${project.artifice_version}"
-	modImplementation "com.github.CaffeineMC.lithium-fabric:lithium:${project.lithium_version}"
+	modCompileOnly "com.lettuce.fudge:artifice:${project.artifice_version}"
+	modCompileOnly "com.github.CaffeineMC.lithium-fabric:lithium:${project.lithium_version}"
 }
 
 processResources {
