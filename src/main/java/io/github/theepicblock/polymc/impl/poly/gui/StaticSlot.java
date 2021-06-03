@@ -29,7 +29,7 @@ public class StaticSlot extends Slot {
 		this.stack = stack;
 	}
 
-	public void onStackChanged(ItemStack originalItem, ItemStack itemStack) {
+	public void onQuickTransfer(ItemStack originalItem, ItemStack itemStack) {
 		throw new AssertionError("PolyMc: the contents of a static, unchangeable slot were changed. Containing: "+stack.toString());
 	}
 
