@@ -21,9 +21,6 @@ The ResourcePackMaker has, in general, 3 types of methods. `getX`, `hasX` and `c
  +------> copyTexture
  |
  copyFile ----> copyAsset -------> copyModel -------> copyItemModel
- |
- |
- +---> importArtificePack
 
  copyFolder --> importAssetFolder
 

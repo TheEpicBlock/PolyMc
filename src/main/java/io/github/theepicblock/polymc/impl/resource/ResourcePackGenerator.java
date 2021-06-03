@@ -60,11 +60,6 @@ public class ResourcePackGenerator {
             pack = new AdvancedResourcePackMaker(resourcePath, tempPath, logger);
         } else {
             pack = new ResourcePackMaker(resourcePath, logger);
-
-            if (FabricLoader.getInstance().getModContainer("artifice").isPresent()) {
-                logger.error("Artifice was detected, but the default PolyMc resource pack maker is not compatible with Artifice");
-                logger.error("Please switch to the advanced generator in the config.");
-            }
         }
 
         //Clear up the assets folder
