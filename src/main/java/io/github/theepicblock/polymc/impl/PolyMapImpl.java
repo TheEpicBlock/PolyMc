@@ -22,44 +22,65 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * A map containing different types of polys
+ * This is the standard implementation of the PolyMap that PolyMc uses by default.
+ * You can use a {@link io.github.theepicblock.polymc.api.PolyRegistry} to build one of these more easily.
  */
 public class PolyMapImpl implements PolyMap {
+    /**
+     * The nbt tag name that stores the original item nbt so it can be restored
+     *
+     * @see PolyMap#getClientItem(ItemStack, ServerPlayerEntity)
+     * @see #recoverOriginalItem(ItemStack)
+     */
+    private static final String ORIGINAL_ITEM_NBT = "PolyMcOriginal";
+
     private final ImmutableMap<Item,ItemPoly> itemPolys;
+    private final ItemPoly[] globalItemPolys;
     private final ImmutableMap<Block,BlockPoly> blockPolys;
     private final ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys;
 
-    public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys) {
+    public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys, ItemPoly[] globalItemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys) {
         this.itemPolys = itemPolys;
+        this.globalItemPolys = globalItemPolys;
         this.blockPolys = blockPolys;
         this.guiPolys = guiPolys;
     }
 
-    /**
-     * Converts a serverside item into a clientside one using the corresponding {@link ItemPoly}.
-     */
     @Override
-    public ItemStack getClientItem(ItemStack serverItem) {
+    public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player) {
         ItemStack ret = serverItem;
+        CompoundTag originalNbt = serverItem.toTag(new CompoundTag());
 
         ItemPoly poly = itemPolys.get(serverItem.getItem());
         if (poly != null) ret = poly.getClientItem(serverItem);
 
-        ret = Util.portEnchantmentsToLore(ret);
+        for (ItemPoly globalPoly : globalItemPolys) {
+            ret = globalPoly.getClientItem(ret);
+        }
+
+        if ((player == null || player.isCreative()) && !serverItem.isItemEqual(ret) && !serverItem.isEmpty()) {
+            // Preserves the nbt of the original item so it can be reverted
+            ret = ret.copy();
+            ret.putSubTag(ORIGINAL_ITEM_NBT, originalNbt);
+        }
 
         return ret;
     }
 
-    /**
-     * Converts a serverside block into a clientside one using the corresponding {@link BlockPoly}.
-     */
     @Override
     public BlockState getClientBlock(BlockState serverBlock) {
         BlockPoly poly = blockPolys.get(serverBlock.getBlock());
@@ -68,10 +89,6 @@ public class PolyMapImpl implements PolyMap {
         return poly.getClientBlock(serverBlock);
     }
 
-    /**
-     * Converts a serverside gui into a clientside one using the corresponding {@link GuiPoly}.
-     * Currently experimental
-     */
     @Override
     public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {
         return guiPolys.get(serverGuiType);
@@ -82,20 +99,35 @@ public class PolyMapImpl implements PolyMap {
         return blockPolys.get(block);
     }
 
-    /**
-     * gets a map containing all itempolys in this map
-     */
     @Override
     public ImmutableMap<Item,ItemPoly> getItemPolys() {
         return itemPolys;
     }
 
-    /**
-     * gets a map containing all blockpolys in this map
-     */
     @Override
     public ImmutableMap<Block,BlockPoly> getBlockPolys() {
         return blockPolys;
+    }
+
+    @Override
+    public ItemStack reverseClientItem(ItemStack clientItem) {
+        return recoverOriginalItem(clientItem);
+    }
+
+    public static ItemStack recoverOriginalItem(ItemStack input) {
+        if (input.getTag() == null || !input.getTag().contains(ORIGINAL_ITEM_NBT, NbtType.COMPOUND)) {
+            return input;
+        }
+
+        CompoundTag tag = input.getTag().getCompound(ORIGINAL_ITEM_NBT);
+        ItemStack stack = ItemStack.fromTag(tag);
+        stack.setCount(input.getCount()); // The clientside count is leading, to support middle mouse button duplication and stack splitting and such
+
+        if (stack.isEmpty() && !input.isEmpty()) {
+            stack = new ItemStack(Items.CLAY_BALL);
+            stack.setCustomName(new LiteralText("Invalid Item").formatted(Formatting.ITALIC));
+        }
+        return stack;
     }
 
     @Override

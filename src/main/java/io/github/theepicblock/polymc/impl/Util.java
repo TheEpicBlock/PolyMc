@@ -167,46 +167,6 @@ public class Util {
     }
 
     /**
-     * moves all modded enchantments into the lore tag
-     * @param item item whose enchantments to move
-     * @return the converted item
-     */
-    public static ItemStack portEnchantmentsToLore(ItemStack item) {
-        //noinspection ConstantConditions
-        if (item.hasTag() && item.getTag().contains("Enchantments", 9)) {
-            //check if the enchantments aren't hidden
-            int hideFlags = item.getTag().contains("HideFlags", 99) ? item.getTag().getInt("HideFlags") : 0;
-            if ((hideFlags & ItemStack.TooltipSection.ENCHANTMENTS.getFlag()) == 0) {
-                ItemStack stack = item.copy();
-                NbtList enchantments = stack.getEnchantments();
-
-                //iterate through the enchantments
-                for (NbtElement tag : enchantments) {
-                    if (tag.getType() != 10) continue; //this is not a compound tag
-                    NbtCompound compoundTag = (NbtCompound)tag;
-
-                    Identifier id = Identifier.tryParse(compoundTag.getString("id"));
-
-                    if (!Util.isVanilla(id) && id != null) {
-                        Registry.ENCHANTMENT.getOrEmpty(id).ifPresent((enchantment) -> {
-                            //iterator.remove();
-                            Text name = enchantment.getName(compoundTag.getInt("lvl"));
-
-                            NbtCompound displayTag = stack.getOrCreateSubTag("display");
-                            if (!displayTag.contains("Lore")) {
-                                displayTag.put("Lore", new NbtList());
-                            }
-                            displayTag.getList("Lore", 8).add(NbtString.of(Text.Serializer.toJson(name)));
-                        });
-                    }
-                }
-                return stack;
-            }
-        }
-        return item;
-    }
-
-    /**
      * Utility method to get the polyd raw id.
      * PolyMc also redirects {@link Block#getRawIdFromState(BlockState)} but that doesn't respect the player's {@link PolyMap}.
      * This method does.

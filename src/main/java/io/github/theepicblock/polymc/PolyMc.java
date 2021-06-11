@@ -46,13 +46,16 @@ public class PolyMc implements ModInitializer {
     public static void generatePolyMap() {
         PolyRegistry registry = new PolyRegistry();
 
-        //Let mods register polys via the api
+        // Register default global ItemPolys
+        Generator.addDefaultGlobalItemPolys(registry);
+
+        // Let mods register polys via the api
         List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("polymc", PolyMcEntrypoint.class);
         for (PolyMcEntrypoint entrypointEntry : entrypoints) {
             entrypointEntry.registerPolys(registry);
         }
 
-        //Auto generate the rest
+        // Auto generate the rest
         Generator.generateMissing(registry);
 
         map = registry.build();
