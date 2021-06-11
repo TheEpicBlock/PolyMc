@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Mixin(Entity.class)
 public interface EntityAccessor {
-    @Accessor("ENTITY_ID_COUNTER")
+    @Accessor("CURRENT_ID")
     static AtomicInteger getEntityIdCounter() {
         throw new IllegalStateException();
     }
