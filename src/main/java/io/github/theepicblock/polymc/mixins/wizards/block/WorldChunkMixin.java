@@ -40,7 +40,7 @@ public abstract class WorldChunkMixin implements WatchListener, WizardView {
 	@Shadow public abstract ChunkPos getPos();
 
 	@Shadow @Final private ChunkPos pos;
-	@Shadow @Final private World world;
+	@Shadow @Final World world;
 	@Unique private final PolyMapMap<Map<BlockPos,Wizard>> wizards = new PolyMapMap<>(this::createWizardsForChunk);
 	@Unique private final ArrayList<ServerPlayerEntity> players = new ArrayList<>();
 
@@ -87,7 +87,7 @@ public abstract class WorldChunkMixin implements WatchListener, WizardView {
 	@Unique
 	private Map<BlockPos,Wizard> createWizardsArrayPalette(PolyMap map, ArrayPalette<BlockState> palette, PalettedContainer<BlockState> container, int yOffset) {
 		Int2ObjectMap<BlockPoly> idToWizMap = new Int2ObjectArrayMap<>(5);
-		for (int i = 0; i < palette.getSize(); i++) {
+		for (int i = 0; i < palette.getIndexBits(); i++) {
 			BlockState state = palette.getByIndex(i);
 			if (state == null) continue;
 

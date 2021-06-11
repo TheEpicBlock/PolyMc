@@ -28,6 +28,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -41,12 +42,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(ServerPlayerInteractionManager.class)
 public abstract class BlockBreakingPatch {
-    @Shadow public ServerPlayerEntity player;
+    @Shadow @Final protected ServerPlayerEntity player;
     @Shadow private int tickCounter;
     @Shadow private int startMiningTime;
-
-    @Shadow
-    public abstract void finishMining(BlockPos pos, PlayerActionC2SPacket.Action action, String reason);
+    @Shadow public abstract void finishMining(BlockPos pos, PlayerActionC2SPacket.Action action, String reason);
 
     private int blockBreakingCooldown;
 
@@ -88,7 +87,7 @@ public abstract class BlockBreakingPatch {
         if (Util.isPolyMapVanillaLike(player)) {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
                 //We give the player near-permanent mining fatigue. This prevents them from trying to break the block themselves.
-                player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getEntityId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
+                player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
             } else if (action == PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK) {
                 player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, -1));
             }

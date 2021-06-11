@@ -109,7 +109,7 @@ public class BlockPolyGenerator {
         }
 
         //=== LEAVES ===
-        if (block instanceof LeavesBlock || block.isIn(BlockTags.LEAVES)) { //TODO I don't like that leaves can be set tags in datapacks, it might cause issues. However, as not every leaf block extends LeavesBlock I can't see much of a better option. Except to maybe check the id if it ends on "_leaves"
+        if (block instanceof LeavesBlock || BlockTags.LEAVES.contains(block)) { //TODO I don't like that leaves can be set tags in datapacks, it might cause issues. However, as not every leaf block extends LeavesBlock I can't see much of a better option. Except to maybe check the id if it ends on "_leaves"
             try {
                 return new SingleUnusedBlockStatePoly(builder, BlockStateProfile.LEAVES_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
@@ -214,7 +214,7 @@ public class BlockPolyGenerator {
 
             if (blockState.getBlock() instanceof BlockEntityProvider) {
                 BlockEntityProvider provider = (BlockEntityProvider)blockState.getBlock();
-                blockEntity = provider.createBlockEntity(this);
+                blockEntity = provider.createBlockEntity(BlockPos.ORIGIN, blockState);
             } else {
                 blockEntity = null;
             }
@@ -242,6 +242,16 @@ public class BlockPolyGenerator {
                 return blockState.getFluidState();
             }
             return null;
+        }
+
+        @Override
+        public int getHeight() {
+            return 255;
+        }
+
+        @Override
+        public int getBottomY() {
+            return 0;
         }
     }
 }

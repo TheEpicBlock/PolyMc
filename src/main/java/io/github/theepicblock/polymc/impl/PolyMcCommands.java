@@ -31,9 +31,11 @@ import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -51,9 +53,10 @@ public class PolyMcCommands {
                     .then(literal("debug")
                         .then(literal("clientItem")
                             .executes((context) -> {
-                                ItemStack heldItem = context.getSource().getPlayer().inventory.getMainHandStack();
-                                context.getSource().sendFeedback(PolyMc.getMainMap().getClientItem(heldItem).toTag(new CompoundTag()).toText(), false);
-                                return Command.SINGLE_SUCCESS;
+                                ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
+                                ItemStack polydItem = PolyMc.getMainMap().getClientItem(heldItem);
+                                Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.writeNbt(new NbtCompound()));
+                                context.getSource().sendFeedback(nbtText, false);return Command.SINGLE_SUCCESS;
                             }))
                         .then(literal("replaceInventoryWithDebug")
                             .executes((context) -> {
@@ -61,13 +64,17 @@ public class PolyMcCommands {
                                 if (!player.isCreative()) {
                                     throw new SimpleCommandExceptionType(new LiteralText("You must be in creative mode to execute this command. Keep in mind that this will wipe your inventory.")).create();
                                 }
-                                for (int i = 0; i < player.inventory.size(); i++){
+                                for (int i = 0; i < player.getInventory().size(); i++){
                                     if (i == 0) {
-                                        player.inventory.setStack(i, new ItemStack(Items.GREEN_STAINED_GLASS_PANE));
+                                        player.getInventory().setStack(i, new ItemStack(Items.GREEN_STAINED_GLASS_PANE));
                                     } else {
-                                        player.inventory.setStack(i, new ItemStack(Items.RED_STAINED_GLASS_PANE, i));
+                                        player.getInventory().setStack(i, new ItemStack(Items.RED_STAINED_GLASS_PANE, i));
                                     }
                                 }
+                                ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
+                                ItemStack polydItem = PolyMc.getMainMap().getClientItem(heldItem);
+                                Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.writeNbt(new NbtCompound()));
+                                context.getSource().sendFeedback(nbtText, false);
                                 return Command.SINGLE_SUCCESS;
                             })))
                     .then(literal("generate")

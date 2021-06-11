@@ -17,10 +17,6 @@
  */
 package io.github.theepicblock.polymc.impl.resource;
 
-import com.swordglowsblue.artifice.api.ArtificeResourcePack;
-import com.swordglowsblue.artifice.common.ArtificeRegistry;
-import com.swordglowsblue.artifice.impl.ArtificeResourcePackImpl;
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
@@ -61,32 +57,6 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
                 e.printStackTrace();
             }
         });
-
-        //Artifice provides a list with virtual resource packs. But it only exists on the client. We can import them to use the assets
-        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-            Optional<ModContainer> artifice = FabricLoader.getInstance().getModContainer("artifice");
-            if (artifice.isPresent()) {
-                ArtificeRegistry.ASSETS.forEach((this::importArtificePack));
-            }
-        }
-    }
-
-    @Override
-    public void importArtificePack(Object pack) {
-        if (pack instanceof ArtificeResourcePack) {
-            ArtificeResourcePack aPack = (ArtificeResourcePack)pack;
-            try {
-                Path artLoc = FabricLoader.getInstance().getGameDir().relativize(tempLocation);
-                aPack.dumpResources(artLoc.toString());
-            } catch (IOException e) {
-                logger.warn(String.format("Failed to get resources from artifice pack '%s'", aPack.getName()));
-                logger.warn(e);
-            }
-        }
-        if (pack instanceof Consumer) {
-            //noinspection unchecked
-            importArtificePack(new ArtificeResourcePackImpl(ResourceType.CLIENT_RESOURCES, (Consumer<ArtificeResourcePack.ClientResourcePackBuilder>)pack));
-        }
     }
 
     @Override

@@ -20,7 +20,6 @@ package io.github.theepicblock.polymc.api.resource;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-import com.swordglowsblue.artifice.api.ArtificeResourcePack;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
@@ -259,22 +258,6 @@ public class ResourcePackMaker {
      */
     public JsonBlockState getOrDefaultPendingBlockState(String path) {
         return getOrDefaultPendingBlockState(new Identifier(Util.MC_NAMESPACE, path));
-    }
-
-    /**
-     * Imports an Artifice resource pack to be used when getting assets.
-     * This is not needed on the client. But it's the only way to support Artifice resource packs on servers.
-     * This function won't do anything on the client since the pack will automatically be imported there from {@link com.swordglowsblue.artifice.common.ArtificeRegistry#ASSETS}.
-     * @param pack resource pack to import.
-     * @see AdvancedResourcePackMaker#importArtificePack(Object)
-     */
-    public void importArtificePack(Object pack) {
-        String packname = "unknown:unknown";
-        if (pack instanceof ArtificeResourcePack) {
-            packname = ((ArtificeResourcePack)pack).getName();
-        }
-        logger.warn(String.format("Tried to import Artifice resource pack '%s' but this isn't supported with the default discovery method", packname));
-        logger.warn("Please switch to the advancedDiscovery method. See https://github.com/TheEpicBlock/PolyMc/wiki/ModCompat#artifice");
     }
 
     /**

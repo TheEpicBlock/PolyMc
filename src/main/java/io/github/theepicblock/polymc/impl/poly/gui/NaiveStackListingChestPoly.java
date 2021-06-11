@@ -43,7 +43,7 @@ public class NaiveStackListingChestPoly implements GuiPoly {
 
         @Override
         public ScreenHandler getInitialHandler(int initialSyncId) {
-            return new NaiveStackListingScreenHandler(ScreenHandlerType.GENERIC_9X3, 9, 3, initialSyncId, player.inventory, base);
+            return new NaiveStackListingScreenHandler(ScreenHandlerType.GENERIC_9X3, 9, 3, initialSyncId, player.getInventory(), base);
         }
     }
 
