@@ -5,10 +5,9 @@ import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -34,11 +33,11 @@ public class Enchantment2LorePoly implements ItemPoly {
             int hideFlags = input.getTag().contains("HideFlags", 99) ? input.getTag().getInt("HideFlags") : 0;
             if ((hideFlags & ItemStack.TooltipSection.ENCHANTMENTS.getFlag()) == 0) {
                 ItemStack stack = input.copy(); // we should copy the ItemStack to prevent accidental modifications to the original
-                ListTag enchantments = stack.getEnchantments();
+                NbtList enchantments = stack.getEnchantments();
 
-                for (Tag enchantmentTag : enchantments) {
+                for (var enchantmentTag : enchantments) {
                     if (enchantmentTag.getType() != 10) continue; // checks if this is a CompoundTag
-                    CompoundTag compoundTag = (CompoundTag)enchantmentTag;
+                    NbtCompound compoundTag = (NbtCompound)enchantmentTag;
 
                     Identifier id = Identifier.tryParse(compoundTag.getString("id"));
 
@@ -46,12 +45,12 @@ public class Enchantment2LorePoly implements ItemPoly {
                         Registry.ENCHANTMENT.getOrEmpty(id).ifPresent((enchantment) -> {
                             Text name = enchantment.getName(compoundTag.getInt("lvl"));
 
-                            CompoundTag displayTag = stack.getOrCreateSubTag("display");
+                            NbtCompound displayTag = stack.getOrCreateSubTag("display");
                             if (!displayTag.contains("Lore")) {
-                                displayTag.put("Lore", new ListTag());
+                                displayTag.put("Lore", new NbtList());
                             }
                             // place the enchantment on the lore
-                            displayTag.getList("Lore", 8).add(StringTag.of(Text.Serializer.toJson(name)));
+                            displayTag.getList("Lore", 8).add(NbtString.of(Text.Serializer.toJson(name)));
                         });
                     }
                 }

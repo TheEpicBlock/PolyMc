@@ -51,7 +51,8 @@ public class PolyMcCommands {
                             .executes((context) -> {
                                 var player = context.getSource().getPlayer();
                                 var heldItem = player.getInventory().getMainHandStack();
-                                var heldItemTag = PolyMapProvider.getPolyMap(player).getClientItem(heldItem, player).toTag(new CompoundTag());
+                                var polydItem = PolyMapProvider.getPolyMap(player).getClientItem(heldItem, player);
+                                var heldItemTag = polydItem.writeNbt(new NbtCompound());
                                 var nbtText = NbtHelper.toPrettyPrintedText(heldItemTag);
                                 context.getSource().sendFeedback(nbtText, false);
                                 return Command.SINGLE_SUCCESS;
@@ -69,10 +70,6 @@ public class PolyMcCommands {
                                         player.getInventory().setStack(i, new ItemStack(Items.RED_STAINED_GLASS_PANE, i));
                                     }
                                 }
-                                ItemStack heldItem = context.getSource().getPlayer().getInventory().getMainHandStack();
-                                ItemStack polydItem = PolyMc.getMainMap().getClientItem(heldItem);
-                                Text nbtText = NbtHelper.toPrettyPrintedText(polydItem.writeNbt(new NbtCompound()));
-                                context.getSource().sendFeedback(nbtText, false);
                                 return Command.SINGLE_SUCCESS;
                             })))
                     .then(literal("generate")

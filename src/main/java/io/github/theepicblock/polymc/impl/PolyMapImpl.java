@@ -28,7 +28,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -63,7 +63,7 @@ public class PolyMapImpl implements PolyMap {
     @Override
     public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player) {
         ItemStack ret = serverItem;
-        CompoundTag originalNbt = serverItem.toTag(new CompoundTag());
+        NbtCompound originalNbt = serverItem.writeNbt(new NbtCompound());
 
         ItemPoly poly = itemPolys.get(serverItem.getItem());
         if (poly != null) ret = poly.getClientItem(serverItem);
@@ -119,8 +119,8 @@ public class PolyMapImpl implements PolyMap {
             return input;
         }
 
-        CompoundTag tag = input.getTag().getCompound(ORIGINAL_ITEM_NBT);
-        ItemStack stack = ItemStack.fromTag(tag);
+        NbtCompound tag = input.getTag().getCompound(ORIGINAL_ITEM_NBT);
+        ItemStack stack = ItemStack.fromNbt(tag);
         stack.setCount(input.getCount()); // The clientside count is leading, to support middle mouse button duplication and stack splitting and such
 
         if (stack.isEmpty() && !input.isEmpty()) {
