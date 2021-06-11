@@ -57,7 +57,7 @@ public abstract class MixinPistonBlockEntity extends BlockEntity {
     }
 
     @Inject(method = "setWorld(Lnet/minecraft/world/World;)V", at = @At("RETURN"))
-    private void onInit(World world, BlockPos pos, CallbackInfo ci) {
+    private void onInit(World world, CallbackInfo ci) {
         if (!world.isClient) {
             ((ServerWorld)world).getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(new ChunkPos(this.getPos()), false).forEach((player) -> {
                 Wizard wiz = wizards.get(PolyMapProvider.getPolyMap(player));
@@ -66,7 +66,7 @@ public abstract class MixinPistonBlockEntity extends BlockEntity {
         }
     }
 
-    @Inject(method = "tick(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/block/entity/PistonBlockEntity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/PistonBlockEntity;pushEntities(F)V"))
+    @Inject(method = "tick(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/block/entity/PistonBlockEntity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/PistonBlockEntity;pushEntities(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;FLnet/minecraft/block/entity/PistonBlockEntity;)V"))
     private static void onTick(World world, BlockPos pos, BlockState state, PistonBlockEntity blockEntity, CallbackInfo ci) {
         MixinPistonBlockEntity be = (MixinPistonBlockEntity)(Object)blockEntity;
 

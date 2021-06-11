@@ -30,8 +30,10 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,15 +67,17 @@ public class CustomRecipeFix implements PlayerContextContainer {
         }
     }
 
-    @Shadow
-    private List<Recipe<?>> recipes;
-
-    @Inject(method = "write", at = @At("HEAD"))
-    public void onWrite(PacketByteBuf buf, CallbackInfo callbackInfo) {
-        if (Util.isPolyMapVanillaLike(player)) {
-            recipes = recipes.stream()
-                    .filter(recipe -> Util.isVanilla(Registry.RECIPE_SERIALIZER.getId(recipe.getSerializer())))
-                    .collect(Collectors.toList());
+    /**
+     * Modifies the recipes to remove custom serializers (which will crash vanilla clients).
+     */
+    @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeCollection(Ljava/util/Collection;Ljava/util/function/BiConsumer;)V"))
+    public Collection<Recipe<?>> modifyRecipes(Collection<Recipe<?>> input) {
+        if (!Util.isPolyMapVanillaLike(player)) {
+            return input;
         }
+
+        return input.stream() // Remove non-vanilla serializers using streams. TODO can be done more efficiently, maybe with a custom iterator
+                .filter(recipe -> Util.isVanilla(Registry.RECIPE_SERIALIZER.getId(recipe.getSerializer())))
+                .collect(Collectors.toList());
     }
 }

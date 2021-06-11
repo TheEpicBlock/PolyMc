@@ -21,10 +21,13 @@ import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.mixin.PacketReplacementUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.event.GameEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -39,9 +42,9 @@ public class BlockMixin {
 	 * Replaces the call to {@link World#syncWorldEvent(PlayerEntity, int, BlockPos, int)} with a call to {@link PacketReplacementUtil#syncWorldEvent(World, PlayerEntity, int, BlockPos, BlockState)}
 	 * to respect different PolyMaps
 	 */
-	@Redirect(method = "onBreak", at = @At(value = "INVOKE",target = "Lnet/minecraft/world/World;syncWorldEvent(Lnet/minecraft/entity/player/PlayerEntity;ILnet/minecraft/util/math/BlockPos;I)V"))
-	public void worldEventDisabler(World world, PlayerEntity player, int eventId, BlockPos pos, int data,
-								   World worldParent, BlockPos posParent, BlockState stateParent) {
+	@Redirect(method = "spawnBreakParticles", at = @At(value = "INVOKE",target = "Lnet/minecraft/world/World;syncWorldEvent(Lnet/minecraft/entity/player/PlayerEntity;ILnet/minecraft/util/math/BlockPos;I)V"))
+	public void worldEventPoly(World world, PlayerEntity player, int eventId, BlockPos pos, int data,
+							   World worldParent, PlayerEntity playerParent, BlockPos posParent, BlockState stateParent) {
 		//Minecraft assumes the player who breaks the block knows it's breaking a block.
 		//However, as PolyMc reimplements block breaking server-side, the one breaking the block needs to be notified too
 		if (Util.isPolyMapVanillaLike((ServerPlayerEntity)player)) {

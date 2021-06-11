@@ -40,7 +40,7 @@ public abstract class WorldChunkMixin implements WatchListener, WizardView {
 	@Shadow public abstract ChunkPos getPos();
 
 	@Shadow @Final private ChunkPos pos;
-	@Shadow @Final private World world;
+	@Shadow @Final World world;
 	@Unique private final PolyMapMap<Map<BlockPos,Wizard>> wizards = new PolyMapMap<>(this::createWizardsForChunk);
 	@Unique private final ArrayList<ServerPlayerEntity> players = new ArrayList<>();
 
