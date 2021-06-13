@@ -8,6 +8,7 @@ nav_order: 11
 At a basic level item polys take in the servers sided item and output one to be displayed on the client.
 The default item poly, the `CustomModelDataPoly`, works quite well in most cases.
 All of PolyMc's item polys are based on the `CustomModelDataPoly`. The biggest reason for making a custom item poly is to customize the resources that get stored for that poly.
+Keep in mind that, if you create a custom item poly, it should never modify the input itemstack directly. Use `copy()` instead.
 
 ## Example: changing the item used on the client
 ```java
@@ -17,6 +18,10 @@ public void registerPolys(PolyRegistry registry) {
 ```
 *note: if your modded item is damageable, replace `CustomModelDataPoly` with `DamageableItemPoly`*  
 This will Poly your item as usual, just using a diamond sword instead of a stick. It will automatically allocate a CMD value for it.
+
+## Global item polys
+Global item polys are applied to all items before they are sent to the client. Global item polys implement `ItemTransformer` and can be registered using `PolyRegistry#registerGlobalItemPoly`.
+Keep in mind that, like normal item polys, global item polys should *never* modify the input itemstack directly.
 
 # The CustomModelDataManager
 
