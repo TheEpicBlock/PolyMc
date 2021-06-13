@@ -37,7 +37,6 @@
     "item.CreativeItemStackFix",
     "item.CustomRecipeFix",
     "item.GameModeUpdateMixin",
-    "item.InventoryDesyncPatch",
     "item.ItemPolyImplementation",
     "wizards.EntityAccessor",
     "wizards.FallingBlockEntityMixin",

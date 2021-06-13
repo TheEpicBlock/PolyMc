@@ -6,7 +6,7 @@ nav_order: 15
 
 # Block Polys
 At a basic level, like item polys, block polys take in the servers sided blockstates and output one to be displayed on the client.
-Normally PolyMc will attempt to match a modded block to a Block that has a similair shape to the modded one.
+Normally PolyMc will attempt to match a modded block to a Block that has a similar shape to the modded one.
 
 
 ## Example: Making a custom stone block appear as a normal stone block.
