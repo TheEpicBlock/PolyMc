@@ -23,6 +23,7 @@ import io.github.theepicblock.polymc.api.block.BlockStateManager;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.PolyMapImpl;
 import net.minecraft.block.Block;
@@ -45,7 +46,7 @@ public class PolyRegistry {
     private final BlockStateManager blockStateManager = new BlockStateManager(this);
 
     private final Map<Item,ItemPoly> itemPolys = new HashMap<>();
-    private final List<ItemPoly> globalItemPolys = new ArrayList<>();
+    private final List<ItemTransformer> globalItemPolys = new ArrayList<>();
     private final Map<Block,BlockPoly> blockPolys = new HashMap<>();
     private final Map<ScreenHandlerType<?>,GuiPoly> guiPolys = new HashMap<>();
 
@@ -62,10 +63,9 @@ public class PolyRegistry {
      * Registers a global item poly. This {@link ItemPoly#getClientItem(ItemStack)} shall be called for all items.
      *
      * The order is dependant on the registration order. If it is registered earlier it'll be called earlier.
-     * The {@link ItemPoly#addToResourcePack(Item, ResourcePackMaker)} method will be ignored and unused.
      * @param poly poly to register.
      */
-    public void registerGlobalItemPoly(ItemPoly poly) {
+    public void registerGlobalItemPoly(ItemTransformer poly) {
         globalItemPolys.add(poly);
     }
 
@@ -134,7 +134,7 @@ public class PolyRegistry {
     public PolyMap build() {
         return new PolyMapImpl(
                 ImmutableMap.copyOf(itemPolys),
-                globalItemPolys.toArray(new ItemPoly[0]),
+                globalItemPolys.toArray(new ItemTransformer[0]),
                 ImmutableMap.copyOf(blockPolys),
                 ImmutableMap.copyOf(guiPolys)
         );

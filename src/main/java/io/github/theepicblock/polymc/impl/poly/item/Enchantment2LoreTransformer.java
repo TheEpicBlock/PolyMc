@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.impl.poly.item;
 
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.item.Item;
@@ -21,9 +22,9 @@ import net.minecraft.util.registry.Registry;
  *
  * @see #portEnchantmentsToLore(ItemStack)
  */
-public class Enchantment2LorePoly implements ItemPoly {
+public class Enchantment2LoreTransformer implements ItemTransformer {
     @Override
-    public ItemStack getClientItem(ItemStack input) {
+    public ItemStack transform(ItemStack input) {
         return portEnchantmentsToLore(input);
     }
 
@@ -59,7 +60,4 @@ public class Enchantment2LorePoly implements ItemPoly {
         }
         return input;
     }
-
-    @Override
-    public void addToResourcePack(Item item, ResourcePackMaker pack) {}
 }

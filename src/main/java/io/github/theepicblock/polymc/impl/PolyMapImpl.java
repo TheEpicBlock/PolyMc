@@ -22,6 +22,7 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -49,11 +50,11 @@ public class PolyMapImpl implements PolyMap {
     private static final String ORIGINAL_ITEM_NBT = "PolyMcOriginal";
 
     private final ImmutableMap<Item,ItemPoly> itemPolys;
-    private final ItemPoly[] globalItemPolys;
+    private final ItemTransformer[] globalItemPolys;
     private final ImmutableMap<Block,BlockPoly> blockPolys;
     private final ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys;
 
-    public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys, ItemPoly[] globalItemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys) {
+    public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys, ItemTransformer[] globalItemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys) {
         this.itemPolys = itemPolys;
         this.globalItemPolys = globalItemPolys;
         this.blockPolys = blockPolys;
@@ -68,8 +69,8 @@ public class PolyMapImpl implements PolyMap {
         ItemPoly poly = itemPolys.get(serverItem.getItem());
         if (poly != null) ret = poly.getClientItem(serverItem);
 
-        for (ItemPoly globalPoly : globalItemPolys) {
-            ret = globalPoly.getClientItem(ret);
+        for (ItemTransformer globalPoly : globalItemPolys) {
+            ret = globalPoly.transform(ret);
         }
 
         if ((player == null || player.isCreative()) && !serverItem.isItemEqual(ret) && !serverItem.isEmpty()) {
