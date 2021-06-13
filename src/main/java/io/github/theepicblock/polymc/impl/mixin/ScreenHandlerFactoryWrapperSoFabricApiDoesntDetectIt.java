@@ -26,23 +26,22 @@ import net.minecraft.text.Text;
 /**
  * To prevent this factory being detected by some of the instanceof's Fabric Api does.
  * This prevents the Fabric api from trying to include extra data.
- *
  * @see net.fabricmc.fabric.mixin.screenhandler.ServerPlayerEntityMixin
  */
 public class ScreenHandlerFactoryWrapperSoFabricApiDoesntDetectIt implements NamedScreenHandlerFactory {
-	private final NamedScreenHandlerFactory inner;
+    private final NamedScreenHandlerFactory inner;
 
-	public ScreenHandlerFactoryWrapperSoFabricApiDoesntDetectIt(NamedScreenHandlerFactory inner) {
-		this.inner = inner;
-	}
+    public ScreenHandlerFactoryWrapperSoFabricApiDoesntDetectIt(NamedScreenHandlerFactory inner) {
+        this.inner = inner;
+    }
 
-	@Override
-	public Text getDisplayName() {
-		return inner.getDisplayName();
-	}
+    @Override
+    public Text getDisplayName() {
+        return inner.getDisplayName();
+    }
 
-	@Override
-	public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-		return inner.createMenu(syncId, inv, player);
-	}
+    @Override
+    public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
+        return inner.createMenu(syncId, inv, player);
+    }
 }

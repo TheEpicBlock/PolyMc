@@ -47,7 +47,7 @@ public class NaiveStackListingChestPoly implements GuiPoly {
         }
     }
 
-    public static class NaiveStackListingScreenHandler extends ScreenHandler{
+    public static class NaiveStackListingScreenHandler extends ScreenHandler {
         protected final ScreenHandler base;
 
         protected NaiveStackListingScreenHandler(ScreenHandlerType<?> type, int width, int height, int syncId, PlayerInventory playerInventory, ScreenHandler base) {
@@ -55,8 +55,8 @@ public class NaiveStackListingChestPoly implements GuiPoly {
             this.base = base;
 
             List<Slot> baseSlots = GuiUtils.removePlayerSlots(base.slots);
-            for(int y = 0; y < width; ++y) {
-                for(int x = 0; x < height; ++x) {
+            for (int y = 0; y < width; ++y) {
+                for (int x = 0; x < height; ++x) {
                     int index = x + y * width;
 
                     Slot slot;
@@ -70,14 +70,14 @@ public class NaiveStackListingChestPoly implements GuiPoly {
             }
 
             //Player inventory
-            for(int y = 0; y < 3; ++y) {
-                for(int x = 0; x < 9; ++x) {
+            for (int y = 0; y < 3; ++y) {
+                for (int x = 0; x < 9; ++x) {
                     this.addSlot(new Slot(playerInventory, x + y * 9 + 9, 8 + x * 18, 84 + y * 18));
                 }
             }
 
             //Player hotbar
-            for(int hotbar = 0; hotbar < 9; ++hotbar) {
+            for (int hotbar = 0; hotbar < 9; ++hotbar) {
                 this.addSlot(new Slot(playerInventory, hotbar, 8 + hotbar * 18, 142));
             }
         }

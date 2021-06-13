@@ -26,7 +26,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -34,7 +33,6 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -44,8 +42,7 @@ import java.util.stream.Collectors;
  */
 @Mixin(SynchronizeRecipesS2CPacket.class)
 public class CustomRecipeFix implements PlayerContextContainer {
-    @Unique
-    private ServerPlayerEntity player;
+    @Unique private ServerPlayerEntity player;
 
     @Override
     public ServerPlayerEntity getPolyMcProvidedPlayer() {

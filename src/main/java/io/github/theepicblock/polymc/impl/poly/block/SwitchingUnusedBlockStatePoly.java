@@ -30,12 +30,12 @@ public class SwitchingUnusedBlockStatePoly implements BlockPoly {
     private final ImmutableMap<BlockState,BlockState> states;
 
     /**
-     * @param moddedBlock     the block this poly represents
-     * @param falseProfile    the profile to use.
-     * @param registry        registry used to register this poly
+     * @param moddedBlock  the block this poly represents
+     * @param falseProfile the profile to use.
+     * @param registry     registry used to register this poly
      * @throws BlockStateManager.StateLimitReachedException when the clientSideBlock doesn't have any more BlockStates left.
      */
-    public SwitchingUnusedBlockStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile falseProfile, BlockStateProfile trueProfile, Function<BlockState, Boolean> function) throws BlockStateManager.StateLimitReachedException {
+    public SwitchingUnusedBlockStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile falseProfile, BlockStateProfile trueProfile, Function<BlockState,Boolean> function) throws BlockStateManager.StateLimitReachedException {
         BlockStateManager manager = registry.getBlockStateManager();
 
         // Sort states into true <-> false
@@ -52,10 +52,10 @@ public class SwitchingUnusedBlockStatePoly implements BlockPoly {
 
         // Check if both profiles have enough states
         if (!manager.isAvailable(falseProfile, falseStates.size())) {
-            throw new BlockStateManager.StateLimitReachedException("Block doesn't have enough blockstates left for false profile: '"+falseProfile.name+"'");
+            throw new BlockStateManager.StateLimitReachedException("Block doesn't have enough blockstates left for false profile: '" + falseProfile.name + "'");
         }
         if (!manager.isAvailable(trueProfile, trueStates.size())) {
-            throw new BlockStateManager.StateLimitReachedException("Block doesn't have enough blockstates left for true profile: '"+falseProfile.name+"'");
+            throw new BlockStateManager.StateLimitReachedException("Block doesn't have enough blockstates left for true profile: '" + falseProfile.name + "'");
         }
 
         // Register the blocks to the correct profiles

@@ -30,25 +30,25 @@ import net.minecraft.world.World;
 import java.util.function.Consumer;
 
 public class PacketReplacementUtil {
-	public static void syncWorldEvent(World world, PlayerEntity exception, int eventId, BlockPos pos, BlockState data) {
-		if (world.getServer() != null) {
-			sendToAround(world.getServer().getPlayerManager(), exception, pos.getX(), pos.getY(), pos.getZ(), 64, world.getRegistryKey(), (playerEntity) -> {
-				playerEntity.networkHandler.sendPacket(new WorldEventS2CPacket(eventId, pos, Util.getPolydRawIdFromState(data, playerEntity), false));
-			});
-		}
-	}
+    public static void syncWorldEvent(World world, PlayerEntity exception, int eventId, BlockPos pos, BlockState data) {
+        if (world.getServer() != null) {
+            sendToAround(world.getServer().getPlayerManager(), exception, pos.getX(), pos.getY(), pos.getZ(), 64, world.getRegistryKey(), (playerEntity) -> {
+                playerEntity.networkHandler.sendPacket(new WorldEventS2CPacket(eventId, pos, Util.getPolydRawIdFromState(data, playerEntity), false));
+            });
+        }
+    }
 
-	public static void sendToAround(PlayerManager manager, PlayerEntity exception, double x, double y, double z, double distance, RegistryKey<World> worldKey, Consumer<ServerPlayerEntity> consumer) {
-		for(int i = 0; i < manager.getPlayerList().size(); ++i) {
-			ServerPlayerEntity serverPlayerEntity = manager.getPlayerList().get(i);
-			if (serverPlayerEntity != exception && serverPlayerEntity.world.getRegistryKey() == worldKey) {
-				double d = x - serverPlayerEntity.getX();
-				double e = y - serverPlayerEntity.getY();
-				double f = z - serverPlayerEntity.getZ();
-				if (d * d + e * e + f * f < distance * distance) {
-					consumer.accept(serverPlayerEntity);
-				}
-			}
-		}
-	}
+    public static void sendToAround(PlayerManager manager, PlayerEntity exception, double x, double y, double z, double distance, RegistryKey<World> worldKey, Consumer<ServerPlayerEntity> consumer) {
+        for (int i = 0; i < manager.getPlayerList().size(); ++i) {
+            ServerPlayerEntity serverPlayerEntity = manager.getPlayerList().get(i);
+            if (serverPlayerEntity != exception && serverPlayerEntity.world.getRegistryKey() == worldKey) {
+                double d = x - serverPlayerEntity.getX();
+                double e = y - serverPlayerEntity.getY();
+                double f = z - serverPlayerEntity.getZ();
+                if (d * d + e * e + f * f < distance * distance) {
+                    consumer.accept(serverPlayerEntity);
+                }
+            }
+        }
+    }
 }

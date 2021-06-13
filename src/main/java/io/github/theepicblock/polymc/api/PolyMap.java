@@ -31,60 +31,56 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
 public interface PolyMap {
-	/**
-	 * Converts the serverside representation of an item into a clientside one that should be sent to the client.
-	 */
-	ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player);
+    /**
+     * Converts the serverside representation of an item into a clientside one that should be sent to the client.
+     */
+    ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player);
 
-	/**
-	 * Converts the serverside representation of a block into a clientside one that should be sent to the client.
-	 */
-	BlockState getClientBlock(BlockState serverBlock);
+    /**
+     * Converts the serverside representation of a block into a clientside one that should be sent to the client.
+     */
+    BlockState getClientBlock(BlockState serverBlock);
 
-	/**
-	 * Gets the {@link GuiPoly} that this PolyMap associates with this {@link ScreenHandlerType}.
-	 *
-	 * @return A {@link GuiPoly} describing how to display this screen type on the client.
-	 */
-	GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType);
+    /**
+     * Gets the {@link GuiPoly} that this PolyMap associates with this {@link ScreenHandlerType}.
+     * @return A {@link GuiPoly} describing how to display this screen type on the client.
+     */
+    GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType);
 
-	/**
-	 * Gets the {@link BlockPoly} that this PolyMap associates with this {@link Block}.
-	 *
-	 * @return A {@link BlockPoly} describing how to display this screen type on the client.
-	 */
-	BlockPoly getBlockPoly(Block block);
+    /**
+     * Gets the {@link BlockPoly} that this PolyMap associates with this {@link Block}.
+     * @return A {@link BlockPoly} describing how to display this screen type on the client.
+     */
+    BlockPoly getBlockPoly(Block block);
 
-	/**
-	 * gets a map containing all itempolys that are registered in this map.
-	 */
-	ImmutableMap<Item,ItemPoly> getItemPolys();
+    /**
+     * gets a map containing all itempolys that are registered in this map.
+     */
+    ImmutableMap<Item,ItemPoly> getItemPolys();
 
-	/**
-	 * gets a map containing all blockpolys that are registered in this map.
-	 */
-	ImmutableMap<Block,BlockPoly> getBlockPolys();
+    /**
+     * gets a map containing all blockpolys that are registered in this map.
+     */
+    ImmutableMap<Block,BlockPoly> getBlockPolys();
 
-	/**
-	 * Reverts the clientside item into the serverside representation.
-	 * This should be the reverse of {@link #getClientItem(ItemStack, ServerPlayerEntity)}.
-	 * For optimization reasons, this method only needs to be implemented for items gained by players in creative mode.
-	 *
-	 * @see CreativeItemStackFix
-	 */
-	ItemStack reverseClientItem(ItemStack clientItem);
+    /**
+     * Reverts the clientside item into the serverside representation.
+     * This should be the reverse of {@link #getClientItem(ItemStack, ServerPlayerEntity)}.
+     * For optimization reasons, this method only needs to be implemented for items gained by players in creative mode.
+     * @see CreativeItemStackFix
+     */
+    ItemStack reverseClientItem(ItemStack clientItem);
 
-	/**
-	 * Specifies if this map is meant for vanilla-like clients
-	 * This is used to disable/enable miscellaneous patches
-	 *
-	 * @see io.github.theepicblock.polymc.mixins.block.BlockBreakingPatch
-	 * @see io.github.theepicblock.polymc.mixins.CustomPacketDisabler
-	 * @see io.github.theepicblock.polymc.mixins.TagSyncronizePatch
-	 * @see io.github.theepicblock.polymc.mixins.block.ResyncImplementation
-	 * @see io.github.theepicblock.polymc.mixins.context.block.BlockMixin
-	 * @see io.github.theepicblock.polymc.mixins.gui.GuiHandlerIdImplementation
-	 * @see io.github.theepicblock.polymc.mixins.item.CustomRecipeFix
-	 */
-	boolean isVanillaLikeMap();
+    /**
+     * Specifies if this map is meant for vanilla-like clients
+     * This is used to disable/enable miscellaneous patches
+     * @see io.github.theepicblock.polymc.mixins.block.BlockBreakingPatch
+     * @see io.github.theepicblock.polymc.mixins.CustomPacketDisabler
+     * @see io.github.theepicblock.polymc.mixins.TagSyncronizePatch
+     * @see io.github.theepicblock.polymc.mixins.block.ResyncImplementation
+     * @see io.github.theepicblock.polymc.mixins.context.block.BlockMixin
+     * @see io.github.theepicblock.polymc.mixins.gui.GuiHandlerIdImplementation
+     * @see io.github.theepicblock.polymc.mixins.item.CustomRecipeFix
+     */
+    boolean isVanillaLikeMap();
 }

@@ -40,7 +40,7 @@ public class BowPoly extends PredicateBasedDamageableItem {
         pack.copyItemModel(item);
 
         Identifier serverItemId = Registry.ITEM.getId(defaultServerItem.getItem());
-        Identifier bowModelPath = new Identifier(serverItemId.getNamespace(), "item/"+serverItemId.getPath());
+        Identifier bowModelPath = new Identifier(serverItemId.getNamespace(), "item/" + serverItemId.getPath());
 
         //default shield model
         if (!pack.hasPendingModel(bowModelPath)) {
@@ -53,6 +53,6 @@ public class BowPoly extends PredicateBasedDamageableItem {
             bowModel.overrides = pack.getGson().fromJson("[{\"predicate\":{\"pulling\":1},\"model\":\"item\\/bow_pulling_0\"},{\"predicate\":{\"pulling\":1,\"pull\":0.65},\"model\":\"item\\/bow_pulling_1\"},{\"predicate\":{\"pulling\":1,\"pull\":0.9},\"model\":\"item\\/bow_pulling_2\"}]", overrideType);
         }
 
-        super.addToResourcePack(item,pack);
+        super.addToResourcePack(item, pack);
     }
 }

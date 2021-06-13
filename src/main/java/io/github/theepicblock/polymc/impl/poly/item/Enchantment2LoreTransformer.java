@@ -1,10 +1,7 @@
 package io.github.theepicblock.polymc.impl.poly.item;
 
-import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.Util;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -15,11 +12,10 @@ import net.minecraft.util.registry.Registry;
 
 /**
  * Poly that ports the non-vanilla enchantments of an item to the lore tag, so it can be displayed properly by the vanilla client.
- *
+ * <p>
  * This method uses the built-in {@link net.minecraft.enchantment.Enchantment#getName(int)} method,
  * which allows it to be properly formatted for cursed enchantments and remain also compatible with mods
  * that add custom formatting.
- *
  * @see #portEnchantmentsToLore(ItemStack)
  */
 public class Enchantment2LoreTransformer implements ItemTransformer {

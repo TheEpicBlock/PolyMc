@@ -21,17 +21,10 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Property;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 
 import java.io.IOException;
@@ -42,6 +35,7 @@ import java.util.Optional;
 
 public class Util {
     public static final String MC_NAMESPACE = "minecraft";
+
     /**
      * Returns true if this identifier is in the minecraft namespace
      */
@@ -96,7 +90,7 @@ public class Util {
         return getPropertiesFromEntries(state.getEntries());
     }
 
-    public static String getPropertiesFromEntries(Map<Property<?>, Comparable<?>> entries) {
+    public static String getPropertiesFromEntries(Map<Property<?>,Comparable<?>> entries) {
         StringBuilder v = new StringBuilder();
         entries.forEach((property, value) -> {
             v.append(property.getName());
@@ -147,7 +141,7 @@ public class Util {
             }
         };
 
-        Files.walkFileTree(from,visitor);
+        Files.walkFileTree(from, visitor);
     }
 
     /**
@@ -170,7 +164,7 @@ public class Util {
      * Utility method to get the polyd raw id.
      * PolyMc also redirects {@link Block#getRawIdFromState(BlockState)} but that doesn't respect the player's {@link PolyMap}.
      * This method does.
-     * @param state the BlockState who's raw id is being queried
+     * @param state        the BlockState who's raw id is being queried
      * @param playerEntity the player who's {@link PolyMap} we should be using
      * @return the int associated with the state after being transformed by the players {@link PolyMap}
      */
@@ -191,6 +185,6 @@ public class Util {
     }
 
     public static BlockPos fromPalettedContainerIndex(int index) {
-        return new BlockPos(index & 0xF,(index >> 8) & 0xF, (index >> 4) & 0xF);
+        return new BlockPos(index & 0xF, (index >> 8) & 0xF, (index >> 4) & 0xF);
     }
 }

@@ -20,6 +20,7 @@ package io.github.theepicblock.polymc.impl.mixin;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public interface PlayerContextContainer {
-	ServerPlayerEntity getPolyMcProvidedPlayer();
-	void setPolyMcProvidedPlayer(ServerPlayerEntity v);
+    ServerPlayerEntity getPolyMcProvidedPlayer();
+
+    void setPolyMcProvidedPlayer(ServerPlayerEntity v);
 }

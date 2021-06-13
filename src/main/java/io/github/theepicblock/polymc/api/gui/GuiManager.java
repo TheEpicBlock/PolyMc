@@ -21,13 +21,13 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public abstract class GuiManager {
-	protected final ScreenHandler base;
-	protected final ServerPlayerEntity player;
+    protected final ScreenHandler base;
+    protected final ServerPlayerEntity player;
 
-	public GuiManager(ScreenHandler base, ServerPlayerEntity player) {
-		this.base = base;
-		this.player = player;
-	}
+    public GuiManager(ScreenHandler base, ServerPlayerEntity player) {
+        this.base = base;
+        this.player = player;
+    }
 
-	public abstract ScreenHandler getInitialHandler(int initialSyncId);
+    public abstract ScreenHandler getInitialHandler(int initialSyncId);
 }

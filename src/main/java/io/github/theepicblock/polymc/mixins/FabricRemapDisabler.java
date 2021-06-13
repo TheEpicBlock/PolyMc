@@ -36,7 +36,9 @@ public class FabricRemapDisabler implements RemappableRegistry {
      */
     @Overwrite(remap = false)
     @Dynamic("remap is added at runtime by the fabric-registry-sync-v0 using `MixinIdRegistry`")
-    public void remap(String s, Object2IntMap<Identifier> object2IntMap, RemapMode remapMode) throws RemapException {}
+    public void remap(String s, Object2IntMap<Identifier> object2IntMap, RemapMode remapMode) throws RemapException {
+        //DISABLED
+    }
 
     /**
      * @author TheEpicBlock
@@ -44,5 +46,7 @@ public class FabricRemapDisabler implements RemappableRegistry {
      */
     @Overwrite(remap = false)
     @Dynamic("unmap is added at runtime by the fabric-registry-sync-v0 using `MixinIdRegistry`")
-    public void unmap(String s) throws RemapException {}
+    public void unmap(String s) throws RemapException {
+        //DISABLED
+    }
 }

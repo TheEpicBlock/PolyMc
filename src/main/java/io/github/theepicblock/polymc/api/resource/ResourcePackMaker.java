@@ -20,10 +20,8 @@ package io.github.theepicblock.polymc.api.resource;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
-import io.github.theepicblock.polymc.impl.resource.AdvancedResourcePackMaker;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.item.Item;
@@ -121,14 +119,14 @@ public class ResourcePackMaker {
      * @see #getPendingModel(Identifier)
      */
     public JsonModel getPendingModel(String modId, String path) {
-        return getPendingModel(new Identifier(modId,path));
+        return getPendingModel(new Identifier(modId, path));
     }
 
     /**
      * @see #getPendingModel(Identifier)
      */
     public JsonModel getPendingModel(String path) {
-        return getPendingModel(new Identifier(Util.MC_NAMESPACE,path));
+        return getPendingModel(new Identifier(Util.MC_NAMESPACE, path));
     }
 
     /**
@@ -138,21 +136,21 @@ public class ResourcePackMaker {
      * @see #getOrDefaultPendingBlockState(String, String)
      */
     public JsonModel getOrDefaultPendingItemModel(Identifier id) {
-        return getOrDefaultPendingItemModel(id.getNamespace(),id.getPath());
+        return getOrDefaultPendingItemModel(id.getNamespace(), id.getPath());
     }
 
     /**
      * @see #getOrDefaultPendingBlockState(Identifier)
      */
     public JsonModel getOrDefaultPendingItemModel(String modId, String path) {
-        Identifier id = new Identifier(modId, "item/"+path);
+        Identifier id = new Identifier(modId, "item/" + path);
         if (hasPendingModel(id)) return getPendingModel(id);
 
         JsonModel v = new JsonModel();
         v.parent = "item/generated";
         v.textures = new HashMap<>();
-        v.textures.put("layer0","item/"+path);
-        putPendingModel(id,v);
+        v.textures.put("layer0", "item/" + path);
+        putPendingModel(id, v);
         return v;
     }
 
@@ -200,7 +198,7 @@ public class ResourcePackMaker {
      * @see #putPendingModel(Identifier, JsonModel)
      */
     public void putPendingBlockState(String modId, String path, JsonBlockState blockState) {
-        putPendingBlockState(new Identifier(modId,path), blockState);
+        putPendingBlockState(new Identifier(modId, path), blockState);
     }
 
     /**
@@ -242,7 +240,7 @@ public class ResourcePackMaker {
         if (hasPendingBlockState(id)) return getPendingBlockState(id);
 
         JsonBlockState v = new JsonBlockState();
-        blockStatesToSave.put(id,v);
+        blockStatesToSave.put(id, v);
         return v;
     }
 
@@ -278,7 +276,7 @@ public class ResourcePackMaker {
      */
     public void copyItemModel(Item item) {
         Identifier id = Registry.ITEM.getId(item);
-        copyModel(id.getNamespace(),"item/"+id.getPath());
+        copyModel(id.getNamespace(), "item/" + id.getPath());
     }
 
     /**
@@ -290,7 +288,7 @@ public class ResourcePackMaker {
     public void copyModel(String modId, String path) {
         if (Util.isNamespaceVanilla(modId)) return;
         //copy the file from the mod (we assume the modid is the same as the item's id)
-        Path newFile = copyAsset(modId,MODELS+path+".json");
+        Path newFile = copyAsset(modId, MODELS + path + ".json");
 
         if (newFile == null) return;
         try {
@@ -300,7 +298,7 @@ public class ResourcePackMaker {
             //--------RESOLVE DEPENDENCIES--------
             //resolve textures
             if (model.textures != null) {
-                model.textures.forEach((textureRef,id) -> {
+                model.textures.forEach((textureRef, id) -> {
                     //textureRef is an internal thing used in the model itself. Not needed to resolve the dependencies
                     Identifier mcId = Identifier.tryParse(id);
                     if (mcId != null) copyTexture(mcId.getNamespace(), mcId.getPath());
@@ -324,7 +322,7 @@ public class ResourcePackMaker {
      */
     public void copyModel(Identifier id) {
         if (!copiedModels.contains(id)) {
-            copyModel(id.getNamespace(),id.getPath());
+            copyModel(id.getNamespace(), id.getPath());
             copiedModels.add(id);
         }
     }
@@ -335,9 +333,9 @@ public class ResourcePackMaker {
      * @param path  path to model. Example: "item/testtexture".
      */
     public void copyTexture(String modId, String path) {
-        copyAsset(modId, TEXTURES+path+".png");
-        String mcMetaPath = TEXTURES+path+".png.mcmeta";
-        if (checkAsset(modId,mcMetaPath)) {
+        copyAsset(modId, TEXTURES + path + ".png");
+        String mcMetaPath = TEXTURES + path + ".png.mcmeta";
+        if (checkAsset(modId, mcMetaPath)) {
             copyAsset(modId, mcMetaPath);
         }
     }
@@ -348,7 +346,7 @@ public class ResourcePackMaker {
      * @param path  path to sound. Example: "menu_open".
      */
     public void copySound(String modId, String path) {
-        copyAsset(modId, SOUNDS+path+".ogg");
+        copyAsset(modId, SOUNDS + path + ".ogg");
     }
 
     /**
@@ -358,7 +356,7 @@ public class ResourcePackMaker {
      * @return The path to the new file.
      */
     public Path copyAsset(String modId, String path) {
-        return copyFile(modId, String.format(ASSETS+"%s/%s", modId, path));
+        return copyFile(modId, String.format(ASSETS + "%s/%s", modId, path));
     }
 
     /**
@@ -368,7 +366,7 @@ public class ResourcePackMaker {
      * @return True if the file exists.
      */
     public boolean checkAsset(String modId, String path) {
-        return checkFile(modId, String.format(ASSETS+"%s/%s", modId, path));
+        return checkFile(modId, String.format(ASSETS + "%s/%s", modId, path));
     }
 
     /**
@@ -378,7 +376,7 @@ public class ResourcePackMaker {
      * @return A reader for this file.
      */
     public InputStreamReader getAsset(String modId, String path) {
-        return getFile(modId, String.format(ASSETS+"%s/%s", modId, path));
+        return getFile(modId, String.format(ASSETS + "%s/%s", modId, path));
     }
 
     /**

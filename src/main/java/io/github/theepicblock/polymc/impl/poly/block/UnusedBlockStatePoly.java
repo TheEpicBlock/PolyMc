@@ -43,9 +43,9 @@ public class UnusedBlockStatePoly implements BlockPoly {
     private final ImmutableMap<BlockState,BlockState> states;
 
     /**
-     * @param moddedBlock     the block this poly represents
-     * @param stateProfile    the profile to use.
-     * @param registry        registry used to register this poly
+     * @param moddedBlock  the block this poly represents
+     * @param stateProfile the profile to use.
+     * @param registry     registry used to register this poly
      * @throws BlockStateManager.StateLimitReachedException when the clientSideBlock doesn't have any more BlockStates left.
      */
     public UnusedBlockStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile) throws BlockStateManager.StateLimitReachedException {
@@ -53,7 +53,7 @@ public class UnusedBlockStatePoly implements BlockPoly {
 
         ImmutableList<BlockState> moddedStates = moddedBlock.getStateManager().getStates();
         if (!manager.isAvailable(stateProfile, moddedStates.size())) {
-            throw new BlockStateManager.StateLimitReachedException("Block doesn't have enough blockstates left. Profile: '"+stateProfile.name+"'");
+            throw new BlockStateManager.StateLimitReachedException("Block doesn't have enough blockstates left. Profile: '" + stateProfile.name + "'");
         }
 
         HashMap<BlockState,BlockState> res = new HashMap<>();

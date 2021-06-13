@@ -35,15 +35,16 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 @SuppressWarnings("PointlessBooleanExpression")
-public class PoweredStateBlockPoly extends PropertyRetainingReplacementPoly{
+public class PoweredStateBlockPoly extends PropertyRetainingReplacementPoly {
     public PoweredStateBlockPoly(PolyRegistry registry, BlockStateProfile profile) throws BlockStateManager.StateLimitReachedException {
         super(getUnused(profile, registry));
     }
 
     private static Block getUnused(BlockStateProfile profile, PolyRegistry registry) throws BlockStateManager.StateLimitReachedException {
         BlockStateManager stateManager = registry.getBlockStateManager();
-        if (profile.blocks.length == 0) throw new IllegalArgumentException("profile "+profile.name+" contains no blocks");
-        int requiredStates = profile.blocks[0].getStateManager().getStates().size()/2; //divide by two to nullify the powered property
+        if (profile.blocks.length == 0)
+            throw new IllegalArgumentException("profile " + profile.name + " contains no blocks");
+        int requiredStates = profile.blocks[0].getStateManager().getStates().size() / 2; //divide by two to nullify the powered property
 
         List<BlockState> blockStates = stateManager.requestBlockStates(profile, requiredStates);
 
@@ -68,7 +69,7 @@ public class PoweredStateBlockPoly extends PropertyRetainingReplacementPoly{
             String clientStateString = Util.getPropertiesFromBlockState(poweredState);
 
             JsonElement moddedVariants = moddedBlockStates.getVariantBestMatching(poweredState);
-            if (moddedVariants == null) pack.getLogger().warn("Couldn't get blockstate definition for "+poweredState);
+            if (moddedVariants == null) pack.getLogger().warn("Couldn't get blockstate definition for " + poweredState);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
 
             for (JsonBlockState.Variant v : JsonBlockState.getVariantsFromJsonElement(moddedVariants)) {

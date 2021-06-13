@@ -30,24 +30,23 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ChunkDataS2CPacket.class)
 public class ChunkDataPacketMixin implements PlayerContextContainer {
-	@Unique
-	private ServerPlayerEntity player;
+    @Unique private ServerPlayerEntity player;
 
-	@Override
-	public ServerPlayerEntity getPolyMcProvidedPlayer() {
-		return player;
-	}
+    @Override
+    public ServerPlayerEntity getPolyMcProvidedPlayer() {
+        return player;
+    }
 
-	@Override
-	public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
-		player = v;
-	}
+    @Override
+    public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
+        player = v;
+    }
 
-	/**
-	 * @see io.github.theepicblock.polymc.mixins.block.context.ChunkSectionMixin
-	 */
-	@Redirect(method = "getDataSize", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/ChunkSection;getPacketSize()I"))
-	public int redirectGetSize(ChunkSection chunkSection) {
-		return ((PacketSizeProvider)chunkSection).getPacketSize(ChunkPacketStaticHack.player);
-	}
+    /**
+     * @see io.github.theepicblock.polymc.mixins.block.context.ChunkSectionMixin
+     */
+    @Redirect(method = "getDataSize", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/ChunkSection;getPacketSize()I"))
+    public int redirectGetSize(ChunkSection chunkSection) {
+        return ((PacketSizeProvider)chunkSection).getPacketSize(ChunkPacketStaticHack.player);
+    }
 }

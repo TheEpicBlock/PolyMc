@@ -43,7 +43,7 @@ public class ItemPolyGenerator {
             Identifier id = getItemRegistry().getId(item);
             if (!Util.isVanilla(id)) {
                 //this is a modded item and should have a Poly
-                addItemToBuilder(item,builder);
+                addItemToBuilder(item, builder);
             }
         }
     }
@@ -88,9 +88,9 @@ public class ItemPolyGenerator {
      */
     private static void addItemToBuilder(Item item, PolyRegistry builder) {
         try {
-            builder.registerItemPoly(item, generatePoly(item,builder));
+            builder.registerItemPoly(item, generatePoly(item, builder));
         } catch (Exception e) {
-            PolyMc.LOGGER.error("Failed to generate a poly for item "+item.getTranslationKey());
+            PolyMc.LOGGER.error("Failed to generate a poly for item " + item.getTranslationKey());
             e.printStackTrace();
             PolyMc.LOGGER.error("Attempting to recover by using a default poly. Please report this");
             builder.registerItemPoly(item, new ItemPoly() {

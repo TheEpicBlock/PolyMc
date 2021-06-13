@@ -14,43 +14,43 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
 public class NOPPolyMap implements PolyMap {
-	@Override
-	public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player) {
-		return serverItem;
-	}
+    @Override
+    public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player) {
+        return serverItem;
+    }
 
-	@Override
-	public BlockState getClientBlock(BlockState serverBlock) {
-		return serverBlock;
-	}
+    @Override
+    public BlockState getClientBlock(BlockState serverBlock) {
+        return serverBlock;
+    }
 
-	@Override
-	public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {
-		return null;
-	}
+    @Override
+    public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {
+        return null;
+    }
 
-	@Override
-	public BlockPoly getBlockPoly(Block block) {
-		return null;
-	}
+    @Override
+    public BlockPoly getBlockPoly(Block block) {
+        return null;
+    }
 
-	@Override
-	public ImmutableMap<Item,ItemPoly> getItemPolys() {
-		return null;
-	}
+    @Override
+    public ImmutableMap<Item,ItemPoly> getItemPolys() {
+        return null;
+    }
 
-	@Override
-	public ImmutableMap<Block,BlockPoly> getBlockPolys() {
-		return null;
-	}
+    @Override
+    public ImmutableMap<Block,BlockPoly> getBlockPolys() {
+        return null;
+    }
 
-	@Override
-	public ItemStack reverseClientItem(ItemStack clientItem) {
-		return clientItem;
-	}
+    @Override
+    public ItemStack reverseClientItem(ItemStack clientItem) {
+        return clientItem;
+    }
 
-	@Override
-	public boolean isVanillaLikeMap() {
-		return false; //This disables patches meant for vanilla clients
-	}
+    @Override
+    public boolean isVanillaLikeMap() {
+        return false; //This disables patches meant for vanilla clients
+    }
 }

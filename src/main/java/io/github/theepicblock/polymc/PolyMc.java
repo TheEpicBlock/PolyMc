@@ -28,7 +28,6 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
@@ -61,11 +60,6 @@ public class PolyMc implements ModInitializer {
         map = registry.build();
     }
 
-    @Override
-    public void onInitialize() {
-        PolyMcCommands.registerCommands();
-    }
-
     /**
      * Returns the main PolyMap, this is the one PolyMc creates and populates at server startup via various hooks and generators.
      * As an example, it is passed to {@link PolyMcEntrypoint#registerPolys(PolyRegistry)} before being built.
@@ -78,5 +72,10 @@ public class PolyMc implements ModInitializer {
             throw new NullPointerException("Tried to access the PolyMap before it was initialized");
         }
         return map;
+    }
+
+    @Override
+    public void onInitialize() {
+        PolyMcCommands.registerCommands();
     }
 }

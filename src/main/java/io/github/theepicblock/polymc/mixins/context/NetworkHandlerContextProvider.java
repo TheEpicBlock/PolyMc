@@ -31,18 +31,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayNetworkHandler.class)
 public class NetworkHandlerContextProvider {
-	@Shadow public ServerPlayerEntity player;
+    @Shadow public ServerPlayerEntity player;
 
 
-	/**
-	 * Provides any packets which implement PlayerContextContainer with the context of the player this network handler is attached to
-	 * @see PacketPlayerContextContainer
-	 */
-	@Inject(method = "sendPacket(Lnet/minecraft/network/Packet;Lio/netty/util/concurrent/GenericFutureListener;)V",
-			at = @At("HEAD"))
-	public void packetSendInject(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>> listener, CallbackInfo ci) {
-		if (packet instanceof PlayerContextContainer) {
-			((PlayerContextContainer)packet).setPolyMcProvidedPlayer(this.player);
-		}
-	}
+    /**
+     * Provides any packets which implement PlayerContextContainer with the context of the player this network handler is attached to
+     * @see PacketPlayerContextContainer
+     */
+    @Inject(method = "sendPacket(Lnet/minecraft/network/Packet;Lio/netty/util/concurrent/GenericFutureListener;)V",
+            at = @At("HEAD"))
+    public void packetSendInject(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>> listener, CallbackInfo ci) {
+        if (packet instanceof PlayerContextContainer) {
+            ((PlayerContextContainer)packet).setPolyMcProvidedPlayer(this.player);
+        }
+    }
 }

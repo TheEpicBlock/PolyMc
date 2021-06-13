@@ -22,48 +22,50 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
 
 public class StaticSlot extends Slot {
-	public final ItemStack stack;
+    public final ItemStack stack;
 
-	public StaticSlot(ItemStack stack) {
-		super(null, 0, 0, 0);
-		this.stack = stack;
-	}
+    public StaticSlot(ItemStack stack) {
+        super(null, 0, 0, 0);
+        this.stack = stack;
+    }
 
-	public void onQuickTransfer(ItemStack originalItem, ItemStack itemStack) {
-		throw new AssertionError("PolyMc: the contents of a static, unchangeable slot were changed. Containing: "+stack.toString());
-	}
+    public void onQuickTransfer(ItemStack originalItem, ItemStack itemStack) {
+        throw new AssertionError("PolyMc: the contents of a static, unchangeable slot were changed. Containing: " + stack.toString());
+    }
 
-	public void onTakeItem(PlayerEntity player, ItemStack stack) {
-		throw new AssertionError("PolyMc: tried to take item out of an static, unchangeable slot. Containing: "+stack.toString());
-	}
+    public void onTakeItem(PlayerEntity player, ItemStack stack) {
+        throw new AssertionError("PolyMc: tried to take item out of an static, unchangeable slot. Containing: " + stack.toString());
+    }
 
-	public ItemStack takeStack(int amount) {
-		return ItemStack.EMPTY;
-	}
+    public ItemStack takeStack(int amount) {
+        return ItemStack.EMPTY;
+    }
 
-	public boolean canInsert(ItemStack stack) {
-		return false;
-	}
+    public boolean canInsert(ItemStack stack) {
+        return false;
+    }
 
-	public boolean canTakeItems(PlayerEntity playerEntity) {
-		GuiUtils.resyncPlayerInventory(playerEntity);
-		return false;
-	}
+    public boolean canTakeItems(PlayerEntity playerEntity) {
+        GuiUtils.resyncPlayerInventory(playerEntity);
+        return false;
+    }
 
-	public ItemStack getStack() {
-		return this.stack;
-	}
+    public ItemStack getStack() {
+        return this.stack;
+    }
 
-	@Override
-	public void setStack(ItemStack stack) {}
+    @Override
+    public void setStack(ItemStack stack) {
+    }
 
-	public void markDirty() {}
+    public void markDirty() {
+    }
 
-	public int getMaxItemCount() {
-		return this.stack.getCount();
-	}
+    public int getMaxItemCount() {
+        return this.stack.getCount();
+    }
 
-	public int getMaxItemCount(ItemStack stack) {
-		return this.getMaxItemCount();
-	}
+    public int getMaxItemCount(ItemStack stack) {
+        return this.getMaxItemCount();
+    }
 }

@@ -42,9 +42,9 @@ import java.util.stream.Stream;
 public class ResourcePackGenerator {
     /**
      * Generates a resource pack
-     * @param map {@link PolyMap} to generate the resource from
+     * @param map       {@link PolyMap} to generate the resource from
      * @param directory directory to output files in. Relative to the game directory
-     * @param logger output of the log messages
+     * @param logger    output of the log messages
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void generate(PolyMap map, String directory, SimpleLogger logger) {
@@ -122,12 +122,12 @@ public class ResourcePackGenerator {
         //Copy over sound files
         for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
             String modId = mod.getMetadata().getId();
-            if (pack.checkAsset(modId,"sounds.json")) {
+            if (pack.checkAsset(modId, "sounds.json")) {
                 try {
-                    pack.copyAsset(modId,"sounds.json"); //copy over the sounds.json file to the pack
+                    pack.copyAsset(modId, "sounds.json"); //copy over the sounds.json file to the pack
 
                     //read the sounds.json file to parse the needed sound files.
-                    InputStreamReader reader = pack.getAsset(modId,"sounds.json");
+                    InputStreamReader reader = pack.getAsset(modId, "sounds.json");
                     JsonReader jReader = new JsonReader(reader);
                     Map<String,JsonSoundsRegistry.SoundEventEntry> sounds = pack.getGson().fromJson(jReader, JsonSoundsRegistry.TYPE);
 
@@ -145,7 +145,7 @@ public class ResourcePackGenerator {
                         }
                     });
                 } catch (Exception e) {
-                    logger.error("Failed to copy sounds.json for mod: "+modId);
+                    logger.error("Failed to copy sounds.json for mod: " + modId);
                     e.printStackTrace();
                 }
             }

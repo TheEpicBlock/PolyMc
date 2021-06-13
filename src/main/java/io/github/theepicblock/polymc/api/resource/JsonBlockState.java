@@ -42,7 +42,7 @@ public class JsonBlockState {
 
     /**
      * Converts a {@link JsonElement} into a list of variants.
-     *
+     * <p>
      * If {@code input} is a list of {@link Variant}s that list is returned.
      * If {@code input} is a single {@link Variant} object, an array containing only that object is returned.
      * Otherwise an empty array is returned.
@@ -52,14 +52,14 @@ public class JsonBlockState {
     public static Variant[] getVariantsFromJsonElement(JsonElement input) {
         if (input instanceof JsonObject) {
             JsonObject b = (JsonObject)input;
-            Variant var = new Gson().fromJson(b,Variant.class);
+            Variant var = new Gson().fromJson(b, Variant.class);
             Variant[] ret = new Variant[1];
             ret[0] = var;
             return ret;
         }
         if (input instanceof JsonArray) {
             JsonArray b = (JsonArray)input;
-            return new Gson().fromJson(b,Variant[].class);
+            return new Gson().fromJson(b, Variant[].class);
         }
         return new Variant[0];
     }
@@ -81,7 +81,7 @@ public class JsonBlockState {
                 if (property == null) continue propertyPairsLoop; //nope, check the next propertyPairs
 
                 Optional<?> parsedValue = property.parse(valuePair[1]);
-                if(!parsedValue.isPresent()) continue propertyPairsLoop; //nope, check the next propertyPairs
+                if (!parsedValue.isPresent()) continue propertyPairsLoop; //nope, check the next propertyPairs
                 if (!(parsedValue.get() == state.get(property))) {
                     continue propertyPairsLoop;
                 }

@@ -28,34 +28,34 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin({AdvancementUpdateS2CPacket.class,
-		EntityEquipmentUpdateS2CPacket.class,
-		InventoryS2CPacket.class,
-		ScreenHandlerSlotUpdateS2CPacket.class,
-		SynchronizeRecipesS2CPacket.class,
-		SetTradeOffersS2CPacket.class,
-		EntityTrackerUpdateS2CPacket.class,
-		ParticleS2CPacket.class,
-		SynchronizeTagsS2CPacket.class})
+        EntityEquipmentUpdateS2CPacket.class,
+        InventoryS2CPacket.class,
+        ScreenHandlerSlotUpdateS2CPacket.class,
+        SynchronizeRecipesS2CPacket.class,
+        SetTradeOffersS2CPacket.class,
+        EntityTrackerUpdateS2CPacket.class,
+        ParticleS2CPacket.class,
+        SynchronizeTagsS2CPacket.class})
 public class PacketPlayerContextContainer implements PlayerContextContainer {
-	@Unique
-	private ServerPlayerEntity player;
+    @Unique
+    private ServerPlayerEntity player;
 
-	@Override
-	public ServerPlayerEntity getPolyMcProvidedPlayer() {
-		return player;
-	}
+    @Override
+    public ServerPlayerEntity getPolyMcProvidedPlayer() {
+        return player;
+    }
 
-	@Override
-	public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
-		player = v;
-	}
+    @Override
+    public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
+        player = v;
+    }
 
-	/**
-	 * This mixin passes the player context onto the ByteBuffer
-	 * @see ByteBufPlayerContextContainer
-	 */
-	@Inject(method = "write(Lnet/minecraft/network/PacketByteBuf;)V", at = @At("HEAD"))
-	private void writeInject(PacketByteBuf buf, CallbackInfo ci) {
-		((PlayerContextContainer)buf).setPolyMcProvidedPlayer(player);
-	}
+    /**
+     * This mixin passes the player context onto the ByteBuffer
+     * @see ByteBufPlayerContextContainer
+     */
+    @Inject(method = "write(Lnet/minecraft/network/PacketByteBuf;)V", at = @At("HEAD"))
+    private void writeInject(PacketByteBuf buf, CallbackInfo ci) {
+        ((PlayerContextContainer)buf).setPolyMcProvidedPlayer(player);
+    }
 }

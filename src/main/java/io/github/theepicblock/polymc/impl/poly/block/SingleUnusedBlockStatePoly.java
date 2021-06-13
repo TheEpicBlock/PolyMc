@@ -38,10 +38,10 @@ import java.io.InputStreamReader;
  */
 public class SingleUnusedBlockStatePoly implements BlockPoly {
     protected final BlockState newBlockState;
-    
+
     /**
-     * @param stateProfile    the profile to use.
-     * @param registry        registry used to register this poly
+     * @param stateProfile the profile to use.
+     * @param registry     registry used to register this poly
      * @throws BlockStateManager.StateLimitReachedException when the clientSideBlock doesn't have any more BlockStates left.
      */
     public SingleUnusedBlockStatePoly(PolyRegistry registry, BlockStateProfile stateProfile) throws BlockStateManager.StateLimitReachedException {
@@ -65,7 +65,8 @@ public class SingleUnusedBlockStatePoly implements BlockPoly {
         String clientStateString = Util.getPropertiesFromBlockState(newBlockState);
 
         JsonElement moddedVariants = moddedBlockStates.getVariantBestMatching(block.getDefaultState());
-        if (moddedVariants == null) pack.getLogger().warn("Couldn't get blockstate definition for "+block.getDefaultState());
+        if (moddedVariants == null)
+            pack.getLogger().warn("Couldn't get blockstate definition for " + block.getDefaultState());
         clientBlockStates.variants.put(clientStateString, moddedVariants);
 
         for (JsonBlockState.Variant v : JsonBlockState.getVariantsFromJsonElement(moddedVariants)) {

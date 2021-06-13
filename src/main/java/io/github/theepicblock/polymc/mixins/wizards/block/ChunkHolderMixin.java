@@ -1,7 +1,6 @@
 package io.github.theepicblock.polymc.mixins.wizards.block;
 
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
-import io.github.theepicblock.polymc.impl.mixin.Ticker;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.world.chunk.WorldChunk;

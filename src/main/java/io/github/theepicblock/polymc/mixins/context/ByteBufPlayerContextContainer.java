@@ -25,15 +25,15 @@ import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(PacketByteBuf.class)
 public class ByteBufPlayerContextContainer implements PlayerContextContainer {
-	@Unique private ServerPlayerEntity player;
+    @Unique private ServerPlayerEntity player;
 
-	@Override
-	public ServerPlayerEntity getPolyMcProvidedPlayer() {
-		return player;
-	}
+    @Override
+    public ServerPlayerEntity getPolyMcProvidedPlayer() {
+        return player;
+    }
 
-	@Override
-	public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
-		player = v;
-	}
+    @Override
+    public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
+        player = v;
+    }
 }

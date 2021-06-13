@@ -28,8 +28,6 @@ import net.minecraft.util.Pair;
  * For example, a mod can request 100 CustomModelData values for a specific item. Then those will be reserved and another mod will get different values.
  */
 public class CustomModelDataManager {
-    private final Object2IntMap<Item> customModelDataCounter = new Object2IntOpenHashMap<>();
-    private int roundRobin = 0;
     public final static Item[] DEFAULT_ITEMS = {
             Items.STICK,
             Items.GLISTERING_MELON_SLICE,
@@ -71,12 +69,14 @@ public class CustomModelDataManager {
             Items.STRUCTURE_VOID
     };
 
+    private final Object2IntMap<Item> customModelDataCounter = new Object2IntOpenHashMap<>();
+    private int roundRobin = 0;
+
     /**
      * Request a certain amount of CMD values from the specified item.
      * @param item   the item you need CMD for.
      * @param amount the amount of cmd values you need.
-     * @return The first value you can use.
-     *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13.
+     * @return The first value you can use. Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13.
      * @deprecated it is recommended to use multiple items. As to minimize recipe weirdness.
      */
     @Deprecated
@@ -109,8 +109,7 @@ public class CustomModelDataManager {
      * Requests a certain amount of items from the specified array.
      * @param items  the list of items to choose from.
      * @param amount the amount of cmd values you need.
-     * @return The item you may use and the CMD value. The CMD value returned is the first you may use, the rest can be derived.
-     *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13.
+     * @return The item you may use and the CMD value. The CMD value returned is the first you may use, the rest can be derived. Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13.
      */
     public Pair<Item,Integer> requestCMD(Item[] items, int amount) {
         int startingRR = roundRobin;
@@ -130,8 +129,7 @@ public class CustomModelDataManager {
      * Requests a certain amount of CMD values.
      * This will use the {@link #DEFAULT_ITEMS} array.
      * @param amount the amount of cmd values you need.
-     * @return The item you may use and the CMD value. The CMD value returned is the first you may use, the rest can be derived.
-     *         Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13.
+     * @return The item you may use and the CMD value. The CMD value returned is the first you may use, the rest can be derived. Example: you passed in 5 as amount. You got 9 back as value. You can now use 9,10,11,12 and 13.
      */
     public Pair<Item,Integer> requestCMD(int amount) {
         return requestCMD(DEFAULT_ITEMS, amount);

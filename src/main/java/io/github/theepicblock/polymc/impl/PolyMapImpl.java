@@ -43,7 +43,6 @@ import org.jetbrains.annotations.Nullable;
 public class PolyMapImpl implements PolyMap {
     /**
      * The nbt tag name that stores the original item nbt so it can be restored
-     *
      * @see PolyMap#getClientItem(ItemStack, ServerPlayerEntity)
      * @see #recoverOriginalItem(ItemStack)
      */

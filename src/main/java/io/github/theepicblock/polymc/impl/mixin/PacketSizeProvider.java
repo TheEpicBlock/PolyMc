@@ -20,5 +20,5 @@ package io.github.theepicblock.polymc.impl.mixin;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public interface PacketSizeProvider {
-	int getPacketSize(ServerPlayerEntity playerEntity);
+    int getPacketSize(ServerPlayerEntity playerEntity);
 }

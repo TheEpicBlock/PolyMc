@@ -29,9 +29,11 @@ import net.minecraft.state.property.Property;
  */
 public class PropertyRetainingReplacementPoly implements BlockPoly {
     protected final Block clientBlock;
+
     public PropertyRetainingReplacementPoly(Block clientBlock) {
         this.clientBlock = clientBlock;
     }
+
     @Override
     public BlockState getClientBlock(BlockState input) {
         BlockState output = clientBlock.getDefaultState();

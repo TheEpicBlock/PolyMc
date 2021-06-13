@@ -28,25 +28,25 @@ import java.util.Map;
 public class JsonSoundsRegistry {
 	public static final Type TYPE = new TypeToken<Map<String,SoundEventEntry>>() {}.getType();
 
-	public static String getNamespace(JsonElement soundEventEntry) {
-		if (soundEventEntry.isJsonPrimitive()) {
-			return soundEventEntry.getAsString();
-		} else if (soundEventEntry.isJsonObject()) {
-			return new Gson().fromJson(soundEventEntry, Sound.class).name;
-		}
-		throw new JsonParseException("Sounds array contains an object that's neither a string nor a Sound object");
-	}
+    public static String getNamespace(JsonElement soundEventEntry) {
+        if (soundEventEntry.isJsonPrimitive()) {
+            return soundEventEntry.getAsString();
+        } else if (soundEventEntry.isJsonObject()) {
+            return new Gson().fromJson(soundEventEntry, Sound.class).name;
+        }
+        throw new JsonParseException("Sounds array contains an object that's neither a string nor a Sound object");
+    }
 
-	public static class SoundEventEntry {
-		public String category;
-		public JsonElement[] sounds; //can be either a string or a Sound object
-	}
+    public static class SoundEventEntry {
+        public String category;
+        public JsonElement[] sounds; //can be either a string or a Sound object
+    }
 
-	public static class Sound {
-		public String name;
-		public float volume;
-		public float pitch;
-		public int weight;
-		public boolean stream;
-	}
+    public static class Sound {
+        public String name;
+        public float volume;
+        public float pitch;
+        public int weight;
+        public boolean stream;
+    }
 }

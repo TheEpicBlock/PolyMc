@@ -33,7 +33,7 @@ import java.util.List;
  * The add section takes in a path and some json value/object. It adds the json value/object on that path
  * Check {@link ConfigManager#update(int, JsonObject, JsonObject)} for the exact implementation. Warning: ugly code.
  * Optional: update the "defaultconfig.json" to reflect the changes.
- *
+ * <p>
  * Sorry for this absolute mess...
  */
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection", "JavadocReference"})

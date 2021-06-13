@@ -42,13 +42,25 @@ import java.util.function.Function;
 
 public class PropertyFilteringUnusedBlocksStatePoly implements BlockPoly {
     private final ImmutableMap<BlockState,BlockState> states;
-    private final Function<BlockState, BlockState> filter;
+    private final Function<BlockState,BlockState> filter;
 
     /**
-     * @param moddedBlock     the block this poly represents
-     * @param stateProfile    the profile to use.
-     * @param registry        registry used to register this poly
-     * @param filter          function that should remove all blockstates that you want to filter
+     * @param moddedBlock  the block this poly represents
+     * @param stateProfile the profile to use.
+     * @param registry     registry used to register this poly
+     * @param filter       function that should remove all blockstates that you want to filter
+     * @throws BlockStateManager.StateLimitReachedException when the clientSideBlock doesn't have any more BlockStates left.
+     */
+    public PropertyFilteringUnusedBlocksStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile, Function<BlockState,BlockState> filter) throws BlockStateManager.StateLimitReachedException {
+        states = getBlockStateMap(moddedBlock, registry, stateProfile, filter);
+        this.filter = filter;
+    }
+
+    /**
+     * @param moddedBlock  the block this poly represents
+     * @param stateProfile the profile to use.
+     * @param registry     registry used to register this poly
+     * @param filter       function that should remove all blockstates that you want to filter
      * @throws BlockStateManager.StateLimitReachedException when the clientSideBlock doesn't have any more BlockStates left.
      */
     public PropertyFilteringUnusedBlocksStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile, List<Property<?>> filter) throws BlockStateManager.StateLimitReachedException {
@@ -56,10 +68,10 @@ public class PropertyFilteringUnusedBlocksStatePoly implements BlockPoly {
     }
 
     /**
-     * @param moddedBlock     the block this poly represents
-     * @param stateProfile    the profile to use.
-     * @param registry        registry used to register this poly
-     * @param filter          function that should remove all blockstates that you want to filter
+     * @param moddedBlock  the block this poly represents
+     * @param stateProfile the profile to use.
+     * @param registry     registry used to register this poly
+     * @param filter       function that should remove all blockstates that you want to filter
      * @throws BlockStateManager.StateLimitReachedException when the clientSideBlock doesn't have any more BlockStates left.
      */
     public PropertyFilteringUnusedBlocksStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile, Property<?>[] filter) throws BlockStateManager.StateLimitReachedException {
@@ -76,7 +88,7 @@ public class PropertyFilteringUnusedBlocksStatePoly implements BlockPoly {
             defaultValues[i] = (moddedBlock.getDefaultState().get(p));
         }
 
-        Function<BlockState, BlockState> filterFunction = (blockstate) -> {
+        Function<BlockState,BlockState> filterFunction = (blockstate) -> {
             int i2 = 0;
             for (Property<?> p : filter) {
                 i2++;
@@ -94,18 +106,6 @@ public class PropertyFilteringUnusedBlocksStatePoly implements BlockPoly {
         return b.with(property, (T)value);
     }
 
-    /**
-     * @param moddedBlock     the block this poly represents
-     * @param stateProfile    the profile to use.
-     * @param registry        registry used to register this poly
-     * @param filter          function that should remove all blockstates that you want to filter
-     * @throws BlockStateManager.StateLimitReachedException when the clientSideBlock doesn't have any more BlockStates left.
-     */
-    public PropertyFilteringUnusedBlocksStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile, Function<BlockState, BlockState> filter) throws BlockStateManager.StateLimitReachedException {
-        states = getBlockStateMap(moddedBlock, registry, stateProfile, filter);
-        this.filter = filter;
-    }
-
     private ImmutableMap<BlockState,BlockState> getBlockStateMap(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile, Function<BlockState,BlockState> filter) throws BlockStateManager.StateLimitReachedException {
         ImmutableMap<BlockState,BlockState> states;
         BlockStateManager manager = registry.getBlockStateManager();
@@ -115,7 +115,7 @@ public class PropertyFilteringUnusedBlocksStatePoly implements BlockPoly {
         BlockState[] moddedStates = (BlockState[])unFilteredModdedStates.stream().map(filter).toArray();
 
         if (!manager.isAvailable(stateProfile, moddedStates.length)) {
-            throw new BlockStateManager.StateLimitReachedException("Block doesn't have enough blockstates left. Profile: '"+stateProfile.name+"'");
+            throw new BlockStateManager.StateLimitReachedException("Block doesn't have enough blockstates left. Profile: '" + stateProfile.name + "'");
         }
 
         HashMap<BlockState,BlockState> res = new HashMap<>();
@@ -142,7 +142,7 @@ public class PropertyFilteringUnusedBlocksStatePoly implements BlockPoly {
             String clientStateString = Util.getPropertiesFromBlockState(clientState);
 
             JsonElement moddedVariants = moddedBlockStates.getVariantBestMatching(moddedState);
-            if (moddedVariants == null) pack.getLogger().warn("Couldn't get blockstate definition for "+moddedState);
+            if (moddedVariants == null) pack.getLogger().warn("Couldn't get blockstate definition for " + moddedState);
             clientBlockStates.variants.put(clientStateString, moddedVariants);
 
             for (JsonBlockState.Variant v : JsonBlockState.getVariantsFromJsonElement(moddedVariants)) {

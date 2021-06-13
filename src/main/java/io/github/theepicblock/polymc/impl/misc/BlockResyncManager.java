@@ -35,44 +35,44 @@ import java.util.List;
  * These methods are called by {@link io.github.theepicblock.polymc.mixins.block.ResyncImplementation} to resync the blocks with the server's state.
  */
 public class BlockResyncManager {
-	public static boolean shouldForceSync(BlockState sourceState, BlockState clientState, Direction direction) {
-		Block block = clientState.getBlock();
-		if (block == Blocks.NOTE_BLOCK) {
-			return direction == Direction.UP;
-		} else if (block == Blocks.TRIPWIRE) {
-			if (sourceState == null) return direction.getAxis().isHorizontal();
+    public static boolean shouldForceSync(BlockState sourceState, BlockState clientState, Direction direction) {
+        Block block = clientState.getBlock();
+        if (block == Blocks.NOTE_BLOCK) {
+            return direction == Direction.UP;
+        } else if (block == Blocks.TRIPWIRE) {
+            if (sourceState == null) return direction.getAxis().isHorizontal();
 
-			//Checks if the connected property for the block isn't what it should be
-			//If the source block in that direction is string, it should be true. Otherwise false
-			return direction.getAxis().isHorizontal() &&
-						clientState.get(ConnectingBlock.FACING_PROPERTIES.get(direction.getOpposite())) != (sourceState.getBlock() instanceof TripwireBlock);
-		}
-		return false;
-	}
+            //Checks if the connected property for the block isn't what it should be
+            //If the source block in that direction is string, it should be true. Otherwise false
+            return direction.getAxis().isHorizontal() &&
+                    clientState.get(ConnectingBlock.FACING_PROPERTIES.get(direction.getOpposite())) != (sourceState.getBlock() instanceof TripwireBlock);
+        }
+        return false;
+    }
 
-	public static void onBlockUpdate(BlockState sourceState, BlockPos pos, World world, ServerPlayerEntity player, List<BlockPos> exceptions) {
-		BlockPos.Mutable mPos = new BlockPos.Mutable();
-		for (Direction d : Direction.values()) {
-			mPos.set(pos.getX() + d.getOffsetX(), pos.getY() + d.getOffsetY(), pos.getZ() + d.getOffsetZ());
-			if (exceptions != null && exceptions.contains(mPos)) continue;
-			BlockState state = world.getBlockState(mPos);
-			BlockPoly poly = PolyMapProvider.getPolyMap(player).getBlockPoly(state.getBlock());
-			if (poly != null) {
-				BlockState clientState = poly.getClientBlock(state);
-				if (BlockResyncManager.shouldForceSync(sourceState, clientState, d)) {
-					BlockPos nPos = mPos.toImmutable();
-					player.networkHandler.sendPacket(new BlockUpdateS2CPacket(nPos, state));
-					List<BlockPos> newExceptions;
-					if (exceptions == null) {
-						newExceptions = new ArrayList<>();
-						newExceptions.add(pos);
-					} else {
-						exceptions.add(pos);
-						newExceptions = exceptions;
-					}
-					onBlockUpdate(clientState, nPos, world, player, newExceptions);
-				}
-			}
-		}
-	}
+    public static void onBlockUpdate(BlockState sourceState, BlockPos pos, World world, ServerPlayerEntity player, List<BlockPos> exceptions) {
+        BlockPos.Mutable mPos = new BlockPos.Mutable();
+        for (Direction d : Direction.values()) {
+            mPos.set(pos.getX() + d.getOffsetX(), pos.getY() + d.getOffsetY(), pos.getZ() + d.getOffsetZ());
+            if (exceptions != null && exceptions.contains(mPos)) continue;
+            BlockState state = world.getBlockState(mPos);
+            BlockPoly poly = PolyMapProvider.getPolyMap(player).getBlockPoly(state.getBlock());
+            if (poly != null) {
+                BlockState clientState = poly.getClientBlock(state);
+                if (BlockResyncManager.shouldForceSync(sourceState, clientState, d)) {
+                    BlockPos nPos = mPos.toImmutable();
+                    player.networkHandler.sendPacket(new BlockUpdateS2CPacket(nPos, state));
+                    List<BlockPos> newExceptions;
+                    if (exceptions == null) {
+                        newExceptions = new ArrayList<>();
+                        newExceptions.add(pos);
+                    } else {
+                        exceptions.add(pos);
+                        newExceptions = exceptions;
+                    }
+                    onBlockUpdate(clientState, nPos, world, player, newExceptions);
+                }
+            }
+        }
+    }
 }

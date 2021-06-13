@@ -37,7 +37,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
  * This Mixin makes sure that the blocks are polyd before they get sent to the client.
  */
 @Mixin(value = {ArrayPalette.class, BiMapPalette.class, LithiumHashPalette.class})
-public abstract class PaletteBlockPolyImplementation<T> implements PacketSizeProvider{
+public abstract class PaletteBlockPolyImplementation<T> implements PacketSizeProvider {
     @Unique private boolean noPoly;
     @Unique private ServerPlayerEntity playerEntity;
 

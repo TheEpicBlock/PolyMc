@@ -23,54 +23,54 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 
 public class DummyInventory implements Inventory {
-	private final int size;
+    private final int size;
 
-	public DummyInventory(int size) {
-		this.size = size;
-	}
+    public DummyInventory(int size) {
+        this.size = size;
+    }
 
-	@Override
-	public int size() {
-		return size;
-	}
+    @Override
+    public int size() {
+        return size;
+    }
 
-	@Override
-	public boolean isEmpty() {
-		return false;
-	}
+    @Override
+    public boolean isEmpty() {
+        return false;
+    }
 
-	@Override
-	public ItemStack getStack(int slot) {
-		return new ItemStack(Items.DIRT);
-	}
+    @Override
+    public ItemStack getStack(int slot) {
+        return new ItemStack(Items.DIRT);
+    }
 
-	@Override
-	public ItemStack removeStack(int slot, int amount) {
-		return new ItemStack(Items.DIRT);
-	}
+    @Override
+    public ItemStack removeStack(int slot, int amount) {
+        return new ItemStack(Items.DIRT);
+    }
 
-	@Override
-	public ItemStack removeStack(int slot) {
-		return new ItemStack(Items.DIRT);
-	}
+    @Override
+    public ItemStack removeStack(int slot) {
+        return new ItemStack(Items.DIRT);
+    }
 
-	@Override
-	public void setStack(int slot, ItemStack stack) {
+    @Override
+    public void setStack(int slot, ItemStack stack) {
 
-	}
+    }
 
-	@Override
-	public void markDirty() {
+    @Override
+    public void markDirty() {
 
-	}
+    }
 
-	@Override
-	public boolean canPlayerUse(PlayerEntity player) {
-		return true;
-	}
+    @Override
+    public boolean canPlayerUse(PlayerEntity player) {
+        return true;
+    }
 
-	@Override
-	public void clear() {
+    @Override
+    public void clear() {
 
-	}
+    }
 }

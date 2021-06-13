@@ -37,22 +37,22 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
  */
 @Mixin(BedBlock.class)
 public class BedBlockMixin {
-	/**
-	 * Removes the call to {@link World#syncWorldEvent(PlayerEntity, int, BlockPos, int)} so it can be replaced
-	 * @see #worldEventReplacement(World, BlockPos, BlockState, PlayerEntity, CallbackInfo, BedPart, BlockPos, BlockState)
-	 */
-	@Redirect(method = "onBreak", at = @At(value = "INVOKE",target = "Lnet/minecraft/world/World;syncWorldEvent(Lnet/minecraft/entity/player/PlayerEntity;ILnet/minecraft/util/math/BlockPos;I)V"))
-	public void worldEventDisabler(World world, PlayerEntity player, int eventId, BlockPos pos, int data) {
-		//Disabled
-	}
+    /**
+     * Removes the call to {@link World#syncWorldEvent(PlayerEntity, int, BlockPos, int)} so it can be replaced
+     * @see #worldEventReplacement(World, BlockPos, BlockState, PlayerEntity, CallbackInfo, BedPart, BlockPos, BlockState)
+     */
+    @Redirect(method = "onBreak", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;syncWorldEvent(Lnet/minecraft/entity/player/PlayerEntity;ILnet/minecraft/util/math/BlockPos;I)V"))
+    public void worldEventDisabler(World world, PlayerEntity player, int eventId, BlockPos pos, int data) {
+        //Disabled
+    }
 
-	/**
-	 * Replaces the call to {@link World#syncWorldEvent(PlayerEntity, int, BlockPos, int)} with a call to {@link PacketReplacementUtil#syncWorldEvent(World, PlayerEntity, int, BlockPos, BlockState)}
-	 * to respect different PolyMaps
-	 */
-	@Inject(method = "onBreak", at = @At(value = "INVOKE",target = "Lnet/minecraft/world/World;syncWorldEvent(Lnet/minecraft/entity/player/PlayerEntity;ILnet/minecraft/util/math/BlockPos;I)V"),
-		locals = LocalCapture.CAPTURE_FAILHARD)
-	public void worldEventReplacement(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci, BedPart var5, BlockPos var6, BlockState var7) {
-		PacketReplacementUtil.syncWorldEvent(world, player, 2001, var6, var7);
-	}
+    /**
+     * Replaces the call to {@link World#syncWorldEvent(PlayerEntity, int, BlockPos, int)} with a call to {@link PacketReplacementUtil#syncWorldEvent(World, PlayerEntity, int, BlockPos, BlockState)}
+     * to respect different PolyMaps
+     */
+    @Inject(method = "onBreak", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;syncWorldEvent(Lnet/minecraft/entity/player/PlayerEntity;ILnet/minecraft/util/math/BlockPos;I)V"),
+            locals = LocalCapture.CAPTURE_FAILHARD)
+    public void worldEventReplacement(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci, BedPart var5, BlockPos var6, BlockState var7) {
+        PacketReplacementUtil.syncWorldEvent(world, player, 2001, var6, var7);
+    }
 }

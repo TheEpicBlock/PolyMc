@@ -23,16 +23,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PistonBlockEntity.class)
 public abstract class MixinPistonBlockEntity extends BlockEntity {
-    @Shadow private BlockState pushedBlock;
-
     public MixinPistonBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
+    @Shadow private BlockState pushedBlock;
     @Shadow protected abstract float getAmountExtended(float progress);
-
     @Shadow private float progress;
     @Shadow private Direction facing;
+
     @Unique
     private final PolyMapMap<Wizard> wizards = new PolyMapMap<>((map) -> {
         if (!(world instanceof ServerWorld)) return null;
@@ -40,7 +39,7 @@ public abstract class MixinPistonBlockEntity extends BlockEntity {
         BlockPoly poly = map.getBlockPoly(this.pushedBlock.getBlock());
         if (poly != null && poly.hasWizard()) {
             return poly.createWizard((ServerWorld)this.world,
-                    Vec3d.of(this.getPos()).add(0.5,0,0.5),
+                    Vec3d.of(this.getPos()).add(0.5, 0, 0.5),
                     Wizard.WizardState.FALLING_BLOCK);
         }
         return null;

@@ -26,11 +26,11 @@ import net.minecraft.item.ItemStack;
 public interface ItemPoly extends DebugInfoProvider<Item> {
     /**
      * Transforms an ItemStack to its clientside version.
-     *
+     * <p>
      * It's recommended to use {@link io.github.theepicblock.polymc.api.PolyMap#getClientBlock(BlockState)} when available instead of this method.
-     * @apiNote this method should never edit the incoming ItemStack. As that might have unspecified consequences for the actual serverside representation of the item.
      * @param input the original {@link ItemStack} that's used serverside.
      * @return The {@link ItemStack} that should be sent to the client.
+     * @apiNote this method should never edit the incoming ItemStack. As that might have unspecified consequences for the actual serverside representation of the item.
      */
     ItemStack getClientItem(ItemStack input);
 

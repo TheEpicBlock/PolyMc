@@ -41,7 +41,7 @@ public class ShieldPoly extends PredicateBasedDamageableItem {
         pack.copyItemModel(item);
 
         Identifier serverItemId = Registry.ITEM.getId(defaultServerItem.getItem());
-        Identifier shieldModelPath = new Identifier(serverItemId.getNamespace(), "item/"+serverItemId.getPath());
+        Identifier shieldModelPath = new Identifier(serverItemId.getNamespace(), "item/" + serverItemId.getPath());
 
         //default shield model
         if (!pack.hasPendingModel(shieldModelPath)) {

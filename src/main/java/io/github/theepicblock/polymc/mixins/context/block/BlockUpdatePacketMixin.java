@@ -36,22 +36,20 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  */
 @Mixin(BlockUpdateS2CPacket.class)
 public class BlockUpdatePacketMixin implements PlayerContextContainer {
-	@Shadow private BlockPos pos;
-	@Unique
-	private ServerPlayerEntity player;
+    @Unique private ServerPlayerEntity player;
 
-	@Override
-	public ServerPlayerEntity getPolyMcProvidedPlayer() {
-		return player;
-	}
+    @Override
+    public ServerPlayerEntity getPolyMcProvidedPlayer() {
+        return player;
+    }
 
-	@Override
-	public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
-		player = v;
-	}
+    @Override
+    public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
+        player = v;
+    }
 
-	@Redirect(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getRawIdFromState(Lnet/minecraft/block/BlockState;)I"))
-	public int getRawIdFromStateRedirect(BlockState state) {
-		return Util.getPolydRawIdFromState(state, this.player);
-	}
+    @Redirect(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getRawIdFromState(Lnet/minecraft/block/BlockState;)I"))
+    public int getRawIdFromStateRedirect(BlockState state) {
+        return Util.getPolydRawIdFromState(state, this.player);
+    }
 }

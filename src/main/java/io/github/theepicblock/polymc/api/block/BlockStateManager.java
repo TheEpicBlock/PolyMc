@@ -51,13 +51,13 @@ public class BlockStateManager {
                 return requestBlockState(block, stateProfile.filter, stateProfile.onFirstRegister);
             } catch (StateLimitReachedException ignored) {}
         }
-        throw new StateLimitReachedException("Tried to access more BlockStates then block has. Profile: '"+stateProfile.name+"'");
+        throw new StateLimitReachedException("Tried to access more BlockStates then block has. Profile: '" + stateProfile.name + "'");
     }
 
     /**
      * Request a certain amount blockstate values to be allocated in a profile.
      * @param stateProfile the profile to use.
-     * @param amount how many blockstates you need.
+     * @param amount       how many blockstates you need.
      * @return The blockstates you can now use.
      * @throws StateLimitReachedException if the limit of BlockStates is reached.
      */
@@ -66,7 +66,7 @@ public class BlockStateManager {
         List<BlockState> ret = new ArrayList<>(amount);
         int left = amount;
         for (Block block : blocks) {
-            while(left != 0) {
+            while (left != 0) {
                 try {
                     ret.add(requestBlockState(block, stateProfile.filter, stateProfile.onFirstRegister));
                     left--;
@@ -78,9 +78,9 @@ public class BlockStateManager {
         if (left != 0) {
             //We didn't reach the needed amount. We need to hack this in to un register the blockstates.
             for (BlockState state : ret) {
-                blockStateUsageCounter.put(state.getBlock(), blockStateUsageCounter.getInt(state.getBlock())-1);
+                blockStateUsageCounter.put(state.getBlock(), blockStateUsageCounter.getInt(state.getBlock()) - 1);
             }
-            throw new StateLimitReachedException("Tried to access more BlockStates then block has. Profile: '"+stateProfile.name+"'");
+            throw new StateLimitReachedException("Tried to access more BlockStates then block has. Profile: '" + stateProfile.name + "'");
         }
         return ret;
     }
@@ -95,7 +95,7 @@ public class BlockStateManager {
         if (amount == 0) return true;
         int goodBlocks = 0;
         for (Block block : stateProfile.blocks) {
-            int current = blockStateUsageCounter.getOrDefault(block,0); //this is the current blockstateId that we're at for this item/
+            int current = blockStateUsageCounter.getOrDefault(block, 0); //this is the current blockstateId that we're at for this item/
 
             while (true) {
                 current++;
@@ -127,7 +127,7 @@ public class BlockStateManager {
             int current = getBlockStateUsage(block, onFirstRegister);
             try {
                 BlockState t = block.getStateManager().getStates().get(current);
-                blockStateUsageCounter.put(block,current+1);
+                blockStateUsageCounter.put(block, current + 1);
                 if (filter.test(t)) {
                     return t;
                 }
@@ -139,14 +139,14 @@ public class BlockStateManager {
 
     /**
      * Gets the usage index of the block.
-     * @param block block to check usage of.
+     * @param block           block to check usage of.
      * @param onFirstRegister method to use if this is the first time this block is used.
      * @return The usage index of the block
      */
     private int getBlockStateUsage(Block block, BiConsumer<Block,PolyRegistry> onFirstRegister) {
         if (!blockStateUsageCounter.containsKey(block)) {
-            onFirstRegister.accept(block,polyRegistry);
-            blockStateUsageCounter.put(block,0);
+            onFirstRegister.accept(block, polyRegistry);
+            blockStateUsageCounter.put(block, 0);
         }
         return blockStateUsageCounter.getInt(block);
     }

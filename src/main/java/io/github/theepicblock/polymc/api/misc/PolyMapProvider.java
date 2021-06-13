@@ -22,63 +22,63 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public interface PolyMapProvider {
-	PolyMapProviderEvent EVENT = new PolyMapProviderEvent();
+    PolyMapProviderEvent EVENT = new PolyMapProviderEvent();
 
-	/**
-	 * @return the {@link PolyMap} that is used by this provider.
-	 */
-	PolyMap getPolyMap();
+    /**
+     * @return the {@link PolyMap} that is used for this player.
+     */
+    static PolyMap getPolyMap(ServerPlayerEntity player) {
+        return ((PolyMapProvider)player).getPolyMap();
+    }
 
-	/**
-	 * Directly sets the PolyMap used by this provider.
-	 * @param map map to use
-	 * @deprecated this method should <em>not</em> be used directly! Please create an entry in {@link #EVENT} instead.
-	 */
-	@Deprecated
-	void setPolyMap(PolyMap map);
+    /**
+     * @return the {@link PolyMap} that is used by this provider.
+     */
+    PolyMap getPolyMap();
 
-	/**
-	 * Refreshes the map used by this player. It will call {@link #EVENT} again.
-	 * <p>
-	 * Warning: whilst this method allows you to refresh the {@link PolyMap} on the fly it is *not* recommended.
-	 * This function won't affect new packets!
-	 * </p>
-	 */
-	default void refreshUsedPolyMap() {
-		this.setPolyMap(EVENT.invoke((ServerPlayerEntity)this));
-	}
+    /**
+     * Directly sets the PolyMap used by this provider.
+     * @param map map to use
+     * @deprecated this method should <em>not</em> be used directly! Please create an entry in {@link #EVENT} instead.
+     */
+    @Deprecated
+    void setPolyMap(PolyMap map);
 
-	/**
-	 * @return the {@link PolyMap} that is used for this player.
-	 */
-	static PolyMap getPolyMap(ServerPlayerEntity player) {
-		return ((PolyMapProvider)player).getPolyMap();
-	}
+    /**
+     * Refreshes the map used by this player. It will call {@link #EVENT} again.
+     * <p>
+     * Warning: whilst this method allows you to refresh the {@link PolyMap} on the fly it is *not* recommended.
+     * This function won't affect new packets!
+     * </p>
+     */
+    default void refreshUsedPolyMap() {
+        this.setPolyMap(EVENT.invoke((ServerPlayerEntity)this));
+    }
 
-	class PolyMapProviderEvent extends Event<PolyMapGetter> {
-		public PolyMapProviderEvent() {
-			super(new PolyMapGetter[]{});
-		}
+    /**
+     * Represents an entry in {@link #EVENT}
+     * {@link #getMap(ServerPlayerEntity)} should return {@code null} to pass through to the next entry.
+     */
+    interface PolyMapGetter {
+        /**
+         * Returns a PolyMap for this entry. Returns `null` when unspecified.
+         * @return the map that should be used for this player.
+         */
+        PolyMap getMap(ServerPlayerEntity player);
+    }
 
-		public PolyMap invoke(ServerPlayerEntity playerEntity) {
-			for (int i = handlers.length-1; i >= 0; i--) {
-				PolyMapGetter handler = handlers[i];
-				PolyMap map = handler.getMap(playerEntity);
-				if (map != null) return map;
-			}
-			return PolyMc.getMainMap();
-		}
-	}
+    class PolyMapProviderEvent extends Event<PolyMapGetter> {
+        public PolyMapProviderEvent() {
+            super(new PolyMapGetter[]{});
+        }
 
-	/**
-	 * Represents an entry in {@link #EVENT}
-	 * {@link #getMap(ServerPlayerEntity)} should return {@code null} to pass through to the next entry.
-	 */
-	interface PolyMapGetter {
-		/**
-		 * Returns a PolyMap for this entry. Returns `null` when unspecified.
-		 * @return the map that should be used for this player.
-		 */
-		PolyMap getMap(ServerPlayerEntity player);
-	}
+        public PolyMap invoke(ServerPlayerEntity playerEntity) {
+            for (int i = handlers.length - 1; i >= 0; i--) {
+                PolyMapGetter handler = handlers[i];
+                PolyMap map = handler.getMap(playerEntity);
+                if (map != null) return map;
+            }
+            return PolyMc.getMainMap();
+        }
+    }
 }

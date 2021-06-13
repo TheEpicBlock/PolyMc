@@ -1,6 +1,5 @@
 package io.github.theepicblock.polymc.impl.misc.logging;
 
-import io.github.theepicblock.polymc.PolyMc;
 import org.apache.logging.log4j.Logger;
 
 public class Log4JWrapper implements SimpleLogger {

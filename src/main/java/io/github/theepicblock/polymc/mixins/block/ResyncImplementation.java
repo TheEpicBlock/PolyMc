@@ -43,20 +43,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(ServerPlayerInteractionManager.class)
 public class ResyncImplementation {
-	@Shadow protected ServerWorld world;
-	@Final @Shadow protected ServerPlayerEntity player;
+    @Shadow protected ServerWorld world;
+    @Shadow @Final protected ServerPlayerEntity player;
 
-	@Inject(method = "tryBreakBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
-	private void onBlockBreakInject(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-		if (Util.isPolyMapVanillaLike(player)) {
-			BlockResyncManager.onBlockUpdate(null, pos, world, player, null);
-		}
-	}
+    @Inject(method = "tryBreakBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
+    private void onBlockBreakInject(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+        if (Util.isPolyMapVanillaLike(player)) {
+            BlockResyncManager.onBlockUpdate(null, pos, world, player, null);
+        }
+    }
 
-	@Inject(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;useOnBlock(Lnet/minecraft/item/ItemUsageContext;)Lnet/minecraft/util/ActionResult;"))
-	private void onBlockPlaceInject(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
-		if (Util.isPolyMapVanillaLike(player) && stack.getItem() instanceof BlockItem) {
-			BlockResyncManager.onBlockUpdate(null, hitResult.getBlockPos().offset(hitResult.getSide()), world, player, null);
-		}
-	}
+    @Inject(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;useOnBlock(Lnet/minecraft/item/ItemUsageContext;)Lnet/minecraft/util/ActionResult;"))
+    private void onBlockPlaceInject(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
+        if (Util.isPolyMapVanillaLike(player) && stack.getItem() instanceof BlockItem) {
+            BlockResyncManager.onBlockUpdate(null, hitResult.getBlockPos().offset(hitResult.getSide()), world, player, null);
+        }
+    }
 }

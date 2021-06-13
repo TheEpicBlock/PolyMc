@@ -22,7 +22,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(FallingBlockEntity.class)
 public abstract class FallingBlockEntityMixin extends Entity implements WatchListener {
     @Shadow private BlockState block;
-    @Unique private final PolyMapMap<Wizard> wizards = new PolyMapMap<>((map) -> {
+
+    @Unique
+    private final PolyMapMap<Wizard> wizards = new PolyMapMap<>((map) -> {
         if (!(world instanceof ServerWorld)) return null;
 
         BlockPoly poly = map.getBlockPoly(this.block.getBlock());

@@ -45,9 +45,11 @@ public abstract class BlockBreakingPatch {
     @Shadow @Final protected ServerPlayerEntity player;
     @Shadow private int tickCounter;
     @Shadow private int startMiningTime;
-    @Shadow public abstract void finishMining(BlockPos pos, PlayerActionC2SPacket.Action action, String reason);
 
     private int blockBreakingCooldown;
+
+    @Shadow
+    public abstract void finishMining(BlockPos pos, PlayerActionC2SPacket.Action action, String reason);
 
     /**
      * This breaks the block serverside if the client hasn't broken it already

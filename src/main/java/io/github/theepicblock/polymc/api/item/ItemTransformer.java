@@ -1,8 +1,5 @@
 package io.github.theepicblock.polymc.api.item;
 
-import io.github.theepicblock.polymc.api.DebugInfoProvider;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 /**
@@ -13,10 +10,9 @@ import net.minecraft.item.ItemStack;
 public interface ItemTransformer {
     /**
      * Transforms an ItemStack to its clientside version.
-     *
-     * @apiNote this method should never edit the incoming ItemStack. As that might have unspecified consequences for the actual serverside representation of the item.
      * @param input the original {@link ItemStack} that's used serverside.
      * @return The {@link ItemStack} that should be sent to the client.
+     * @apiNote this method should never edit the incoming ItemStack. As that might have unspecified consequences for the actual serverside representation of the item.
      */
     ItemStack transform(ItemStack input);
 }

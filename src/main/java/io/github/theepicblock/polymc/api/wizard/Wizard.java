@@ -64,7 +64,8 @@ public abstract class Wizard implements WatchListener {
      * @throws IllegalStateException if the wizard is not in a grid
      */
     public BlockPos getBlockPos() {
-        if (!this.getState().isStatic()) throw new IllegalStateException("attempted to access block pos of non-static wizard");
+        if (!this.getState().isStatic())
+            throw new IllegalStateException("attempted to access block pos of non-static wizard");
         return new BlockPos(position);
     }
 

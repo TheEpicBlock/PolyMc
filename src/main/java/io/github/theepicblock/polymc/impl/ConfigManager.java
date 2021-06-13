@@ -120,7 +120,7 @@ public class ConfigManager {
             for (Map.Entry<String,JsonElement> e : add.entrySet()) {
                 JsonElement element = e.getValue();
                 List<String> path = new LinkedList<>(Arrays.asList(e.getKey().split("\\.")));
-                String last = path.remove(path.size()-1);
+                String last = path.remove(path.size() - 1);
 
                 if (element.isJsonObject()) {
                     JsonObject obj = element.getAsJsonObject();
@@ -144,12 +144,12 @@ public class ConfigManager {
         if (remove != null) {
             for (JsonElement e : remove) {
                 List<String> path = new LinkedList<>(Arrays.asList(e.getAsString().split("\\.")));
-                String last = path.remove(path.size()-1);
+                String last = path.remove(path.size() - 1);
                 if (path.size() == 0) {
                     config.remove(last);
                     continue;
                 }
-                String secondLast = path.remove(path.size()-1);
+                String secondLast = path.remove(path.size() - 1);
 
                 JsonElement elementToRemoveFrom = traverse(config, path).get(secondLast);
                 if (elementToRemoveFrom.isJsonObject()) {

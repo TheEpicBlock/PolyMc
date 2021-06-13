@@ -8,9 +8,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(PalettedContainer.class)
 public interface PalettedContainerAccessor<T> {
-	@Accessor
-	Palette<T> getPalette();
+    @Accessor
+    Palette<T> getPalette();
 
-	@Accessor
-	PackedIntegerArray getData();
+    @Accessor
+    PackedIntegerArray getData();
 }

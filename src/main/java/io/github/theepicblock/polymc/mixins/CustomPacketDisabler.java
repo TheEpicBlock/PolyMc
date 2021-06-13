@@ -38,7 +38,7 @@ public class CustomPacketDisabler {
     @Inject(method = "sendPacket(Lnet/minecraft/network/Packet;Lio/netty/util/concurrent/GenericFutureListener;)V", at = @At("HEAD"), cancellable = true)
     public void sendPacketInject(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>> listener, CallbackInfo ci) {
         if (packet instanceof CustomPayloadS2CPacket && Util.isPolyMapVanillaLike(this.player)) {
-            Identifier channel = ((CustomPacketAccessor) packet).getChannel();
+            Identifier channel = ((CustomPacketAccessor)packet).getChannel();
             if (!Util.isVanilla(channel)) {
                 ci.cancel();
             }

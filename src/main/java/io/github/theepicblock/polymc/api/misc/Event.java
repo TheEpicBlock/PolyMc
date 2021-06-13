@@ -20,17 +20,17 @@ package io.github.theepicblock.polymc.api.misc;
 import java.util.Arrays;
 
 public abstract class Event<INTERFACE> {
-	protected INTERFACE[] handlers;
+    protected INTERFACE[] handlers;
 
-	public Event(INTERFACE[] i) {
-		this.handlers = i;
-	}
+    public Event(INTERFACE[] i) {
+        this.handlers = i;
+    }
 
-	public void register(INTERFACE listener) {
-		if (listener == null) {
-			throw new NullPointerException("Tried to register a null listener");
-		}
-		this.handlers = Arrays.copyOf(this.handlers, this.handlers.length + 1);
-		this.handlers[this.handlers.length - 1] = listener;
-	}
+    public void register(INTERFACE listener) {
+        if (listener == null) {
+            throw new NullPointerException("Tried to register a null listener");
+        }
+        this.handlers = Arrays.copyOf(this.handlers, this.handlers.length + 1);
+        this.handlers[this.handlers.length - 1] = listener;
+    }
 }

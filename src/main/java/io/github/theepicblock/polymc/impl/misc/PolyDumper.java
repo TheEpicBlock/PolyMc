@@ -1,13 +1,10 @@
 package io.github.theepicblock.polymc.impl.misc;
 
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.text.LiteralText;
 
 import java.io.File;
 import java.io.FileWriter;
