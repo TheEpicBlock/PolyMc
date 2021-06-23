@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.impl.poly.gui;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
 
@@ -25,7 +26,7 @@ public class StaticSlot extends Slot {
     public final ItemStack stack;
 
     public StaticSlot(ItemStack stack) {
-        super(null, 0, 0, 0);
+        super(EmptyInventory.INSTANCE, 0, 0, 0);
         this.stack = stack;
     }
 
