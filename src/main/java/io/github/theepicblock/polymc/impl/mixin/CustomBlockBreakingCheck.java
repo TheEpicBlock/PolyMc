@@ -12,7 +12,7 @@ public class CustomBlockBreakingCheck {
      * @return True if the player needs to have custom breaking speeds
      */
     public static boolean needsCustomBreaking(ServerPlayerEntity player, Block block) {
-        if (!Util.isPolyMapVanillaLike(player))
+        if (!Util.isPolyMapVanillaLike(player) || player.isCreative())
             return false;
 
         var polyMap = PolyMapProvider.getPolyMap(player);
