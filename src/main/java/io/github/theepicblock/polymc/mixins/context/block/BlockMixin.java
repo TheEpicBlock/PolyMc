@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.mixins.context.block;
 
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.mixin.CustomBlockBreakingCheck;
 import io.github.theepicblock.polymc.impl.mixin.PacketReplacementUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -42,12 +43,11 @@ public class BlockMixin {
     @Redirect(method = "spawnBreakParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;syncWorldEvent(Lnet/minecraft/entity/player/PlayerEntity;ILnet/minecraft/util/math/BlockPos;I)V"))
     public void worldEventPoly(World world, PlayerEntity player, int eventId, BlockPos pos, int data,
                                World worldParent, PlayerEntity playerParent, BlockPos posParent, BlockState stateParent) {
-        //Minecraft assumes the player who breaks the block knows it's breaking a block.
-        //However, as PolyMc reimplements block breaking server-side, the one breaking the block needs to be notified too
-        if (Util.isPolyMapVanillaLike((ServerPlayerEntity)player)) {
-            PacketReplacementUtil.syncWorldEvent(world, null, 2001, pos, stateParent);
-        } else {
-            PacketReplacementUtil.syncWorldEvent(world, player, 2001, pos, stateParent);
-        }
+        var spe = (ServerPlayerEntity)player;
+
+        // Minecraft assumes the player who breaks the block knows it's breaking a block.
+        // However, as PolyMc reimplements block breaking server-side, the one breaking the block needs to be notified too
+        var exception = CustomBlockBreakingCheck.needsCustomBreaking(spe, stateParent.getBlock()) ? null : player;
+        PacketReplacementUtil.syncWorldEvent(world, exception, 2001, pos, stateParent);
     }
 }

@@ -17,9 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins.block;
 
-import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
-import io.github.theepicblock.polymc.impl.Util;
-import net.minecraft.block.Block;
+import io.github.theepicblock.polymc.impl.mixin.CustomBlockBreakingCheck;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -64,7 +62,7 @@ public abstract class BlockBreakingPatch {
      */
     @Inject(method = "continueMining", at = @At("TAIL"))
     public void breakIfTakingTooLong(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
-        if (needsCustomBreaking(player, state.getBlock())) {
+        if (CustomBlockBreakingCheck.needsCustomBreaking(player, state.getBlock())) {
             int j = tickCounter - i;
             float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j);
 
@@ -82,7 +80,7 @@ public abstract class BlockBreakingPatch {
 
     @Inject(method = "continueMining", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockBreakingInfo(ILnet/minecraft/util/math/BlockPos;I)V"))
     public void onUpdateBreakStatus(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
-        if (needsCustomBreaking(player, state.getBlock())) {
+        if (CustomBlockBreakingCheck.needsCustomBreaking(player, state.getBlock())) {
             int j = tickCounter - i;
             float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j + 1);
             int k = (int)(f * 10.0F);
@@ -94,7 +92,7 @@ public abstract class BlockBreakingPatch {
 
     @Inject(method = "processBlockBreakingAction", at = @At("HEAD"))
     public void packetReceivedInject(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
-        if (needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
+        if (CustomBlockBreakingCheck.needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
                 // This prevents the client from trying to break the block themselves.
                 player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(this.player.getId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
@@ -107,7 +105,7 @@ public abstract class BlockBreakingPatch {
 
     @Inject(method = "processBlockBreakingAction", at = @At("TAIL"))
     public void enforceBlockBreakingCooldown(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
-        if (needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
+        if (CustomBlockBreakingCheck.needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
                 this.startMiningTime += blockBreakingCooldown;
             }
@@ -116,7 +114,7 @@ public abstract class BlockBreakingPatch {
 
     @Inject(method = "finishMining", at = @At("HEAD"))
     private void clearEffects(BlockPos pos, PlayerActionC2SPacket.Action action, String reason, CallbackInfo ci) {
-        if (needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
+        if (CustomBlockBreakingCheck.needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
             removeFakeMiningFatigue();
         }
     }
@@ -129,18 +127,5 @@ public abstract class BlockBreakingPatch {
         if (effectInstance != null) {
             player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(this.player.getId(), effectInstance));
         }
-    }
-
-    /**
-     * @param block The block the player is looking at
-     * @return True if the player needs to have custom breaking speeds
-     */
-    @Unique
-    private static boolean needsCustomBreaking(ServerPlayerEntity player, Block block) {
-        if (!Util.isPolyMapVanillaLike(player))
-            return false;
-
-        var polyMap = PolyMapProvider.getPolyMap(player);
-        return polyMap.getBlockPoly(block) != null || polyMap.getItemPolys().containsKey(player.getMainHandStack().getItem());
     }
 }
