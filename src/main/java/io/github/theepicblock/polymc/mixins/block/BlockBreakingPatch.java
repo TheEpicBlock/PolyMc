@@ -17,20 +17,25 @@
  */
 package io.github.theepicblock.polymc.mixins.block;
 
+import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.Util;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityStatusEffectS2CPacket;
+import net.minecraft.network.packet.s2c.play.RemoveEntityStatusEffectS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -46,17 +51,20 @@ public abstract class BlockBreakingPatch {
     @Shadow private int tickCounter;
     @Shadow private int startMiningTime;
 
+    @Unique
     private int blockBreakingCooldown;
 
     @Shadow
     public abstract void finishMining(BlockPos pos, PlayerActionC2SPacket.Action action, String reason);
+
+    @Shadow protected ServerWorld world;
 
     /**
      * This breaks the block serverside if the client hasn't broken it already
      */
     @Inject(method = "continueMining", at = @At("TAIL"))
     public void breakIfTakingTooLong(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
-        if (Util.isPolyMapVanillaLike(player)) {
+        if (needsCustomBreaking(player, state.getBlock())) {
             int j = tickCounter - i;
             float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j);
 
@@ -74,7 +82,7 @@ public abstract class BlockBreakingPatch {
 
     @Inject(method = "continueMining", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockBreakingInfo(ILnet/minecraft/util/math/BlockPos;I)V"))
     public void onUpdateBreakStatus(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
-        if (Util.isPolyMapVanillaLike(player)) {
+        if (needsCustomBreaking(player, state.getBlock())) {
             int j = tickCounter - i;
             float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j + 1);
             int k = (int)(f * 10.0F);
@@ -86,11 +94,12 @@ public abstract class BlockBreakingPatch {
 
     @Inject(method = "processBlockBreakingAction", at = @At("HEAD"))
     public void packetReceivedInject(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
-        if (Util.isPolyMapVanillaLike(player)) {
+        if (needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
-                //We give the player near-permanent mining fatigue. This prevents them from trying to break the block themselves.
-                player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
+                // This prevents the client from trying to break the block themselves.
+                player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(this.player.getId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
             } else if (action == PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK) {
+                removeFakeMiningFatigue();
                 player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, -1));
             }
         }
@@ -98,10 +107,40 @@ public abstract class BlockBreakingPatch {
 
     @Inject(method = "processBlockBreakingAction", at = @At("TAIL"))
     public void enforceBlockBreakingCooldown(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
-        if (Util.isPolyMapVanillaLike(player)) {
+        if (needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
                 this.startMiningTime += blockBreakingCooldown;
             }
         }
+    }
+
+    @Inject(method = "finishMining", at = @At("HEAD"))
+    private void clearEffects(BlockPos pos, PlayerActionC2SPacket.Action action, String reason, CallbackInfo ci) {
+        if (needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
+            removeFakeMiningFatigue();
+        }
+    }
+
+    @Unique
+    private void removeFakeMiningFatigue() {
+        player.networkHandler.sendPacket(new RemoveEntityStatusEffectS2CPacket(player.getId(), StatusEffects.MINING_FATIGUE));
+
+        var effectInstance = this.player.getStatusEffect(StatusEffects.MINING_FATIGUE);
+        if (effectInstance != null) {
+            player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(this.player.getId(), effectInstance));
+        }
+    }
+
+    /**
+     * @param block The block the player is looking at
+     * @return True if the player needs to have custom breaking speeds
+     */
+    @Unique
+    private static boolean needsCustomBreaking(ServerPlayerEntity player, Block block) {
+        if (!Util.isPolyMapVanillaLike(player))
+            return false;
+
+        var polyMap = PolyMapProvider.getPolyMap(player);
+        return polyMap.getBlockPoly(block) != null || polyMap.getItemPolys().containsKey(player.getMainHandStack().getItem());
     }
 }
