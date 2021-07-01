@@ -29,7 +29,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayerEntity.class)
-public class PolyMapProviderImplementation implements PolyMapProvider {
+public class RefreshPolyMapOnCopy implements PolyMapProvider {
     @Unique private PolyMap polyMap;
 
     @Override
@@ -45,16 +45,5 @@ public class PolyMapProviderImplementation implements PolyMapProvider {
     @Inject(method = "copyFrom", at = @At("RETURN"))
     private void copyInject(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
         this.refreshUsedPolyMap();
-    }
-
-    @Mixin(ServerPlayNetworkHandler.class)
-    private static class NetworkHandlerMixin {
-        @Shadow
-        public ServerPlayerEntity player;
-
-        @Inject(method = "<init>", at = @At("RETURN"))
-        private void initInject(CallbackInfo ci) {
-            ((PolyMapProvider)(player)).refreshUsedPolyMap();
-        }
     }
 }
