@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.block.context;
+package io.github.theepicblock.polymc.mixins.block.implementations;
 
 import io.github.theepicblock.polymc.impl.mixin.PacketSizeProvider;
 import net.minecraft.network.PacketByteBuf;
@@ -26,9 +26,12 @@ import net.minecraft.world.chunk.PalettedContainer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
+/**
+ * Provides the correct packet size for this {@link PalettedContainer} via the {@link PacketSizeProvider} interface.
+ * This allows the packet size to take into account the player and their PolyMap when calculating
+ */
 @Mixin(PalettedContainer.class)
-public abstract class PalettedContainerMixin<T> implements PacketSizeProvider {
-
+public abstract class PalettedContainerSizeProvider<T> implements PacketSizeProvider {
     @Shadow private Palette<T> palette;
     @Shadow protected PackedIntegerArray data;
 

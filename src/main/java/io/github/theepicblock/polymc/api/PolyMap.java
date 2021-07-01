@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.mixins.block.implementations.WorldEventImplementation;
 import io.github.theepicblock.polymc.mixins.item.CreativeItemStackFix;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -78,7 +79,7 @@ public interface PolyMap {
      * @see io.github.theepicblock.polymc.mixins.CustomPacketDisabler
      * @see io.github.theepicblock.polymc.mixins.TagSyncronizePatch
      * @see io.github.theepicblock.polymc.mixins.block.ResyncImplementation
-     * @see io.github.theepicblock.polymc.mixins.context.block.BlockMixin
+     * @see WorldEventImplementation
      * @see io.github.theepicblock.polymc.mixins.gui.GuiHandlerIdImplementation
      * @see io.github.theepicblock.polymc.mixins.item.CustomRecipeFix
      */

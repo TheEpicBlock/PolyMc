@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(Block.class)
-public class BlockPolyImplementation {
+public class FallbackBaseImplementation {
     /**
      * This is a fall-back implementation. It does not respect custom PolyMaps.
      * There are more targeted mixins that do respect custom maps.

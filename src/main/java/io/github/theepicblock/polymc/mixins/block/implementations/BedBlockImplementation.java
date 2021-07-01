@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.context.block;
+package io.github.theepicblock.polymc.mixins.block.implementations;
 
 import io.github.theepicblock.polymc.impl.mixin.PacketReplacementUtil;
+import io.github.theepicblock.polymc.mixins.block.FallbackBaseImplementation;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.BedPart;
@@ -33,10 +34,10 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
  * In the {@link BedBlock#onBreak(World, BlockPos, BlockState, PlayerEntity)} method, there is a call to create a WorldEvent for the breakage.
- * Normally the remapping of that would be caught by {@link io.github.theepicblock.polymc.mixins.block.BlockPolyImplementation} but that method doesn't respect individuals their PolyMaps.
+ * Normally the remapping of that would be caught by {@link FallbackBaseImplementation} but that method doesn't respect individuals their PolyMaps.
  */
 @Mixin(BedBlock.class)
-public class BedBlockMixin {
+public class BedBlockImplementation {
     /**
      * Removes the call to {@link World#syncWorldEvent(PlayerEntity, int, BlockPos, int)} so it can be replaced
      * @see #worldEventReplacement(World, BlockPos, BlockState, PlayerEntity, CallbackInfo, BedPart, BlockPos, BlockState)

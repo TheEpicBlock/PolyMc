@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.impl.mixin;
 
+import io.github.theepicblock.polymc.mixins.block.implementations.ChunkDataPlayerProvider;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public class ChunkPacketStaticHack {
@@ -24,7 +25,7 @@ public class ChunkPacketStaticHack {
      * {@link net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket} calculates a bunch of stuff in its constructor.
      * We need to pass in the context of the player to a mixin in this constructor.
      * That's where this field comes into play.
-     * It is set by {@link io.github.theepicblock.polymc.mixins.context.block.TACSMixin} before the invocation of the constructor and cleared afterwards
+     * It is set by {@link ChunkDataPlayerProvider} before the invocation of the constructor and cleared afterwards
      */
     public static ServerPlayerEntity player;
 }

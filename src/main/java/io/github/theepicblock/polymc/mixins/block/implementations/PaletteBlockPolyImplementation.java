@@ -15,11 +15,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.block;
+package io.github.theepicblock.polymc.mixins.block.implementations;
 
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.mixin.PacketSizeProvider;
+import io.github.theepicblock.polymc.mixins.block.FallbackBaseImplementation;
 import me.jellysquid.mods.lithium.common.world.chunk.LithiumHashPalette;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -33,17 +34,16 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 /**
  * Minecraft uses a different method to get ids when it sends chunks.
- * Therefore {@link BlockPolyImplementation} doesn't work on chunks.
+ * Therefore {@link FallbackBaseImplementation} doesn't work on chunks.
  * This Mixin makes sure that the blocks are polyd before they get sent to the client.
  */
 @Mixin(value = {ArrayPalette.class, BiMapPalette.class, LithiumHashPalette.class})
 public abstract class PaletteBlockPolyImplementation<T> implements PacketSizeProvider {
-    @Unique private boolean noPoly;
     @Unique private ServerPlayerEntity playerEntity;
 
     @ModifyArg(method = {"toPacket", "getPacketSize"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IdList;getRawId(Ljava/lang/Object;)I"))
     public T GetIdRedirect(T object) {
-        if (!noPoly && object instanceof BlockState) {
+        if (object instanceof BlockState) {
             PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
             //noinspection unchecked
             return (T)map.getClientBlock((BlockState)object);

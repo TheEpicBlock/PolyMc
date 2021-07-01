@@ -15,27 +15,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.context.block;
+package io.github.theepicblock.polymc.mixins.block.implementations;
 
-import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.mixin.ChunkPacketStaticHack;
+import io.github.theepicblock.polymc.impl.mixin.PacketSizeProvider;
 import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
-import net.minecraft.block.BlockState;
-import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.ChunkSection;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-/**
- * This packet writes the raw id of the updated {@link BlockState} to itself.
- * Normally the remapping of that would be caught by {@link io.github.theepicblock.polymc.mixins.block.BlockPolyImplementation} but that method doesn't respect individuals their PolyMaps.
- * {@link io.github.theepicblock.polymc.mixins.context.NetworkHandlerContextProvider} will provide the player context to this packet via {@link #setPolyMcProvidedPlayer(ServerPlayerEntity)}
- */
-@Mixin(BlockUpdateS2CPacket.class)
-public class BlockUpdatePacketMixin implements PlayerContextContainer {
+@Mixin(ChunkDataS2CPacket.class)
+public class ChunkDataPacketImplementation implements PlayerContextContainer {
     @Unique private ServerPlayerEntity player;
 
     @Override
@@ -48,8 +42,13 @@ public class BlockUpdatePacketMixin implements PlayerContextContainer {
         player = v;
     }
 
-    @Redirect(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getRawIdFromState(Lnet/minecraft/block/BlockState;)I"))
-    public int getRawIdFromStateRedirect(BlockState state) {
-        return Util.getPolydRawIdFromState(state, this.player);
+    /**
+     * Redirects the calculation of the packet size to a custom method. This allows it to take the player into account.
+     * @see ChunkSectionSizeProvider
+     * @see PacketSizeProvider
+     */
+    @Redirect(method = "getDataSize", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/ChunkSection;getPacketSize()I"))
+    public int redirectGetSize(ChunkSection chunkSection) {
+        return ((PacketSizeProvider)chunkSection).getPacketSize(ChunkPacketStaticHack.player);
     }
 }

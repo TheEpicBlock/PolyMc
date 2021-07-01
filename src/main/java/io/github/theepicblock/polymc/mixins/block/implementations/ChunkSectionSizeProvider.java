@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.block.context;
+package io.github.theepicblock.polymc.mixins.block.implementations;
 
 import io.github.theepicblock.polymc.impl.mixin.PacketSizeProvider;
 import net.minecraft.block.BlockState;
@@ -26,8 +26,12 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
+/**
+ * Provides the correct packet size for this {@link ChunkSection} via the {@link PacketSizeProvider} interface.
+ *  * This allows the packet size to take into account the player and their PolyMap when calculating
+ */
 @Mixin(ChunkSection.class)
-public class ChunkSectionMixin implements PacketSizeProvider {
+public class ChunkSectionSizeProvider implements PacketSizeProvider {
     @Shadow @Final private PalettedContainer<BlockState> container;
 
     @Override

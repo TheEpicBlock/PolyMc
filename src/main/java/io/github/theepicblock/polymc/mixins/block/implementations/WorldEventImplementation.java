@@ -15,10 +15,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.context.block;
+package io.github.theepicblock.polymc.mixins.block.implementations;
 
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.mixin.PacketReplacementUtil;
+import io.github.theepicblock.polymc.mixins.block.FallbackBaseImplementation;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
@@ -31,10 +32,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
  * In the {@link Block#onBreak(World, BlockPos, BlockState, PlayerEntity)} method, there is a call to create a WorldEvent for the breakage.
- * Normally the remapping of that would be caught by {@link io.github.theepicblock.polymc.mixins.block.BlockPolyImplementation} but that method doesn't respect individuals their PolyMaps.
+ * Normally the remapping of that would be caught by {@link FallbackBaseImplementation} but that method doesn't respect individuals their PolyMaps.
  */
 @Mixin(Block.class)
-public class BlockMixin {
+public class WorldEventImplementation {
     /**
      * Replaces the call to {@link World#syncWorldEvent(PlayerEntity, int, BlockPos, int)} with a call to {@link PacketReplacementUtil#syncWorldEvent(World, PlayerEntity, int, BlockPos, BlockState)}
      * to respect different PolyMaps
