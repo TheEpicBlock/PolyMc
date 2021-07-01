@@ -31,7 +31,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
         EntityEquipmentUpdateS2CPacket.class,
         InventoryS2CPacket.class,
         ScreenHandlerSlotUpdateS2CPacket.class,
-        SynchronizeRecipesS2CPacket.class,
         SetTradeOffersS2CPacket.class,
         EntityTrackerUpdateS2CPacket.class,
         ParticleS2CPacket.class,

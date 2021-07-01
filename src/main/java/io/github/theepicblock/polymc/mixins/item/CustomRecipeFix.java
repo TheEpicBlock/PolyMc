@@ -19,6 +19,7 @@ package io.github.theepicblock.polymc.mixins.item;
 
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
+import io.github.theepicblock.polymc.mixins.context.ByteBufPlayerContextContainer;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.Recipe;
@@ -52,6 +53,14 @@ public class CustomRecipeFix implements PlayerContextContainer {
     @Override
     public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
         player = v;
+    }
+
+    /**
+     * @see ByteBufPlayerContextContainer
+     */
+    @Inject(method = "write(Lnet/minecraft/network/PacketByteBuf;)V", at = @At("HEAD"))
+    private void writeInject(PacketByteBuf buf, CallbackInfo ci) {
+        ((PlayerContextContainer)buf).setPolyMcProvidedPlayer(player);
     }
 
     @Inject(method = "writeRecipe(Lnet/minecraft/network/PacketByteBuf;Lnet/minecraft/recipe/Recipe;)V",
