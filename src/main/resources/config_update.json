@@ -19,5 +19,12 @@
     "remove": [
       "disabledMixins.CustomPacketDisabler"
     ]
+  },
+  "5": {
+    "add": {
+      "disabledMixins": [
+        "CustomPacketDisabler"
+      ]
+    }
   }
 }
