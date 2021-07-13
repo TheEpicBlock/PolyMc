@@ -1,10 +1,10 @@
 ---
 layout: default
-title: The PolyMc api
+title: The PolyMc API
 nav_order: 1
 ---
 
-# The api
+# The API
 You don't need to implement the api to make your mod compatible with PolyMc.
 PolyMc will try its best to convert modded items, blocks, etc into things the client can understand.
 But it can't account for every edge case. That is what the PolyMc api is for.
