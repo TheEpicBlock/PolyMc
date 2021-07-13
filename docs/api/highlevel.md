@@ -12,7 +12,7 @@ A poly defines how a block, item or other polyable thing should be converted fro
 ### Types of polys
 * [Item Polys](item-polys.html)
 * [Block Polys](block-polys.html)
-* Gui Polys (no documentation yet)
+* [Gui Polys](gui-polys.html)
 
 ## A PolyMap
 PolyMc stores these Polys in a PolyMap. The PolyMap is defined per player. 
