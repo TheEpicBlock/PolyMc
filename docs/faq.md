@@ -6,7 +6,8 @@ nav_order: 4
 
 # Frequently asked / fully anticipated questions
 ## Does this work with Bedrock/GeyserMc?
-*tl;dr: no.*  
+**tl;dr**: no.  
+
 I do not play or use Bedrock often. I do know that the hacks and tricks PolyMc use don't translate well to it.
 Bedrock actually includes ways to do a lot better than we can on Java.
 A project allowing mods on Bedrock should be separate from PolyMc.
