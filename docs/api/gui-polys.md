@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Item Polys
+title: Gui Polys
 nav_order: 18
 ---
 
