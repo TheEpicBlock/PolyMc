@@ -1,6 +1,6 @@
 ---
 layout: default
-title: examples
+title: Examples
 nav_order: 20
 ---
 # Examples
