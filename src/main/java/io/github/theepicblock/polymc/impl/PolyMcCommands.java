@@ -79,7 +79,7 @@ public class PolyMcCommands {
                                         try {
                                             ResourcePackGenerator.generate(PolyMc.getMainMap(), "resource", logger);
                                         } catch (Exception e) {
-                                            commandSource.info("An error occurred whilst trying to generate the resource pack! Please check the console.");
+                                            commandSource.error("An error occurred whilst trying to generate the resource pack! Please check the console.");
                                             e.printStackTrace();
                                             return 0;
                                         }
@@ -87,6 +87,7 @@ public class PolyMcCommands {
                                             commandSource.error("There have been errors whilst generating the resource pack. These are usually completely normal. It only means that PolyMc couldn't find some of the textures or models. See the console for more info.");
                                         }
                                         commandSource.info("Finished generating resource pack");
+                                        commandSource.warn("Before hosting this resource pack, please make sure you have the legal right to redistribute the assets inside.");
                                         return Command.SINGLE_SUCCESS;
                                     })))
                             .then(literal("polyDump")

@@ -10,7 +10,9 @@ Install the latest PolyMc version [from here](https://theepicblock.nl/builds) an
 
 ## Generating the resource pack
 PolyMc requires a resource pack to be installed on the client to function*. You can generate the resource pack by running the `/polymc generate resources` command.
-It will appear in the root of your server in a folder named `resource`. How you distribute the resource pack is up to you.  
+It will appear in the root of your server in a folder named `resource`. How you distribute the resource pack is up to you.
+
+**Warning**: please check if you have the legal right to redistribute the assets of the mods you're using.
 
 ## Need help, info or support?
 Check the <a href="https://discord.gg/hbp9Gv2">#PolyMc channel</a> in the Fabric Serverside Development discord. Or <a href="https://github.com/TheEpicBlock/PolyMc/issues/new/choose">open up an issue on github!</a><br>
