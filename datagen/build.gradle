@@ -1,0 +1,62 @@
+plugins {
+    id 'fabric-loom' version '0.8-SNAPSHOT'
+}
+
+def props = new Properties()
+props.load(new FileReader("$rootDir/../gradle.properties"))
+
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
+
+archivesBaseName = "polymc-datagen"
+version = "1.0.0"
+group = "nl.theepicblock.polymc.datagen"
+
+repositories {
+}
+
+dependencies {
+    //to change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${props.get("minecraft_version")}"
+    mappings "net.fabricmc:yarn:${props.get("yarn_mappings")}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${props.get("loader_version")}"
+}
+
+processResources {
+    inputs.property "version", version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": version
+    }
+}
+
+// ensure that the encoding is set to UTF-8, no matter what the system default is
+// this fixes some edge cases with special characters not displaying correctly
+// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+
+    it.options.release = 16
+}
+
+java {
+    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+    // if it is present.
+    // If you remove this line, sources will not be generated.
+    withSourcesJar()
+}
+
+def datagenDir = "$rootDir/../build/polymc-datagen/${props.get("minecraft_version")}"
+runServer {
+    environment("output-dir", datagenDir)
+}
+
+task runDatagen() {
+    onlyIf {
+        !file(datagenDir).exists()
+    }
+}
+
+if (!file(datagenDir).exists()) {
+    runDatagen.dependsOn(runServer)
+}

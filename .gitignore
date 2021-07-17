@@ -5,6 +5,11 @@ build/
 out/
 classes/
 
+datagen/.gradle/
+datagen/build/
+datagen/out/
+datagen/classes/
+
 # eclipse
 
 *.launch
@@ -27,3 +32,4 @@ bin/
 # fabric
 
 run/
+datagen/run/

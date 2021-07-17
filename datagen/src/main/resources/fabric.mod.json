@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "polymc-datagen",
+  "version": "${version}",
+
+  "name": "PolyMc Datagen",
+  "description": "",
+  "authors": [
+    "TheEpicBlock"
+  ],
+  "contact": {
+    "homepage": "",
+    "issues": "",
+    "sources": ""
+  },
+
+  "license": "LGPL-3.0-or-later",
+  "icon": "",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.github.theepicblock.polymc.datagen.Main"
+    ]
+  },
+  "mixins": [
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "minecraft": "1.17.x",
+    "java": ">=16"
+  },
+  "suggests": {
+  }
+}
