@@ -38,11 +38,12 @@ import java.util.List;
  */
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection", "JavadocReference"})
 public class Config {
-    public static final int LATEST_VERSION = 5;
+    public static final int LATEST_VERSION = 6;
     public ResourcePackConfig resourcepack;
     public MiscConfig misc;
     private int configVersion;
     private List<String> disabledMixins;
+    public boolean remapVanillaBlockIds;
 
     public int getConfigVersion() {
         return configVersion;

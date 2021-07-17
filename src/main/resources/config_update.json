@@ -26,5 +26,10 @@
         "CustomPacketDisabler"
       ]
     }
+  },
+  "6": {
+    "add": {
+      "remapVanillaBlockIds": false
+    }
   }
 }
