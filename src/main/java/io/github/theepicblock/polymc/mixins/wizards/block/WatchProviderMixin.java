@@ -25,10 +25,13 @@ public abstract class WatchProviderMixin {
 
     @Inject(method = "sendWatchPackets(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/util/math/ChunkPos;[Lnet/minecraft/network/Packet;ZZ)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;sendUnloadChunkPacket(Lnet/minecraft/util/math/ChunkPos;)V"))
-    private void onUnloadPacket(ServerPlayerEntity player, ChunkPos pos, Packet<?>[] packets, boolean withinMaxWatchDistance, boolean withinViewDistance, CallbackInfo ci) {
-        WorldChunk chunk = this.getChunkHolder(pos.toLong()).getWorldChunk();
-        if (chunk != null) {
-            ((WatchListener)chunk).removePlayer(player);
-        }
+    private void onSendUnloadPacket(ServerPlayerEntity player, ChunkPos pos, Packet<?>[] packets, boolean withinMaxWatchDistance, boolean withinViewDistance, CallbackInfo ci) {
+        var chunkHolder = this.getChunkHolder(pos.toLong());
+        if (chunkHolder == null) return;
+
+        var chunk = chunkHolder.getWorldChunk();
+        if (chunk == null) return;
+
+        ((WatchListener)chunk).removePlayer(player);
     }
 }
