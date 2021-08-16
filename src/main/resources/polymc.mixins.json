@@ -19,6 +19,7 @@
     "block.ProcessSyncedBlockEventServerSideImplementation",
     "block.ResyncImplementation",
     "block.implementations.BedBlockImplementation",
+    "block.implementations.BlockStateParticleEffectImplementation",
     "block.implementations.BlockUpdateImplementation",
     "block.implementations.ChunkDataPacketImplementation",
     "block.implementations.ChunkDataPlayerProvider",
