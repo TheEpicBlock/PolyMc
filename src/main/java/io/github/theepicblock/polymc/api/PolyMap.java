@@ -40,7 +40,12 @@ public interface PolyMap {
     /**
      * Converts the serverside representation of a block into a clientside one that should be sent to the client.
      */
-    BlockState getClientBlock(BlockState serverBlock);
+    default BlockState getClientBlock(BlockState serverBlock) {
+        BlockPoly poly = this.getBlockPoly(serverBlock.getBlock());
+        if (poly == null) return serverBlock;
+
+        return poly.getClientBlock(serverBlock);
+    }
 
     /**
      * Gets the {@link GuiPoly} that this PolyMap associates with this {@link ScreenHandlerType}.

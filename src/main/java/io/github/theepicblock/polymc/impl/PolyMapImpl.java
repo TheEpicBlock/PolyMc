@@ -82,14 +82,6 @@ public class PolyMapImpl implements PolyMap {
     }
 
     @Override
-    public BlockState getClientBlock(BlockState serverBlock) {
-        BlockPoly poly = blockPolys.get(serverBlock.getBlock());
-        if (poly == null) return serverBlock;
-
-        return poly.getClientBlock(serverBlock);
-    }
-
-    @Override
     public GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType) {
         return guiPolys.get(serverGuiType);
     }
