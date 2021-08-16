@@ -29,14 +29,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
- * In the {@link Block#onBreak(World, BlockPos, BlockState, PlayerEntity)} method, there is a call to create a WorldEvent for the breakage.
- * Normally the remapping of that would be caught by {@link FallbackBaseImplementation} but that method doesn't respect individuals their PolyMaps.
+ * Redirects the {@link BlockState} in Block#spawnBreakParticles to send the particles for the polyd {@link BlockState} instead.
  */
 @Mixin(Block.class)
-public class WorldEventImplementation {
+public class BreakParticleImplementation {
     /**
      * Replaces the call to {@link World#syncWorldEvent(PlayerEntity, int, BlockPos, int)} with a call to {@link PacketReplacementUtil#syncWorldEvent(World, PlayerEntity, int, BlockPos, BlockState)}
      * to respect different PolyMaps
@@ -48,7 +48,7 @@ public class WorldEventImplementation {
 
         // Minecraft assumes the player who breaks the block knows it's breaking a block.
         // However, as PolyMc reimplements block breaking server-side, the one breaking the block needs to be notified too
-        var exception = CustomBlockBreakingCheck.needsCustomBreaking(spe, stateParent.getBlock()) ? null : player;
-        PacketReplacementUtil.syncWorldEvent(world, exception, 2001, pos, stateParent);
+        var needsCustomBreaking = CustomBlockBreakingCheck.needsCustomBreaking(spe, stateParent.getBlock());
+        PacketReplacementUtil.syncWorldEvent(world, needsCustomBreaking ? null : player, 2001, pos, stateParent);
     }
 }

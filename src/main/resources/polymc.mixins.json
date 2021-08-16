@@ -28,7 +28,7 @@
     "block.implementations.PaletteBlockPolyImplementation",
     "block.implementations.PalettedContainerSizeProvider",
     "block.implementations.PlayerActionResponseImplementation",
-    "block.implementations.WorldEventImplementation",
+    "block.implementations.BreakParticleImplementation",
     "context.ByteBufPlayerContextContainer",
     "context.NetworkHandlerContextProvider",
     "context.PacketPlayerContextContainer",
