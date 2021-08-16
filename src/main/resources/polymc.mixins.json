@@ -30,6 +30,7 @@
     "block.implementations.PalettedContainerSizeProvider",
     "block.implementations.PlayerActionResponseImplementation",
     "block.implementations.TallPlantBreakImplementation",
+    "block.implementations.ZombieBreakDoorImplementation",
     "context.ByteBufPlayerContextContainer",
     "context.NetworkHandlerContextProvider",
     "context.PacketPlayerContextContainer",
