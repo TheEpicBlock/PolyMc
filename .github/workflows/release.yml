@@ -1,0 +1,30 @@
+name: release
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  github-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup JDK 16
+        uses: actions/setup-java@v1
+        with:
+          java-version: 16
+
+      - name: Ensure gradlew is executable
+        run: chmod +x gradlew
+
+      - name: Build mod
+        run: ./gradlew build
+
+      - name: Upload GitHub release
+        uses: AButler/upload-release-assets@v2.0
+        with:
+          files: 'build/libs/*.jar;!build/libs/*-sources.jar;!build/libs/*-dev.jar'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
