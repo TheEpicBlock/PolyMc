@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_8",
   "plugin": "io.github.theepicblock.polymc.mixins.MixinConfigPlugin",
   "mixins": [
+    "CommandSuggestionFix",
     "CustomPacketAccessor",
     "CustomPacketDisabler",
     "FabricRegistrySyncDisabler",
