@@ -23,4 +23,8 @@ public interface PlayerContextContainer {
     ServerPlayerEntity getPolyMcProvidedPlayer();
 
     void setPolyMcProvidedPlayer(ServerPlayerEntity v);
+
+    static ServerPlayerEntity retrieve(Object o) {
+        return ((PlayerContextContainer)o).getPolyMcProvidedPlayer();
+    }
 }

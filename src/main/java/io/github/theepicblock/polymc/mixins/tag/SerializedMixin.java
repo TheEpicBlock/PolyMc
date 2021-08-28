@@ -41,7 +41,7 @@ public class SerializedMixin<T> implements SerializedMixinDuck<T> {
     @Overwrite
     public void writeBuf(PacketByteBuf buf) {
         Map<Identifier,IntList> newMap = Maps.newHashMapWithExpectedSize(tags.size());
-        var player = ((PlayerContextContainer)buf).getPolyMcProvidedPlayer();
+        var player = PlayerContextContainer.retrieve(buf);
         var polymap = PolyMapProvider.getPolyMap(player);
 
         tags.forEach((identifier, tag) -> {

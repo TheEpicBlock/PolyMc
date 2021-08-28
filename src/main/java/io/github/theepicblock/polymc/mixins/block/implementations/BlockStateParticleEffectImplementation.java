@@ -18,7 +18,7 @@ public class BlockStateParticleEffectImplementation<T> {
      */
     @Redirect(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IdList;getRawId(Ljava/lang/Object;)I"))
     private int redirectRawId(IdList<T> idList, T in, PacketByteBuf buf) {
-        ServerPlayerEntity player = ((PlayerContextContainer)buf).getPolyMcProvidedPlayer();
+        ServerPlayerEntity player = PlayerContextContainer.retrieve(buf);
 
         if (player == null) {
             throw new NullPointerException("PacketByteBuf did not contain player context");

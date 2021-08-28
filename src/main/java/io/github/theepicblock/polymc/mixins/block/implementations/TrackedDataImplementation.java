@@ -16,7 +16,7 @@ import java.util.Optional;
 public class TrackedDataImplementation {
     @Redirect(method = "write(Lnet/minecraft/network/PacketByteBuf;Ljava/util/Optional;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getRawIdFromState(Lnet/minecraft/block/BlockState;)I"))
     private int redirectGetRawId(BlockState state, PacketByteBuf packetByteBuf, Optional<BlockState> blockState) {
-        ServerPlayerEntity player = ((PlayerContextContainer)packetByteBuf).getPolyMcProvidedPlayer();
+        ServerPlayerEntity player = PlayerContextContainer.retrieve(packetByteBuf);
 
         if (player == null) {
             return Block.getRawIdFromState(state);
