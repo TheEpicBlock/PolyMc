@@ -20,7 +20,6 @@ package io.github.theepicblock.polymc.mixins.block.implementations;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.mixin.PacketSizeProvider;
-import io.github.theepicblock.polymc.mixins.block.FallbackBaseImplementation;
 import me.jellysquid.mods.lithium.common.world.chunk.LithiumHashPalette;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -34,7 +33,6 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 /**
  * Minecraft uses a different method to get ids when it sends chunks.
- * Therefore {@link FallbackBaseImplementation} doesn't work on chunks.
  * This Mixin makes sure that the blocks are polyd before they get sent to the client.
  */
 @Mixin(value = {ArrayPalette.class, BiMapPalette.class, LithiumHashPalette.class})

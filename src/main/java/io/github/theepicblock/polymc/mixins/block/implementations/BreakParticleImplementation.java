@@ -20,7 +20,6 @@ package io.github.theepicblock.polymc.mixins.block.implementations;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.mixin.CustomBlockBreakingCheck;
 import io.github.theepicblock.polymc.impl.mixin.PacketReplacementUtil;
-import io.github.theepicblock.polymc.mixins.block.FallbackBaseImplementation;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;

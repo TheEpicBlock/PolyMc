@@ -14,7 +14,6 @@
     "ServerStartMixin",
     "TagSyncronizePatch",
     "block.BlockBreakingPatch",
-    "block.FallbackBaseImplementation",
     "block.MaterialAccessor",
     "block.ProcessSyncedBlockEventServerSideImplementation",
     "block.ResyncImplementation",
