@@ -1,9 +1,11 @@
 package io.github.theepicblock.polymc.impl.poly.entity;
 
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
-import io.github.theepicblock.polymc.api.wizard.VItemFrame;
+import io.github.theepicblock.polymc.api.wizard.VItem;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
@@ -17,30 +19,33 @@ public class DebuggingEntityPoly<T extends Entity> implements EntityPoly<T> {
     }
 
     public static class DebuggingEntityWizard<T extends Entity> extends EntityWizard<T> {
-        private final VItemFrame itemFrame;
+        private static final ItemStack ITEM = new ItemStack(Items.DIAMOND);
+        private final VItem item;
         private final ArrayList<ServerPlayerEntity> players = new ArrayList<>();
 
         public DebuggingEntityWizard(ServerWorld world, Vec3d position, T entity) {
             super(world, position, entity);
-            itemFrame = new VItemFrame();
+            item = new VItem();
         }
 
         @Override
         public void onMove() {
-            players.forEach((player) -> itemFrame.move(player, this.getPosition(), (byte)0, (byte)0, false));
+            players.forEach((player) -> item.move(player, this.getPosition().add(0,1,0), (byte)0, (byte)0, true));
             super.onMove();
         }
 
         @Override
         public void addPlayer(ServerPlayerEntity playerEntity) {
             players.add(playerEntity);
-            itemFrame.spawn(playerEntity, this.getPosition());
+            item.spawn(playerEntity, this.getPosition().add(0,1,0));
+            item.setNoGravity(playerEntity, true);
+            item.sendItem(playerEntity, ITEM);
         }
 
         @Override
         public void removePlayer(ServerPlayerEntity playerEntity) {
             players.remove(playerEntity);
-            itemFrame.remove(playerEntity);
+            item.remove(playerEntity);
         }
     }
 }
