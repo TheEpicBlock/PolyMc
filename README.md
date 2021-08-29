@@ -14,5 +14,4 @@ Do you want to get started? [Check out the wiki!](https://theepicblock.github.io
 <a href="https://github.com/TheEpicBlock/PolyMc/issues/">![issues](https://img.shields.io/github/issues-raw/TheEpicBlock/PolyMc?color=succes&logo=github&style=flat-square)</a> 
 <a href="https://github.com/TheEpicBlock/PolyMc/releases/">![latest release](https://img.shields.io/github/v/release/TheEpicBlock/PolyMc?style=flat-square&label=latest%20release)</a> 
 <a href="https://github.com/TheEpicBlock/PolyMc/commits/">![GitHub commits since latest release](https://img.shields.io/github/commits-since/TheEpicBlock/PolyMc/latest?style=flat-square)</a> 
-<a href="https://theepicblock.nl/builds/">![latest release](https://img.shields.io/endpoint?url=https://theepicblock.nl/builds/shield.json&style=flat-square)</a> 
 <a href="https://github.com/TheEpicBlock/PolyMc/blob/master/LICENSE">![GitHub](https://img.shields.io/github/license/TheEpicBlock/PolyMc?style=flat-square)</a>
