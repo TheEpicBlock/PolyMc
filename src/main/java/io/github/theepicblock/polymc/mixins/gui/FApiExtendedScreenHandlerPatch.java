@@ -29,7 +29,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Networking.class)
-public class FabricApiExtendedScreenImplementation {
+public class FApiExtendedScreenHandlerPatch {
     /**
      * @reason The vanilla client can't understand the custom packet
      */
