@@ -29,6 +29,7 @@ public class Generator {
         ItemPolyGenerator.generateMissing(builder);
         BlockPolyGenerator.generateMissing(builder);
         GuiGenerator.generateMissing(builder);
+        EntityPolyGenerator.generateMissing(builder);
     }
 
     /**

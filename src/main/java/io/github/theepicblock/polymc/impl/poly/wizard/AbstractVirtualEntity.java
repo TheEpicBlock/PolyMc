@@ -27,7 +27,7 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
     @Override
     public void spawn(ServerPlayerEntity playerEntity, Vec3d pos) {
         playerEntity.networkHandler.sendPacket(new EntitySpawnS2CPacket(
-                id,
+                this.id,
                 MathHelper.randomUuid(),
                 pos.getX(),
                 pos.getY(),
@@ -37,6 +37,22 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
                 this.getEntityType(),
                 0,
                 Vec3d.ZERO
+        ));
+    }
+
+    public void move(ServerPlayerEntity playerEntity, Vec3d pos, byte yaw, byte pitch, boolean onGround) {
+        move(playerEntity, pos.getX(), pos.getY(), pos.getZ(), yaw, pitch, onGround);
+    }
+
+    public void move(ServerPlayerEntity playerEntity, double x, double y, double z, byte yaw, byte pitch, boolean onGround) {
+        playerEntity.networkHandler.sendPacket(EntityUtil.createEntityPositionPacket(
+                this.id,
+                x,
+                y,
+                z,
+                yaw,
+                pitch,
+                onGround
         ));
     }
 
