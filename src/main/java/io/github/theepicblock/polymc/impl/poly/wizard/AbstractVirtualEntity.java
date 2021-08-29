@@ -63,6 +63,22 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
         );
     }
 
+    public void setSilent(ServerPlayerEntity playerEntity, boolean isSilent) {
+        playerEntity.networkHandler.sendPacket(EntityUtil.createDataTrackerUpdate(
+                this.id,
+                EntityAccessor.getSilentTracker(),
+                isSilent
+        ));
+    }
+
+    public void setNoGravity(ServerPlayerEntity playerEntity, boolean noGrav) {
+        playerEntity.networkHandler.sendPacket(EntityUtil.createDataTrackerUpdate(
+                this.id,
+                EntityAccessor.getNoGravityTracker(),
+                noGrav
+        ));
+    }
+
     public void sendFlags(ServerPlayerEntity playerEntity, boolean onFire, boolean sneaking, boolean sprinting, boolean swimming, boolean invisible, boolean glowing) {
         byte flag = 0;
         if (onFire)     flag += 0b00000001;
