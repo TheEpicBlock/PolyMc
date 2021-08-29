@@ -20,11 +20,14 @@ package io.github.theepicblock.polymc.impl;
 import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -51,12 +54,14 @@ public class PolyMapImpl implements PolyMap {
     private final ItemTransformer[] globalItemPolys;
     private final ImmutableMap<Block,BlockPoly> blockPolys;
     private final ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys;
+    private final ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys;
 
-    public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys, ItemTransformer[] globalItemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys) {
+    public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys, ItemTransformer[] globalItemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys, ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys) {
         this.itemPolys = itemPolys;
         this.globalItemPolys = globalItemPolys;
         this.blockPolys = blockPolys;
         this.guiPolys = guiPolys;
+        this.entityPolys = entityPolys;
     }
 
     @Override
@@ -98,6 +103,11 @@ public class PolyMapImpl implements PolyMap {
     @Override
     public ImmutableMap<Block,BlockPoly> getBlockPolys() {
         return blockPolys;
+    }
+
+    @Override
+    public <T extends Entity> EntityPoly<T> getEntityPoly(EntityType<T> entity) {
+        return (EntityPoly<T>)entityPolys.get(entity);
     }
 
     @Override
