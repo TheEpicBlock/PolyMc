@@ -25,6 +25,9 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
+/**
+ * Class to automatically generate {@link GuiPoly}s for {@link ScreenHandlerType}s
+ */
 public class GuiGenerator {
     /**
      * Automatically generates all {@link GuiPoly}s that are missing in the specified builder
@@ -42,20 +45,23 @@ public class GuiGenerator {
     }
 
     /**
-     * Generates the most suitable BlockPoly for a given block
+     * Generates the most suitable {@link GuiPoly} for a given {@link ScreenHandlerType}
      */
     public static GuiPoly generatePoly(ScreenHandlerType<?> gui, PolyRegistry builder) {
         return new NaiveStackListingChestPoly();
     }
 
     /**
-     * Generates the most suitable GuiPoly and directly adds it to the {@link PolyRegistry}
+     * Generates the most suitable {@link GuiPoly} and directly adds it to the {@link PolyRegistry}
      * @see #generatePoly(ScreenHandlerType, PolyRegistry)
      */
     private static void addGuiToBuilder(ScreenHandlerType<?> gui, PolyRegistry builder) {
         builder.registerGuiPoly(gui, generatePoly(gui, builder));
     }
 
+    /**
+     * @return the minecraft gui registry
+     */
     private static Registry<ScreenHandlerType<?>> getGuiRegistry() {
         return Registry.SCREEN_HANDLER;
     }

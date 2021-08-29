@@ -10,6 +10,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
 
+/**
+ * Class to automatically generate {@link EntityPoly}s for {@link EntityType}s
+ */
 public class EntityPolyGenerator {
     /**
      * Automatically generates all {@link EntityPoly}s that are missing in the specified builder
@@ -27,7 +30,7 @@ public class EntityPolyGenerator {
     }
 
     /**
-     * Generates the most suitable BlockPoly for a given block
+     * Generates the most suitable {@link EntityPoly} for a given {@link EntityType}
      */
     public static <T extends Entity> EntityPoly<T> generatePoly(EntityType<T> gui, PolyRegistry builder) {
         return new MissingEntityPoly<>();
