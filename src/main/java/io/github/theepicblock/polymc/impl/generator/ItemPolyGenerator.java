@@ -30,7 +30,7 @@ import net.minecraft.util.registry.DefaultedRegistry;
 import net.minecraft.util.registry.Registry;
 
 /**
- * Class to automatically generate ItemPolys for Items
+ * Class to automatically generate {@link ItemPoly}s for {@link Item}s
  */
 public class ItemPolyGenerator {
     /**
@@ -49,7 +49,7 @@ public class ItemPolyGenerator {
     }
 
     /**
-     * Generates the most suitable ItemPoly for a given item
+     * Generates the most suitable {@link ItemPoly} for a given {@link Item}
      */
     public static ItemPoly generatePoly(Item item, PolyRegistry builder) {
         if (item instanceof ShieldItem) {
@@ -83,7 +83,7 @@ public class ItemPolyGenerator {
     }
 
     /**
-     * Generates the most suitable ItemPoly and directly adds it to the {@link PolyRegistry}
+     * Generates the most suitable {@link ItemPoly} and directly adds it to the {@link PolyRegistry}
      * @see #generatePoly(Item, PolyRegistry)
      */
     private static void addItemToBuilder(Item item, PolyRegistry builder) {

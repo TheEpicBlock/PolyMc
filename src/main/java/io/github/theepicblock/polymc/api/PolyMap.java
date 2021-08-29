@@ -19,11 +19,14 @@ package io.github.theepicblock.polymc.api;
 
 import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.mixins.item.CreativeItemStackFix;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
@@ -57,6 +60,12 @@ public interface PolyMap {
      * @return A {@link BlockPoly} describing how to display this block on the client.
      */
     BlockPoly getBlockPoly(Block block);
+
+    /**
+     * Gets the {@link EntityPoly} that this PolyMap associates with this {@link EntityType}.
+     * @return A {@link EntityPoly}.
+     */
+    <T extends Entity> EntityPoly<T> getEntityPoly(EntityType<T> entity);
 
     /**
      * gets a map containing all {@link ItemPoly}s that are registered in this map.

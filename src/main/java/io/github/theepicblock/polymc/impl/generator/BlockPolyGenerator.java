@@ -38,7 +38,7 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 
 /**
- * Class to automatically generate BlockPolys for Blocks
+ * Class to automatically generate {@link BlockPoly}s for {@link Block}s
  */
 public class BlockPolyGenerator {
 
@@ -58,7 +58,7 @@ public class BlockPolyGenerator {
     }
 
     /**
-     * Generates the most suitable BlockPoly for a given block
+     * Generates the most suitable {@link BlockPoly} for a given {@link Block}
      */
     public static BlockPoly generatePoly(Block block, PolyRegistry builder) {
         BlockState state = block.getDefaultState();
@@ -177,7 +177,7 @@ public class BlockPolyGenerator {
     }
 
     /**
-     * Generates the most suitable BlockPoly and directly adds it to the {@link PolyRegistry}
+     * Generates the most suitable {@link BlockPoly} and directly adds it to the {@link PolyRegistry}
      * @see #generatePoly(Block, PolyRegistry)
      */
     private static void addBlockToBuilder(Block block, PolyRegistry builder) {
@@ -192,7 +192,7 @@ public class BlockPolyGenerator {
     }
 
     /**
-     * @return the minecraft item registry
+     * @return the minecraft block registry
      */
     private static DefaultedRegistry<Block> getBlockRegistry() {
         return Registry.BLOCK;

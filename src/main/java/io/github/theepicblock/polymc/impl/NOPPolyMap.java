@@ -3,10 +3,13 @@ package io.github.theepicblock.polymc.impl;
 import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
@@ -31,6 +34,11 @@ public class NOPPolyMap implements PolyMap {
 
     @Override
     public BlockPoly getBlockPoly(Block block) {
+        return null;
+    }
+
+    @Override
+    public <T extends Entity> EntityPoly<T> getEntityPoly(EntityType<T> entity) {
         return null;
     }
 

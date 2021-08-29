@@ -27,7 +27,7 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
     @Override
     public void spawn(ServerPlayerEntity playerEntity, Vec3d pos) {
         playerEntity.networkHandler.sendPacket(new EntitySpawnS2CPacket(
-                id,
+                this.id,
                 MathHelper.randomUuid(),
                 pos.getX(),
                 pos.getY(),
@@ -40,11 +40,43 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
         ));
     }
 
+    public void move(ServerPlayerEntity playerEntity, Vec3d pos, byte yaw, byte pitch, boolean onGround) {
+        move(playerEntity, pos.getX(), pos.getY(), pos.getZ(), yaw, pitch, onGround);
+    }
+
+    public void move(ServerPlayerEntity playerEntity, double x, double y, double z, byte yaw, byte pitch, boolean onGround) {
+        playerEntity.networkHandler.sendPacket(EntityUtil.createEntityPositionPacket(
+                this.id,
+                x,
+                y,
+                z,
+                yaw,
+                pitch,
+                onGround
+        ));
+    }
+
     @Override
     public void remove(ServerPlayerEntity playerEntity) {
         playerEntity.networkHandler.sendPacket(
                 new EntityDestroyS2CPacket(this.id)
         );
+    }
+
+    public void setSilent(ServerPlayerEntity playerEntity, boolean isSilent) {
+        playerEntity.networkHandler.sendPacket(EntityUtil.createDataTrackerUpdate(
+                this.id,
+                EntityAccessor.getSilentTracker(),
+                isSilent
+        ));
+    }
+
+    public void setNoGravity(ServerPlayerEntity playerEntity, boolean noGrav) {
+        playerEntity.networkHandler.sendPacket(EntityUtil.createDataTrackerUpdate(
+                this.id,
+                EntityAccessor.getNoGravityTracker(),
+                noGrav
+        ));
     }
 
     public void sendFlags(ServerPlayerEntity playerEntity, boolean onFire, boolean sneaking, boolean sprinting, boolean swimming, boolean invisible, boolean glowing) {

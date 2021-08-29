@@ -29,10 +29,11 @@ public class Generator {
         ItemPolyGenerator.generateMissing(builder);
         BlockPolyGenerator.generateMissing(builder);
         GuiGenerator.generateMissing(builder);
+        EntityPolyGenerator.generateMissing(builder);
     }
 
     /**
-     * Registers global item polys that are included with PolyMc by default for vanilla compatibility
+     * Registers global {@link io.github.theepicblock.polymc.api.item.ItemTransformer}s that are included with PolyMc by default for vanilla compatibility
      */
     public static void addDefaultGlobalItemPolys(PolyRegistry registry) {
         registry.registerGlobalItemPoly(new Enchantment2LoreTransformer());
