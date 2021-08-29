@@ -3,7 +3,7 @@ package io.github.theepicblock.polymc.impl.generator;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.poly.entity.DebuggingEntityPoly;
+import io.github.theepicblock.polymc.impl.poly.entity.MissingEntityPoly;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.Identifier;
@@ -30,7 +30,7 @@ public class EntityPolyGenerator {
      * Generates the most suitable BlockPoly for a given block
      */
     public static <T extends Entity> EntityPoly<T> generatePoly(EntityType<T> gui, PolyRegistry builder) {
-        return new DebuggingEntityPoly<>();
+        return new MissingEntityPoly<>();
     }
 
     /**

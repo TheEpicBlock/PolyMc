@@ -12,32 +12,32 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 
-public class DebuggingEntityPoly<T extends Entity> implements EntityPoly<T> {
+public class MissingEntityPoly<T extends Entity> implements EntityPoly<T> {
     @Override
     public Wizard createWizard(ServerWorld world, Vec3d pos, T entity) {
-        return new DebuggingEntityWizard<>(world, pos, entity);
+        return new MissingEntityWizard<>(world, pos, entity);
     }
 
-    public static class DebuggingEntityWizard<T extends Entity> extends EntityWizard<T> {
-        private static final ItemStack ITEM = new ItemStack(Items.DIAMOND);
+    public static class MissingEntityWizard<T extends Entity> extends EntityWizard<T> {
+        private static final ItemStack ITEM = new ItemStack(Items.RED_STAINED_GLASS_PANE);
         private final VItem item;
         private final ArrayList<ServerPlayerEntity> players = new ArrayList<>();
 
-        public DebuggingEntityWizard(ServerWorld world, Vec3d position, T entity) {
+        public MissingEntityWizard(ServerWorld world, Vec3d position, T entity) {
             super(world, position, entity);
             item = new VItem();
         }
 
         @Override
         public void onMove() {
-            players.forEach((player) -> item.move(player, this.getPosition().add(0,1,0), (byte)0, (byte)0, true));
+            players.forEach((player) -> item.move(player, this.getPosition(), (byte)0, (byte)0, true));
             super.onMove();
         }
 
         @Override
         public void addPlayer(ServerPlayerEntity playerEntity) {
             players.add(playerEntity);
-            item.spawn(playerEntity, this.getPosition().add(0,1,0));
+            item.spawn(playerEntity, this.getPosition());
             item.setNoGravity(playerEntity, true);
             item.sendItem(playerEntity, ITEM);
         }
