@@ -36,6 +36,7 @@
     "context.ByteBufPlayerContextContainer",
     "context.NetworkHandlerContextProvider",
     "context.PacketPlayerContextContainer",
+    "entity.EntityTrackerMixin",
     "gui.FApiExtendedScreenHandlerPatch",
     "gui.GuiManagerImplementation",
     "item.CreativeItemStackFix",
