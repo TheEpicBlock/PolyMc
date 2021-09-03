@@ -25,8 +25,7 @@ import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Style;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.*;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.registry.Registry;
@@ -79,10 +78,20 @@ public class CustomModelDataPoly implements ItemPoly {
             serverItem.setTag(input.getTag().copy());
             //doing this removes the CMD, so we should add that again
             serverItem.getTag().putInt("CustomModelData", CMDvalue);
-            if (!input.hasCustomName()) { //It might be that the tags didn't include the name, so we should add them back in
-                serverItem.setCustomName(defaultServerItem.getName());
-            }
         }
+
+        // Always set the name again in case the item can change its name based on NBT data
+        if (!input.hasCustomName()) {
+
+            BaseText name = (BaseText) input.getName();
+
+            // Override the style to make sure the client does not render
+            // the custom name in italics
+            name.setStyle(name.getStyle().withItalic(false));
+
+            serverItem.setCustomName(name);
+        }
+
         serverItem.setCount(input.getCount());
         serverItem.setCooldown(input.getCooldown());
         return serverItem;
