@@ -82,12 +82,11 @@ public class CustomModelDataPoly implements ItemPoly {
 
         // Always set the name again in case the item can change its name based on NBT data
         if (!input.hasCustomName()) {
-
             BaseText name = (BaseText) input.getName();
 
             // Override the style to make sure the client does not render
-            // the custom name in italics
-            name.setStyle(name.getStyle().withItalic(false));
+            // the custom name in italics, and uses the correct rarity format
+            name.setStyle(name.getStyle().withItalic(false).withColor(input.getRarity().formatting));
 
             serverItem.setCustomName(name);
         }
