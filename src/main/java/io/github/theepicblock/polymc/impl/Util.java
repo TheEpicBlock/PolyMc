@@ -19,8 +19,10 @@ package io.github.theepicblock.polymc.impl;
 
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.mixins.ItemStackAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
@@ -186,5 +188,10 @@ public class Util {
 
     public static BlockPos fromPalettedContainerIndex(int index) {
         return new BlockPos(index & 0xF, (index >> 8) & 0xF, (index >> 4) & 0xF);
+    }
+
+    public static boolean isSectionVisible(ItemStack stack, ItemStack.TooltipSection tooltipSection) {
+        int flags = ((ItemStackAccessor)(Object)stack).callGetHideFlags();
+        return ItemStackAccessor.callIsSectionVisible(flags, tooltipSection);
     }
 }

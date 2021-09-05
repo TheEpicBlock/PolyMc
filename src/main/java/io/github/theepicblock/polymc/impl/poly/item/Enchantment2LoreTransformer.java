@@ -27,8 +27,7 @@ public class Enchantment2LoreTransformer implements ItemTransformer {
     public static ItemStack portEnchantmentsToLore(ItemStack input) {
         if (input.hasTag() && input.getTag().contains("Enchantments", 9)) {
             // checks if the enchantments aren't hidden
-            int hideFlags = input.getTag().contains("HideFlags", 99) ? input.getTag().getInt("HideFlags") : 0;
-            if ((hideFlags & ItemStack.TooltipSection.ENCHANTMENTS.getFlag()) == 0) {
+            if (Util.isSectionVisible(input, ItemStack.TooltipSection.ENCHANTMENTS)) {
                 ItemStack stack = input.copy(); // we should copy the ItemStack to prevent accidental modifications to the original
                 NbtList enchantments = stack.getEnchantments();
 

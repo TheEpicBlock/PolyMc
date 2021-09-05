@@ -10,6 +10,7 @@
     "CustomPacketDisabler",
     "FabricRegistrySyncDisabler",
     "FabricRemapDisabler",
+    "ItemStackAccessor",
     "RefreshPolyMapOnCopy",
     "ServerParticlePatch",
     "ServerStartMixin",
