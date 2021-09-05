@@ -30,14 +30,17 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.text.*;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.registry.Registry;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * The most standard ItemPoly implementation
@@ -87,48 +90,39 @@ public class CustomModelDataPoly implements ItemPoly {
             serverItem.getTag().putInt("CustomModelData", CMDvalue);
         }
 
-        Entity holder = input.getHolder();
-        PlayerEntity player = holder instanceof PlayerEntity ? (PlayerEntity) holder : null;
 
-        // Get the item tooltips as if we're on the client side
-        List<Text> tooltips = input.getTooltip(player, TooltipContext.Default.NORMAL);
+        // Add custom tooltips
+        if (Util.isSectionVisible(input, ItemStack.TooltipSection.ADDITIONAL)) {
+            Entity holder = input.getHolder(); // This is not usually guaranteed to get the correct player. It works here however.
 
-        // The item name is always added as a tooltip, so make sure there is more than 1 line
-        if (tooltips.size() > 1) {
+            var tooltips = new ArrayList<Text>(0);
+            input.getItem().appendTooltip(input, holder instanceof PlayerEntity player ? player.world : null, tooltips, TooltipContext.Default.NORMAL);
 
-            NbtList list = new NbtList();
-
-            // Remove the first line, it's just the name
-            tooltips.remove(0);
-
-            for (Text line : tooltips) {
-
-                // Because we're adding the tooltip data to the poly item as Lore,
-                // it will be turned PURPLE and ITALIC if it doesn't have a style set.
-                if (line.getStyle().isEmpty()) {
-                    Style line_style = line.getStyle().withItalic(false).withColor(Formatting.GRAY);
-
-                    if (line instanceof BaseText) {
-                        line = ((BaseText) line).setStyle(line_style);
-                    } else if (line instanceof MutableText) {
-                        line = ((MutableText) line).setStyle(line_style);
+            if (!tooltips.isEmpty()) {
+                NbtList list = new NbtList();
+                for (Text line : tooltips) {
+                    if (line instanceof MutableText mText) {
+                        // Cancels the styling of the lore
+                        line = mText.setStyle(line.getStyle().withItalic(false).withColor(Formatting.GRAY));
                     }
+
+                    list.add(NbtString.of(Text.Serializer.toJson(line)));
                 }
 
-                list.add(NbtString.of(Text.Serializer.toJson(line)));
+                NbtCompound display = serverItem.getOrCreateSubTag("display");
+                display.put("Lore", list);
             }
-
-            NbtCompound display = serverItem.getOrCreateSubTag("display");
-            display.put("Lore", list);
         }
 
         // Always set the name again in case the item can change its name based on NBT data
         if (!input.hasCustomName()) {
-            BaseText name = (BaseText) input.getName();
+            var name = input.getName();
 
             // Override the style to make sure the client does not render
             // the custom name in italics, and uses the correct rarity format
-            name.setStyle(name.getStyle().withItalic(false).withColor(input.getRarity().formatting));
+            if (name instanceof MutableText mutableText) {
+                mutableText.setStyle(name.getStyle().withItalic(false).withColor(input.getRarity().formatting));
+            }
 
             serverItem.setCustomName(name);
         }
