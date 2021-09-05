@@ -104,12 +104,20 @@ public class CustomModelDataPoly implements ItemPoly {
             // Remove the first line, it's just the name
             tooltips.remove(0);
 
-            for (Text entry : tooltips) {
-                BaseText line = (BaseText) entry;
+            for (Text line : tooltips) {
 
-                // Lore is normally shown in italics, so disable italics.
-                // And the default tooltip color should be gray, so set that too, otherwise it'll be purple
-                line.setStyle(line.getStyle().withItalic(false).withColor(Formatting.GRAY));
+                // Because we're adding the tooltip data to the poly item as Lore,
+                // it will be turned PURPLE and ITALIC if it doesn't have a style set.
+                if (line.getStyle().isEmpty()) {
+                    Style line_style = line.getStyle().withItalic(false).withColor(Formatting.GRAY);
+
+                    if (line instanceof BaseText) {
+                        line = ((BaseText) line).setStyle(line_style);
+                    } else if (line instanceof MutableText) {
+                        line = ((MutableText) line).setStyle(line_style);
+                    }
+                }
+
                 list.add(NbtString.of(Text.Serializer.toJson(line)));
             }
 
