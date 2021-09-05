@@ -20,6 +20,7 @@ package io.github.theepicblock.polymc.impl.misc;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import net.minecraft.block.*;
+import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -50,28 +51,35 @@ public class BlockResyncManager {
         return false;
     }
 
-    public static void onBlockUpdate(BlockState sourceState, BlockPos pos, World world, ServerPlayerEntity player, List<BlockPos> exceptions) {
-        BlockPos.Mutable mPos = new BlockPos.Mutable();
-        for (Direction d : Direction.values()) {
-            mPos.set(pos.getX() + d.getOffsetX(), pos.getY() + d.getOffsetY(), pos.getZ() + d.getOffsetZ());
-            if (exceptions != null && exceptions.contains(mPos)) continue;
-            BlockState state = world.getBlockState(mPos);
+    public static void onBlockUpdate(BlockState sourceState, BlockPos sourcePos, World world, ServerPlayerEntity player, List<BlockPos> checkedBlocks) {
+        BlockPos.Mutable pos = new BlockPos.Mutable();
+        for (Direction direction : Direction.values()) {
+            pos.set(sourcePos.getX() + direction.getOffsetX(), sourcePos.getY() + direction.getOffsetY(), sourcePos.getZ() + direction.getOffsetZ());
+            if (checkedBlocks != null && checkedBlocks.contains(pos)) continue;
+
+            BlockState state = world.getBlockState(pos);
             BlockPoly poly = PolyMapProvider.getPolyMap(player).getBlockPoly(state.getBlock());
+
             if (poly != null) {
                 BlockState clientState = poly.getClientBlock(state);
-                if (BlockResyncManager.shouldForceSync(sourceState, clientState, d)) {
-                    BlockPos nPos = mPos.toImmutable();
-                    player.networkHandler.sendPacket(new BlockUpdateS2CPacket(nPos, state));
-                    List<BlockPos> newExceptions;
-                    if (exceptions == null) {
-                        newExceptions = new ArrayList<>();
-                        newExceptions.add(pos);
-                    } else {
-                        exceptions.add(pos);
-                        newExceptions = exceptions;
-                    }
-                    onBlockUpdate(clientState, nPos, world, player, newExceptions);
+
+                if (BlockResyncManager.shouldForceSync(sourceState, clientState, direction)) {
+                    BlockPos newPos = pos.toImmutable();
+                    player.networkHandler.sendPacket(new BlockUpdateS2CPacket(newPos, state));
+
+                    if (checkedBlocks == null) checkedBlocks = new ArrayList<>();
+                    checkedBlocks.add(sourcePos);
+
+                    onBlockUpdate(clientState, newPos, world, player, checkedBlocks);
                 }
+            }
+
+            // If the lower half of a door is interacted with, we should check the upper half as well
+            boolean isUpperDoor = direction == Direction.UP && state.getBlock() instanceof DoorBlock && state.get(DoorBlock.HALF) == DoubleBlockHalf.UPPER;
+            if (isUpperDoor) {
+                if (checkedBlocks == null) checkedBlocks = new ArrayList<>();
+                checkedBlocks.add(sourcePos);
+                onBlockUpdate(null, pos, world, player, checkedBlocks);
             }
         }
     }

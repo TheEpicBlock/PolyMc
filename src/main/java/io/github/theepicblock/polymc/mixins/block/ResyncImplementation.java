@@ -53,7 +53,7 @@ public class ResyncImplementation {
         }
     }
 
-    @Inject(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;useOnBlock(Lnet/minecraft/item/ItemUsageContext;)Lnet/minecraft/util/ActionResult;"))
+    @Inject(method = "interactBlock", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/item/ItemStack;useOnBlock(Lnet/minecraft/item/ItemUsageContext;)Lnet/minecraft/util/ActionResult;"))
     private void onBlockPlace(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
         if (Util.isPolyMapVanillaLike(player) && stack.getItem() instanceof BlockItem) {
             BlockResyncManager.onBlockUpdate(null, hitResult.getBlockPos().offset(hitResult.getSide()), world, player, null);
