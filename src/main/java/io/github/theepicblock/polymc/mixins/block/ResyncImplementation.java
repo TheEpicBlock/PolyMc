@@ -47,16 +47,23 @@ public class ResyncImplementation {
     @Shadow @Final protected ServerPlayerEntity player;
 
     @Inject(method = "tryBreakBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
-    private void onBlockBreakInject(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+    private void onBlockBreak(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         if (Util.isPolyMapVanillaLike(player)) {
             BlockResyncManager.onBlockUpdate(null, pos, world, player, null);
         }
     }
 
-    @Inject(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;useOnBlock(Lnet/minecraft/item/ItemUsageContext;)Lnet/minecraft/util/ActionResult;"))
-    private void onBlockPlaceInject(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
+    @Inject(method = "interactBlock", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/item/ItemStack;useOnBlock(Lnet/minecraft/item/ItemUsageContext;)Lnet/minecraft/util/ActionResult;"))
+    private void onBlockPlace(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
         if (Util.isPolyMapVanillaLike(player) && stack.getItem() instanceof BlockItem) {
             BlockResyncManager.onBlockUpdate(null, hitResult.getBlockPos().offset(hitResult.getSide()), world, player, null);
+        }
+    }
+
+    @Inject(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/advancement/criterion/ItemUsedOnBlockCriterion;test(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/item/ItemStack;)V", ordinal = 0))
+    private void onBlockUse(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
+        if (Util.isPolyMapVanillaLike(player)) {
+            BlockResyncManager.onBlockUpdate(null, hitResult.getBlockPos(), world, player, null);
         }
     }
 }

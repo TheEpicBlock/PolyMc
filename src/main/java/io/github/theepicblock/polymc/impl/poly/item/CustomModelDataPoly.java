@@ -85,9 +85,6 @@ public class CustomModelDataPoly implements ItemPoly {
             serverItem.setTag(input.getTag().copy());
             //doing this removes the CMD, so we should add that again
             serverItem.getTag().putInt("CustomModelData", CMDvalue);
-            if (!input.hasCustomName()) { //It might be that the tags didn't include the name, so we should add them back in
-                serverItem.setCustomName(defaultServerItem.getName());
-            }
         }
 
         Entity holder = input.getHolder();
@@ -123,6 +120,17 @@ public class CustomModelDataPoly implements ItemPoly {
 
             NbtCompound display = serverItem.getOrCreateSubTag("display");
             display.put("Lore", list);
+        }
+
+        // Always set the name again in case the item can change its name based on NBT data
+        if (!input.hasCustomName()) {
+            BaseText name = (BaseText) input.getName();
+
+            // Override the style to make sure the client does not render
+            // the custom name in italics, and uses the correct rarity format
+            name.setStyle(name.getStyle().withItalic(false).withColor(input.getRarity().formatting));
+
+            serverItem.setCustomName(name);
         }
 
         serverItem.setCount(input.getCount());
