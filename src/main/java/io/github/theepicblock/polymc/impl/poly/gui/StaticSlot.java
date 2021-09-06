@@ -51,7 +51,7 @@ public class StaticSlot extends Slot {
     }
 
     public ItemStack getStack() {
-        return this.stack;
+        return this.stack == null ? ItemStack.EMPTY : this.stack;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class StaticSlot extends Slot {
     }
 
     public int getMaxItemCount() {
-        return this.stack.getCount();
+        return this.getStack().getCount();
     }
 
     public int getMaxItemCount(ItemStack stack) {
