@@ -14,6 +14,7 @@
     "RefreshPolyMapOnCopy",
     "ServerParticlePatch",
     "ServerStartMixin",
+    "SoundPacketFix",
     "TACSAccessor",
     "block.BlockBreakingPatch",
     "block.FixLighting",
