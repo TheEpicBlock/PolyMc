@@ -52,15 +52,7 @@ public class ResourcePackGenerator {
         Path resourcePath = gameDir.resolve(directory).toAbsolutePath();
         resourcePath.toFile().mkdir();
 
-        ResourcePackMaker pack;
-        if (ConfigManager.getConfig().resourcepack.advancedDiscovery) {
-            File tempDir = gameDir.resolve("resource_temp").toFile();
-            tempDir.mkdirs();
-            Path tempPath = tempDir.toPath().toAbsolutePath();
-            pack = new AdvancedResourcePackMaker(resourcePath, tempPath, logger);
-        } else {
-            pack = new ResourcePackMaker(resourcePath, logger);
-        }
+        var pack = new ResourcePackMaker(resourcePath, logger);
 
         //Clear up the assets folder
         File assetsFolder = pack.getBuildLocation().resolve("assets").toFile();
@@ -74,7 +66,12 @@ public class ResourcePackGenerator {
 
         //Put the pack.mcmeta in there if it doesn't exist yet
         if (!pack.getBuildLocation().resolve("pack.mcmeta").toFile().exists()) {
-            pack.copyFileDirect("polymc", "pack.mcmeta");
+            var mcMeta = FabricLoader.getInstance().getModContainer("polymc").orElseThrow().getPath("pack.mcmeta");
+            try {
+                Files.copy(mcMeta, pack.getBuildLocation().resolve("pack.mcmeta"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         //Let mods register resources via the api

@@ -27,6 +27,8 @@ import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import nl.theepicblock.resourcelocatorapi.ResourceLocatorApi;
+import nl.theepicblock.resourcelocatorapi.api.ExtendedResourcePack;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -46,6 +48,7 @@ public class ResourcePackMaker {
     public static final String SOUNDS = "sounds/";
     public static final String BLOCKSTATES = "blockstates/";
 
+    protected final ExtendedResourcePack globalResourcePack = ResourceLocatorApi.createGlobalResourcePack();
     protected final Path buildLocation;
     protected final SimpleLogger logger;
     protected final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
@@ -356,7 +359,15 @@ public class ResourcePackMaker {
      * @return The path to the new file.
      */
     public Path copyAsset(String modId, String path) {
-        return copyFile(modId, String.format(ASSETS + "%s/%s", modId, path));
+        try {
+            Path newLoc = buildLocation.resolve("assets").resolve(modId).resolve(path);
+            newLoc.toFile().getParentFile().mkdirs();
+            Files.copy(globalResourcePack.getAsset(modId, path), newLoc, StandardCopyOption.REPLACE_EXISTING);
+            return newLoc;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -366,7 +377,7 @@ public class ResourcePackMaker {
      * @return True if the file exists.
      */
     public boolean checkAsset(String modId, String path) {
-        return checkFile(modId, String.format(ASSETS + "%s/%s", modId, path));
+        return globalResourcePack.containsAsset(modId, path);
     }
 
     /**
@@ -376,7 +387,12 @@ public class ResourcePackMaker {
      * @return A reader for this file.
      */
     public InputStreamReader getAsset(String modId, String path) {
-        return getFile(modId, String.format(ASSETS + "%s/%s", modId, path));
+        try {
+            return new InputStreamReader(globalResourcePack.getAsset(modId, path));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -401,115 +417,6 @@ public class ResourcePackMaker {
             Util.copyAll(pathInJar, newLoc);
         } catch (IOException e) {
             logger.warn(String.format("Failed to get folder from mod jar '%s' path: %s", modId, path));
-        }
-    }
-
-    /**
-     * Gets a file from the resource pack folder.
-     * If you need to get something that isn't in the assets folder, use {@link #getFileDirect(String, String)} instead.
-     * @param modId the mod who owns the file.
-     * @param path  example: "asset/testmod/models/item/testitem.json".
-     * @return A reader for this file. Can be null.
-     */
-    protected InputStreamReader getFile(String modId, String path) {
-        return getFileDirect(modId, path);
-    }
-
-    /**
-     * Gets a file from the resource pack folder.
-     * This gets it directly from the jar, even if {@link io.github.theepicblock.polymc.impl.Config.ResourcePackConfig#advancedDiscovery} is set to true.
-     * This should only be used if the thing you want to get is not in the assets folder.
-     * @param modId the mod who owns the file.
-     * @param path  example: "asset/testmod/models/item/testitem.json".
-     * @return A reader for this file. Can be null.
-     */
-    public final InputStreamReader getFileDirect(String modId, String path) {
-        if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
-        Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
-        if (!modOpt.isPresent()) {
-            logger.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
-            return null;
-        }
-
-        ModContainer mod = modOpt.get();
-        Path pathInJar = mod.getPath(path);
-        try {
-            return new InputStreamReader(Files.newInputStream(pathInJar, StandardOpenOption.READ));
-        } catch (IOException e) {
-            logger.warn(String.format("Failed to get resource from mod jar '%s' path: '%s'", modId, path));
-        }
-        return null;
-    }
-
-    /**
-     * Checks if a file exists.
-     * If you need to check something that isn't in the assets folder, use {@link #checkFileDirect(String, String)} instead.
-     * @param modId the mod who owns the file.
-     * @param path  example: "asset/testmod/models/item/testitem.json".
-     * @return The path to the new file.
-     */
-    protected boolean checkFile(String modId, String path) {
-        return checkFileDirect(modId, path);
-    }
-
-    /**
-     * Checks if a file exists.
-     * This checks it directly from the jar, even if {@link io.github.theepicblock.polymc.impl.Config.ResourcePackConfig#advancedDiscovery} is set to true.
-     * This should only be used if the thing you want to check is not in the assets folder.
-     * @param modId the mod who owns the file.
-     * @param path  example: "asset/testmod/models/item/testitem.json".
-     * @return The path to the new file.
-     */
-    public final boolean checkFileDirect(String modId, String path) {
-        if (modId.equals("minecraft")) return false; //we can't access minecraft resources easily
-        Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
-        if (!modOpt.isPresent()) {
-            return false;
-        }
-
-        ModContainer mod = modOpt.get();
-        Path pathInJar = mod.getPath(path);
-        return Files.exists(pathInJar);
-    }
-
-    /**
-     * Copies a file into this resource pack.
-     * If you need to copy something that isn't in the assets folder, use {@link #copyFileDirect(String, String)} instead.
-     * @param modId the mod who owns the file.
-     * @param path  example: "asset/testmod/models/item/testitem.json".
-     * @return The path to the new file. Can be null.
-     */
-    protected Path copyFile(String modId, String path) {
-        return this.copyFileDirect(modId, path);
-    }
-
-    /**
-     * Copies a file into this resource pack.
-     * This copies it directly from the jar, even if {@link io.github.theepicblock.polymc.impl.Config.ResourcePackConfig#advancedDiscovery} is set to true.
-     * This should only be used if the thing you want to copy is not in the assets folder.
-     * @param modId the mod who owns the file.
-     * @param path  example: "asset/testmod/models/item/testitem.json".
-     * @return The path to the new file. Can be null.
-     */
-    public final Path copyFileDirect(String modId, String path) {
-        if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
-        Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
-        if (!modOpt.isPresent()) {
-            logger.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
-            return null;
-        }
-
-        ModContainer mod = modOpt.get();
-        Path pathInJar = mod.getPath(path);
-        Path newLoc = buildLocation.resolve(path);
-        if (Files.exists(newLoc)) {return newLoc;} //Avoid copying twice
-
-        boolean c = newLoc.toFile().getParentFile().mkdirs();
-        try {
-            return Files.copy(pathInJar, newLoc, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            logger.warn(String.format("Failed to get resource from mod jar '%s' path: %s", modId, path));
-            return null;
         }
     }
 
