@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "polymc-testmod",
+  "version": "${version}",
+
+  "name": "PolyMc TestMod",
+  "description": "Test mod that adds a bunch of things for testing",
+  "authors": [
+    "TheEpicBlock"
+  ],
+  "contact": {
+    "sources": "https://github.com/TheEpicBlock/PolyMc"
+  },
+
+  "license": "LGPL-3.0-or-later",
+  "icon": "",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "nl.theepicblock.polymc.testmod.Testmod"
+    ]
+  },
+  "mixins": [
+  ],
+
+  "depends": {
+  },
+  "suggests": {
+  }
+}
