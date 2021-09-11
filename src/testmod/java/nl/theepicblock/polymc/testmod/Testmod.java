@@ -21,12 +21,15 @@ public class Testmod implements ModInitializer {
 
     public static final Item TEST_ITEM = new TestItem(new FabricItemSettings().group(ItemGroup.MISC).maxCount(6).rarity(Rarity.EPIC));
     public static final Block TEST_BLOCK = new TestBlock(FabricBlockSettings.of(Material.SOIL, MapColor.BLUE));
-    
+
     @Override
     public void onInitialize() {
         Registry.register(Registry.ITEM, id("test_item"), TEST_ITEM);
+
         Registry.register(Registry.BLOCK, id("test_block"), TEST_BLOCK);
         Registry.register(Registry.ITEM, id("test_block"), new BlockItem(TEST_BLOCK, new FabricItemSettings()));
+
+        Registry.register(Registry.ENCHANTMENT, id("test_enchantment"), new TestEnchantment());
     }
 
     public static void debugSend(@Nullable PlayerEntity playerEntity, String text) {
