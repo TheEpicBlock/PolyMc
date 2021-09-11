@@ -76,7 +76,7 @@ public class PolyMapImpl implements PolyMap {
             ret = globalPoly.transform(ret);
         }
 
-        if ((player == null || player.isCreative()) && !serverItem.isItemEqual(ret) && !serverItem.isEmpty()) {
+        if ((player == null || player.isCreative()) && !ItemStack.canCombine(serverItem, ret) && !serverItem.isEmpty()) {
             // Preserves the nbt of the original item so it can be reverted
             ret = ret.copy();
             ret.putSubTag(ORIGINAL_ITEM_NBT, originalNbt);
