@@ -96,7 +96,9 @@ public class CustomModelDataPoly implements ItemPoly {
             Entity holder = input.getHolder(); // This is not usually guaranteed to get the correct player. It works here however.
 
             var tooltips = new ArrayList<Text>(0);
-            input.getItem().appendTooltip(input, holder instanceof PlayerEntity player ? player.world : null, tooltips, TooltipContext.Default.NORMAL);
+            try {
+                input.getItem().appendTooltip(input, holder instanceof PlayerEntity player ? player.world : null, tooltips, TooltipContext.Default.NORMAL);
+            } catch (Exception ignored) {}
 
             if (!tooltips.isEmpty()) {
                 NbtList list = new NbtList();
