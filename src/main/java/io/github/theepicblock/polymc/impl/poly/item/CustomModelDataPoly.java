@@ -98,7 +98,7 @@ public class CustomModelDataPoly implements ItemPoly {
             var tooltips = new ArrayList<Text>(0);
             try {
                 input.getItem().appendTooltip(input, holder instanceof PlayerEntity player ? player.world : null, tooltips, TooltipContext.Default.NORMAL);
-            } catch (NoClassDefFoundError ignored) {}
+            } catch (Exception ignored) {}
 
             if (!tooltips.isEmpty()) {
                 NbtList list = new NbtList();
