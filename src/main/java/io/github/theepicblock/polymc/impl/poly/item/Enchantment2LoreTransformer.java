@@ -2,12 +2,15 @@ package io.github.theepicblock.polymc.impl.poly.item;
 
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.impl.Util;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 /**
@@ -25,34 +28,44 @@ public class Enchantment2LoreTransformer implements ItemTransformer {
     }
 
     public static ItemStack portEnchantmentsToLore(ItemStack input) {
-        if (input.hasNbt() && input.getNbt().contains("Enchantments", 9)) {
-            // checks if the enchantments aren't hidden
+        if (input.getNbt() == null) return input;
+
+        if (input.getItem() == Items.ENCHANTED_BOOK) {
             if (Util.isSectionVisible(input, ItemStack.TooltipSection.ENCHANTMENTS)) {
-                ItemStack stack = input.copy(); // we should copy the ItemStack to prevent accidental modifications to the original
-                NbtList enchantments = stack.getEnchantments();
-
-                for (var enchantmentTag : enchantments) {
-                    if (enchantmentTag.getType() != 10) continue; // checks if this is a CompoundTag
-                    NbtCompound compoundTag = (NbtCompound)enchantmentTag;
-
-                    Identifier id = Identifier.tryParse(compoundTag.getString("id"));
-
-                    if (!Util.isVanilla(id) && id != null) {
-                        Registry.ENCHANTMENT.getOrEmpty(id).ifPresent((enchantment) -> {
-                            Text name = enchantment.getName(compoundTag.getInt("lvl"));
-
-                            NbtCompound displayTag = stack.getOrCreateSubNbt("display");
-                            if (!displayTag.contains("Lore")) {
-                                displayTag.put("Lore", new NbtList());
-                            }
-                            // place the enchantment on the lore
-                            displayTag.getList("Lore", 8).add(NbtString.of(Text.Serializer.toJson(name)));
-                        });
-                    }
-                }
-                return stack;
+                var enchantments = EnchantedBookItem.getEnchantmentNbt(input);
+                return processEnchantments(enchantments, input);
+            }
+        } else {
+            if (Util.isSectionVisible(input, ItemStack.TooltipSection.ENCHANTMENTS) && input.getNbt().contains(ItemStack.ENCHANTMENTS_KEY, 9)) {
+                var enchantments = input.getEnchantments();
+                return processEnchantments(enchantments, input);
             }
         }
+
         return input;
+    }
+
+    private static ItemStack processEnchantments(NbtList enchantments, ItemStack input) {
+        ItemStack stack = input.copy(); // we should copy the ItemStack to prevent accidental modifications to the original
+
+        var displayTag = stack.getOrCreateSubNbt("display");
+        if (!displayTag.contains("Lore")) {
+            displayTag.put("Lore", new NbtList());
+        }
+
+        for (var enchantmentTag : enchantments) {
+            var enchantmentCompound = (NbtCompound)enchantmentTag;
+
+            var id = EnchantmentHelper.getIdFromNbt(enchantmentCompound);
+            if (!Util.isVanilla(id)) {
+                Registry.ENCHANTMENT.getOrEmpty(id).ifPresent((enchantment) -> {
+                    var name = enchantment.getName(EnchantmentHelper.getLevelFromNbt(enchantmentCompound));
+
+                    displayTag.getList("Lore", NbtElement.STRING_TYPE).add(NbtString.of(Text.Serializer.toJson(name)));
+                });
+            }
+        }
+
+        return stack;
     }
 }
