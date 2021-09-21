@@ -28,8 +28,8 @@ dependencies {
 
 sourceSets {
 	testmod {
-		runtimeClasspath += main.runtimeClasspath
-		compileClasspath += main.compileClasspath
+		runtimeClasspath += main.runtimeClasspath + main.output
+		compileClasspath += main.compileClasspath + main.output
 	}
 }
 
