@@ -25,7 +25,7 @@ public class Enchantment2LoreTransformer implements ItemTransformer {
     }
 
     public static ItemStack portEnchantmentsToLore(ItemStack input) {
-        if (input.hasTag() && input.getTag().contains("Enchantments", 9)) {
+        if (input.hasNbt() && input.getNbt().contains("Enchantments", 9)) {
             // checks if the enchantments aren't hidden
             if (Util.isSectionVisible(input, ItemStack.TooltipSection.ENCHANTMENTS)) {
                 ItemStack stack = input.copy(); // we should copy the ItemStack to prevent accidental modifications to the original
@@ -41,7 +41,7 @@ public class Enchantment2LoreTransformer implements ItemTransformer {
                         Registry.ENCHANTMENT.getOrEmpty(id).ifPresent((enchantment) -> {
                             Text name = enchantment.getName(compoundTag.getInt("lvl"));
 
-                            NbtCompound displayTag = stack.getOrCreateSubTag("display");
+                            NbtCompound displayTag = stack.getOrCreateSubNbt("display");
                             if (!displayTag.contains("Lore")) {
                                 displayTag.put("Lore", new NbtList());
                             }

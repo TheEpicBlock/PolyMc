@@ -79,7 +79,7 @@ public class PolyMapImpl implements PolyMap {
         if ((player == null || player.isCreative()) && !ItemStack.canCombine(serverItem, ret) && !serverItem.isEmpty()) {
             // Preserves the nbt of the original item so it can be reverted
             ret = ret.copy();
-            ret.putSubTag(ORIGINAL_ITEM_NBT, originalNbt);
+            ret.setSubNbt(ORIGINAL_ITEM_NBT, originalNbt);
         }
 
         return ret;
@@ -116,11 +116,11 @@ public class PolyMapImpl implements PolyMap {
     }
 
     public static ItemStack recoverOriginalItem(ItemStack input) {
-        if (input.getTag() == null || !input.getTag().contains(ORIGINAL_ITEM_NBT, NbtType.COMPOUND)) {
+        if (input.getNbt() == null || !input.getNbt().contains(ORIGINAL_ITEM_NBT, NbtType.COMPOUND)) {
             return input;
         }
 
-        NbtCompound tag = input.getTag().getCompound(ORIGINAL_ITEM_NBT);
+        NbtCompound tag = input.getNbt().getCompound(ORIGINAL_ITEM_NBT);
         ItemStack stack = ItemStack.fromNbt(tag);
         stack.setCount(input.getCount()); // The clientside count is leading, to support middle mouse button duplication and stack splitting and such
 

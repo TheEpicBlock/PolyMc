@@ -2,7 +2,7 @@ package io.github.theepicblock.polymc.impl.poly.wizard;
 
 import io.github.theepicblock.polymc.api.wizard.VirtualEntity;
 import io.github.theepicblock.polymc.mixins.wizards.EntityAccessor;
-import net.minecraft.network.packet.s2c.play.EntityDestroyS2CPacket;
+import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.MathHelper;
@@ -59,7 +59,7 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
     @Override
     public void remove(ServerPlayerEntity playerEntity) {
         playerEntity.networkHandler.sendPacket(
-                new EntityDestroyS2CPacket(this.id)
+                new EntitiesDestroyS2CPacket(this.id)
         );
     }
 

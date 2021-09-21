@@ -75,7 +75,7 @@ public class CustomModelDataPoly implements ItemPoly {
         defaultServerItem = new ItemStack(pair.getLeft());
         NbtCompound tag = new NbtCompound();
         tag.putInt("CustomModelData", CMDvalue);
-        defaultServerItem.setTag(tag);
+        defaultServerItem.setNbt(tag);
         defaultServerItem.setCustomName(new TranslatableText(base.getTranslationKey()).setStyle(Style.EMPTY.withItalic(false)));
     }
 
@@ -83,11 +83,11 @@ public class CustomModelDataPoly implements ItemPoly {
     @Override
     public ItemStack getClientItem(ItemStack input) {
         ItemStack serverItem = defaultServerItem;
-        if (input.hasTag()) {
+        if (input.hasNbt()) {
             serverItem = defaultServerItem.copy();
-            serverItem.setTag(input.getTag().copy());
+            serverItem.setNbt(input.getNbt().copy());
             //doing this removes the CMD, so we should add that again
-            serverItem.getTag().putInt("CustomModelData", CMDvalue);
+            serverItem.getNbt().putInt("CustomModelData", CMDvalue);
         }
 
 
@@ -111,7 +111,7 @@ public class CustomModelDataPoly implements ItemPoly {
                     list.add(NbtString.of(Text.Serializer.toJson(line)));
                 }
 
-                NbtCompound display = serverItem.getOrCreateSubTag("display");
+                NbtCompound display = serverItem.getOrCreateSubNbt("display");
                 display.put("Lore", list);
             }
         }
