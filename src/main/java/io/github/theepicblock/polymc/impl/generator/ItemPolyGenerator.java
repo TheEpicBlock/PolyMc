@@ -22,32 +22,13 @@ import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
-import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.poly.item.*;
 import net.minecraft.item.*;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.DefaultedRegistry;
-import net.minecraft.util.registry.Registry;
 
 /**
  * Class to automatically generate {@link ItemPoly}s for {@link Item}s
  */
 public class ItemPolyGenerator {
-    /**
-     * Automatically generates all {@link ItemPoly}s that are missing in the specified builder
-     * @param builder builder to add the {@link ItemPoly}s to
-     */
-    public static void generateMissing(PolyRegistry builder) {
-        for (Item item : getItemRegistry()) {
-            if (builder.hasItemPoly(item)) continue;
-            Identifier id = getItemRegistry().getId(item);
-            if (!Util.isVanilla(id)) {
-                //this is a modded item and should have a Poly
-                addItemToBuilder(item, builder);
-            }
-        }
-    }
-
     /**
      * Generates the most suitable {@link ItemPoly} for a given {@link Item}
      */
@@ -86,7 +67,7 @@ public class ItemPolyGenerator {
      * Generates the most suitable {@link ItemPoly} and directly adds it to the {@link PolyRegistry}
      * @see #generatePoly(Item, PolyRegistry)
      */
-    private static void addItemToBuilder(Item item, PolyRegistry builder) {
+    public static void addItemToBuilder(Item item, PolyRegistry builder) {
         try {
             builder.registerItemPoly(item, generatePoly(item, builder));
         } catch (Exception e) {
@@ -102,12 +83,5 @@ public class ItemPolyGenerator {
                 @Override public void addToResourcePack(Item item, ResourcePackMaker pack) {}
             });
         }
-    }
-
-    /**
-     * @return the minecraft item registry
-     */
-    private static DefaultedRegistry<Item> getItemRegistry() {
-        return Registry.ITEM;
     }
 }

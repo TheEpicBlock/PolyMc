@@ -19,31 +19,13 @@ package io.github.theepicblock.polymc.impl.generator;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
-import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.poly.gui.NaiveStackListingChestPoly;
 import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 /**
  * Class to automatically generate {@link GuiPoly}s for {@link ScreenHandlerType}s
  */
 public class GuiGenerator {
-    /**
-     * Automatically generates all {@link GuiPoly}s that are missing in the specified builder
-     * @param builder builder to add the {@link GuiPoly}s to
-     */
-    public static void generateMissing(PolyRegistry builder) {
-        for (ScreenHandlerType<?> gui : getGuiRegistry()) {
-            if (builder.hasGuiPoly(gui)) continue;
-            Identifier id = getGuiRegistry().getId(gui);
-            if (!Util.isVanilla(id)) {
-                //this is a modded gui and should have a Poly
-                addGuiToBuilder(gui, builder);
-            }
-        }
-    }
-
     /**
      * Generates the most suitable {@link GuiPoly} for a given {@link ScreenHandlerType}
      */
@@ -55,14 +37,7 @@ public class GuiGenerator {
      * Generates the most suitable {@link GuiPoly} and directly adds it to the {@link PolyRegistry}
      * @see #generatePoly(ScreenHandlerType, PolyRegistry)
      */
-    private static void addGuiToBuilder(ScreenHandlerType<?> gui, PolyRegistry builder) {
+    public static void addGuiToBuilder(ScreenHandlerType<?> gui, PolyRegistry builder) {
         builder.registerGuiPoly(gui, generatePoly(gui, builder));
-    }
-
-    /**
-     * @return the minecraft gui registry
-     */
-    private static Registry<ScreenHandlerType<?>> getGuiRegistry() {
-        return Registry.SCREEN_HANDLER;
     }
 }

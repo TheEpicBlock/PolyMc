@@ -29,10 +29,7 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.tag.BlockTags;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.DefaultedRegistry;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
@@ -41,22 +38,6 @@ import net.minecraft.world.BlockView;
  * Class to automatically generate {@link BlockPoly}s for {@link Block}s
  */
 public class BlockPolyGenerator {
-
-    /**
-     * Automatically generates all {@link BlockPoly}s that are missing in the specified builder
-     * @param builder builder to add the {@link BlockPoly}s to
-     */
-    public static void generateMissing(PolyRegistry builder) {
-        for (Block block : getBlockRegistry()) {
-            if (builder.hasBlockPoly(block)) continue;
-            Identifier id = getBlockRegistry().getId(block);
-            if (!Util.isVanilla(id)) {
-                //this is a modded block and should have a Poly
-                addBlockToBuilder(block, builder);
-            }
-        }
-    }
-
     /**
      * Generates the most suitable {@link BlockPoly} for a given {@link Block}
      */
@@ -180,7 +161,7 @@ public class BlockPolyGenerator {
      * Generates the most suitable {@link BlockPoly} and directly adds it to the {@link PolyRegistry}
      * @see #generatePoly(Block, PolyRegistry)
      */
-    private static void addBlockToBuilder(Block block, PolyRegistry builder) {
+    public static void addBlockToBuilder(Block block, PolyRegistry builder) {
         try {
             builder.registerBlockPoly(block, generatePoly(block, builder));
         } catch (Exception e) {
@@ -189,13 +170,6 @@ public class BlockPolyGenerator {
             PolyMc.LOGGER.error("Attempting to recover by using a default poly. Please report this");
             builder.registerBlockPoly(block, new SimpleReplacementPoly(Blocks.RED_STAINED_GLASS));
         }
-    }
-
-    /**
-     * @return the minecraft block registry
-     */
-    private static DefaultedRegistry<Block> getBlockRegistry() {
-        return Registry.BLOCK;
     }
 
     /**
