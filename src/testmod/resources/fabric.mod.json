@@ -19,6 +19,9 @@
   "entrypoints": {
     "main": [
       "nl.theepicblock.polymc.testmod.Testmod"
+    ],
+    "polymc": [
+      "nl.theepicblock.polymc.testmod.EntrypointListener"
     ]
   },
   "mixins": [
