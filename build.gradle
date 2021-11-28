@@ -49,6 +49,8 @@ loom {
 			source sourceSets.testmod
 		}
 	}
+
+	accessWidenerPath = file("src/main/resources/polymc.accesswidener")
 }
 
 processResources {

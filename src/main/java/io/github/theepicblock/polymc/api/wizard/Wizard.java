@@ -9,7 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.stream.Stream;
+import java.util.List;
 
 public abstract class Wizard implements WatchListener {
     private final ServerWorld world;
@@ -100,9 +100,9 @@ public abstract class Wizard implements WatchListener {
         }
     }
 
-    public Stream<ServerPlayerEntity> getPlayersWatchingChunk() {
+    public List<ServerPlayerEntity> getPlayersWatchingChunk() {
         return this.getWorld().getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(
-                new ChunkPos((int)this.getPosition().x >> 4, (int)this.getPosition().y >> 4), false);
+                new ChunkPos((int)this.getPosition().x >> 4, (int)this.getPosition().z >> 4), false);
     }
 
     public enum WizardState {

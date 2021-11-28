@@ -13,7 +13,7 @@ public interface TACSAccessor {
     int getWatchDistance();
 
     @Invoker
-    static int callGetChebyshevDistance(ChunkPos pos, ServerPlayerEntity player, boolean useWatchedPosition) {
+    static boolean callIsOnDistanceEdge(ChunkPos chunkPos, ServerPlayerEntity player, boolean usePlayerWatchedSection, int distance) {
         throw new IllegalStateException();
     }
 }
