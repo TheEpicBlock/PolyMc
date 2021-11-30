@@ -17,17 +17,15 @@
  */
 package io.github.theepicblock.polymc.mixins.block.implementations;
 
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
-import io.github.theepicblock.polymc.impl.mixin.PacketSizeProvider;
+import io.github.theepicblock.polymc.impl.mixin.ChunkPacketStaticHack;
 import me.jellysquid.mods.lithium.common.world.chunk.LithiumHashPalette;
 import net.minecraft.block.BlockState;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.chunk.ArrayPalette;
 import net.minecraft.world.chunk.BiMapPalette;
-import net.minecraft.world.chunk.Palette;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
@@ -36,22 +34,15 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
  * This Mixin makes sure that the blocks are polyd before they get sent to the client.
  */
 @Mixin(value = {ArrayPalette.class, BiMapPalette.class, LithiumHashPalette.class})
-public abstract class PaletteBlockPolyImplementation<T> implements PacketSizeProvider {
-    @Unique private ServerPlayerEntity playerEntity;
-
-    @ModifyArg(method = {"toPacket", "getPacketSize"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IdList;getRawId(Ljava/lang/Object;)I"))
+public abstract class PaletteBlockPolyImplementation<T> {
+    @ModifyArg(method = {"writePacket", "getPacketSize"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IndexedIterable;getRawId(Ljava/lang/Object;)I"))
     public T GetIdRedirect(T object) {
         if (object instanceof BlockState) {
-            PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
+            var player = ChunkPacketStaticHack.player.get();
+            PolyMap map = player == null ? PolyMc.getMainMap() : PolyMapProvider.getPolyMap(player);
             //noinspection unchecked
             return (T)map.getClientBlock((BlockState)object);
         }
         return object;
-    }
-
-    @Override
-    public int getPacketSize(ServerPlayerEntity playerEntity) {
-        this.playerEntity = playerEntity;
-        return ((Palette<T>)this).getPacketSize();
     }
 }

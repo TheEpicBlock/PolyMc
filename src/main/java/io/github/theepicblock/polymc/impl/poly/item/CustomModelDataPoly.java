@@ -130,7 +130,7 @@ public class CustomModelDataPoly implements ItemPoly {
         }
 
         serverItem.setCount(input.getCount());
-        serverItem.setCooldown(input.getCooldown());
+        serverItem.setBobbingAnimationTime(input.getBobbingAnimationTime());
         return serverItem;
     }
 

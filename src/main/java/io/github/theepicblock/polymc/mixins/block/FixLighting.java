@@ -28,7 +28,7 @@ public abstract class FixLighting {
      * @see net.minecraft.server.world.ThreadedAnvilChunkStorage#getPlayersWatchingChunk(ChunkPos, boolean)
      */
     @Redirect(method = "flushUpdates(Lnet/minecraft/world/chunk/WorldChunk;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkHolder;sendPacketToPlayersWatching(Lnet/minecraft/network/Packet;Z)V"))
-    private void onFlushUpdates(ChunkHolder chunkHolder, Packet<?> packet, boolean onlyOnWatchDistanceEdge) {
+    private void onSendLightUpdates(ChunkHolder chunkHolder, Packet<?> packet, boolean onlyOnWatchDistanceEdge) {
         if (onlyOnWatchDistanceEdge == false) {
             // This will be sent to everyone regardless. Just use the normal method
             this.sendPacketToPlayersWatching(packet, false);
@@ -43,8 +43,7 @@ public abstract class FixLighting {
             var polymap = PolyMapProvider.getPolyMap(watcher);
             var isVanilla = polymap.isVanillaLikeMap();
 
-            int i = TACSAccessor.callGetChebyshevDistance(this.getPos(), watcher, true);
-            var isOnEdge = i == watchDistance;
+            var isOnEdge = TACSAccessor.callIsOnDistanceEdge(this.getPos(), watcher, true, watchDistance);
 
             if (isVanilla || isOnEdge) {
                 watcher.networkHandler.sendPacket(packet);
