@@ -1,4 +1,5 @@
 before_install:
-  - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
-  - source install-jdk.sh --feature 16
-  - jshell --version
+  - export SDKMAN_DIR="/home/jitpack/.sdkman/"
+  - source "/home/jitpack/.sdkman/bin/sdkman-init.sh"
+  - sdk install java 17.0.1-open
+  - sdk use java 17.0.1-open
