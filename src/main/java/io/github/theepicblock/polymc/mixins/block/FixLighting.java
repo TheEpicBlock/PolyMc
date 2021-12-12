@@ -21,7 +21,7 @@ public abstract class FixLighting {
     @Shadow public abstract ChunkPos getPos();
 
     /**
-     * Minecraft usually only sends lighting packets when a chunk is far-away.
+     * Minecraft usually only sends lighting packets when a chunk is on the watch distance edge.
      * This mixin forces lighting packets to be sent regardless, to make sure vanilla clients are kept in sync.
      * This replaces the {@code ChunkHolder#sendPacketToPlayersWatching} method.
      *
@@ -42,8 +42,9 @@ public abstract class FixLighting {
         watchers.forEach((watcher) -> {
             var polymap = PolyMapProvider.getPolyMap(watcher);
             var isVanilla = polymap.isVanillaLikeMap();
+            var watcherChunk = watcher.getWatchedSection();
 
-            var isOnEdge = TACSAccessor.callIsOnDistanceEdge(this.getPos(), watcher, true, watchDistance);
+            var isOnEdge = TACSAccessor.callIsOnDistanceEdge(this.getPos().x, this.getPos().z, watcherChunk.getSectionX(), watcherChunk.getSectionZ(), watchDistance);
 
             if (isVanilla || isOnEdge) {
                 watcher.networkHandler.sendPacket(packet);
