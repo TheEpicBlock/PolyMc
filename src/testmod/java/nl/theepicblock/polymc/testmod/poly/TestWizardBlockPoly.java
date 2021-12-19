@@ -1,9 +1,11 @@
 package nl.theepicblock.polymc.testmod.poly;
 
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
+import io.github.theepicblock.polymc.api.resource.ModdedResources;
+import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.api.wizard.VItem;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -20,7 +22,7 @@ public class TestWizardBlockPoly implements BlockPoly {
     }
 
     @Override
-    public void addToResourcePack(Block block, ResourcePackMaker pack) {
+    public void addToResourcePack(Block block, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
 
     }
 

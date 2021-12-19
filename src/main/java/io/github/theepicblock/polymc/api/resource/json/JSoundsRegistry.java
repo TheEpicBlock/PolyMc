@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.api.resource;
+package io.github.theepicblock.polymc.api.resource.json;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -25,7 +25,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-public class JsonSoundsRegistry {
+public class JSoundsRegistry {
 	public static final Type TYPE = new TypeToken<Map<String,SoundEventEntry>>() {}.getType();
 
     public static String getNamespace(JsonElement soundEventEntry) {

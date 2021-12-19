@@ -18,7 +18,9 @@
 package io.github.theepicblock.polymc.impl.poly.block;
 
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
+import io.github.theepicblock.polymc.api.resource.ModdedResources;
+import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 
@@ -41,7 +43,7 @@ public class SimpleReplacementPoly implements BlockPoly {
         return state;
     }
 
-    public void addToResourcePack(Block block, ResourcePackMaker pack) {}
+    public void addToResourcePack(Block block, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {}
 
     @Override
     public String getDebugInfo(Block obj) {

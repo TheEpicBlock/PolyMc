@@ -17,15 +17,17 @@
  */
 package io.github.theepicblock.polymc.api.block;
 
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
+import io.github.theepicblock.polymc.api.resource.ModdedResources;
+import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.block.Block;
 
 /**
  * Allows you to use a lambda to define a {@link BlockPoly}
  */
-public interface BlockPolyPredicate extends BlockPoly {
+public interface LambdaBlockPoly extends BlockPoly {
     @Override
-    default void addToResourcePack(Block block, ResourcePackMaker pack) {}
+    default void addToResourcePack(Block block, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {}
 
     @Override
     default String getDebugInfo(Block obj) {

@@ -21,8 +21,11 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
-import io.github.theepicblock.polymc.impl.poly.item.*;
+import io.github.theepicblock.polymc.api.resource.ModdedResources;
+import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import io.github.theepicblock.polymc.impl.poly.item.CustomModelDataPoly;
+import io.github.theepicblock.polymc.impl.poly.item.DamageableItemPoly;
 import net.minecraft.item.*;
 
 /**
@@ -34,16 +37,16 @@ public class ItemPolyGenerator {
      */
     public static ItemPoly generatePoly(Item item, PolyRegistry builder) {
         if (item instanceof ShieldItem) {
-            return new ShieldPoly(builder.getCMDManager(), item);
+            return new DamageableItemPoly(builder.getCMDManager(), item, Items.SHIELD);
         }
         if (item instanceof CompassItem) {
             return new CustomModelDataPoly(builder.getCMDManager(), item, Items.COMPASS);
         }
         if (item instanceof CrossbowItem) {
-            return new PredicateBasedDamageableItem(builder.getCMDManager(), item, Items.CROSSBOW);
+            return new DamageableItemPoly(builder.getCMDManager(), item, Items.CROSSBOW);
         }
         if (item instanceof RangedWeaponItem) {
-            return new BowPoly(builder.getCMDManager(), item);
+            return new DamageableItemPoly(builder.getCMDManager(), item, Items.BOW);
         }
         if (item.isDamageable()) {
             if (item instanceof DyeableItem) {
@@ -80,7 +83,8 @@ public class ItemPolyGenerator {
                     return new ItemStack(Items.BARRIER);
                 }
 
-                @Override public void addToResourcePack(Item item, ResourcePackMaker pack) {}
+                @Override
+                public void addToResourcePack(Item item, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {}
             });
         }
     }

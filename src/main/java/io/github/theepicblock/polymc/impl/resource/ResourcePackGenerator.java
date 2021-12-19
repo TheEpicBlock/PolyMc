@@ -17,45 +17,28 @@
  */
 package io.github.theepicblock.polymc.impl.resource;
 
-import com.google.gson.JsonElement;
-import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
-import io.github.theepicblock.polymc.api.resource.JsonSoundsRegistry;
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
-import io.github.theepicblock.polymc.impl.ConfigManager;
+import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
-import net.minecraft.util.Identifier;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
 public class ResourcePackGenerator {
-    /**
-     * Generates a resource pack
-     * @param map       {@link PolyMap} to generate the resource from
-     * @param directory directory to output files in. Relative to the game directory
-     * @param logger    output of the log messages
-     */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static void generate(PolyMap map, String directory, SimpleLogger logger) {
+    // TODO event
+
+    public static void cleanAndWrite(PolyMcResourcePack pack, String directory, SimpleLogger logger) {
         Path gameDir = FabricLoader.getInstance().getGameDir();
         Path resourcePath = gameDir.resolve(directory).toAbsolutePath();
         resourcePath.toFile().mkdir();
 
-        var pack = new ResourcePackMaker(resourcePath, logger);
-
         //Clear up the assets folder
-        File assetsFolder = pack.getBuildLocation().resolve("assets").toFile();
+        File assetsFolder = resourcePath.resolve("assets").toFile();
         if (assetsFolder.exists() && assetsFolder.isDirectory()) {
             try {
                 FileUtils.deleteDirectory(assetsFolder);
@@ -64,90 +47,52 @@ public class ResourcePackGenerator {
             }
         }
 
-        //Put the pack.mcmeta in there if it doesn't exist yet
-        if (!pack.getBuildLocation().resolve("pack.mcmeta").toFile().exists()) {
-            var mcMeta = FabricLoader.getInstance().getModContainer("polymc").orElseThrow().getPath("pack.mcmeta");
-            try {
-                Files.copy(mcMeta, pack.getBuildLocation().resolve("pack.mcmeta"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        pack.write(resourcePath, logger);
+    }
+
+    public static PolyMcResourcePack generate(PolyMap map, SimpleLogger logger) {
+        var moddedResources = new ModdedResourceContainerImpl();
+        var pack = new ResourcePackImplementation();
 
         //Let mods register resources via the api
         List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("polymc", PolyMcEntrypoint.class);
         for (PolyMcEntrypoint entrypointEntry : entrypoints) {
-            entrypointEntry.registerModSpecificResources(pack);
+            entrypointEntry.registerModSpecificResources(moddedResources, pack, logger);
         }
 
-        //Hooks for all itempolys
+        // Hooks for all itempolys
         map.getItemPolys().forEach((item, itemPoly) -> {
             try {
-                itemPoly.addToResourcePack(item, pack);
+                itemPoly.addToResourcePack(item, moddedResources, pack, logger);
             } catch (Exception e) {
                 logger.warn("Exception whilst generating resources for " + item.getTranslationKey());
                 e.printStackTrace();
             }
         });
 
-        //Hooks for all blockpolys
+        // Hooks for all blockpolys
         map.getBlockPolys().forEach((block, blockPoly) -> {
             try {
-                blockPoly.addToResourcePack(block, pack);
+                blockPoly.addToResourcePack(block, moddedResources, pack, logger);
             } catch (Exception e) {
                 logger.warn("Exception whilst generating resources for " + block.getTranslationKey());
                 e.printStackTrace();
             }
         });
 
-        //Get all lang files from all mods
-        for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
-            String modId = mod.getMetadata().getId();
-            Path langPath = mod.getPath(String.format("assets/%s/lang", modId));
-            if (!Files.exists(langPath)) continue;
-            try {
-                Stream<Path> pathStream = Files.list(langPath);
-                pathStream.forEach((langFile) -> {
-                    pack.copyAsset(modId, "lang/" + langPath.relativize(langFile));
-                });
-            } catch (Exception e) {
-                logger.warn("Exception whilst copying lang files from " + modId);
-                e.printStackTrace();
-            }
-        }
+        //TODO lang files
 
-        //Copy over sound files
-        for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
-            String modId = mod.getMetadata().getId();
-            if (pack.checkAsset(modId, "sounds.json")) {
-                try {
-                    pack.copyAsset(modId, "sounds.json"); //copy over the sounds.json file to the pack
+        //TODO sound files
 
-                    //read the sounds.json file to parse the needed sound files.
-                    InputStreamReader reader = pack.getAsset(modId, "sounds.json");
-                    JsonReader jReader = new JsonReader(reader);
-                    Map<String,JsonSoundsRegistry.SoundEventEntry> sounds = pack.getGson().fromJson(jReader, JsonSoundsRegistry.TYPE);
+        return pack;
+    }
 
-                    //copy the individual ogg files specified in the sounds.json
-                    sounds.values().forEach(soundEventEntry -> {
-                        for (JsonElement soundEntry : soundEventEntry.sounds) {
-                            String namespaceString = JsonSoundsRegistry.getNamespace(soundEntry);
-                            Identifier namespace = Identifier.tryParse(namespaceString);
-                            if (namespace == null) {
-                                logger.warn(String.format("Invalid sound id %s in %s provided by %s", namespaceString, soundEventEntry.category, modId));
-                                continue;
-                            }
-
-                            pack.copySound(namespace.getNamespace(), namespace.getPath());
-                        }
-                    });
-                } catch (Exception e) {
-                    logger.error("Failed to copy sounds.json for mod: " + modId);
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        pack.saveAll();
+    /**
+     * @deprecated use {@link #generate(PolyMap, SimpleLogger)} together with {@link #cleanAndWrite(PolyMcResourcePack, String, SimpleLogger)} or {@link PolyMcResourcePack#write(Path, SimpleLogger)}
+     */
+    @Deprecated
+    public static void generate(PolyMap map, String directory, SimpleLogger logger) {
+        var pack = generate(map, logger);
+        cleanAndWrite(pack, directory, logger);
     }
 }
