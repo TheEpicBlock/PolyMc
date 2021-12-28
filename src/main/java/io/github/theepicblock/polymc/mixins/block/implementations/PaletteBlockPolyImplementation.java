@@ -23,11 +23,13 @@ import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.mixin.ChunkPacketStaticHack;
 import me.jellysquid.mods.lithium.common.world.chunk.LithiumHashPalette;
 import net.minecraft.block.BlockState;
+import net.minecraft.util.collection.IndexedIterable;
 import net.minecraft.world.chunk.ArrayPalette;
 import net.minecraft.world.chunk.BiMapPalette;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
  * Minecraft uses a different method to get ids when it sends chunks.
@@ -35,14 +37,17 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
  */
 @Mixin(value = {ArrayPalette.class, BiMapPalette.class, LithiumHashPalette.class})
 public abstract class PaletteBlockPolyImplementation<T> {
-    @ModifyArg(method = {"writePacket", "getPacketSize"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IndexedIterable;getRawId(Ljava/lang/Object;)I"))
-    public T GetIdRedirect(T object) {
+    
+    @Redirect(method = {"writePacket", "getPacketSize"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IndexedIterable;getRawId(Ljava/lang/Object;)I"))
+    public int GetIdRedirect(IndexedIterable instance, T object) {
         if (object instanceof BlockState) {
             var player = ChunkPacketStaticHack.player.get();
+
             PolyMap map = player == null ? PolyMc.getMainMap() : PolyMapProvider.getPolyMap(player);
             //noinspection unchecked
-            return (T)map.getClientBlock((BlockState)object);
+            return map.getClientStateRawId((BlockState)object, player);
         }
-        return object;
+
+        return instance.getRawId(object);
     }
 }
