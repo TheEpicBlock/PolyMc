@@ -2,7 +2,9 @@
 What if you could put mods on a server, without needing it on the client?  
 Well, that's impossible. But we can try! *Nothing is impossible!*
 
----
+**Note:** if you're a mod developer looking to make a mod that'll be solely used serverside, you might want to consider [Polymer](https://github.com/Patbox/polymer). It has some advantages and disadvantages over PolyMc.
+
+## How PolyMc works
 PolyMc is unique in that it operates on packet level. The advantage is that the mechanics are separated from how it's rendered.  
 Usually when you would make custom items, you would pick a CustomModelData value and in the right-click event of that item you might check for that value and do some custom stuff. PolyMc doesn't work like that. With PolyMc, the server is *actually modded*, meaning the custom item is genuinely its own item; you have full control over its properties.  
 
