@@ -50,6 +50,14 @@ public interface PolyMap {
     }
 
     /**
+     * Get the RawId of the client-state block
+     */
+    default int getClientStateRawId(BlockState state, ServerPlayerEntity playerEntity) {
+        BlockState clientState = this.getClientBlock(state);
+        return Block.STATE_IDS.getRawId(clientState);
+    }
+
+    /**
      * Gets the {@link GuiPoly} that this PolyMap associates with this {@link ScreenHandlerType}.
      * @return A {@link GuiPoly} describing how to display this screen type on the client.
      */
