@@ -18,6 +18,10 @@
 package io.github.theepicblock.polymc.impl;
 
 import com.google.gson.JsonObject;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.Version;
+import net.fabricmc.loader.api.VersionParsingException;
+import net.fabricmc.loader.api.metadata.version.VersionComparisonOperator;
 
 import java.util.List;
 
@@ -54,10 +58,32 @@ public class Config {
     }
 
     public boolean isMixinAutoDisabled(String mixin) {
-        //automatically disable mixins related to processSyncedBlockEventServerSide if it's empty
-        return (misc.processSyncedBlockEventServerSide.size() == 0 &&
+        // Automatically disable mixins related to processSyncedBlockEventServerSide if it's empty
+        if (misc.processSyncedBlockEventServerSide.size() == 0 &&
                    (mixin.equals("block.ProcessSyncedBlockEventServerSideImplementation") ||
-                   mixin.equals("ServerParticlePatch")));
+                   mixin.equals("ServerParticlePatch"))) {
+            return true;
+        }
+
+        // Use `FabricRegistrySyncDisabler` for >=0.9.0 and `FabricRegistrySyncDisablerOld` for <0.9.0
+        // If registry sync is not present both will be disabled
+        try {
+            if (mixin.equals("FabricRegistrySyncDisabler")) {
+                var regSync = FabricLoader.getInstance().getModContainer("fabric-registry-sync-v0");
+                if (regSync.isEmpty()) return true;
+                return VersionComparisonOperator.LESS.test(regSync.get().getMetadata().getVersion(), Version.parse("0.9.0"));
+            }
+
+            if (mixin.equals("FabricRegistrySyncDisablerOld")) {
+                var regSync = FabricLoader.getInstance().getModContainer("fabric-registry-sync-v0");
+                if (regSync.isEmpty()) return true;
+                return VersionComparisonOperator.GREATER_EQUAL.test(regSync.get().getMetadata().getVersion(), Version.parse("0.9.0"));
+            }
+        } catch (VersionParsingException e) {
+            throw new RuntimeException(e);
+        }
+
+        return false;
     }
 
     public static class ResourcePackConfig {

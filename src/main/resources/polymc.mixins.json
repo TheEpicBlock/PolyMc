@@ -9,6 +9,7 @@
     "CustomPacketAccessor",
     "CustomPacketDisabler",
     "FabricRegistrySyncDisabler",
+    "FabricRegistrySyncDisablerOld",
     "FabricRemapDisabler",
     "ItemStackAccessor",
     "RefreshPolyMapOnCopy",
