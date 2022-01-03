@@ -52,7 +52,7 @@ public class GuiManagerImplementation {
         }
     }
 
-    @ModifyVariable(method = "openHandledScreen(Lnet/minecraft/screen/NamedScreenHandlerFactory;)Ljava/util/OptionalInt;", at = @At("HEAD"))
+    @ModifyVariable(method = "openHandledScreen(Lnet/minecraft/screen/NamedScreenHandlerFactory;)Ljava/util/OptionalInt;", at = @At("HEAD"), argsOnly = true)
     private NamedScreenHandlerFactory hackForFabricApi(NamedScreenHandlerFactory factory) {
         if (Util.isPolyMapVanillaLike((ServerPlayerEntity)(Object)this) && factory instanceof ExtendedScreenHandlerFactory) {
             return new ScreenHandlerFactoryWrapperSoFabricApiDoesntDetectIt(factory);

@@ -116,11 +116,7 @@ public class Util {
     public static String expandTo(String s, int amount) {
         int left = amount - s.length();
         if (left >= 0) {
-            StringBuilder out = new StringBuilder().append(s);
-            for (int i = 0; i < left; i++) {
-                out.append(" ");
-            }
-            return out.toString();
+            return s + " ".repeat(left);
         }
         return s;
     }
@@ -130,7 +126,7 @@ public class Util {
     }
 
     public static void copyAll(Path from, Path to) throws IOException {
-        FileVisitor<Path> visitor = new SimpleFileVisitor<Path>() {
+        FileVisitor<Path> visitor = new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if (!attrs.isDirectory()) {

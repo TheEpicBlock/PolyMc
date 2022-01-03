@@ -32,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
  */
 @Mixin(PacketByteBuf.class)
 public class ItemPolyImplementation {
-    @ModifyVariable(method = "writeItemStack(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/network/PacketByteBuf;", at = @At("HEAD"))
+    @ModifyVariable(method = "writeItemStack(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/network/PacketByteBuf;", at = @At("HEAD"), argsOnly = true)
     public ItemStack writeItemStackHook(ItemStack itemStack) {
         ServerPlayerEntity player = PlayerContextContainer.retrieve(this);
         if (player == null) return PolyMc.getMainMap().getClientItem(itemStack, null);

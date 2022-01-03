@@ -126,7 +126,6 @@ public abstract class Wizard implements WatchListener {
         /**
          * Checks whether the state is confined to a grid or not.
          * If the state is static, {@link Wizard#position} will always be in the center of a block
-         * @return
          */
         private boolean isStatic() {
             return this == BLOCK;
