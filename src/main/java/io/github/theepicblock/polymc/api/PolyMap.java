@@ -58,6 +58,20 @@ public interface PolyMap {
     }
 
     /**
+     * Get the integer rawId of the Item we'll be sending to the client
+     */
+    default int getClientItemRawId(Item item, ServerPlayerEntity playerEntity) {
+        return Item.getRawId(item);
+    }
+
+    /**
+     * Get the Item that is known by this integer rawId on the client
+     */
+    default Item reverseClientItemRawId(int rawId, ServerPlayerEntity playerEntity) {
+        return Item.byRawId(rawId);
+    }
+
+    /**
      * Gets the {@link GuiPoly} that this PolyMap associates with this {@link ScreenHandlerType}.
      * @return A {@link GuiPoly} describing how to display this screen type on the client.
      */

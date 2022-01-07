@@ -33,7 +33,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class NetworkHandlerContextProvider {
     @Shadow public ServerPlayerEntity player;
 
-
     /**
      * Provides any packets which implement PlayerContextContainer with the context of the player this network handler is attached to
      * @see PacketPlayerContextContainer

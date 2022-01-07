@@ -17,7 +17,9 @@
  */
 package io.github.theepicblock.polymc.mixins.context;
 
+import io.github.theepicblock.polymc.impl.mixin.ClientConnectionContextContainer;
 import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,6 +31,18 @@ public class ByteBufPlayerContextContainer implements PlayerContextContainer {
 
     @Override
     public ServerPlayerEntity getPolyMcProvidedPlayer() {
+
+        // If the player is not set, we might be able to look for it on the ClientConnection
+        if (player == null) {
+
+            // See if the ClientConnection is set
+            ClientConnection connection = ClientConnectionContextContainer.retrieve(this);
+
+            if (connection != null) {
+                player = PlayerContextContainer.retrieve(connection);
+            }
+        }
+
         return player;
     }
 

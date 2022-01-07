@@ -18,14 +18,18 @@
 package io.github.theepicblock.polymc.mixins.item;
 
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.impl.mixin.ChunkPacketStaticHack;
 import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
  * This is the class responsible for replacing the serverside items with the clientside items
@@ -37,5 +41,19 @@ public class ItemPolyImplementation {
         ServerPlayerEntity player = PlayerContextContainer.retrieve(this);
         if (player == null) return PolyMc.getMainMap().getClientItem(itemStack, null);
         return PolyMapProvider.getPolyMap(player).getClientItem(itemStack, player);
+    }
+
+    @Redirect(method = {"writeItemStack"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/item/Item;getRawId(Lnet/minecraft/item/Item;)I"))
+    public int getIdRedirect(Item item) {
+        ServerPlayerEntity player = PlayerContextContainer.retrieve(this);
+        PolyMap map = player == null ? PolyMc.getMainMap() : PolyMapProvider.getPolyMap(player);
+        return map.getClientItemRawId(item, player);
+    }
+
+    @Redirect(method = {"readItemStack"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/item/Item;byRawId(I)Lnet/minecraft/item/Item;"))
+    public Item reverseClientItemId(int rawClientSideItemId) {
+        ServerPlayerEntity player = PlayerContextContainer.retrieve(this);
+        PolyMap map = player == null ? PolyMc.getMainMap() : PolyMapProvider.getPolyMap(player);
+        return map.reverseClientItemRawId(rawClientSideItemId, player);
     }
 }
