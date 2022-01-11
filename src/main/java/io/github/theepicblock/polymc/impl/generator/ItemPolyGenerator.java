@@ -33,6 +33,9 @@ public class ItemPolyGenerator {
      * Generates the most suitable {@link ItemPoly} for a given {@link Item}
      */
     public static ItemPoly generatePoly(Item item, PolyRegistry builder) {
+        if (item instanceof ArmorItem armorItem) {
+            return new ArmorItemPoly(builder, armorItem);
+        }
         if (item instanceof ShieldItem) {
             return new ShieldPoly(builder.getCMDManager(), item);
         }

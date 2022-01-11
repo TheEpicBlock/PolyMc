@@ -43,6 +43,7 @@ public class DamageableItemPoly extends CustomModelDataPoly {
         int damage = (int)(((float)inputDamage / serverSideMaxDamage) * clientSideMaxDamage); //convert serverside damage to clientside damage
         if (damage == 0 && inputDamage > 0) damage = 1; //If the item is damaged in any way it should show up
         sup.setDamage(damage);
+
         return sup;
     }
 }

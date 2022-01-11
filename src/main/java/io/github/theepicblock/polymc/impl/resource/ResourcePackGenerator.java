@@ -25,21 +25,37 @@ import io.github.theepicblock.polymc.api.resource.JsonSoundsRegistry;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.ConfigManager;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import io.github.theepicblock.polymc.impl.poly.item.ArmorMaterialPoly;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import java.util.zip.ZipFile;
 
 public class ResourcePackGenerator {
+
+    /**
+     * Get the path to a file inside PolyMC's resources folder
+     * @param path the path to the file inside the resource folder
+     */
+    public static Path getPolymcPath(String path) {
+        return FabricLoader.getInstance().getModContainer("polymc").get().getPath(path);
+    }
+
     /**
      * Generates a resource pack
      * @param map       {@link PolyMap} to generate the resource from
@@ -102,6 +118,25 @@ public class ResourcePackGenerator {
                 e.printStackTrace();
             }
         });
+
+        // Add all ArmorMaterial polys
+        if (ArmorMaterialPoly.shouldUseFancyPants(map.getArmorMaterialPolys())) {
+            try {
+                ArmorMaterialPoly.addToResourcePack(map.getArmorMaterialPolys(), pack, logger);
+            } catch (Exception e) {
+                logger.warn("Exception whilst generating resources for ArmorMaterialPolys");
+                e.printStackTrace();
+            }
+        } else {
+            map.getArmorMaterialPolys().forEach((armorMaterial, armorMaterialPoly) -> {
+                try {
+                    armorMaterialPoly.addToResourcePack(pack);
+                } catch (Exception e) {
+                    logger.warn("Exception whilst generating armor material resources for " + armorMaterial.getName());
+                    e.printStackTrace();
+                }
+            });
+        }
 
         //Get all lang files from all mods
         for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {

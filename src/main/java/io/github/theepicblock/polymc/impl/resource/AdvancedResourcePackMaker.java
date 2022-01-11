@@ -24,6 +24,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,9 +57,17 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
 
     @Override
     protected Path copyFile(String modId, String path) {
-        if (modId.equals("minecraft")) return null;
 
         Path filePath = tempLocation.resolve(path);
+
+        // If the minecraft namespace is used, we might have to copy the file from the client jar
+        // (but only if it does not exist in the temp folder. Things like armor textures have to go in the minecraft namespace)
+        if (modId.equals("minecraft")) {
+            if (!Files.exists(filePath)) {
+                return this.copyFileDirect(modId, path);
+            }
+        }
+
         Path newLoc = buildLocation.resolve(path);
         //noinspection ResultOfMethodCallIgnored
         newLoc.toFile().getParentFile().mkdirs();
@@ -72,19 +81,33 @@ public class AdvancedResourcePackMaker extends ResourcePackMaker {
 
     @Override
     protected boolean checkFile(String modId, String path) {
-        if (modId.equals("minecraft")) return false;
-
         Path filePath = tempLocation.resolve(path);
-        return Files.exists(filePath);
+        boolean result = Files.exists(filePath);
+
+        if (!result) {
+            if (modId.equals("minecraft")) {
+                result = this.checkFileDirect(modId, path);
+            }
+        }
+
+        return result;
     }
 
     @Override
-    protected InputStreamReader getFile(String modId, String path) {
-        if (modId.equals("minecraft")) return null;
+    public InputStream getFileStream(String modId, String path) {
 
         Path filePath = tempLocation.resolve(path);
+
+        // If the minecraft namespace is used, we might have to copy the file from the client jar
+        // (but only if it does not exist in the temp folder. Things like armor textures have to go in the minecraft namespace)
+        if (modId.equals("minecraft")) {
+            if (!Files.exists(filePath)) {
+                return this.getFileStreamDirect(modId, path);
+            }
+        }
+
         try {
-            return new InputStreamReader(Files.newInputStream(filePath, StandardOpenOption.READ));
+            return Files.newInputStream(filePath, StandardOpenOption.READ);
         } catch (IOException e) {
             logger.warn(String.format("Failed to get resource from mod '%s' path: '%s'", modId, path));
         }

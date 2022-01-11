@@ -22,21 +22,21 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.item.Item;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.*;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 @SuppressWarnings("unused")
 public class ResourcePackMaker {
@@ -45,6 +45,9 @@ public class ResourcePackMaker {
     public static final String TEXTURES = "textures/";
     public static final String SOUNDS = "sounds/";
     public static final String BLOCKSTATES = "blockstates/";
+
+    private final static String CLIENT_URL = "https://launcher.mojang.com/v1/objects/060dd014d59c90d723db87f9c9cedb511f374a71/client.jar";
+    private static ZipFile clientJar = null;
 
     protected final Path buildLocation;
     protected final SimpleLogger logger;
@@ -57,6 +60,50 @@ public class ResourcePackMaker {
     public ResourcePackMaker(Path buildLocation, SimpleLogger logger) {
         this.buildLocation = buildLocation;
         this.logger = logger;
+    }
+
+    /**
+     * Get Minecraft's client.jar file
+     */
+    public static ZipFile getClientJar() {
+
+        if (clientJar != null) {
+            return clientJar;
+        }
+
+        try {
+            Path clientJarPath;
+            if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
+                clientJarPath = FabricLoader.getInstance().getGameDir().resolve("assets_client.jar");
+            } else {
+                var clientFile = MinecraftServer.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+                clientJarPath = Path.of(clientFile);
+            }
+
+            if (!clientJarPath.toFile().exists()) {
+                URL url = new URL(CLIENT_URL);
+                URLConnection connection = url.openConnection();
+                InputStream is = connection.getInputStream();
+                Files.copy(is, clientJarPath);
+            }
+
+            clientJar = new ZipFile(clientJarPath.toFile());
+
+            return clientJar;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Get an InputStream from the Client jar
+     */
+    public static InputStream getClientJarInputStream(String path) {
+        try {
+            return getClientJar().getInputStream(getClientJar().getEntry(path));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
@@ -411,8 +458,25 @@ public class ResourcePackMaker {
      * @param path  example: "asset/testmod/models/item/testitem.json".
      * @return A reader for this file. Can be null.
      */
-    protected InputStreamReader getFile(String modId, String path) {
-        return getFileDirect(modId, path);
+    public InputStreamReader getFile(String modId, String path) {
+        InputStream stream = this.getFileStream(modId, path);
+
+        if (stream != null) {
+            return new InputStreamReader(stream);
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets a file from the resource pack folder.
+     * If you need to get something that isn't in the assets folder, use {@link #getFileDirect(String, String)} instead.
+     * @param modId the mod who owns the file.
+     * @param path  example: "asset/testmod/models/item/testitem.json".
+     * @return A reader for this file. Can be null.
+     */
+    public InputStream getFileStream(String modId, String path) {
+        return getFileStreamDirect(modId, path);
     }
 
     /**
@@ -424,7 +488,25 @@ public class ResourcePackMaker {
      * @return A reader for this file. Can be null.
      */
     public final InputStreamReader getFileDirect(String modId, String path) {
-        if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
+        InputStream stream = this.getFileStreamDirect(modId, path);
+
+        if (stream != null) {
+            return new InputStreamReader(stream);
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets a file stream from the resource pack folder.
+     * This gets it directly from the jar, even if {@link io.github.theepicblock.polymc.impl.Config.ResourcePackConfig#advancedDiscovery} is set to true.
+     * This should only be used if the thing you want to get is not in the assets folder.
+     * @param modId the mod who owns the file.
+     * @param path  example: "asset/testmod/models/item/testitem.json".
+     * @return A reader for this file. Can be null.
+     */
+    public final InputStream getFileStreamDirect(String modId, String path) {
+        //if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
             logger.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
@@ -434,7 +516,7 @@ public class ResourcePackMaker {
         ModContainer mod = modOpt.get();
         Path pathInJar = mod.getPath(path);
         try {
-            return new InputStreamReader(Files.newInputStream(pathInJar, StandardOpenOption.READ));
+            return Files.newInputStream(pathInJar, StandardOpenOption.READ);
         } catch (IOException e) {
             logger.warn(String.format("Failed to get resource from mod jar '%s' path: '%s'", modId, path));
         }
@@ -458,10 +540,18 @@ public class ResourcePackMaker {
      * This should only be used if the thing you want to check is not in the assets folder.
      * @param modId the mod who owns the file.
      * @param path  example: "asset/testmod/models/item/testitem.json".
-     * @return The path to the new file.
+     * @return If the file exists
      */
     public final boolean checkFileDirect(String modId, String path) {
-        if (modId.equals("minecraft")) return false; //we can't access minecraft resources easily
+
+        if (modId.equals("minecraft")) {
+            try {
+                return getClientJar().getEntry(path) != null;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
             return false;
@@ -492,7 +582,16 @@ public class ResourcePackMaker {
      * @return The path to the new file. Can be null.
      */
     public final Path copyFileDirect(String modId, String path) {
-        if (modId.equals("minecraft")) return null; //we can't access minecraft resources easily
+
+        if (modId.equals("minecraft")) {
+            try {
+                return this.writeToPath(path, getClientJarInputStream(path).readAllBytes());
+            } catch (Exception e) {
+                logger.warn(String.format("Failed to get resource from client jar '%s' path: %s", modId, path));
+                return null;
+            }
+        }
+
         Optional<ModContainer> modOpt = FabricLoader.getInstance().getModContainer(modId);
         if (!modOpt.isPresent()) {
             logger.warn(String.format("Tried to access assets from '%s' but it isn't present", modId));
@@ -509,6 +608,29 @@ public class ResourcePackMaker {
             return Files.copy(pathInJar, newLoc, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             logger.warn(String.format("Failed to get resource from mod jar '%s' path: %s", modId, path));
+            return null;
+        }
+    }
+
+    /**
+     * Write some bytes to a file
+     * @param path   The path to the target file
+     * @param data   The data to write
+     */
+    public Path writeToPath(String path, byte[] data) {
+        try {
+            // Construct the full path inside the asset build location
+            Path targetPath = buildLocation.resolve(path);
+
+            // Make sure the parent directory exists
+            targetPath.toFile().getParentFile().mkdirs();
+
+            // Write the actual file
+            return Files.write(targetPath, data);
+        } catch (IOException e) {
+            logger.warn(String.format("Failed to write to '%s'", path));
+            logger.warn(e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }

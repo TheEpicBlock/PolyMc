@@ -24,10 +24,12 @@ import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
+import io.github.theepicblock.polymc.impl.poly.item.ArmorMaterialPoly;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -55,13 +57,15 @@ public class PolyMapImpl implements PolyMap {
     private final ImmutableMap<Block,BlockPoly> blockPolys;
     private final ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys;
     private final ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys;
+    private final ImmutableMap<ArmorMaterial, ArmorMaterialPoly> armorPolys;
 
-    public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys, ItemTransformer[] globalItemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys, ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys) {
+    public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys, ItemTransformer[] globalItemPolys, ImmutableMap<Block,BlockPoly> blockPolys, ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys, ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys, ImmutableMap<ArmorMaterial, ArmorMaterialPoly> armorPolys) {
         this.itemPolys = itemPolys;
         this.globalItemPolys = globalItemPolys;
         this.blockPolys = blockPolys;
         this.guiPolys = guiPolys;
         this.entityPolys = entityPolys;
+        this.armorPolys = armorPolys;
     }
 
     @Override
@@ -108,6 +112,11 @@ public class PolyMapImpl implements PolyMap {
     @Override
     public <T extends Entity> EntityPoly<T> getEntityPoly(EntityType<T> entity) {
         return (EntityPoly<T>)entityPolys.get(entity);
+    }
+
+    @Override
+    public ImmutableMap<ArmorMaterial,ArmorMaterialPoly> getArmorMaterialPolys() {
+        return armorPolys;
     }
 
     @Override
