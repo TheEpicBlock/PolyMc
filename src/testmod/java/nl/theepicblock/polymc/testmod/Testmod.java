@@ -7,10 +7,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.FallingBlock;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.Material;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
+import net.minecraft.item.*;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
@@ -21,6 +20,13 @@ public class Testmod implements ModInitializer {
     private static final String MODID = "polymc-testmod";
 
     public static final Item TEST_ITEM = new TestItem(new FabricItemSettings().group(ItemGroup.MISC).maxCount(6).rarity(Rarity.EPIC));
+    public static final ArmorMaterial TEST_MATERIAL = new TestArmorMaterial();
+    public static final Item TELMET = new ArmorItem(TEST_MATERIAL, EquipmentSlot.HEAD, new Item.Settings().group(ItemGroup.TRANSPORTATION));
+    public static final Item TESTPLATE = new ArmorItem(TEST_MATERIAL, EquipmentSlot.CHEST, new Item.Settings().group(ItemGroup.TRANSPORTATION));
+    public static final Item TEGGINGS = new ArmorItem(TEST_MATERIAL, EquipmentSlot.LEGS, new Item.Settings().group(ItemGroup.TRANSPORTATION));
+    public static final Item TOOTS = new ArmorItem(TEST_MATERIAL, EquipmentSlot.FEET, new Item.Settings().group(ItemGroup.TRANSPORTATION));
+
+
     public static final Block TEST_BLOCK = new TestBlock(FabricBlockSettings.of(Material.SOIL, MapColor.BLUE));
     public static final Block TEST_BLOCK_GLOWING = new Block(FabricBlockSettings.of(Material.AMETHYST, MapColor.RAW_IRON_PINK).luminance(9));
     public static final Block TEST_BLOCK_WIZARD = new FallingBlock(FabricBlockSettings.of(Material.GLASS, MapColor.CYAN));
@@ -28,6 +34,11 @@ public class Testmod implements ModInitializer {
     @Override
     public void onInitialize() {
         Registry.register(Registry.ITEM, id("test_item"), TEST_ITEM);
+
+        Registry.register(Registry.ITEM, id("test_helmet"), TELMET);
+        Registry.register(Registry.ITEM, id("test_chestplate"), TESTPLATE);
+        Registry.register(Registry.ITEM, id("test_leggings"), TEGGINGS);
+        Registry.register(Registry.ITEM, id("test_boots"), TOOTS);
 
         registerBlock(id("test_block"), TEST_BLOCK);
         registerBlock(id("test_block_glowing"), TEST_BLOCK_GLOWING);

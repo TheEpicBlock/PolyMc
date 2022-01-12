@@ -5,6 +5,9 @@ It has tests for PolyMc's automatic generation and tests for PolyMc's apis.
 Things testing the automatic generation should function on their own, without PolyMc present.
 
 # Auto-gen tests
+## `test_helmet`, `test_chestplate`, `test_legging` and `test_boots`
+Generic armor
+
 ## `test_block`
 A generic full block
 
