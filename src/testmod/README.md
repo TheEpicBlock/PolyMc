@@ -8,6 +8,12 @@ Things testing the automatic generation should function on their own, without Po
 ## `test_helmet`, `test_chestplate`, `test_legging` and `test_boots`
 Generic armor
 
+## `test_slab`
+Generic slab
+
+## `test_stairs`
+Generic stairs based on `test_block`
+
 ## `test_block`
 A generic full block
 
