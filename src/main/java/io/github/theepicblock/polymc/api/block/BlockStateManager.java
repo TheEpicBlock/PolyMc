@@ -48,7 +48,7 @@ public class BlockStateManager {
         for (var block : searchSpace) {
             var availableStates = availableBlockStates.computeIfAbsent(block, (b) -> {
                 onFirstRegister.accept(b, this.polyRegistry);
-                return new HashSet<>(b.getStateManager().getStates());
+                return new LinkedHashSet<>(b.getStateManager().getStates());
             });
 
             // Return first block state that matches `blockStatePredicate`
