@@ -117,8 +117,8 @@ public class BlockStateProfile {
     public static final BlockStateProfile TRAPDOOR_PROFILE = new BlockStateProfile("trapdoor", TRAPDOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile METAL_DOOR_PROFILE = new BlockStateProfile("metal_door", Blocks.IRON_DOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile METAL_TRAPDOOR_PROFILE = new BlockStateProfile("metal_trapdoor", Blocks.IRON_TRAPDOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
-    public static final BlockStateProfile WAXED_COPPER_STAIR_PROFILE = new BlockStateProfile("waxed_copper_stair", Blocks.WAXED_CUT_COPPER_STAIRS, ALWAYS_TRUE_FILTER, WAXED_COPPER_ON_FIRST_REGISTER);
-    public static final BlockStateProfile WAXED_COPPER_SLAB_PROFILE = new BlockStateProfile("waxed_copper_slab", Blocks.WAXED_CUT_COPPER_SLAB, ALWAYS_TRUE_FILTER, WAXED_COPPER_ON_FIRST_REGISTER);
+    public static final BlockStateProfile WAXED_COPPER_STAIR_PROFILE = new BlockStateProfile("waxed_copper_stair", WAXED_COPPER_STAIR_BLOCKS, ALWAYS_TRUE_FILTER, WAXED_COPPER_ON_FIRST_REGISTER);
+    public static final BlockStateProfile WAXED_COPPER_SLAB_PROFILE = new BlockStateProfile("waxed_copper_slab", WAXED_COPPER_SLAB_BLOCKS, ALWAYS_TRUE_FILTER, WAXED_COPPER_ON_FIRST_REGISTER);
 
     //OTHER CODE
     public static BlockStateProfile getProfileWithDefaultFilter(String name, Block[] blocks) {
