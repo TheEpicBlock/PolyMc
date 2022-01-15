@@ -46,6 +46,7 @@ public class BlockStateProfile {
         this.onFirstRegister = onFirstRegister;
         this.name = name;
     }
+
     public BlockStateProfile(String name, Block block, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) {
         this.blocks = new Block[]{block};
         this.filter = filter;
@@ -122,5 +123,9 @@ public class BlockStateProfile {
     private static boolean isStringUseable(BlockState state) {
         return  state.get(Properties.POWERED) == true ||
                 state.get(TripwireBlock.DISARMED) == true;
+    }
+
+    public BlockStateProfile and(Predicate<BlockState> filter) {
+        return new BlockStateProfile(this.name, this.blocks, this.filter.and(filter), this.onFirstRegister);
     }
 }

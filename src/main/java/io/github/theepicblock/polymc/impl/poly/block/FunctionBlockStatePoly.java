@@ -17,14 +17,12 @@
  */
 package io.github.theepicblock.polymc.impl.poly.block;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
-import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockStateManager;
-import io.github.theepicblock.polymc.api.block.BlockStateProfile;
+import io.github.theepicblock.polymc.api.block.BlockStateMerger;
 import io.github.theepicblock.polymc.api.resource.JsonBlockState;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.Util;
@@ -34,33 +32,53 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.function.Function;
 
 /**
- * This poly uses unused blockstates to display blocks
+ * This poly uses a {@link BlockStateMerger} to merge {@link BlockState}s into groups and then calls a function to get the corresponding client {@link BlockState} for this group.
  */
-public class UnusedBlockStatePoly implements BlockPoly {
+public class FunctionBlockStatePoly implements BlockPoly {
     private final ImmutableMap<BlockState,BlockState> states;
 
-    /**
-     * @param moddedBlock  the block this poly represents
-     * @param stateProfile the profile to use.
-     * @param registry     registry used to register this poly
-     * @throws BlockStateManager.StateLimitReachedException when the clientSideBlock doesn't have any more BlockStates left.
-     */
-    public UnusedBlockStatePoly(Block moddedBlock, PolyRegistry registry, BlockStateProfile stateProfile) throws BlockStateManager.StateLimitReachedException {
-        BlockStateManager manager = registry.getBlockStateManager();
+    public FunctionBlockStatePoly(Block moddedBlock, Function<BlockState, BlockState> registrationProvider) {
+        this(moddedBlock, registrationProvider, BlockStateMerger.DEFAULT);
+    }
 
-        ImmutableList<BlockState> moddedStates = moddedBlock.getStateManager().getStates();
-        if (!manager.isAvailable(stateProfile, moddedStates.size())) {
-            throw new BlockStateManager.StateLimitReachedException("Block doesn't have enough blockstates left. Profile: '" + stateProfile.name + "'");
+        /**
+         * @param moddedBlock the block this poly represents
+         * @param registrationProvider provides a new client block state for a modded block state
+         * @param merger function to use to merge block states which use the same model on the client
+         * @throws BlockStateManager.StateLimitReachedException when the clientSideBlock doesn't have any more BlockStates left.
+         */
+    public FunctionBlockStatePoly(Block moddedBlock, Function<BlockState, BlockState> registrationProvider, BlockStateMerger merger) {
+        var moddedStateGroups = new ArrayList<BlockStateGroup>();
+        var states = new HashMap<BlockState, BlockState>();
+
+        // Sort all the modded states into groups
+        for (var moddedState : moddedBlock.getStateManager().getStates()) {
+            boolean foundGroup = false;
+            for (var group : moddedStateGroups) {
+                if (group.add(moddedState, merger)) {
+                    foundGroup = true;
+                    break;
+                }
+            }
+            if (!foundGroup) {
+                moddedStateGroups.add(new BlockStateGroup(moddedState, merger));
+            }
         }
 
-        HashMap<BlockState,BlockState> res = new HashMap<>();
-        for (BlockState state : moddedStates) {
-            res.put(state, manager.requestBlockState(stateProfile));
+        for (var group : moddedStateGroups) {
+            var clientState = registrationProvider.apply(group.getNeutralizedState());
+            for (var moddedState : group.getStates()) {
+                states.put(moddedState, clientState);
+            }
         }
-        states = ImmutableMap.copyOf(res);
+
+        this.states = ImmutableMap.copyOf(states);
     }
 
     @Override
@@ -73,7 +91,10 @@ public class UnusedBlockStatePoly implements BlockPoly {
         InputStreamReader blockStateReader = pack.getAsset(moddedBlockId.getNamespace(), ResourcePackMaker.BLOCKSTATES + moddedBlockId.getPath() + ".json");
         JsonBlockState moddedBlockStates = pack.getGson().fromJson(new JsonReader(blockStateReader), JsonBlockState.class);
 
+        HashSet<BlockState> clientStatesDone = new HashSet<>();
         states.forEach((moddedState, clientState) -> {
+            if (clientStatesDone.contains(clientState)) return;
+
             Identifier clientBlockId = Registry.BLOCK.getId(clientState.getBlock());
             JsonBlockState clientBlockStates = pack.getOrDefaultPendingBlockState(clientBlockId);
             String clientStateString = Util.getPropertiesFromBlockState(clientState);
@@ -85,6 +106,8 @@ public class UnusedBlockStatePoly implements BlockPoly {
                 Identifier vId = Identifier.tryParse(v.model);
                 if (vId != null) pack.copyModel(new Identifier(v.model));
             }
+
+            clientStatesDone.add(clientState);
         });
     }
 
