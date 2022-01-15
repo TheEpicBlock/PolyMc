@@ -23,6 +23,7 @@ import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockStateManager;
 import io.github.theepicblock.polymc.api.block.BlockStateProfile;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.misc.BooleanContainer;
 import io.github.theepicblock.polymc.impl.poly.block.FunctionBlockStatePoly;
 import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
 import io.github.theepicblock.polymc.mixins.block.MaterialAccessor;
@@ -45,10 +46,14 @@ public class BlockPolyGenerator {
      * Generates the most suitable {@link BlockPoly} for a given {@link Block}
      */
     public static BlockPoly generatePoly(Block block, PolyRegistry registry) {
-        return new FunctionBlockStatePoly(block, (state) -> registerClientState(state, registry.getBlockStateManager()));
+        return new FunctionBlockStatePoly(block, (state, isUniqueCallback) -> registerClientState(state, isUniqueCallback, registry.getBlockStateManager()));
     }
 
-    public static BlockState registerClientState(BlockState moddedState, BlockStateManager manager) {
+    /**
+     * @param isUniqueCallback will be set to true if the return value is a unique block that'll only be used for the inputted moddedState
+     * @return a client state which best matches the moddedState
+     */
+    public static BlockState registerClientState(BlockState moddedState, BooleanContainer isUniqueCallback, BlockStateManager manager) {
         var moddedBlock = moddedState.getBlock();
         var fakeWorld = new FakedWorld(moddedState);
 
@@ -67,6 +72,7 @@ public class BlockPolyGenerator {
             //This block is supposed to be invisible anyway
 
             if (Block.isShapeFullCube(collisionShape)) {
+                isUniqueCallback.set(false);
                 return Blocks.BARRIER.getDefaultState();
             }
 
@@ -76,8 +82,10 @@ public class BlockPolyGenerator {
                     VoxelShape outlineShape = moddedState.getOutlineShape(fakeWorld, BlockPos.ORIGIN);
 
                     if (outlineShape.isEmpty()) {
+                        isUniqueCallback.set(false);
                         return Blocks.VOID_AIR.getDefaultState();
                     } else {
+                        isUniqueCallback.set(false);
                         return Blocks.STRUCTURE_VOID.getDefaultState();
                     }
                 } catch (Exception e) {
@@ -88,17 +96,20 @@ public class BlockPolyGenerator {
 
             //This is neither full not empty, yet it's invisible. So the other strategies won't work.
             //Default to stone
+            isUniqueCallback.set(false);
             return Blocks.STONE.getDefaultState();
         }
 
         //=== FLUIDS ===
         if (moddedBlock instanceof FluidBlock) {
+            isUniqueCallback.set(false);
             return copyAllProperties(moddedState, Blocks.WATER);
         }
 
         //=== LEAVES ===
         if (moddedBlock instanceof LeavesBlock || BlockTags.LEAVES.contains(moddedBlock)) { //TODO I don't like that leaves can be set tags in datapacks, it might cause issues. However, as not every leaf block extends LeavesBlock I can't see much of a better option. Except to maybe check the id if it ends on "_leaves"
             try {
+                isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.LEAVES_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
@@ -107,12 +118,14 @@ public class BlockPolyGenerator {
         boolean isMetal = ((MaterialAccessor)moddedBlock).getMaterial() == Material.METAL;
         if (moddedBlock instanceof DoorBlock) {
             try {
+                isUniqueCallback.set(true);
                 return manager.requestBlockState((isMetal ? BlockStateProfile.METAL_DOOR_PROFILE : BlockStateProfile.DOOR_PROFILE)
                         .and((state) -> propertyMatches(state, moddedState, DoorBlock.OPEN, DoorBlock.FACING, DoorBlock.HINGE, DoorBlock.HALF)));
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
         if (moddedBlock instanceof TrapdoorBlock) {
             try {
+                isUniqueCallback.set(true);
                 return manager.requestBlockState((isMetal ? BlockStateProfile.METAL_TRAPDOOR_PROFILE : BlockStateProfile.TRAPDOOR_PROFILE)
                         .and((state) -> propertyMatches(state, moddedState, TrapdoorBlock.OPEN, TrapdoorBlock.FACING, TrapdoorBlock.HALF, TrapdoorBlock.WATERLOGGED)));
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
@@ -121,11 +134,13 @@ public class BlockPolyGenerator {
         //=== SLABS ===
         if (moddedBlock instanceof SlabBlock) {
             try {
+                isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.PETRIFIED_OAK_SLAB_PROFILE.and(
                         state -> propertyMatches(state, moddedState, SlabBlock.WATERLOGGED, SlabBlock.TYPE)
                 ));
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
             try {
+                isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.WAXED_COPPER_SLAB_PROFILE.and(
                         state -> propertyMatches(state, moddedState, SlabBlock.WATERLOGGED, SlabBlock.TYPE)
                 ));
@@ -134,6 +149,7 @@ public class BlockPolyGenerator {
 
         if (Util.areEqual(collisionShape, SlabBlockAccessor.getBOTTOM_SHAPE())) {
             try {
+                isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.SCULK_SENSOR_PROFILE.and(
                         state -> moddedState.getFluidState().equals(state.getFluidState())
                 ));
@@ -143,6 +159,7 @@ public class BlockPolyGenerator {
         //=== STAIRS ===
         if (moddedBlock instanceof StairsBlock) {
             try {
+                isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.WAXED_COPPER_STAIR_PROFILE.and(
                         state -> propertyMatches(state, moddedState, StairsBlock.FACING, StairsBlock.HALF, StairsBlock.WATERLOGGED, StairsBlock.SHAPE)
                 ));
@@ -152,6 +169,7 @@ public class BlockPolyGenerator {
         //=== FULL BLOCKS ===
         if (Block.isShapeFullCube(collisionShape)) {
             try {
+                isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.NOTE_BLOCK_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
@@ -160,8 +178,10 @@ public class BlockPolyGenerator {
         if (collisionShape.isEmpty()) {
             try {
                 if (moddedState.getFluidState().isEmpty()) {
+                    isUniqueCallback.set(true);
                     return manager.requestBlockState(BlockStateProfile.NO_COLLISION_PROFILE);
                 } else {
+                    isUniqueCallback.set(true);
                     return manager.requestBlockState(BlockStateProfile.KELP_PROFILE);
                 }
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
@@ -170,6 +190,7 @@ public class BlockPolyGenerator {
         //=== FARMLAND-LIKE BLOCKS ===
         if (Util.areEqual(collisionShape, Blocks.FARMLAND.getCollisionShape(Blocks.FARMLAND.getDefaultState(), fakeWorld, BlockPos.ORIGIN, ShapeContext.absent()))) {
             try {
+                isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.FARMLAND_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
@@ -177,12 +198,14 @@ public class BlockPolyGenerator {
         //=== CACTUS-LIKE BLOCKS ===
         if (Util.areEqual(collisionShape, Blocks.CACTUS.getCollisionShape(Blocks.CACTUS.getDefaultState(), fakeWorld, BlockPos.ORIGIN, ShapeContext.absent()))) {
             try {
+                isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.CACTUS_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
         //=== DEFAULT ===
         //PolyMc can't handle this block. TODO implement more general polys to more of these cases
+        isUniqueCallback.set(false);
         return Blocks.STONE.getDefaultState();
     }
 

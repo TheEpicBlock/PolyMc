@@ -21,11 +21,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.api.block.BlockStateManager;
 import io.github.theepicblock.polymc.api.block.BlockStateMerger;
 import io.github.theepicblock.polymc.api.resource.JsonBlockState;
 import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.misc.BooleanContainer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Identifier;
@@ -35,25 +35,29 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * This poly uses a {@link BlockStateMerger} to merge {@link BlockState}s into groups and then calls a function to get the corresponding client {@link BlockState} for this group.
  */
 public class FunctionBlockStatePoly implements BlockPoly {
     private final ImmutableMap<BlockState,BlockState> states;
+    private final ArrayList<BlockState> uniqueClientBlocks = new ArrayList<>();
 
-    public FunctionBlockStatePoly(Block moddedBlock, Function<BlockState, BlockState> registrationProvider) {
+    public FunctionBlockStatePoly(Block moddedBlock, BiFunction<BlockState, BooleanContainer, BlockState> registrationProvider) {
         this(moddedBlock, registrationProvider, BlockStateMerger.DEFAULT);
     }
 
         /**
          * @param moddedBlock the block this poly represents
-         * @param registrationProvider provides a new client block state for a modded block state
+         * @param registrationProvider provides a new client block state for a modded block state.
+         *                             The {@link BooleanContainer} is a workaround for java not having multiple return values.
+         *                             If set to true the client block returned is assumed to be used only for this modded block.
+         *                             And thus this poly will overwrite its textures with the modded one.
+         *                             If set to false it is assumed the client block may be shared with other blocks with do not have the same texture as the modded block.
          * @param merger function to use to merge block states which use the same model on the client
-         * @throws BlockStateManager.StateLimitReachedException when the clientSideBlock doesn't have any more BlockStates left.
          */
-    public FunctionBlockStatePoly(Block moddedBlock, Function<BlockState, BlockState> registrationProvider, BlockStateMerger merger) {
+    public FunctionBlockStatePoly(Block moddedBlock, BiFunction<BlockState, BooleanContainer, BlockState> registrationProvider, BlockStateMerger merger) {
         var moddedStateGroups = new ArrayList<BlockStateGroup>();
         var states = new HashMap<BlockState, BlockState>();
 
@@ -71,11 +75,14 @@ public class FunctionBlockStatePoly implements BlockPoly {
             }
         }
 
+        var isUniqueCallback = new BooleanContainer();
         for (var group : moddedStateGroups) {
-            var clientState = registrationProvider.apply(group.getNeutralizedState());
+            isUniqueCallback.set(false);
+            var clientState = registrationProvider.apply(group.getNeutralizedState(), isUniqueCallback);
             for (var moddedState : group.getStates()) {
                 states.put(moddedState, clientState);
             }
+            if (isUniqueCallback.get()) uniqueClientBlocks.add(clientState);
         }
 
         this.states = ImmutableMap.copyOf(states);
@@ -94,6 +101,7 @@ public class FunctionBlockStatePoly implements BlockPoly {
         HashSet<BlockState> clientStatesDone = new HashSet<>();
         states.forEach((moddedState, clientState) -> {
             if (clientStatesDone.contains(clientState)) return;
+            if (!uniqueClientBlocks.contains(clientState)) return;
 
             Identifier clientBlockId = Registry.BLOCK.getId(clientState.getBlock());
             JsonBlockState clientBlockStates = pack.getOrDefaultPendingBlockState(clientBlockId);
@@ -121,6 +129,9 @@ public class FunctionBlockStatePoly implements BlockPoly {
             out.append(moddedState);
             out.append(" -> ");
             out.append(clientState);
+            if (uniqueClientBlocks.contains(clientState)) {
+                out.append(" (UNIQUE)");
+            }
         });
         return out.toString();
     }
