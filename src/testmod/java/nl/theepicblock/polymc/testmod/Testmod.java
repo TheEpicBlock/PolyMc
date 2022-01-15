@@ -3,10 +3,7 @@ package nl.theepicblock.polymc.testmod;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.block.Block;
-import net.minecraft.block.FallingBlock;
-import net.minecraft.block.MapColor;
-import net.minecraft.block.Material;
+import net.minecraft.block.*;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
@@ -29,6 +26,8 @@ public class Testmod implements ModInitializer {
     public static final Block TEST_BLOCK = new TestBlock(FabricBlockSettings.of(Material.SOIL, MapColor.BLUE));
     public static final Block TEST_STAIRS = new TestStairsBlock(TEST_BLOCK.getDefaultState(), FabricBlockSettings.of(Material.SOIL, MapColor.BLUE));
     public static final Block TEST_SLAB = new TestSlabBlock(FabricBlockSettings.of(Material.SOIL, MapColor.BLUE));
+    public static final Block TEST_DOOR = new TestDoorBlock(FabricBlockSettings.copyOf(Blocks.OAK_DOOR));
+    public static final Block TEST_TRAP_DOOR = new TestTrapdoorBlock(FabricBlockSettings.copyOf(Blocks.OAK_TRAPDOOR));
     public static final Block TEST_BLOCK_GLOWING = new Block(FabricBlockSettings.of(Material.AMETHYST, MapColor.RAW_IRON_PINK).luminance(9));
     public static final Block TEST_BLOCK_WIZARD = new FallingBlock(FabricBlockSettings.of(Material.GLASS, MapColor.CYAN));
 
@@ -44,6 +43,8 @@ public class Testmod implements ModInitializer {
         registerBlock(id("test_block"), TEST_BLOCK);
         registerBlock(id("test_stairs"), TEST_STAIRS);
         registerBlock(id("test_slab"), TEST_SLAB);
+        registerBlock(id("test_door"), TEST_DOOR);
+        registerBlock(id("test_trapdoor"), TEST_TRAP_DOOR);
         registerBlock(id("test_block_glowing"), TEST_BLOCK_GLOWING);
         registerBlock(id("test_block_wizard"), TEST_BLOCK_WIZARD);
 

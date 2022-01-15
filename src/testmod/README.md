@@ -14,6 +14,12 @@ Generic slab. Has a property called `variant` which is 0-20. All of these states
 ## `test_stairs`
 Generic stairs based on `test_block`
 
+## `test_door`
+A generic (wooden) door
+
+## `test_trapdoor`
+A generic (wooden) trapdoor
+
 ## `test_block`
 A generic full block
 
