@@ -26,6 +26,7 @@ import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.poly.block.FunctionBlockStatePoly;
 import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
 import io.github.theepicblock.polymc.mixins.block.MaterialAccessor;
+import io.github.theepicblock.polymc.mixins.block.SlabBlockAccessor;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.FluidState;
@@ -127,6 +128,14 @@ public class BlockPolyGenerator {
             try {
                 return manager.requestBlockState(BlockStateProfile.WAXED_COPPER_SLAB_PROFILE.and(
                         state -> propertyMatches(state, moddedState, SlabBlock.WATERLOGGED, SlabBlock.TYPE)
+                ));
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+        }
+
+        if (Util.areEqual(collisionShape, SlabBlockAccessor.getBOTTOM_SHAPE())) {
+            try {
+                return manager.requestBlockState(BlockStateProfile.SCULK_SENSOR_PROFILE.and(
+                        state -> moddedState.getFluidState().equals(state.getFluidState())
                 ));
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }

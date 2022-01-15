@@ -9,7 +9,7 @@ Things testing the automatic generation should function on their own, without Po
 Generic armor
 
 ## `test_slab`
-Generic slab
+Generic slab. Has a property called `variant` which is 0-20. All of these states should be polyd using a different block.
 
 ## `test_stairs`
 Generic stairs based on `test_block`

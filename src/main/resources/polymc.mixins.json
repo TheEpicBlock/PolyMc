@@ -22,6 +22,7 @@
     "block.MaterialAccessor",
     "block.ProcessSyncedBlockEventServerSideImplementation",
     "block.ResyncImplementation",
+    "block.SlabBlockAccessor",
     "block.implementations.BedBlockImplementation",
     "block.implementations.BlockStateParticleEffectImplementation",
     "block.implementations.BlockUpdateImplementation",
