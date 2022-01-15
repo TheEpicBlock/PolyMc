@@ -117,6 +117,29 @@ public class BlockPolyGenerator {
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
+        //=== SLABS ===
+        if (moddedBlock instanceof SlabBlock) {
+            try {
+                return manager.requestBlockState(BlockStateProfile.PETRIFIED_OAK_SLAB_PROFILE.and(
+                        state -> propertyMatches(state, moddedState, SlabBlock.WATERLOGGED, SlabBlock.TYPE)
+                ));
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+            try {
+                return manager.requestBlockState(BlockStateProfile.WAXED_COPPER_SLAB_PROFILE.and(
+                        state -> propertyMatches(state, moddedState, SlabBlock.WATERLOGGED, SlabBlock.TYPE)
+                ));
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+        }
+
+        //=== STAIRS ===
+        if (moddedBlock instanceof StairsBlock) {
+            try {
+                return manager.requestBlockState(BlockStateProfile.WAXED_COPPER_STAIR_PROFILE.and(
+                        state -> propertyMatches(state, moddedState, StairsBlock.FACING, StairsBlock.HALF, StairsBlock.WATERLOGGED, StairsBlock.SHAPE)
+                ));
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+        }
+
         //=== FULL BLOCKS ===
         if (Block.isShapeFullCube(collisionShape)) {
             try {
@@ -132,13 +155,6 @@ public class BlockPolyGenerator {
                 } else {
                     return manager.requestBlockState(BlockStateProfile.KELP_PROFILE);
                 }
-            } catch (BlockStateManager.StateLimitReachedException ignored) {}
-        }
-
-        //=== SLABS ===
-        if (moddedBlock instanceof SlabBlock) {
-            try {
-                return manager.requestBlockState(BlockStateProfile.PETRIFIED_OAK_SLAB_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 

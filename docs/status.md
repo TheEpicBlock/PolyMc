@@ -23,7 +23,9 @@ A few block shapes have been implemented in PolyMc:
 * Doors: 8
 * Trapdoors: 8
 * Uncollidable blocks: 116
-* Path blocks: 5  
+* Path blocks: 5
+* Slabs: 5
+* Stairs: 4
 Note that some transparent textures might display incorrectly.
 
 ## GUIs <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Orange.png">
