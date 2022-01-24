@@ -43,5 +43,7 @@ public interface ItemPoly extends DebugInfoProvider<Item> {
      * @param pack resource pack the assets should be added to.
      * @param logger a logger for this session. Will output to the person generating the assets
      */
-    void addToResourcePack(Item item, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger);
+    default void addToResourcePack(Item item, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
+
+    }
 }

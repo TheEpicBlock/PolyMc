@@ -18,9 +18,6 @@
 package io.github.theepicblock.polymc.impl.poly.block;
 
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.api.resource.ModdedResources;
-import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
-import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.state.property.Property;
@@ -43,11 +40,6 @@ public class PropertyRetainingReplacementPoly implements BlockPoly {
             output = copyProperty(output, input, p);
         }
         return output;
-    }
-
-    @Override
-    public void addToResourcePack(Block block, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
-
     }
 
     /**

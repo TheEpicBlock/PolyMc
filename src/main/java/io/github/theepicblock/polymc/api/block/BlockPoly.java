@@ -40,7 +40,9 @@ public interface BlockPoly extends DebugInfoProvider<Block> {
      * @param block block this BlockPoly was registered to, for reference.
      * @param pack  resource pack to add to.
      */
-    void addToResourcePack(Block block, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger);
+    default void addToResourcePack(Block block, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
+
+    }
 
     default Wizard createWizard(ServerWorld world, Vec3d pos, Wizard.WizardState state) {
         return null;

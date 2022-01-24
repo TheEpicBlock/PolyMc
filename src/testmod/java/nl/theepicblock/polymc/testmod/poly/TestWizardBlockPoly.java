@@ -1,12 +1,8 @@
 package nl.theepicblock.polymc.testmod.poly;
 
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.api.resource.ModdedResources;
-import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.api.wizard.VItem;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
-import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
@@ -19,11 +15,6 @@ public class TestWizardBlockPoly implements BlockPoly {
     @Override
     public BlockState getClientBlock(BlockState input) {
         return Blocks.RED_STAINED_GLASS.getDefaultState();
-    }
-
-    @Override
-    public void addToResourcePack(Block block, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
-
     }
 
     @Override
