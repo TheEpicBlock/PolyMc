@@ -70,19 +70,14 @@ public class JBlockStateWrapper implements JBlockState {
             var jsonReader = new JsonReader(new InputStreamReader(inputStreamRepresentation));
             jsonReader.setLenient(true);
 
+            this.inputStreamRepresentation = null;
             this.jsonRepresentation = Util.GSON.fromJson(jsonReader, JBlockStateImpl.class);
         }
-    }
-
-    private void setDirty() {
-        // We're now out of sync with the original. We'll set the input stream to null as we're now out of sync with that
-        this.inputStreamRepresentation = null;
     }
 
     @Override
     public void setVariant(String propertyString, JBlockStateVariant[] variants) {
         assertJson();
-        setDirty();
         this.jsonRepresentation.variants.put(propertyString, variantsToJsonElement(variants));
     }
 

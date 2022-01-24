@@ -9,6 +9,11 @@ import java.util.List;
 import java.util.Map;
 
 public class JModelImpl {
+    /**
+     * If there's a credit field, keep it. We don't want to erase attribution
+     */
+    private String credit;
+
     public String parent;
     public JGuiLight gui_light;
     public Map<String, String> textures;

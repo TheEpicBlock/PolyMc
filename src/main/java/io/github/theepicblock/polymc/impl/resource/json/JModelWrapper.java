@@ -44,15 +44,10 @@ public class JModelWrapper implements JModel {
             var jsonReader = new JsonReader(new InputStreamReader(inputStreamRepresentation));
             jsonReader.setLenient(true);
 
+            this.inputStreamRepresentation = null;
             this.jsonRepresentation = Util.GSON.fromJson(jsonReader, JModelImpl.class);
         }
     }
-
-    private void setDirty() {
-        // We're now out of sync with the original. We'll set the input stream to null as we're now out of sync with that
-        this.inputStreamRepresentation = null;
-    }
-
 
     @Override
     public String getParent() {
@@ -63,7 +58,6 @@ public class JModelWrapper implements JModel {
     @Override
     public void setParent(String v) {
         assertJson();
-        setDirty();
         jsonRepresentation.parent = v;
     }
 
@@ -76,7 +70,6 @@ public class JModelWrapper implements JModel {
     @Override
     public void setGuiLight(JGuiLight v) {
         assertJson();
-        setDirty();
         jsonRepresentation.gui_light = v;
     }
 
@@ -90,7 +83,6 @@ public class JModelWrapper implements JModel {
     @Override
     public void setTexture(String textureName, String texture) {
         assertJson();
-        setDirty();
         if (jsonRepresentation.textures == null) {
             jsonRepresentation.textures = new HashMap<>();
         }
@@ -106,7 +98,6 @@ public class JModelWrapper implements JModel {
     @Override
     public void setDisplay(JModelDisplayType position, JModelDisplay display) {
         assertJson();
-        setDirty();
         jsonRepresentation.display.put(position, display);
     }
 
@@ -119,7 +110,6 @@ public class JModelWrapper implements JModel {
     @Override
     public List<JModelOverride> getOverrides() {
         assertJson();
-        setDirty();
         if (jsonRepresentation.overrides == null) {
             jsonRepresentation.overrides = new ArrayList<>();
         }
