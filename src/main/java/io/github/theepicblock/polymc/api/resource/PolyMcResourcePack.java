@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc.api.resource;
 import com.google.gson.Gson;
 import io.github.theepicblock.polymc.api.resource.json.JBlockState;
 import io.github.theepicblock.polymc.api.resource.json.JModel;
+import io.github.theepicblock.polymc.api.resource.json.JSoundEventRegistry;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ResourceConstants;
@@ -32,10 +33,15 @@ public interface PolyMcResourcePack {
     }
 
     default void setSound(String namespace, String path, SoundAsset sound) {
-        setAsset(namespace, ResourceConstants.model(path), sound);
+        setAsset(namespace, ResourceConstants.sound(path), sound);
     }
 
-    //TODO lang files
+    /**
+     * @param path should always be "sounds.json"
+     */
+    default void setSoundRegistry(String namespace, String path, JSoundEventRegistry registry) {
+        setAsset(namespace, path, registry);
+    }
 
     default void setBlockState(String namespace, String path, JBlockState blockState) {
         setAsset(namespace, ResourceConstants.blockstate(path), blockState);
@@ -61,7 +67,12 @@ public interface PolyMcResourcePack {
         return (SoundAsset)this.getAsset(namespace, ResourceConstants.sound(sound));
     }
 
-    //TODO lang files
+    /**
+     * @param path should always be "sounds.json"
+     */
+    default JSoundEventRegistry getSoundRegistry(String namespace, String path) {
+        return (JSoundEventRegistry)this.getAsset(namespace, path);
+    }
 
     default JBlockState getBlockState(String namespace, String block) {
         return (JBlockState)this.getAsset(namespace, ResourceConstants.blockstate(block));

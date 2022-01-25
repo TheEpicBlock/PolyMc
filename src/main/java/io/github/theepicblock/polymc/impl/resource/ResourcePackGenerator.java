@@ -25,8 +25,12 @@ import net.fabricmc.loader.api.FabricLoader;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
 
 public class ResourcePackGenerator {
@@ -80,10 +84,39 @@ public class ResourcePackGenerator {
             }
         });
 
-        //TODO lang files
+        // Import the language files for all mods
+        var languageKeys = new HashMap<String, HashMap<String, String>>(); // The first hashmap is per-language. Then it's translationkey->translation
+        for (var lang : moddedResources.locateLanguageFiles()) {
+            // Ignore fapi
+            if (lang.getNamespace().equals("fabric")) continue;
+            for (var stream : moddedResources.getInputStreams(lang.getNamespace(), lang.getPath())) {
+                var langmap = pack.getGson().fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), HashMap.class);
+                languageKeys.computeIfAbsent(lang.getPath(), (key) -> new HashMap<>()).putAll(langmap);
+            }
+        }
+        // It doesn't actually matter which namespace the language files are under. We're just going to put them all under 'polymc-lang'
+        languageKeys.forEach((path, translations) -> {
+            pack.setAsset("polymc-lang", path, (location, gson) -> {
+                try (var writer = new FileWriter(location.toFile())) {
+                    gson.toJson(translations, writer);
+                }
+            });
+        });
 
-        //TODO sound files
+        // Import sounds
+        for (var namespace : moddedResources.getAllNamespaces()) {
+            var soundsRegistry = moddedResources.getSoundRegistry(namespace, "sounds.json");
+            if (soundsRegistry == null) continue;
+            pack.setSoundRegistry(namespace, "sounds.json", soundsRegistry);
+            pack.importRequirements(moddedResources, soundsRegistry);
+        }
 
+        try {
+            moddedResources.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Failed to close modded resources");
+        }
         return pack;
     }
 
