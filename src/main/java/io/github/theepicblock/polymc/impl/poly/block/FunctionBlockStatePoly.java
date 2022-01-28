@@ -114,7 +114,7 @@ public class FunctionBlockStatePoly implements BlockPoly {
             var moddedVariants = moddedBlockState.getVariantsBestMatching(moddedState);
             clientBlockStates.setVariant(clientStateString, moddedVariants);
 
-            pack.importRequirements(moddedResources, moddedBlockState);
+            pack.importRequirements(moddedResources, moddedVariants, logger);
 
             clientStatesDone.add(clientState);
         });

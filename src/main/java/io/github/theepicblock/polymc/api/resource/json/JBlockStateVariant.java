@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc.api.resource.json;
 import io.github.theepicblock.polymc.api.resource.AssetWithDependencies;
 import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.util.Identifier;
 
 @SuppressWarnings("ClassCanBeRecord") // Records don't work with GSON
@@ -20,7 +21,7 @@ public class JBlockStateVariant implements AssetWithDependencies {
     }
 
     @Override
-    public void importRequirements(ModdedResources from, PolyMcResourcePack to) {
+    public void importRequirements(ModdedResources from, PolyMcResourcePack to, SimpleLogger logger) {
         Identifier id = Identifier.tryParse(this.model());
 
         if (id != null) {
@@ -28,7 +29,12 @@ public class JBlockStateVariant implements AssetWithDependencies {
             var path = id.getPath();
 
             var model = from.getModel(namespace, path);
-            to.setModel(namespace, path, model);
+            if (model != null) {
+                to.setModel(namespace, path, model);
+                to.importRequirements(from, model, logger);
+            } else {
+                logger.error("Couldn't model %s for blockstate variant".formatted(this.model()));
+            }
         }
     }
 

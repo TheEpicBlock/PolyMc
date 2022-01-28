@@ -4,6 +4,8 @@ import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import net.minecraft.util.Identifier;
 import nl.theepicblock.resourcelocatorapi.ResourceLocatorApi;
 import nl.theepicblock.resourcelocatorapi.api.AssetContainer;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +17,7 @@ public class ModdedResourceContainerImpl implements ModdedResources {
     private final AssetContainer inner = ResourceLocatorApi.createGlobalAssetContainer();
 
     @Override
-    public InputStream getInputStream(String namespace, String path) {
+    public @Nullable InputStream getInputStream(String namespace, String path) {
         try {
             return inner.getAsset(namespace, path);
         } catch (IOException e) {
@@ -24,7 +26,7 @@ public class ModdedResourceContainerImpl implements ModdedResources {
     }
 
     @Override
-    public List<InputStream> getInputStreams(String namespace, String path) {
+    public @NotNull List<InputStream> getInputStreams(String namespace, String path) {
         try {
             return inner.getAllAssets(namespace, path);
         } catch (IOException e) {
@@ -33,12 +35,12 @@ public class ModdedResourceContainerImpl implements ModdedResources {
     }
 
     @Override
-    public Set<String> getAllNamespaces() {
+    public @NotNull Set<String> getAllNamespaces() {
         return inner.getNamespaces();
     }
 
     @Override
-    public Set<Identifier> locateLanguageFiles() {
+    public @NotNull Set<Identifier> locateLanguageFiles() {
         return inner.locateLanguageFiles();
     }
 

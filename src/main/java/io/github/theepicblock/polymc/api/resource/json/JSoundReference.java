@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc.api.resource.json;
 import io.github.theepicblock.polymc.api.resource.AssetWithDependencies;
 import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.util.Identifier;
 
 public class JSoundReference implements AssetWithDependencies {
@@ -32,11 +33,16 @@ public class JSoundReference implements AssetWithDependencies {
     }
 
     @Override
-    public void importRequirements(ModdedResources from, PolyMcResourcePack to) {
+    public void importRequirements(ModdedResources from, PolyMcResourcePack to, SimpleLogger logger) {
         var soundId = Identifier.tryParse(this.name);
         if (soundId != null) {
             var sound = from.getSound(soundId.getNamespace(), soundId.getPath());
-            to.setSound(soundId.getNamespace(), soundId.getPath(), sound);
+            if (sound != null) {
+                to.setSound(soundId.getNamespace(), soundId.getPath(), sound);
+                to.importRequirements(from, sound, logger);
+            } else {
+                logger.error("Couldn't find sound model %s".formatted(this.name));
+            }
         }
     }
 }

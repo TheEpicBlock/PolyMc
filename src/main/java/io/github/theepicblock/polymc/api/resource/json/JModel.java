@@ -4,19 +4,36 @@ import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.api.resource.PolyMcAsset;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.util.Identifier;
 
 import java.util.List;
+import java.util.Map;
 
 public interface JModel extends PolyMcAsset {
     @Override
-    default void importRequirements(ModdedResources from, PolyMcResourcePack to) {
+    default void importRequirements(ModdedResources from, PolyMcResourcePack to, SimpleLogger logger) {
         var parent = Identifier.tryParse(this.getParent());
         if (parent != null && !Util.isVanilla(parent)) {
             var parentModel = from.getModel(parent.getNamespace(), parent.getPath());
             if (parentModel != null) {
                 to.setModel(parent.getNamespace(), parent.getPath(), parentModel);
-                to.importRequirements(from, parentModel);
+                to.importRequirements(from, parentModel, logger);
+            } else {
+                logger.error("Couldn't find parent model %s".formatted(this.getParent()));
+            }
+        }
+
+        for (var textureId : this.getTextures().values()) {
+            var id = Identifier.tryParse(textureId);
+            if (id != null && !Util.isVanilla(id)) {
+                var texture = from.getTexture(id.getNamespace(), id.getPath());
+                if (texture != null) {
+                    to.setTexture(id.getNamespace(), id.getPath(), texture);
+                    to.importRequirements(from, texture, logger);
+                } else {
+                    logger.error("Couldn't find texture model %s".formatted(textureId));
+                }
             }
         }
 
@@ -26,7 +43,9 @@ public interface JModel extends PolyMcAsset {
                 var model = from.getModel(id.getNamespace(), id.getPath());
                 if (model != null) {
                     to.setModel(id.getNamespace(), id.getPath(), model);
-                    to.importRequirements(from, model);
+                    to.importRequirements(from, model, logger);
+                } else {
+                    logger.error("Couldn't find override model %s".formatted(override));
                 }
             }
         }
@@ -38,8 +57,7 @@ public interface JModel extends PolyMcAsset {
     JGuiLight getGuiLight();
     void setGuiLight(JGuiLight v);
 
-    String getTexture(String textureName);
-    void setTexture(String textureName, String texture);
+    Map<String, String> getTextures();
 
     JModelDisplay getDisplay(JModelDisplayType position);
     void setDisplay(JModelDisplayType position, JModelDisplay display);

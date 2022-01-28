@@ -108,7 +108,7 @@ public class ResourcePackGenerator {
             var soundsRegistry = moddedResources.getSoundRegistry(namespace, "sounds.json");
             if (soundsRegistry == null) continue;
             pack.setSoundRegistry(namespace, "sounds.json", soundsRegistry);
-            pack.importRequirements(moddedResources, soundsRegistry);
+            pack.importRequirements(moddedResources, soundsRegistry, logger);
         }
 
         try {

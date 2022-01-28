@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import io.github.theepicblock.polymc.api.resource.PolyMcAsset;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -48,7 +49,7 @@ public class ResourcePackImplementation implements PolyMcResourcePack {
     }
 
     @Override
-    public Gson getGson() {
+    public @NotNull Gson getGson() {
         return this.gson;
     }
 }

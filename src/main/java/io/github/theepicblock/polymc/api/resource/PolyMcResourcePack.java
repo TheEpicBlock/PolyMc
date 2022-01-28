@@ -10,6 +10,8 @@ import io.github.theepicblock.polymc.impl.resource.ResourceConstants;
 import io.github.theepicblock.polymc.impl.resource.json.JBlockStateWrapper;
 import io.github.theepicblock.polymc.impl.resource.json.JModelImpl;
 import io.github.theepicblock.polymc.impl.resource.json.JModelWrapper;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.Objects;
@@ -17,15 +19,15 @@ import java.util.Objects;
 public interface PolyMcResourcePack {
     //TODO javadoc for all these
 
-    default void importRequirements(ModdedResources input, AssetWithDependencies[] assets) {
+    default void importRequirements(ModdedResources input, AssetWithDependencies[] assets, SimpleLogger logger) {
         if (assets == null) return;
         for (var asset : assets) {
-            importRequirements(input, asset);
+            importRequirements(input, asset, logger);
         }
     }
 
-    default void importRequirements(ModdedResources input, AssetWithDependencies asset) {
-        asset.importRequirements(input, this);
+    default void importRequirements(ModdedResources input, AssetWithDependencies asset, SimpleLogger logger) {
+        asset.importRequirements(input, this, logger);
     }
 
     default void setTexture(String namespace, String path, TextureAsset texture) {
@@ -59,22 +61,22 @@ public interface PolyMcResourcePack {
 
     ///
 
-    default TextureAsset getTexture(String namespace, String texture) {
+    default @Nullable TextureAsset getTexture(String namespace, String texture) {
         return (TextureAsset)this.getAsset(namespace, ResourceConstants.texture(texture));
     }
 
-    default SoundAsset getSound(String namespace, String sound) {
+    default @Nullable SoundAsset getSound(String namespace, String sound) {
         return (SoundAsset)this.getAsset(namespace, ResourceConstants.sound(sound));
     }
 
     /**
      * @param path should always be "sounds.json"
      */
-    default JSoundEventRegistry getSoundRegistry(String namespace, String path) {
+    default @Nullable JSoundEventRegistry getSoundRegistry(String namespace, String path) {
         return (JSoundEventRegistry)this.getAsset(namespace, path);
     }
 
-    default JBlockState getBlockState(String namespace, String block) {
+    default @Nullable JBlockState getBlockState(String namespace, String block) {
         return (JBlockState)this.getAsset(namespace, ResourceConstants.blockstate(block));
     }
 
@@ -82,14 +84,14 @@ public interface PolyMcResourcePack {
      * Utility that inserts an empty {@link JBlockState} definition (one with no variants) into the map
      * if there's no asset registered at this path,
      */
-    default JBlockState getOrDefaultBlockState(String namespace, String block) {
+    default @Nullable JBlockState getOrDefaultBlockState(String namespace, String block) {
         if (this.getBlockState(namespace, block) == null) {
             this.setBlockState(namespace, block, new JBlockStateWrapper());
         }
         return this.getBlockState(namespace, block);
     }
 
-    default JModel getItemModel(String namespace, String model) {
+    default @Nullable JModel getItemModel(String namespace, String model) {
         return getModel(namespace, "item/"+model);
     }
 
@@ -110,20 +112,20 @@ public interface PolyMcResourcePack {
                 if (Objects.equals(model, "stick")) {
                     newModel.setParent("item/handheld");
                 }
-                newModel.setTexture("layer0", model);
+                newModel.getTextures().put("layer0", model);
                 this.setItemModel(namespace, model, newModel);
             }
         }
         return this.getItemModel(namespace, model);
     }
 
-    default JModel getModel(String namespace, String model) {
+    default @Nullable JModel getModel(String namespace, String model) {
         return (JModel)this.getAsset(namespace, ResourceConstants.model(model));
     }
 
-    PolyMcAsset getAsset(String namespace, String path);
+    @Nullable PolyMcAsset getAsset(String namespace, String path);
 
     void write(Path location, SimpleLogger logger);
 
-    Gson getGson();
+    @NotNull Gson getGson();
 }

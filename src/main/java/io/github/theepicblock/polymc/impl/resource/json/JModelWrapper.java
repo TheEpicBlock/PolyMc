@@ -12,10 +12,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class JModelWrapper implements JModel {
     private InputStream inputStreamRepresentation;
@@ -74,19 +71,12 @@ public class JModelWrapper implements JModel {
     }
 
     @Override
-    public String getTexture(String textureName) {
-        assertJson();
-        if (jsonRepresentation.textures == null) return null;
-        return jsonRepresentation.textures.get(textureName);
-    }
-
-    @Override
-    public void setTexture(String textureName, String texture) {
+    public Map<String,String> getTextures() {
         assertJson();
         if (jsonRepresentation.textures == null) {
             jsonRepresentation.textures = new HashMap<>();
         }
-        jsonRepresentation.textures.put(textureName, texture);
+        return jsonRepresentation.textures;
     }
 
     @Override

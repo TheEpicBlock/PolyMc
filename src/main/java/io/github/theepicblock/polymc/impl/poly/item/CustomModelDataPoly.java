@@ -146,7 +146,7 @@ public class CustomModelDataPoly implements ItemPoly {
             return;
         }
         pack.setItemModel(moddedItemId.getNamespace(), moddedItemId.getPath(), moddedItemModel);
-        pack.importRequirements(moddedResources, moddedItemModel);
+        pack.importRequirements(moddedResources, moddedItemModel, logger);
 
         var clientitemId = Registry.ITEM.getId(this.cachedClientItem.getItem());
 

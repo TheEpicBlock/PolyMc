@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc.api.resource.json;
 import io.github.theepicblock.polymc.api.resource.AssetWithDependencies;
 import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public interface JSoundEvent extends AssetWithDependencies {
     void setSounds(List<JSoundReference> newSounds);
 
     @Override
-    default void importRequirements(ModdedResources from, PolyMcResourcePack to) {
-        this.getSounds().forEach((soundRef) -> to.importRequirements(from, soundRef));
+    default void importRequirements(ModdedResources from, PolyMcResourcePack to, SimpleLogger logger) {
+        this.getSounds().forEach((soundRef) -> to.importRequirements(from, soundRef, logger));
     }
 }

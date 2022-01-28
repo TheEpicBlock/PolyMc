@@ -8,14 +8,18 @@ import io.github.theepicblock.polymc.impl.resource.json.JBlockStateWrapper;
 import io.github.theepicblock.polymc.impl.resource.json.JModelWrapper;
 import io.github.theepicblock.polymc.impl.resource.json.JSoundEventRegistryWrapper;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
 public interface ModdedResources extends AutoCloseable {
-    default TextureAsset getTexture(String namespace, String texture) {
+    default @Nullable TextureAsset getTexture(String namespace, String texture) {
         InputStream textureStream = getInputStream(namespace, ResourceConstants.texture(texture));
+
+        if (textureStream == null) return null;
 
         var metaPath = ResourceConstants.textureMeta(texture);
         if (this.containsAsset(namespace, metaPath)) {
@@ -25,7 +29,7 @@ public interface ModdedResources extends AutoCloseable {
         }
     }
 
-    default SoundAsset getSound(String namespace, String sound) {
+    default @Nullable SoundAsset getSound(String namespace, String sound) {
         var stream = getInputStream(namespace, ResourceConstants.sound(sound));
         return stream == null ? null : new SoundAsset(stream);
     }
@@ -33,39 +37,39 @@ public interface ModdedResources extends AutoCloseable {
     /**
      * @param path should always be "sounds.json"
      */
-    default JSoundEventRegistry getSoundRegistry(String namespace, String path) {
+    default @Nullable JSoundEventRegistry getSoundRegistry(String namespace, String path) {
         var stream = getInputStream(namespace, path);
         return stream == null ? null : new JSoundEventRegistryWrapper(stream);
     }
 
-    default JBlockState getBlockState(String namespace, String block) {
+    default @Nullable JBlockState getBlockState(String namespace, String block) {
         var stream = getInputStream(namespace, ResourceConstants.blockstate(block));
         return stream == null ? null : new JBlockStateWrapper(stream);
     }
 
-    default JModel getItemModel(String namespace, String model) {
+    default @Nullable JModel getItemModel(String namespace, String model) {
         return getModel(namespace, "item/"+model);
     }
 
-    default JModel getModel(String namespace, String model) {
+    default @Nullable JModel getModel(String namespace, String model) {
         var stream = getInputStream(namespace, ResourceConstants.model(model));
         return stream == null ? null : new JModelWrapper(stream);
     }
 
-    InputStream getInputStream(String namespace, String path);
+    @Nullable InputStream getInputStream(String namespace, String path);
 
     /**
      * Gets all the files registered to this namespace:path. This is useful if a file can be defined in multiple places and need to be merged.
      * For example, there can be multiple 'minecraft:lang/en_us.json' definitions. The vanilla client will merge all of these
      */
-    List<InputStream> getInputStreams(String namespace, String path);
+    @NotNull List<InputStream> getInputStreams(String namespace, String path);
 
     /**
      * @return all namespaces that are in this combined resource pack
      */
-    Set<String> getAllNamespaces();
+    @NotNull Set<String> getAllNamespaces();
 
-    Set<Identifier> locateLanguageFiles();
+    @NotNull Set<Identifier> locateLanguageFiles();
 
     boolean containsAsset(String namespace, String model);
 }
