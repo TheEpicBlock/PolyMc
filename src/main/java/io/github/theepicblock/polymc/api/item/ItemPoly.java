@@ -18,7 +18,9 @@
 package io.github.theepicblock.polymc.api.item;
 
 import io.github.theepicblock.polymc.api.DebugInfoProvider;
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
+import io.github.theepicblock.polymc.api.resource.ModdedResources;
+import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -37,7 +39,11 @@ public interface ItemPoly extends DebugInfoProvider<Item> {
     /**
      * Callback to add all resources needed for this item to a resource pack.
      * @param item item this ItemPoly was registered to, for added context.
+     * @param moddedResources a container to retrieve modded assets from.
      * @param pack resource pack the assets should be added to.
+     * @param logger a logger for this session. Will output to the person generating the assets
      */
-    void addToResourcePack(Item item, ResourcePackMaker pack);
+    default void addToResourcePack(Item item, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
+
+    }
 }
