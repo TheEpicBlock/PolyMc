@@ -111,6 +111,7 @@ public class JModelWrapper implements JModel {
         if (inputStreamRepresentation != null) {
             Files.copy(inputStreamRepresentation, location, StandardCopyOption.REPLACE_EXISTING);
         } else {
+            jsonRepresentation.sortOverrides();
             var writer = new FileWriter(location.toFile());
             gson.toJson(jsonRepresentation, writer);
             writer.close();

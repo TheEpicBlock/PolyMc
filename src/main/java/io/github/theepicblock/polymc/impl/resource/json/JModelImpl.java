@@ -19,4 +19,19 @@ public class JModelImpl {
     public Map<String, String> textures;
     public Map<JModelDisplayType,JModelDisplay> display;
     public List<JModelOverride> overrides;
+
+    /**
+     * Ensures that the {@link #overrides} list is properly sorted so that the lowest priority go on top.
+     */
+    public void sortOverrides() {
+        if (overrides == null) return;
+        overrides.sort((o1, o2) -> {
+            if (o1.predicates().size() > 0 && o2.predicates().size() > 0) {
+                double i1 = o1.predicates().values().iterator().next();
+                double i2 = o2.predicates().values().iterator().next();
+                return (int)(i1 - i2);
+            }
+            return 0;
+        });
+    }
 }
