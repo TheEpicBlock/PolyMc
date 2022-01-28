@@ -6,7 +6,7 @@ Things testing the automatic generation should function on their own, without Po
 
 # Auto-gen tests
 ## `test_helmet`, `test_chestplate`, `test_legging` and `test_boots`
-Generic armor
+Generic armor. The boots will display as slabs when damaged.
 
 ## `test_slab`
 Generic slab. Has a property called `variant` which is 0-20. All of these states should be polyd using a different block.
