@@ -77,28 +77,29 @@ public class PolyMcCommands {
                                         SimpleLogger commandSource = new CommandSourceLogger(context.getSource(), true);
                                         ErrorTrackerWrapper logger = new ErrorTrackerWrapper(PolyMc.LOGGER);
                                         // Generate pack
-                                        try {
-                                            var pack = ResourcePackGenerator.generate(PolyMc.getMainMap(), logger);
-                                            if (logger.errors != 0) {
-                                                commandSource.error("There have been errors whilst generating the resource pack. These are usually completely normal. It only means that PolyMc couldn't find some of the textures or models. See the console for more info.");
-                                            }
-
-                                            // Write pack to file
+                                        new Thread(() -> {
                                             try {
-                                                ResourcePackGenerator.cleanAndWrite(pack, "resource", logger);
-                                            } catch (Exception e) {
-                                                commandSource.error("An error occurred whilst trying to save the resource pack! Please check the console.");
-                                                e.printStackTrace();
-                                                return 0;
-                                            }
-                                        } catch (Exception e) {
-                                            commandSource.error("An error occurred whilst trying to generate the resource pack! Please check the console.");
-                                            e.printStackTrace();
-                                            return 0;
-                                        }
+                                                var pack = ResourcePackGenerator.generate(PolyMc.getMainMap(), logger);
+                                                if (logger.errors != 0) {
+                                                    commandSource.error("There have been errors whilst generating the resource pack. These are usually completely normal. It only means that PolyMc couldn't find some of the textures or models. See the console for more info.");
+                                                }
 
-                                        commandSource.info("Finished generating resource pack");
-                                        commandSource.warn("Before hosting this resource pack, please make sure you have the legal right to redistribute the assets inside.");
+                                                // Write pack to file
+                                                try {
+                                                    ResourcePackGenerator.cleanAndWrite(pack, "resource", logger);
+                                                } catch (Exception e) {
+                                                    commandSource.error("An error occurred whilst trying to save the resource pack! Please check the console.");
+                                                    e.printStackTrace();
+                                                }
+                                            } catch (Exception e) {
+                                                commandSource.error("An error occurred whilst trying to generate the resource pack! Please check the console.");
+                                                e.printStackTrace();
+                                            }
+
+                                            commandSource.info("Finished generating resource pack");
+                                            commandSource.warn("Before hosting this resource pack, please make sure you have the legal right to redistribute the assets inside.");
+                                        }).start();
+                                        commandSource.info("Starting resource generation");
                                         return Command.SINGLE_SUCCESS;
                                     })))
                             .then(literal("polyDump")
