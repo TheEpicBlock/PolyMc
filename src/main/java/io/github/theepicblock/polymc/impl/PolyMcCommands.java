@@ -42,6 +42,8 @@ import static net.minecraft.server.command.CommandManager.literal;
  * Registers the polymc commands.
  */
 public class PolyMcCommands {
+    private static boolean isGeneratingResources = false;
+
     public static void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             dispatcher.register(literal("polymc").requires(source -> source.hasPermissionLevel(2))
@@ -76,7 +78,12 @@ public class PolyMcCommands {
                                     .executes((context -> {
                                         SimpleLogger commandSource = new CommandSourceLogger(context.getSource(), true);
                                         ErrorTrackerWrapper logger = new ErrorTrackerWrapper(PolyMc.LOGGER);
+                                        if (isGeneratingResources) {
+                                            commandSource.error("Already generating a resource pack at this moment");
+                                            return 0;
+                                        }
                                         // Generate pack
+                                        isGeneratingResources = true;
                                         new Thread(() -> {
                                             try {
                                                 var pack = ResourcePackGenerator.generate(PolyMc.getMainMap(), logger);
@@ -98,6 +105,7 @@ public class PolyMcCommands {
 
                                             commandSource.info("Finished generating resource pack");
                                             commandSource.warn("Before hosting this resource pack, please make sure you have the legal right to redistribute the assets inside.");
+                                            isGeneratingResources = false;
                                         }).start();
                                         commandSource.info("Starting resource generation");
                                         return Command.SINGLE_SUCCESS;
