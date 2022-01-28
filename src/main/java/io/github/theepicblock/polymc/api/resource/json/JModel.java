@@ -14,7 +14,7 @@ public interface JModel extends PolyMcAsset {
     @Override
     default void importRequirements(ModdedResources from, PolyMcResourcePack to, SimpleLogger logger) {
         var parent = Identifier.tryParse(this.getParent());
-        if (parent != null && !Util.isVanilla(parent)) {
+        if (parent != null && !Util.isVanilla(parent) && to.getModel(parent.getNamespace(), parent.getPath()) == null) {
             var parentModel = from.getModel(parent.getNamespace(), parent.getPath());
             if (parentModel != null) {
                 to.setModel(parent.getNamespace(), parent.getPath(), parentModel);
@@ -26,7 +26,7 @@ public interface JModel extends PolyMcAsset {
 
         for (var textureId : this.getTextures().values()) {
             var id = Identifier.tryParse(textureId);
-            if (id != null && !Util.isVanilla(id)) {
+            if (id != null && !Util.isVanilla(id) && to.getTexture(id.getNamespace(), id.getPath()) == null) {
                 var texture = from.getTexture(id.getNamespace(), id.getPath());
                 if (texture != null) {
                     to.setTexture(id.getNamespace(), id.getPath(), texture);
@@ -39,7 +39,7 @@ public interface JModel extends PolyMcAsset {
 
         for (var override : this.getOverridesReadOnly()) {
             var id = Identifier.tryParse(override.model());
-            if (id != null && !Util.isVanilla(id)) {
+            if (id != null && !Util.isVanilla(id) && to.getModel(id.getNamespace(), id.getPath()) == null) {
                 var model = from.getModel(id.getNamespace(), id.getPath());
                 if (model != null) {
                     to.setModel(id.getNamespace(), id.getPath(), model);

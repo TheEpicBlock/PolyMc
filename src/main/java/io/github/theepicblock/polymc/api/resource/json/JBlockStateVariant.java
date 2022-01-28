@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc.api.resource.json;
 import io.github.theepicblock.polymc.api.resource.AssetWithDependencies;
 import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
+import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.util.Identifier;
 
@@ -24,13 +25,10 @@ public class JBlockStateVariant implements AssetWithDependencies {
     public void importRequirements(ModdedResources from, PolyMcResourcePack to, SimpleLogger logger) {
         Identifier id = Identifier.tryParse(this.model());
 
-        if (id != null) {
-            var namespace = id.getNamespace();
-            var path = id.getPath();
-
-            var model = from.getModel(namespace, path);
+        if (id != null && !Util.isVanilla(id) && to.getModel(id.getNamespace(), id.getPath()) == null) {
+            var model = from.getModel(id.getNamespace(), id.getPath());
             if (model != null) {
-                to.setModel(namespace, path, model);
+                to.setModel(id.getNamespace(), id.getPath(), model);
                 to.importRequirements(from, model, logger);
             } else {
                 logger.error("Couldn't model %s for blockstate variant".formatted(this.model()));
