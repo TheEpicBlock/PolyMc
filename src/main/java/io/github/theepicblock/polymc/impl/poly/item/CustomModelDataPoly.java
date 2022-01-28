@@ -30,6 +30,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
@@ -138,15 +139,18 @@ public class CustomModelDataPoly implements ItemPoly {
 
     @Override
     public void addToResourcePack(Item item, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
-        // Copy the modded item model over into the pack. We'll be linking to it from a vanilla item override
+        // We need to copy over the modded item model into the pack (including all of the textures it references)
+        // Then we need to include an override into a vanilla item model that links to that modded item model
         var moddedItemId = Registry.ITEM.getId(item);
         var moddedItemModel = moddedResources.getItemModel(moddedItemId.getNamespace(), moddedItemId.getPath());
         if (moddedItemModel == null) {
             logger.error("Can't find item model for "+moddedItemId+", can't generate resources for it");
-            return;
+            // Set the override to have the barrier model to signify it's missing
+            moddedItemId = Registry.ITEM.getId(Items.BARRIER);
+        } else {
+            pack.setItemModel(moddedItemId.getNamespace(), moddedItemId.getPath(), moddedItemModel);
+            pack.importRequirements(moddedResources, moddedItemModel, logger);
         }
-        pack.setItemModel(moddedItemId.getNamespace(), moddedItemId.getPath(), moddedItemModel);
-        pack.importRequirements(moddedResources, moddedItemModel, logger);
 
         var clientitemId = Registry.ITEM.getId(this.cachedClientItem.getItem());
 
@@ -156,7 +160,7 @@ public class CustomModelDataPoly implements ItemPoly {
         clientItemModel.getOverrides().add(JModelOverride.ofCMD(cmdValue, ResourceConstants.itemLocation(moddedItemId)));
 
         // Check if the modded item model has overrides
-        if (!moddedItemModel.getOverridesReadOnly().isEmpty()) {
+        if (moddedItemModel != null && !moddedItemModel.getOverridesReadOnly().isEmpty()) {
             // The modded item has overrides, we should remove them and use them as basis for the client item model instead
             for (var override : moddedItemModel.getOverridesReadOnly()) {
                 var predicates = new HashMap<>(override.predicates());
