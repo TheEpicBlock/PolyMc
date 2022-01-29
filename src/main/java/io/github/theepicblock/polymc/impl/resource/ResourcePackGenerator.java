@@ -17,11 +17,13 @@
  */
 package io.github.theepicblock.polymc.impl.resource;
 
+import com.google.gson.JsonObject;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.util.JsonHelper;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -90,8 +92,10 @@ public class ResourcePackGenerator {
             // Ignore fapi
             if (lang.getNamespace().equals("fabric")) continue;
             for (var stream : moddedResources.getInputStreams(lang.getNamespace(), lang.getPath())) {
-                var langmap = pack.getGson().fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), HashMap.class);
-                languageKeys.computeIfAbsent(lang.getPath(), (key) -> new HashMap<>()).putAll(langmap);
+                // Copy all of the language keys into the main map
+                var languageObject = pack.getGson().fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), JsonObject.class);
+                var mainLangMap = languageKeys.computeIfAbsent(lang.getPath(), (key) -> new HashMap<>());
+                languageObject.entrySet().forEach(entry -> mainLangMap.put(entry.getKey(), JsonHelper.asString(entry.getValue(), entry.getKey())));
             }
         }
         // It doesn't actually matter which namespace the language files are under. We're just going to put them all under 'polymc-lang'
