@@ -112,7 +112,7 @@ public interface PolyMcResourcePack {
                 if (Objects.equals(model, "stick")) {
                     newModel.setParent("item/handheld");
                 }
-                newModel.getTextures().put("layer0", model);
+                newModel.getTextures().put("layer0", "item/"+model);
                 this.setItemModel(namespace, model, newModel);
             }
         }
