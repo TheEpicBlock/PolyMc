@@ -5,7 +5,6 @@ import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
-import net.minecraft.util.Identifier;
 
 public class JSoundReference implements AssetWithDependencies {
     public String name;
@@ -35,7 +34,7 @@ public class JSoundReference implements AssetWithDependencies {
 
     @Override
     public void importRequirements(ModdedResources from, PolyMcResourcePack to, SimpleLogger logger) {
-        var soundId = Identifier.tryParse(this.name);
+        var soundId = Util.parseId(this.name);
         if (soundId != null && !Util.isVanilla(soundId) && to.getSound(soundId.getNamespace(), soundId.getPath()) == null) {
             var sound = from.getSound(soundId.getNamespace(), soundId.getPath());
             if (sound != null) {

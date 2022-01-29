@@ -23,7 +23,7 @@ public class JBlockStateVariant implements AssetWithDependencies {
 
     @Override
     public void importRequirements(ModdedResources from, PolyMcResourcePack to, SimpleLogger logger) {
-        Identifier id = Identifier.tryParse(this.model());
+        Identifier id = Util.parseId(this.model());
 
         if (id != null && !Util.isVanilla(id) && to.getModel(id.getNamespace(), id.getPath()) == null) {
             var model = from.getModel(id.getNamespace(), id.getPath());

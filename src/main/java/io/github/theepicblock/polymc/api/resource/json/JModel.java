@@ -5,7 +5,6 @@ import io.github.theepicblock.polymc.api.resource.PolyMcAsset;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
-import net.minecraft.util.Identifier;
 
 import java.util.List;
 import java.util.Map;
@@ -13,7 +12,7 @@ import java.util.Map;
 public interface JModel extends PolyMcAsset {
     @Override
     default void importRequirements(ModdedResources from, PolyMcResourcePack to, SimpleLogger logger) {
-        var parent = Identifier.tryParse(this.getParent());
+        var parent = Util.parseId(this.getParent());
         if (parent != null && !Util.isVanilla(parent) && to.getModel(parent.getNamespace(), parent.getPath()) == null) {
             var parentModel = from.getModel(parent.getNamespace(), parent.getPath());
             if (parentModel != null) {
@@ -25,7 +24,7 @@ public interface JModel extends PolyMcAsset {
         }
 
         for (var textureId : this.getTextures().values()) {
-            var id = Identifier.tryParse(textureId);
+            var id = Util.parseId(textureId);
             if (id != null && !Util.isVanilla(id) && to.getTexture(id.getNamespace(), id.getPath()) == null) {
                 var texture = from.getTexture(id.getNamespace(), id.getPath());
                 if (texture != null) {
@@ -38,7 +37,7 @@ public interface JModel extends PolyMcAsset {
         }
 
         for (var override : this.getOverridesReadOnly()) {
-            var id = Identifier.tryParse(override.model());
+            var id = Util.parseId(override.model());
             if (id != null && !Util.isVanilla(id) && to.getModel(id.getNamespace(), id.getPath()) == null) {
                 var model = from.getModel(id.getNamespace(), id.getPath());
                 if (model != null) {

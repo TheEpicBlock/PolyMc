@@ -200,4 +200,12 @@ public class Util {
         int flags = ((ItemStackAccessor)(Object)stack).callGetHideFlags();
         return ItemStackAccessor.callIsSectionVisible(flags, tooltipSection);
     }
+
+    /**
+     * @return null if the id can't be parsed or the string is null
+     */
+    public static Identifier parseId(String id) {
+        if (id == null) return null;
+        return Identifier.tryParse(id);
+    }
 }
