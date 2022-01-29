@@ -94,6 +94,9 @@ public class PolyMcCommands {
                                                 // Write pack to file
                                                 try {
                                                     ResourcePackGenerator.cleanAndWrite(pack, "resource", logger);
+
+                                                    commandSource.info("Finished generating resource pack");
+                                                    commandSource.warn("Before hosting this resource pack, please make sure you have the legal right to redistribute the assets inside.");
                                                 } catch (Exception e) {
                                                     commandSource.error("An error occurred whilst trying to save the resource pack! Please check the console.");
                                                     e.printStackTrace();
@@ -103,8 +106,6 @@ public class PolyMcCommands {
                                                 e.printStackTrace();
                                             }
 
-                                            commandSource.info("Finished generating resource pack");
-                                            commandSource.warn("Before hosting this resource pack, please make sure you have the legal right to redistribute the assets inside.");
                                             isGeneratingResources = false;
                                         }).start();
                                         commandSource.info("Starting resource generation");
