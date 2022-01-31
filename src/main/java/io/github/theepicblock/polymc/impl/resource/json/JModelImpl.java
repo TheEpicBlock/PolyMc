@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.impl.resource.json;
 
+import com.google.gson.annotations.SerializedName;
 import io.github.theepicblock.polymc.api.resource.json.*;
 
 import java.util.List;
@@ -9,6 +10,7 @@ public class JModelImpl {
     /**
      * If there's a credit field, keep it. We don't want to erase attribution
      */
+    @SerializedName(value = "credit", alternate = "__comment")
     private String credit;
 
     public String parent;
