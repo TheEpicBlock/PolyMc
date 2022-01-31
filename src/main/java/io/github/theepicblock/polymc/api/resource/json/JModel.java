@@ -58,6 +58,8 @@ public interface JModel extends PolyMcAsset {
 
     Map<String, String> getTextures();
 
+    List<JElement> getElements();
+
     JModelDisplay getDisplay(JModelDisplayType position);
     void setDisplay(JModelDisplayType position, JModelDisplay display);
 

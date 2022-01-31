@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class ResourcePackImplementation implements PolyMcResourcePack {
     private final Map<String, Map<String, PolyMcAsset>> assets = new HashMap<>();
-    private final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+    private final Gson gson = new GsonBuilder().enableComplexMapKeySerialization().disableHtmlEscaping().create();
 
     @Override
     public void setAsset(String namespace, String path, PolyMcAsset asset) {

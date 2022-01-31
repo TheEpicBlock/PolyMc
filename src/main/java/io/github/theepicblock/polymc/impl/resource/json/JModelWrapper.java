@@ -80,6 +80,15 @@ public class JModelWrapper implements JModel {
     }
 
     @Override
+    public List<JElement> getElements() {
+        assertJson();
+        if (jsonRepresentation.elements == null) {
+            jsonRepresentation.elements = new ArrayList<>();
+        }
+        return jsonRepresentation.elements;
+    }
+
+    @Override
     public JModelDisplay getDisplay(JModelDisplayType position) {
         assertJson();
         return jsonRepresentation.display.get(position);
