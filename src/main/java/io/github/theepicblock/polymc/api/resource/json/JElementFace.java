@@ -2,13 +2,13 @@ package io.github.theepicblock.polymc.api.resource.json;
 
 @SuppressWarnings("ClassCanBeRecord") // Records don't work with GSON
 public final class JElementFace {
-    private final int[] uv;
+    private final double[] uv;
     private final String texture;
     private final JDirection cullface;
     private final int rotation;
     private final int tintindex;
 
-    public JElementFace(int[] uv, String texture, JDirection cullface, int rotation, int tintindex) {
+    public JElementFace(double[] uv, String texture, JDirection cullface, int rotation, int tintindex) {
         this.uv = uv;
         this.texture = texture;
         this.cullface = cullface;
@@ -16,7 +16,7 @@ public final class JElementFace {
         this.tintindex = tintindex;
     }
 
-    public int[] uv() {
+    public double[] uv() {
         return uv;
     }
 
