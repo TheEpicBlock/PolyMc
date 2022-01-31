@@ -2,6 +2,7 @@ package io.github.theepicblock.polymc.api.resource.json;
 
 import io.github.theepicblock.polymc.api.resource.PolyMcAsset;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.resource.json.JBlockStateWrapper;
 import net.minecraft.block.BlockState;
 
 import java.util.Optional;
@@ -37,5 +38,9 @@ public interface JBlockState extends PolyMcAsset {
             return getVariants(propertyString);
         }
         return null;
+    }
+
+    static JBlockState create() {
+        return new JBlockStateWrapper();
     }
 }

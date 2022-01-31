@@ -5,6 +5,7 @@ import io.github.theepicblock.polymc.api.resource.PolyMcAsset;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import io.github.theepicblock.polymc.impl.resource.json.JModelWrapper;
 
 import java.util.List;
 import java.util.Map;
@@ -65,4 +66,8 @@ public interface JModel extends PolyMcAsset {
 
     List<JModelOverride> getOverridesReadOnly();
     List<JModelOverride> getOverrides();
+
+    static JModel create() {
+        return new JModelWrapper();
+    }
 }
