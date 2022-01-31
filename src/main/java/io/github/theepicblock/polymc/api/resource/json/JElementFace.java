@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.api.resource.json;
 
+@SuppressWarnings("ClassCanBeRecord") // Records don't work with GSON
 public final class JElementFace {
     private final int[] uv;
     private final String texture;

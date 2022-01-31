@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.api.resource.json;
 
+@SuppressWarnings("ClassCanBeRecord") // Records don't work with GSON
 public final class JElementRotation {
     private final double[] origin;
     private final String axis;

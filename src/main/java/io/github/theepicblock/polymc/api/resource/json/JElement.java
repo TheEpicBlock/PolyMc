@@ -4,6 +4,7 @@ import net.minecraft.util.math.Direction;
 
 import java.util.Map;
 
+@SuppressWarnings("ClassCanBeRecord") // Records don't work with GSON
 public final class JElement {
     private final double[] from;
     private final double[] to;
