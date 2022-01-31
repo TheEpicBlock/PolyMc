@@ -1,13 +1,13 @@
 package io.github.theepicblock.polymc.impl.resource.json;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.api.resource.json.JBlockState;
 import io.github.theepicblock.polymc.api.resource.json.JBlockStateVariant;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.resource.ResourceGenerationException;
+import io.github.theepicblock.polymc.impl.resource.ResourceSaveException;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,6 +21,7 @@ import java.util.Set;
 public class JBlockStateWrapper implements JBlockState {
     private InputStream inputStreamRepresentation;
     private JBlockStateImpl jsonRepresentation;
+    private @Nullable String name;
 
     public JBlockStateWrapper() {
         this.jsonRepresentation = new JBlockStateImpl();
@@ -35,6 +36,11 @@ public class JBlockStateWrapper implements JBlockState {
             throw new NullPointerException();
         }
         this.inputStreamRepresentation = inputStream;
+    }
+
+    public JBlockStateWrapper(InputStream inputStream, @Nullable String name) {
+        this(inputStream);
+        this.name = name;
     }
 
     /**
@@ -67,11 +73,15 @@ public class JBlockStateWrapper implements JBlockState {
      */
     private void assertJson() {
         if (jsonRepresentation == null) {
-            var jsonReader = new JsonReader(new InputStreamReader(inputStreamRepresentation));
-            jsonReader.setLenient(true);
+            try {
+                var jsonReader = new JsonReader(new InputStreamReader(inputStreamRepresentation));
+                jsonReader.setLenient(true);
 
-            this.inputStreamRepresentation = null;
-            this.jsonRepresentation = Util.GSON.fromJson(jsonReader, JBlockStateImpl.class);
+                this.inputStreamRepresentation = null;
+                this.jsonRepresentation = Util.GSON.fromJson(jsonReader, JBlockStateImpl.class);
+            } catch (JsonSyntaxException e) {
+                throw new ResourceGenerationException("Error reading block state definition for "+name, e);
+            }
         }
     }
 
@@ -97,10 +107,16 @@ public class JBlockStateWrapper implements JBlockState {
     public void write(Path location, Gson gson) throws IOException {
         if (inputStreamRepresentation != null) {
             Files.copy(inputStreamRepresentation, location, StandardCopyOption.REPLACE_EXISTING);
-        } else {
+        } else if (jsonRepresentation != null) {
             var writer = new FileWriter(location.toFile());
             gson.toJson(jsonRepresentation, writer);
             writer.close();
+        } else {
+            if (name != null) {
+                throw new ResourceSaveException("Failed to save block state definition "+name+". File is unrepresented. This is usually caused by some earlier error concerning json parsing");
+            } else {
+                throw new ResourceSaveException("Failed to save block state definition. File is unrepresented. This is usually caused by some earlier error concerning json parsing");
+            }
         }
     }
 }

@@ -39,12 +39,13 @@ public interface ModdedResources extends AutoCloseable {
      */
     default @Nullable JSoundEventRegistry getSoundRegistry(String namespace, String path) {
         var stream = getInputStream(namespace, path);
-        return stream == null ? null : new JSoundEventRegistryWrapper(stream);
+        return stream == null ? null : new JSoundEventRegistryWrapper(stream, namespace+":"+path);
     }
 
     default @Nullable JBlockState getBlockState(String namespace, String block) {
-        var stream = getInputStream(namespace, ResourceConstants.blockstate(block));
-        return stream == null ? null : new JBlockStateWrapper(stream);
+        var path = ResourceConstants.blockstate(block);
+        var stream = getInputStream(namespace, path);
+        return stream == null ? null : new JBlockStateWrapper(stream, namespace+":"+path);
     }
 
     default @Nullable JModel getItemModel(String namespace, String model) {
@@ -52,8 +53,9 @@ public interface ModdedResources extends AutoCloseable {
     }
 
     default @Nullable JModel getModel(String namespace, String model) {
-        var stream = getInputStream(namespace, ResourceConstants.model(model));
-        return stream == null ? null : new JModelWrapper(stream);
+        var path = ResourceConstants.model(model);
+        var stream = getInputStream(namespace, path);
+        return stream == null ? null : new JModelWrapper(stream, namespace+":"+path);
     }
 
     @Nullable InputStream getInputStream(String namespace, String path);
