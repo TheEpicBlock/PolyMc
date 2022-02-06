@@ -21,6 +21,9 @@
   "entrypoints": {
     "main": [
       "io.github.theepicblock.polymc.PolyMc"
+    ],
+    "preLaunch": [
+      "io.github.theepicblock.polymc.stubs.loader.PolyMcStubsLoader"
     ]
   },
   "mixins": [

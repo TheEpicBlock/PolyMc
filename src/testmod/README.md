@@ -32,6 +32,9 @@ A generic item. Prints debug info when clicking with it. It also has an epic rar
 ## `test_enchantment`
 An enchantment that does nothing and can be applied to *any* item. Including blocks and such. Should range from level 1-4.
 
+## `/polymctest testshift`
+Tests the return value of `Screen#hasShiftDown`. Used to test if PolyMc included a stub for it.
+
 # Api tests
 ## `test_block_wizard`
 Test block for the wizard system. Its poly is set to replace it with red stained glass and 
