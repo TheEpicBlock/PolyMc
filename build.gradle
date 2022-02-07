@@ -26,6 +26,9 @@ dependencies {
 	modImplementation include("com.github.theepicblock:resource-locator-api:${project.resource_lookup_api_version}")
 
 	modCompileOnly "com.github.CaffeineMC.lithium-fabric:lithium:${project.lithium_version}"
+
+	annotationProcessor(project(":annotationProcessor"))
+	compileClasspath(project(":annotationProcessor"))
 }
 
 sourceSets {
@@ -76,6 +79,10 @@ java {
 	// if it is present.
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
+}
+
+compileJava {
+	options.compilerArgs << '-APolyMcAnnotationProcessorSrcDir='+project.sourceSets.main.java.srcDirs[0]
 }
 
 jar {

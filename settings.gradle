@@ -12,3 +12,5 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
+include "annotationProcessor"
