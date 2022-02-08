@@ -52,7 +52,7 @@ public class PolyMcCommands {
                                     .executes((context) -> {
                                         var player = context.getSource().getPlayer();
                                         var heldItem = player.getInventory().getMainHandStack();
-                                        var polydItem = PolyMapProvider.getPolyMap(player).getClientItem(heldItem, player);
+                                        var polydItem = PolyMapProvider.getPolyMap(player).getClientItem(heldItem, player, null);
                                         var heldItemTag = polydItem.writeNbt(new NbtCompound());
                                         var nbtText = NbtHelper.toPrettyPrintedText(heldItemTag);
                                         context.getSource().sendFeedback(nbtText, false);

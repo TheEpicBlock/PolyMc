@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.impl.poly.item;
 
+import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -10,8 +11,10 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.registry.Registry;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Poly that ports the non-vanilla enchantments of an item to the lore tag, so it can be displayed properly by the vanilla client.
@@ -23,7 +26,7 @@ import net.minecraft.util.registry.Registry;
  */
 public class Enchantment2LoreTransformer implements ItemTransformer {
     @Override
-    public ItemStack transform(ItemStack input) {
+    public ItemStack transform(ItemStack input, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
         return portEnchantmentsToLore(input);
     }
 

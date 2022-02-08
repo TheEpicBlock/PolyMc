@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.impl.poly.item;
 
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
+import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
@@ -41,6 +42,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.registry.Registry;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,7 +86,7 @@ public class CustomModelDataPoly implements ItemPoly {
 
     @SuppressWarnings("ConstantConditions")
     @Override
-    public ItemStack getClientItem(ItemStack input) {
+    public ItemStack getClientItem(ItemStack input, @Nullable ItemLocation location) {
         ItemStack serverItem = cachedClientItem;
         if (input.hasNbt()) {
             serverItem = cachedClientItem.copy();
