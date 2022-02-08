@@ -88,6 +88,8 @@ public class PolyMcStubsLoader implements PreLaunchEntrypoint {
                     e.printStackTrace();
                 }
             }
+        } catch (NoSuchMethodException e) {
+            LOGGER.warn("Incompatible class loader {}, can't load stubs", PolyMcStubsLoader.class.getClassLoader().getClass().getName());
         } catch (Throwable e) {
             LOGGER.error("Error loading stubs");
             e.printStackTrace();
