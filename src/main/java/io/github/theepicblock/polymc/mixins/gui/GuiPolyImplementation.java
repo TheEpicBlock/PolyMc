@@ -17,7 +17,6 @@
  */
 package io.github.theepicblock.polymc.mixins.gui;
 
-import io.github.theepicblock.polymc.api.gui.GuiManager;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.Util;
@@ -29,14 +28,12 @@ import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ServerPlayerEntity.class)
-public class GuiManagerImplementation {
-    @Unique private GuiManager guiManager;
+public class GuiPolyImplementation {
 
     @Redirect(method = "openHandledScreen(Lnet/minecraft/screen/NamedScreenHandlerFactory;)Ljava/util/OptionalInt;", at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/NamedScreenHandlerFactory;createMenu(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/entity/player/PlayerEntity;)Lnet/minecraft/screen/ScreenHandler;"))
     public ScreenHandler handlerId(NamedScreenHandlerFactory namedScreenHandlerFactory, int syncId, PlayerInventory inv, PlayerEntity player) {
@@ -45,8 +42,7 @@ public class GuiManagerImplementation {
 
         GuiPoly poly = PolyMapProvider.getPolyMap((ServerPlayerEntity)player).getGuiPoly(base.getType());
         if (poly != null) {
-            this.guiManager = poly.createGuiManager(base, (ServerPlayerEntity)player);
-            return guiManager.getInitialHandler(syncId);
+            return poly.replaceScreenHandler(base, (ServerPlayerEntity)player, syncId);
         } else {
             return base;
         }

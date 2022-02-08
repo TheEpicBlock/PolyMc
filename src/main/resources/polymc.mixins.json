@@ -40,7 +40,7 @@
     "context.PacketPlayerContextContainer",
     "entity.EntityTrackerMixin",
     "gui.FApiExtendedScreenHandlerPatch",
-    "gui.GuiManagerImplementation",
+    "gui.GuiPolyImplementation",
     "item.CreativeItemStackFix",
     "item.CustomRecipeFix",
     "item.GameModeUpdateMixin",

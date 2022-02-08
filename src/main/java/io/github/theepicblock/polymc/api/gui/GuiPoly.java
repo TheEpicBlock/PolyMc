@@ -21,5 +21,5 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public interface GuiPoly {
-    GuiManager createGuiManager(ScreenHandler base, ServerPlayerEntity player);
+    ScreenHandler replaceScreenHandler(ScreenHandler base, ServerPlayerEntity player, int syncId);
 }

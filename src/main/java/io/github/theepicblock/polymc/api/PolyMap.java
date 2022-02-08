@@ -22,6 +22,7 @@ import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.mixins.gui.GuiPolyImplementation;
 import io.github.theepicblock.polymc.mixins.item.CreativeItemStackFix;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -101,7 +102,7 @@ public interface PolyMap {
      * @see io.github.theepicblock.polymc.mixins.tag.SerializedMixin
      * @see io.github.theepicblock.polymc.mixins.block.ResyncImplementation
      * @see io.github.theepicblock.polymc.impl.mixin.CustomBlockBreakingCheck#needsCustomBreaking(ServerPlayerEntity, Block)
-     * @see io.github.theepicblock.polymc.mixins.gui.GuiManagerImplementation
+     * @see GuiPolyImplementation
      * @see io.github.theepicblock.polymc.mixins.item.CustomRecipeFix
      */
     boolean isVanillaLikeMap();
