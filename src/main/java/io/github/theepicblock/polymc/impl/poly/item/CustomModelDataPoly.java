@@ -95,9 +95,11 @@ public class CustomModelDataPoly implements ItemPoly {
             serverItem.getNbt().putInt("CustomModelData", cmdValue);
         }
 
+        if (location == null || location == ItemLocation.INVENTORY) {
 
-        // Add custom tooltips
-        if (Util.isSectionVisible(input, ItemStack.TooltipSection.ADDITIONAL)) {
+        }
+        // Add custom tooltips. Don't bother showing them if the item's not in the inventory
+        if (Util.isSectionVisible(input, ItemStack.TooltipSection.ADDITIONAL) && isInventory(location)) {
             Entity holder = input.getHolder(); // This is not usually guaranteed to get the correct player. It works here however.
 
             var tooltips = new ArrayList<Text>(0);
@@ -125,18 +127,27 @@ public class CustomModelDataPoly implements ItemPoly {
         if (!input.hasCustomName()) {
             var name = input.getName();
 
-            // Override the style to make sure the client does not render
-            // the custom name in italics, and uses the correct rarity format
-            if (name instanceof MutableText mutableText) {
-                mutableText.setStyle(name.getStyle().withItalic(false).withColor(input.getRarity().formatting));
-            }
+            if (location == ItemLocation.TRACKED_DATA) {
+                // Don't override the name, otherwise it'll show up on item frames
+                serverItem.setCustomName(null);
+            } else  {
+                // Override the style to make sure the client does not render
+                // the custom name in italics, and uses the correct rarity format
+                if (name instanceof MutableText mutableText) {
+                    mutableText.setStyle(name.getStyle().withItalic(false).withColor(input.getRarity().formatting));
+                }
 
-            serverItem.setCustomName(name);
+                serverItem.setCustomName(name);
+            }
         }
 
         serverItem.setCount(input.getCount());
         serverItem.setBobbingAnimationTime(input.getBobbingAnimationTime());
         return serverItem;
+    }
+
+    private static boolean isInventory(@Nullable ItemLocation location) {
+        return location == ItemLocation.INVENTORY || location == null; // Be conservative and say that unknown locations are in inventory too
     }
 
     @Override
