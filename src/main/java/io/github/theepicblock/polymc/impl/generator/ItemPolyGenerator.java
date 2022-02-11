@@ -21,7 +21,7 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
-import io.github.theepicblock.polymc.impl.poly.ArmorColorManager;
+import io.github.theepicblock.polymc.impl.poly.item.ArmorColorManager;
 import io.github.theepicblock.polymc.impl.poly.item.CustomModelDataPoly;
 import io.github.theepicblock.polymc.impl.poly.item.DamageableItemPoly;
 import io.github.theepicblock.polymc.impl.poly.item.FancyPantsItemPoly;

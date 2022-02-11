@@ -1,4 +1,4 @@
-package io.github.theepicblock.polymc.impl.poly;
+package io.github.theepicblock.polymc.impl.poly.item;
 
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
