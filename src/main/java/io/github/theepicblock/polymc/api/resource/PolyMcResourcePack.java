@@ -10,6 +10,7 @@ import io.github.theepicblock.polymc.impl.resource.ResourceConstants;
 import io.github.theepicblock.polymc.impl.resource.json.JBlockStateWrapper;
 import io.github.theepicblock.polymc.impl.resource.json.JModelImpl;
 import io.github.theepicblock.polymc.impl.resource.json.JModelWrapper;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -113,6 +114,11 @@ public interface PolyMcResourcePack {
                     newModel.setParent("item/handheld");
                 }
                 newModel.getTextures().put("layer0", "item/"+model);
+
+                if (ArrayUtils.contains(new String[]{"leather_helmet", "leather_chestplate", "leather_leggings", "leather_boots"}, model)) {
+                    newModel.getTextures().put("layer1", "item/"+model+"_overlay");
+                }
+
                 this.setItemModel(namespace, model, newModel);
             }
         }
