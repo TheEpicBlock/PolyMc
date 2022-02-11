@@ -86,7 +86,7 @@ public class PolyMcCommands {
                                         isGeneratingResources = true;
                                         new Thread(() -> {
                                             try {
-                                                var pack = ResourcePackGenerator.generate(PolyMc.getMainMap(), logger);
+                                                var pack = PolyMc.getMainMap().generateResourcePack(logger);
                                                 if (logger.errors != 0) {
                                                     commandSource.error("There have been errors whilst generating the resource pack. These are usually completely normal. It only means that PolyMc couldn't find some of the textures or models. See the console for more info.");
                                                 }

@@ -46,7 +46,7 @@ public class BlockPolyGenerator {
      * Generates the most suitable {@link BlockPoly} for a given {@link Block}
      */
     public static BlockPoly generatePoly(Block block, PolyRegistry registry) {
-        return new FunctionBlockStatePoly(block, (state, isUniqueCallback) -> registerClientState(state, isUniqueCallback, registry.getBlockStateManager()));
+        return new FunctionBlockStatePoly(block, (state, isUniqueCallback) -> registerClientState(state, isUniqueCallback, registry.getSharedValues(BlockStateManager.KEY)));
     }
 
     /**
