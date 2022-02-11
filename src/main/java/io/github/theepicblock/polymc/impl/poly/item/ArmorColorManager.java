@@ -50,6 +50,10 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
         }
         return material2Color.getInt(material);
     }
+    
+    public Object2IntArrayMap<ArmorMaterial> getAllColors() {
+        return this.material2Color;
+    }
 
     // We don't have any reference to the PolyRegistry, so the resource container can be the same class
     @Override
