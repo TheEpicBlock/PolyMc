@@ -17,20 +17,19 @@
  */
 package io.github.theepicblock.polymc.api;
 
-import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
-import io.github.theepicblock.polymc.impl.poly.item.ArmorMaterialPoly;
+import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.mixins.gui.GuiPolyImplementation;
 import io.github.theepicblock.polymc.mixins.item.CreativeItemStackFix;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
@@ -62,37 +61,24 @@ public interface PolyMap {
     }
 
     /**
-     * Gets the {@link GuiPoly} that this PolyMap associates with this {@link ScreenHandlerType}.
-     * @return A {@link GuiPoly} describing how to display this screen type on the client.
+     * @return the {@link ItemPoly} that this PolyMap associates with this {@link Item}.
      */
-    GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType);
+    ItemPoly getItemPoly(Item item);
 
     /**
-     * Gets the {@link BlockPoly} that this PolyMap associates with this {@link Block}.
-     * @return A {@link BlockPoly} describing how to display this block on the client.
+     * @return the {@link BlockPoly} that this PolyMap associates with this {@link Block}.
      */
     BlockPoly getBlockPoly(Block block);
 
     /**
-     * Gets the {@link EntityPoly} that this PolyMap associates with this {@link EntityType}.
-     * @return A {@link EntityPoly}.
+     * @return the {@link GuiPoly} that this PolyMap associates with this {@link ScreenHandlerType}.
+     */
+    GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType);
+
+    /**
+     * @return the {@link EntityPoly} that this PolyMap associates with this {@link EntityType}.
      */
     <T extends Entity> EntityPoly<T> getEntityPoly(EntityType<T> entity);
-
-    /**
-     * gets a map containing all {@link ItemPoly}s that are registered in this map.
-     */
-    ImmutableMap<Item,ItemPoly> getItemPolys();
-
-    /**
-     * gets a map containing all {@link BlockPoly}s that are registered in this map.
-     */
-    ImmutableMap<Block,BlockPoly> getBlockPolys();
-
-    /**
-     * gets a map containing all {@link ArmorMaterialPoly}s that are registered in this map.
-     */
-    ImmutableMap<ArmorMaterial, ArmorMaterialPoly> getArmorMaterialPolys();
 
     /**
      * Reverts the clientside item into the serverside representation.
@@ -114,4 +100,8 @@ public interface PolyMap {
      * @see io.github.theepicblock.polymc.mixins.item.CustomRecipeFix
      */
     boolean isVanillaLikeMap();
+
+    @Nullable PolyMcResourcePack generateResourcePack(SimpleLogger logger);
+
+    String dumpDebugInfo();
 }

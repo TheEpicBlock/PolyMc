@@ -2,6 +2,7 @@ package io.github.theepicblock.polymc.impl.poly.item;
 
 import com.google.common.collect.Multimap;
 import io.github.theepicblock.polymc.api.PolyRegistry;
+import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
@@ -40,7 +41,7 @@ public class ArmorItemPoly extends DamageableItemPoly {
     }
 
     public ArmorItemPoly(PolyRegistry builder, ArmorItem base, Item replacementItem) {
-        super(builder.getCMDManager(), base, replacementItem);
+        super(builder.getSharedValues(CustomModelDataManager.KEY), base, replacementItem);
 
         this.material = base.getMaterial();
         this.slot = base.getSlotType();

@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.api.item;
 
+import io.github.theepicblock.polymc.api.SharedValuesKey;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.item.Item;
@@ -28,6 +29,8 @@ import net.minecraft.util.Pair;
  * For example, a mod can request 100 CustomModelData values for a specific item. Then those will be reserved and another mod will get different values.
  */
 public class CustomModelDataManager {
+    public final static SharedValuesKey<CustomModelDataManager> KEY = new SharedValuesKey<>(registry -> new CustomModelDataManager(), null);
+
     public final static Item[] DEFAULT_ITEMS = {
             Items.STICK,
             Items.GLISTERING_MELON_SLICE,

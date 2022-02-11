@@ -15,6 +15,6 @@ public class CustomBlockBreakingCheck {
             return false;
 
         var polyMap = PolyMapProvider.getPolyMap(player);
-        return polyMap.getBlockPoly(block) != null || polyMap.getItemPolys().containsKey(player.getMainHandStack().getItem());
+        return polyMap.getBlockPoly(block) != null || polyMap.getItemPoly(player.getMainHandStack().getItem()) != null;
     }
 }

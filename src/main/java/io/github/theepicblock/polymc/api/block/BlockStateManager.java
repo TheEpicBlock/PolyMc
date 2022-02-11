@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.api.block;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
+import io.github.theepicblock.polymc.api.SharedValuesKey;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 
@@ -29,6 +30,8 @@ import java.util.function.Predicate;
  * Manages which blockstates are allocated to which polys.
  */
 public class BlockStateManager {
+    public static final SharedValuesKey<BlockStateManager> KEY = new SharedValuesKey<>(BlockStateManager::new, null);
+
     private final Map<Block,Set<BlockState>> availableBlockStates = new HashMap<>();
     private final PolyRegistry polyRegistry;
 

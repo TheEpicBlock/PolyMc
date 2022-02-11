@@ -34,37 +34,39 @@ public class ItemPolyGenerator {
      * Generates the most suitable {@link ItemPoly} for a given {@link Item}
      */
     public static ItemPoly generatePoly(Item item, PolyRegistry builder) {
+        var cmdManager = builder.getSharedValues(CustomModelDataManager.KEY);
+
         if (item instanceof ArmorItem armorItem) {
             return new ArmorItemPoly(builder, armorItem);
         }
         if (item instanceof ShieldItem) {
-            return new DamageableItemPoly(builder.getCMDManager(), item, Items.SHIELD);
+            return new DamageableItemPoly(cmdManager, item, Items.SHIELD);
         }
         if (item instanceof CompassItem) {
-            return new CustomModelDataPoly(builder.getCMDManager(), item, Items.COMPASS);
+            return new CustomModelDataPoly(cmdManager, item, Items.COMPASS);
         }
         if (item instanceof CrossbowItem) {
-            return new DamageableItemPoly(builder.getCMDManager(), item, Items.CROSSBOW);
+            return new DamageableItemPoly(cmdManager, item, Items.CROSSBOW);
         }
         if (item instanceof RangedWeaponItem) {
-            return new DamageableItemPoly(builder.getCMDManager(), item, Items.BOW);
+            return new DamageableItemPoly(cmdManager, item, Items.BOW);
         }
         if (item.isDamageable()) {
             if (item instanceof DyeableItem) {
-                return new DamageableItemPoly(builder.getCMDManager(), item, Items.LEATHER_HELMET);
+                return new DamageableItemPoly(cmdManager, item, Items.LEATHER_HELMET);
             }
-            return new DamageableItemPoly(builder.getCMDManager(), item);
+            return new DamageableItemPoly(cmdManager, item);
         }
         if (item.isFood()) {
-            return new CustomModelDataPoly(builder.getCMDManager(), item, CustomModelDataManager.FOOD_ITEMS);
+            return new CustomModelDataPoly(cmdManager, item, CustomModelDataManager.FOOD_ITEMS);
         }
         if (item instanceof DyeableItem) {
-            return new CustomModelDataPoly(builder.getCMDManager(), item, Items.LEATHER_HORSE_ARMOR);
+            return new CustomModelDataPoly(cmdManager, item, Items.LEATHER_HORSE_ARMOR);
         }
         if (item instanceof BlockItem) {
-            return new CustomModelDataPoly(builder.getCMDManager(), item, CustomModelDataManager.BLOCK_ITEMS);
+            return new CustomModelDataPoly(cmdManager, item, CustomModelDataManager.BLOCK_ITEMS);
         }
-        return new CustomModelDataPoly(builder.getCMDManager(), item);
+        return new CustomModelDataPoly(cmdManager, item);
     }
 
     /**
