@@ -42,6 +42,8 @@ import static net.minecraft.server.command.CommandManager.literal;
  * Registers the polymc commands.
  */
 public class PolyMcCommands {
+    private static boolean isGeneratingResources = false;
+
     public static void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             dispatcher.register(literal("polymc").requires(source -> source.hasPermissionLevel(2))
@@ -50,7 +52,7 @@ public class PolyMcCommands {
                                     .executes((context) -> {
                                         var player = context.getSource().getPlayer();
                                         var heldItem = player.getInventory().getMainHandStack();
-                                        var polydItem = PolyMapProvider.getPolyMap(player).getClientItem(heldItem, player);
+                                        var polydItem = PolyMapProvider.getPolyMap(player).getClientItem(heldItem, player, null);
                                         var heldItemTag = polydItem.writeNbt(new NbtCompound());
                                         var nbtText = NbtHelper.toPrettyPrintedText(heldItemTag);
                                         context.getSource().sendFeedback(nbtText, false);
@@ -76,18 +78,37 @@ public class PolyMcCommands {
                                     .executes((context -> {
                                         SimpleLogger commandSource = new CommandSourceLogger(context.getSource(), true);
                                         ErrorTrackerWrapper logger = new ErrorTrackerWrapper(PolyMc.LOGGER);
-                                        try {
-                                            ResourcePackGenerator.generate(PolyMc.getMainMap(), "resource", logger);
-                                        } catch (Exception e) {
-                                            commandSource.error("An error occurred whilst trying to generate the resource pack! Please check the console.");
-                                            e.printStackTrace();
+                                        if (isGeneratingResources) {
+                                            commandSource.error("Already generating a resource pack at this moment");
                                             return 0;
                                         }
-                                        if (logger.errors != 0) {
-                                            commandSource.error("There have been errors whilst generating the resource pack. These are usually completely normal. It only means that PolyMc couldn't find some of the textures or models. See the console for more info.");
-                                        }
-                                        commandSource.info("Finished generating resource pack");
-                                        commandSource.warn("Before hosting this resource pack, please make sure you have the legal right to redistribute the assets inside.");
+                                        // Generate pack
+                                        isGeneratingResources = true;
+                                        new Thread(() -> {
+                                            try {
+                                                var pack = ResourcePackGenerator.generate(PolyMc.getMainMap(), logger);
+                                                if (logger.errors != 0) {
+                                                    commandSource.error("There have been errors whilst generating the resource pack. These are usually completely normal. It only means that PolyMc couldn't find some of the textures or models. See the console for more info.");
+                                                }
+
+                                                // Write pack to file
+                                                try {
+                                                    ResourcePackGenerator.cleanAndWrite(pack, "resource", logger);
+
+                                                    commandSource.info("Finished generating resource pack");
+                                                    commandSource.warn("Before hosting this resource pack, please make sure you have the legal right to redistribute the assets inside.");
+                                                } catch (Exception e) {
+                                                    commandSource.error("An error occurred whilst trying to save the resource pack! Please check the console.");
+                                                    e.printStackTrace();
+                                                }
+                                            } catch (Exception e) {
+                                                commandSource.error("An error occurred whilst trying to generate the resource pack! Please check the console.");
+                                                e.printStackTrace();
+                                            }
+
+                                            isGeneratingResources = false;
+                                        }).start();
+                                        commandSource.info("Starting resource generation");
                                         return Command.SINGLE_SUCCESS;
                                     })))
                             .then(literal("polyDump")

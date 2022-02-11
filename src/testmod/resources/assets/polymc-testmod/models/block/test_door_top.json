@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_top",
+  "textures": {
+    "top": "polymc-testmod:block/test_door_top",
+    "bottom": "polymc-testmod:block/test_door_bottom"
+  }
+}

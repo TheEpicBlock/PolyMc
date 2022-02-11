@@ -18,7 +18,6 @@
 package io.github.theepicblock.polymc.impl.poly.block;
 
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.state.property.Property;
@@ -48,10 +47,6 @@ public class PropertyRetainingReplacementPoly implements BlockPoly {
      */
     private <T extends Comparable<T>> BlockState copyProperty(BlockState a, BlockState b, Property<T> p) {
         return a.with(p, b.get(p));
-    }
-
-    public void addToResourcePack(Block block, ResourcePackMaker pack) {
-
     }
 
     @Override

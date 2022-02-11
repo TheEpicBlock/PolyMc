@@ -2,6 +2,7 @@ package io.github.theepicblock.polymc.impl.poly.item;
 
 import com.google.common.collect.Multimap;
 import io.github.theepicblock.polymc.api.PolyRegistry;
+import io.github.theepicblock.polymc.api.item.ItemLocation;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -9,6 +10,7 @@ import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.registry.Registry;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -61,8 +63,8 @@ public class ArmorItemPoly extends DamageableItemPoly {
     }
 
     @Override
-    public ItemStack getClientItem(ItemStack input) {
-        ItemStack output = super.getClientItem(input);
+    public ItemStack getClientItem(ItemStack input, @Nullable ItemLocation location) {
+        ItemStack output = super.getClientItem(input, location);
 
         // See if the this poly armor uses a color id (and thus FancyPants)
         if (this.useColorId()) {

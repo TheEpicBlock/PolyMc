@@ -21,8 +21,10 @@ import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
+import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.impl.poly.item.ArmorMaterialPoly;
+import io.github.theepicblock.polymc.mixins.gui.GuiPolyImplementation;
 import io.github.theepicblock.polymc.mixins.item.CreativeItemStackFix;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -39,7 +41,7 @@ public interface PolyMap {
     /**
      * Converts the serverside representation of an item into a clientside one that should be sent to the client.
      */
-    ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player);
+    ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location);
 
     /**
      * Converts the serverside representation of a block into a clientside one that should be sent to the client.
@@ -94,7 +96,7 @@ public interface PolyMap {
 
     /**
      * Reverts the clientside item into the serverside representation.
-     * This should be the reverse of {@link #getClientItem(ItemStack, ServerPlayerEntity)}.
+     * This should be the reverse of {@link #getClientItem(ItemStack, ServerPlayerEntity, ItemLocation)}.
      * For optimization reasons, this method only needs to be implemented for items gained by players in creative mode.
      * @see CreativeItemStackFix
      */
@@ -108,7 +110,7 @@ public interface PolyMap {
      * @see io.github.theepicblock.polymc.mixins.tag.SerializedMixin
      * @see io.github.theepicblock.polymc.mixins.block.ResyncImplementation
      * @see io.github.theepicblock.polymc.impl.mixin.CustomBlockBreakingCheck#needsCustomBreaking(ServerPlayerEntity, Block)
-     * @see io.github.theepicblock.polymc.mixins.gui.GuiManagerImplementation
+     * @see GuiPolyImplementation
      * @see io.github.theepicblock.polymc.mixins.item.CustomRecipeFix
      */
     boolean isVanillaLikeMap();

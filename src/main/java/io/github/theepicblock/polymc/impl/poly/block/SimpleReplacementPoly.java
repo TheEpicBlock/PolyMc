@@ -18,7 +18,6 @@
 package io.github.theepicblock.polymc.impl.poly.block;
 
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 
@@ -40,8 +39,6 @@ public class SimpleReplacementPoly implements BlockPoly {
     public BlockState getClientBlock(BlockState input) {
         return state;
     }
-
-    public void addToResourcePack(Block block, ResourcePackMaker pack) {}
 
     @Override
     public String getDebugInfo(Block obj) {

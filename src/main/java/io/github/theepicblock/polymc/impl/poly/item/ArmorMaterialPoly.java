@@ -1,9 +1,14 @@
 package io.github.theepicblock.polymc.impl.poly.item;
 
 import com.google.common.collect.ImmutableMap;
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
+import io.github.theepicblock.polymc.api.resource.ModdedResources;
+import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
+import io.github.theepicblock.polymc.api.resource.TextureAsset;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.ArmorMaterial;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -13,13 +18,21 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static io.github.theepicblock.polymc.impl.resource.ResourcePackGenerator.getPolymcPath;
 
 public class ArmorMaterialPoly {
+
+    private final static String CLIENT_URL = "https://launcher.mojang.com/v1/objects/060dd014d59c90d723db87f9c9cedb511f374a71/client.jar";
+    private static ZipFile clientJar = null;
 
     private Identifier modelPath;
     private ArmorMaterial material;
@@ -82,7 +95,7 @@ public class ArmorMaterialPoly {
      * This is empty by default because this base class will only use FancyPants,
      * which will then call the `addToResourcePack` static method
      */
-    public void addToResourcePack(ResourcePackMaker pack) {}
+    public void addToResourcePack(PolyMcResourcePack pack) {}
 
     /**
      * Use the FancyPants way of adding these armor materials?
@@ -117,7 +130,7 @@ public class ArmorMaterialPoly {
      * @param logger
      * @throws IOException
      */
-    public static void addToResourcePack(ImmutableMap<ArmorMaterial, ArmorMaterialPoly> materialPolys, ResourcePackMaker pack, SimpleLogger logger) throws IOException {
+    public static void addToResourcePack(ImmutableMap<ArmorMaterial, ArmorMaterialPoly> materialPolys, ModdedResources resources, PolyMcResourcePack pack, SimpleLogger logger) throws IOException {
 
         if (materialPolys.isEmpty()) {
             return;
@@ -125,7 +138,7 @@ public class ArmorMaterialPoly {
 
         // We need to modify the original leather armor texture,
         // so we need to get the client jar for that
-        ZipFile clientJar = ResourcePackMaker.getClientJar();
+        ZipFile clientJar = getClientJar();
 
         if (clientJar == null) {
             logger.error("Could not find the Minecraft client jar, unable to generate armor textures");
@@ -149,8 +162,8 @@ public class ArmorMaterialPoly {
                 BufferedImage bi = null;
 
                 for (int i = 0; i <= 1; i++) {
-                    var path = "assets/" + modelPath.getNamespace() + "/textures/models/armor/" + modelPath.getPath() + "_layer_" + (i + 1) + ".png";
-                    byte[] data = pack.getFileStream(modelPath.getNamespace(), path).readAllBytes();
+                    var path = "textures/models/armor/" + modelPath.getPath() + "_layer_" + (i + 1) + ".png";
+                    byte[] data = resources.getInputStream(modelPath.getNamespace(), path).readAllBytes();
 
                     if (data != null) {
                         bi = ImageIO.read(new ByteArrayInputStream(data));
@@ -180,10 +193,16 @@ public class ArmorMaterialPoly {
         for (int i = 0; i <= 1; i++) {
             BufferedImage tex;
 
-            tex = ImageIO.read(clientJar.getInputStream(clientJar.getEntry(leatherLayerPath(i + 1))));
+            String leatherLayerSourcePath = sourceLeatherLayerPath(i + 1);
+            String leatherLayerOverlaySourcePath = sourceLeatherLayerOverlayPath(i + 1);
+
+            ZipEntry leatherLayer = clientJar.getEntry(leatherLayerSourcePath);
+            ZipEntry leatherLayerOverlay = clientJar.getEntry(leatherLayerOverlaySourcePath);
+
+            tex = ImageIO.read(clientJar.getInputStream(leatherLayer));
             graphics[i].drawImage(tex, 0, 0, null);
 
-            tex = ImageIO.read(clientJar.getInputStream(clientJar.getEntry(leatherLayerOverlayPath(i + 1))));
+            tex = ImageIO.read(clientJar.getInputStream(leatherLayerOverlay));
             graphics[i].drawImage(tex, 0, 0, null);
 
             graphics[i].setColor(Color.WHITE);
@@ -206,15 +225,20 @@ public class ArmorMaterialPoly {
         try {
             for (int i = 0; i <= 1; i++) {
                 graphics[i].dispose();
-                ByteArrayOutputStream out;
+                ByteArrayOutputStream outputStream;
+                InputStream inputStream;
 
-                out = new ByteArrayOutputStream();
-                ImageIO.write(image[i], "png", out);
-                pack.writeToPath(leatherLayerPath(i + 1), out.toByteArray());
+                outputStream = new ByteArrayOutputStream();
+                ImageIO.write(image[i], "png", outputStream);
+                inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+                TextureAsset leatherLayerAsset = new TextureAsset(inputStream, null);
+                pack.setAsset("minecraft", leatherLayerPath(i + 1), leatherLayerAsset);
 
-                out = new ByteArrayOutputStream();
-                ImageIO.write(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), "png", out);
-                pack.writeToPath(leatherLayerOverlayPath(i + 1), out.toByteArray());
+                outputStream = new ByteArrayOutputStream();
+                ImageIO.write(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), "png", outputStream);
+                inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+                TextureAsset leatherLayerOverlayAsset = new TextureAsset(inputStream, null);
+                pack.setAsset("minecraft", leatherLayerOverlayPath(i + 1), leatherLayerOverlayAsset);
 
             }
         } catch (Exception e) {
@@ -225,10 +249,15 @@ public class ArmorMaterialPoly {
         try {
             // Actually put the FancyPants shader files in the resource pack
             for (String string : new String[]{"fsh", "json", "vsh"}) {
-                pack.writeToPath(
+                // It's not a texture but whatever
+                InputStream inputStream = new ByteArrayInputStream(Files.readAllBytes(getPolymcPath("base-armor/rendertype_armor_cutout_no_cull." + string)));
+                TextureAsset fancyPantsShaderAsset = new TextureAsset(inputStream, null);
+                pack.setAsset("minecraft", "shaders/core/rendertype_armor_cutout_no_cull." + string, fancyPantsShaderAsset);
+
+                /*pack.writeToPath(
                         "assets/minecraft/shaders/core/rendertype_armor_cutout_no_cull." + string,
                         Files.readAllBytes(getPolymcPath("base-armor/rendertype_armor_cutout_no_cull." + string))
-                );
+                );*/
             }
         } catch (Exception e) {
             logger.warn("Error occurred when writing armor shader!");
@@ -241,7 +270,15 @@ public class ArmorMaterialPoly {
      * @param level
      */
     private static String leatherLayerPath(int level) {
-        return "assets/minecraft/textures/models/armor/leather_layer_" + level + ".png";
+        return "textures/models/armor/leather_layer_" + level + ".png";
+    }
+
+    /**
+     * Construct a path to the source leather layer of the given level
+     * @param level
+     */
+    private static String sourceLeatherLayerPath(int level) {
+        return "assets/minecraft/" + leatherLayerPath(level);
     }
 
     /**
@@ -249,6 +286,47 @@ public class ArmorMaterialPoly {
      * @param level
      */
     private static String leatherLayerOverlayPath(int level) {
-        return "assets/minecraft/textures/models/armor/leather_layer_" + level + "_overlay.png";
+        return "textures/models/armor/leather_layer_" + level + "_overlay.png";
+    }
+
+    /**
+     * Construct a path to the source overlay leather layer of the given level
+     * @param level
+     */
+    private static String sourceLeatherLayerOverlayPath(int level) {
+        return "assets/minecraft/" + leatherLayerOverlayPath(level);
+    }
+
+    /**
+     * Get Minecraft's client.jar file
+     */
+    public static ZipFile getClientJar() {
+
+        if (clientJar != null) {
+            return clientJar;
+        }
+
+        try {
+            Path clientJarPath;
+            if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
+                clientJarPath = FabricLoader.getInstance().getGameDir().resolve("assets_client.jar");
+            } else {
+                var clientFile = MinecraftServer.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+                clientJarPath = Path.of(clientFile);
+            }
+
+            if (!clientJarPath.toFile().exists()) {
+                URL url = new URL(CLIENT_URL);
+                URLConnection connection = url.openConnection();
+                InputStream is = connection.getInputStream();
+                Files.copy(is, clientJarPath);
+            }
+
+            clientJar = new ZipFile(clientJarPath.toFile());
+
+            return clientJar;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

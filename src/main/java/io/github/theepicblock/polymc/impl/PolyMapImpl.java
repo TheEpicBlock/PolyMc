@@ -22,6 +22,7 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
+import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.impl.poly.item.ArmorMaterialPoly;
@@ -47,7 +48,7 @@ import org.jetbrains.annotations.Nullable;
 public class PolyMapImpl implements PolyMap {
     /**
      * The nbt tag name that stores the original item nbt so it can be restored
-     * @see PolyMap#getClientItem(ItemStack, ServerPlayerEntity)
+     * @see PolyMap#getClientItem(ItemStack, ServerPlayerEntity, ItemLocation)
      * @see #recoverOriginalItem(ItemStack)
      */
     private static final String ORIGINAL_ITEM_NBT = "PolyMcOriginal";
@@ -69,15 +70,15 @@ public class PolyMapImpl implements PolyMap {
     }
 
     @Override
-    public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player) {
+    public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
         ItemStack ret = serverItem;
         NbtCompound originalNbt = serverItem.writeNbt(new NbtCompound());
 
         ItemPoly poly = itemPolys.get(serverItem.getItem());
-        if (poly != null) ret = poly.getClientItem(serverItem);
+        if (poly != null) ret = poly.getClientItem(serverItem, location);
 
         for (ItemTransformer globalPoly : globalItemPolys) {
-            ret = globalPoly.transform(ret);
+            ret = globalPoly.transform(ret, player, location);
         }
 
         if ((player == null || player.isCreative()) && !ItemStack.canCombine(serverItem, ret) && !serverItem.isEmpty()) {

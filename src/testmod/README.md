@@ -5,6 +5,21 @@ It has tests for PolyMc's automatic generation and tests for PolyMc's apis.
 Things testing the automatic generation should function on their own, without PolyMc present.
 
 # Auto-gen tests
+## `test_helmet`, `test_chestplate`, `test_legging` and `test_boots`
+Generic armor. The boots will display as slabs when damaged.
+
+## `test_slab`
+Generic slab. Has a property called `variant` which is 0-20. All of these states should be polyd using a different block.
+
+## `test_stairs`
+Generic stairs based on `test_block`
+
+## `test_door`
+A generic (wooden) door
+
+## `test_trapdoor`
+A generic (wooden) trapdoor
+
 ## `test_block`
 A generic full block
 

@@ -23,11 +23,15 @@ import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockStateManager;
 import io.github.theepicblock.polymc.api.block.BlockStateProfile;
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.poly.block.*;
+import io.github.theepicblock.polymc.impl.misc.BooleanContainer;
+import io.github.theepicblock.polymc.impl.poly.block.FunctionBlockStatePoly;
+import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
 import io.github.theepicblock.polymc.mixins.block.MaterialAccessor;
+import io.github.theepicblock.polymc.mixins.block.SlabBlockAccessor;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.FluidState;
+import net.minecraft.state.property.Property;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
@@ -41,120 +45,191 @@ public class BlockPolyGenerator {
     /**
      * Generates the most suitable {@link BlockPoly} for a given {@link Block}
      */
-    public static BlockPoly generatePoly(Block block, PolyRegistry builder) {
-        BlockState state = block.getDefaultState();
-        FakedWorld fakeWorld = new FakedWorld(state);
+    public static BlockPoly generatePoly(Block block, PolyRegistry registry) {
+        return new FunctionBlockStatePoly(block, (state, isUniqueCallback) -> registerClientState(state, isUniqueCallback, registry.getBlockStateManager()));
+    }
 
-        //Get the block's collision shape.
+    /**
+     * @param isUniqueCallback will be set to true if the return value is a unique block that'll only be used for the inputted moddedState
+     * @return a client state which best matches the moddedState
+     */
+    public static BlockState registerClientState(BlockState moddedState, BooleanContainer isUniqueCallback, BlockStateManager manager) {
+        var moddedBlock = moddedState.getBlock();
+        var fakeWorld = new FakedWorld(moddedState);
+
+        //Get the state's collision shape.
         VoxelShape collisionShape;
         try {
-            collisionShape = state.getCollisionShape(fakeWorld, BlockPos.ORIGIN);
+            collisionShape = moddedState.getCollisionShape(fakeWorld, BlockPos.ORIGIN);
         } catch (Exception e) {
-            PolyMc.LOGGER.warn("Failed to get collision shape for " + block.getTranslationKey());
+            PolyMc.LOGGER.warn("Failed to get collision shape for " + moddedState.toString());
             e.printStackTrace();
             collisionShape = VoxelShapes.UNBOUNDED;
         }
 
         //=== INVISIBLE BLOCKS ===
-        if (block.getRenderType(state) == BlockRenderType.INVISIBLE) {
+        if (moddedState.getRenderType() == BlockRenderType.INVISIBLE) {
             //This block is supposed to be invisible anyway
 
             if (Block.isShapeFullCube(collisionShape)) {
-                return new SimpleReplacementPoly(Blocks.BARRIER);
+                isUniqueCallback.set(false);
+                return Blocks.BARRIER.getDefaultState();
             }
 
             if (collisionShape.isEmpty()) {
                 //Try to get its selection shape so we can decide between a structure void (which has a selection box) and air (which doesn't)
                 try {
-                    VoxelShape outlineShape = state.getOutlineShape(fakeWorld, BlockPos.ORIGIN);
+                    VoxelShape outlineShape = moddedState.getOutlineShape(fakeWorld, BlockPos.ORIGIN);
 
                     if (outlineShape.isEmpty()) {
-                        return new SimpleReplacementPoly(Blocks.VOID_AIR);
+                        isUniqueCallback.set(false);
+                        return Blocks.VOID_AIR.getDefaultState();
                     } else {
-                        return new SimpleReplacementPoly(Blocks.STRUCTURE_VOID);
+                        isUniqueCallback.set(false);
+                        return Blocks.STRUCTURE_VOID.getDefaultState();
                     }
                 } catch (Exception e) {
-                    PolyMc.LOGGER.warn("Failed to get outline shape for " + block.getTranslationKey());
+                    PolyMc.LOGGER.warn("Failed to get outline shape for " + moddedState);
                     e.printStackTrace();
                 }
             }
 
             //This is neither full not empty, yet it's invisible. So the other strategies won't work.
             //Default to stone
-            return new SimpleReplacementPoly(Blocks.STONE);
+            isUniqueCallback.set(false);
+            return Blocks.STONE.getDefaultState();
         }
 
         //=== FLUIDS ===
-        if (block instanceof FluidBlock) {
-            return new PropertyRetainingReplacementPoly(Blocks.WATER);
+        if (moddedBlock instanceof FluidBlock) {
+            isUniqueCallback.set(false);
+            return copyAllProperties(moddedState, Blocks.WATER);
         }
 
         //=== LEAVES ===
-        if (block instanceof LeavesBlock || BlockTags.LEAVES.contains(block)) { //TODO I don't like that leaves can be set tags in datapacks, it might cause issues. However, as not every leaf block extends LeavesBlock I can't see much of a better option. Except to maybe check the id if it ends on "_leaves"
+        if (moddedBlock instanceof LeavesBlock || BlockTags.LEAVES.contains(moddedBlock)) { //TODO I don't like that leaves can be set tags in datapacks, it might cause issues. However, as not every leaf block extends LeavesBlock I can't see much of a better option. Except to maybe check the id if it ends on "_leaves"
             try {
-                return new SingleUnusedBlockStatePoly(builder, BlockStateProfile.LEAVES_PROFILE);
+                isUniqueCallback.set(true);
+                return manager.requestBlockState(BlockStateProfile.LEAVES_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
         //=== (TRAP)DOORS ===
-        boolean isMetal = ((MaterialAccessor)block).getMaterial() == Material.METAL;
-        if (block instanceof DoorBlock) {
+        boolean isMetal = ((MaterialAccessor)moddedBlock).getMaterial() == Material.METAL;
+        if (moddedBlock instanceof DoorBlock) {
             try {
-                return new PoweredStateBlockPoly(builder, isMetal ? BlockStateProfile.METAL_DOOR_PROFILE : BlockStateProfile.DOOR_PROFILE);
+                isUniqueCallback.set(true);
+                return manager.requestBlockState((isMetal ? BlockStateProfile.METAL_DOOR_PROFILE : BlockStateProfile.DOOR_PROFILE)
+                        .and((state) -> propertyMatches(state, moddedState, DoorBlock.OPEN, DoorBlock.FACING, DoorBlock.HINGE, DoorBlock.HALF)));
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
-        if (block instanceof TrapdoorBlock) {
+        if (moddedBlock instanceof TrapdoorBlock) {
             try {
-                return new PoweredStateBlockPoly(builder, isMetal ? BlockStateProfile.METAL_TRAPDOOR_PROFILE : BlockStateProfile.TRAPDOOR_PROFILE);
+                isUniqueCallback.set(true);
+                return manager.requestBlockState((isMetal ? BlockStateProfile.METAL_TRAPDOOR_PROFILE : BlockStateProfile.TRAPDOOR_PROFILE)
+                        .and((state) -> propertyMatches(state, moddedState, TrapdoorBlock.OPEN, TrapdoorBlock.FACING, TrapdoorBlock.HALF, TrapdoorBlock.WATERLOGGED)));
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+        }
+
+        //=== SLABS ===
+        if (moddedBlock instanceof SlabBlock) {
+            try {
+                isUniqueCallback.set(true);
+                return manager.requestBlockState(BlockStateProfile.PETRIFIED_OAK_SLAB_PROFILE.and(
+                        state -> propertyMatches(state, moddedState, SlabBlock.WATERLOGGED, SlabBlock.TYPE)
+                ));
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+            try {
+                isUniqueCallback.set(true);
+                return manager.requestBlockState(BlockStateProfile.WAXED_COPPER_SLAB_PROFILE.and(
+                        state -> propertyMatches(state, moddedState, SlabBlock.WATERLOGGED, SlabBlock.TYPE)
+                ));
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+        }
+
+        if (Util.areEqual(collisionShape, SlabBlockAccessor.getBOTTOM_SHAPE())) {
+            try {
+                isUniqueCallback.set(true);
+                return manager.requestBlockState(BlockStateProfile.SCULK_SENSOR_PROFILE.and(
+                        state -> moddedState.getFluidState().equals(state.getFluidState())
+                ));
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+        }
+
+        //=== STAIRS ===
+        if (moddedBlock instanceof StairsBlock) {
+            try {
+                isUniqueCallback.set(true);
+                return manager.requestBlockState(BlockStateProfile.WAXED_COPPER_STAIR_PROFILE.and(
+                        state -> propertyMatches(state, moddedState, StairsBlock.FACING, StairsBlock.HALF, StairsBlock.WATERLOGGED, StairsBlock.SHAPE)
+                ));
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
         //=== FULL BLOCKS ===
         if (Block.isShapeFullCube(collisionShape)) {
             try {
-                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.NOTE_BLOCK_PROFILE);
+                isUniqueCallback.set(true);
+                return manager.requestBlockState(BlockStateProfile.NOTE_BLOCK_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
         //=== NO COLLISION BLOCKS ===
         if (collisionShape.isEmpty()) {
-            if (block instanceof SaplingBlock) {
-                try { //prevents saplings using 2 states when it isn't needed
-                    return new SingleUnusedBlockStatePoly(builder, BlockStateProfile.NO_COLLISION_PROFILE);
-                } catch (BlockStateManager.StateLimitReachedException ignored) {}
-            }
             try {
-                return new SwitchingUnusedBlockStatePoly(block, builder,
-                        BlockStateProfile.KELP_PROFILE, // Chosen if the block state has a fluid state. (For waterlogable blocks)
-                        BlockStateProfile.NO_COLLISION_PROFILE, // Chosen if the block state doesn't have a fluid state
-                        (blockState) -> ((BlockState)blockState).getFluidState().isEmpty());
-            } catch (BlockStateManager.StateLimitReachedException ignored) {}
-        }
-
-        //=== SLABS ===
-        if (block instanceof SlabBlock) {
-            try {
-                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.PETRIFIED_OAK_SLAB_PROFILE);
+                if (moddedState.getFluidState().isEmpty()) {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.NO_COLLISION_PROFILE);
+                } else {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.KELP_PROFILE);
+                }
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
         //=== FARMLAND-LIKE BLOCKS ===
         if (Util.areEqual(collisionShape, Blocks.FARMLAND.getCollisionShape(Blocks.FARMLAND.getDefaultState(), fakeWorld, BlockPos.ORIGIN, ShapeContext.absent()))) {
             try {
-                return new UnusedBlockStatePoly(block, builder, BlockStateProfile.FARMLAND_PROFILE);
+                isUniqueCallback.set(true);
+                return manager.requestBlockState(BlockStateProfile.FARMLAND_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
         //=== CACTUS-LIKE BLOCKS ===
         if (Util.areEqual(collisionShape, Blocks.CACTUS.getCollisionShape(Blocks.CACTUS.getDefaultState(), fakeWorld, BlockPos.ORIGIN, ShapeContext.absent()))) {
             try {
-                return new SingleUnusedBlockStatePoly(builder, BlockStateProfile.CACTUS_PROFILE);
+                isUniqueCallback.set(true);
+                return manager.requestBlockState(BlockStateProfile.CACTUS_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
         //=== DEFAULT ===
         //PolyMc can't handle this block. TODO implement more general polys to more of these cases
-        return new SimpleReplacementPoly(Blocks.STONE);
+        isUniqueCallback.set(false);
+        return Blocks.STONE.getDefaultState();
+    }
+
+    public static boolean propertyMatches(BlockState a, BlockState b, Property<?>... properties) {
+        for (var property : properties) {
+            if (!propertyMatches(a, b, property)) return false;
+        }
+        return true;
+    }
+
+    public static <T extends Comparable<T>> boolean propertyMatches(BlockState a, BlockState b, Property<T> property) {
+        return a.get(property) == b.get(property);
+    }
+
+    public static BlockState copyAllProperties(BlockState input, Block output) {
+        BlockState out = output.getDefaultState();
+        for (Property<?> p : input.getProperties()) {
+            out = copyProperty(out, input, p);
+        }
+        return out;
+    }
+
+    private static <T extends Comparable<T>> BlockState copyProperty(BlockState a, BlockState b, Property<T> p) {
+        return a.with(p, b.get(p));
     }
 
     /**

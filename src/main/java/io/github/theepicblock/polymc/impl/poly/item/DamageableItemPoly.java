@@ -18,9 +18,11 @@
 package io.github.theepicblock.polymc.impl.poly.item;
 
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
+import io.github.theepicblock.polymc.api.item.ItemLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import org.jetbrains.annotations.Nullable;
 
 public class DamageableItemPoly extends CustomModelDataPoly {
     private final int clientSideMaxDamage;
@@ -37,8 +39,8 @@ public class DamageableItemPoly extends CustomModelDataPoly {
     }
 
     @Override
-    public ItemStack getClientItem(ItemStack input) {
-        ItemStack sup = super.getClientItem(input);
+    public ItemStack getClientItem(ItemStack input, @Nullable ItemLocation location) {
+        ItemStack sup = super.getClientItem(input, location);
         int inputDamage = input.getDamage();
         int damage = (int)(((float)inputDamage / serverSideMaxDamage) * clientSideMaxDamage); //convert serverside damage to clientside damage
         if (damage == 0 && inputDamage > 0) damage = 1; //If the item is damaged in any way it should show up

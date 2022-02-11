@@ -1,0 +1,14 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "polymc-testmod:item/test_boots"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "damaged": 1.0
+      },
+      "model": "polymc-testmod:item/test_slab"
+    }
+  ]
+}

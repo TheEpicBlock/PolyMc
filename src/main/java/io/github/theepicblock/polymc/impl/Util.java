@@ -17,6 +17,8 @@
  */
 package io.github.theepicblock.polymc.impl;
 
+import com.google.common.base.Splitter;
+import com.google.gson.Gson;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.mixins.ItemStackAccessor;
@@ -36,7 +38,9 @@ import java.util.Map;
 import java.util.Optional;
 
 public class Util {
+    public static final Gson GSON = new Gson();
     public static final String MC_NAMESPACE = "minecraft";
+    private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
 
     /**
      * Returns true if this identifier is in the minecraft namespace
@@ -81,6 +85,13 @@ public class Util {
             return v.with(property, optional.get());
         }
         return v;
+    }
+
+    /**
+     * Splits a string like `facing=east,half=lower,hinge=left,open=false` into ['facing=east', 'half=lower', etc...]
+     */
+    public static Iterable<String> splitBlockStateString(String string) {
+        return COMMA_SPLITTER.split(string);
     }
 
     /**
@@ -188,5 +199,13 @@ public class Util {
     public static boolean isSectionVisible(ItemStack stack, ItemStack.TooltipSection tooltipSection) {
         int flags = ((ItemStackAccessor)(Object)stack).callGetHideFlags();
         return ItemStackAccessor.callIsSectionVisible(flags, tooltipSection);
+    }
+
+    /**
+     * @return null if the id can't be parsed or the string is null
+     */
+    public static Identifier parseId(String id) {
+        if (id == null) return null;
+        return Identifier.tryParse(id);
     }
 }

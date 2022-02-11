@@ -17,7 +17,6 @@
  */
 package io.github.theepicblock.polymc.impl.poly.gui;
 
-import io.github.theepicblock.polymc.api.gui.GuiManager;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -32,19 +31,8 @@ import java.util.List;
 
 public class NaiveStackListingChestPoly implements GuiPoly {
     @Override
-    public GuiManager createGuiManager(ScreenHandler base, ServerPlayerEntity player) {
-        return new NaiveStackListingChestGuiManager(base, player);
-    }
-
-    public static class NaiveStackListingChestGuiManager extends GuiManager {
-        public NaiveStackListingChestGuiManager(ScreenHandler base, ServerPlayerEntity player) {
-            super(base, player);
-        }
-
-        @Override
-        public ScreenHandler getInitialHandler(int initialSyncId) {
-            return new NaiveStackListingScreenHandler(ScreenHandlerType.GENERIC_9X3, 9, 3, initialSyncId, player.getInventory(), base);
-        }
+    public ScreenHandler replaceScreenHandler(ScreenHandler base, ServerPlayerEntity player, int syncId) {
+        return new NaiveStackListingScreenHandler(ScreenHandlerType.GENERIC_9X3, 9, 3, syncId, player.getInventory(), base);
     }
 
     public static class NaiveStackListingScreenHandler extends ScreenHandler {

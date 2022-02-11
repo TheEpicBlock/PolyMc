@@ -21,8 +21,9 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
-import io.github.theepicblock.polymc.impl.poly.item.*;
+import io.github.theepicblock.polymc.impl.poly.item.ArmorItemPoly;
+import io.github.theepicblock.polymc.impl.poly.item.CustomModelDataPoly;
+import io.github.theepicblock.polymc.impl.poly.item.DamageableItemPoly;
 import net.minecraft.item.*;
 
 /**
@@ -37,16 +38,16 @@ public class ItemPolyGenerator {
             return new ArmorItemPoly(builder, armorItem);
         }
         if (item instanceof ShieldItem) {
-            return new ShieldPoly(builder.getCMDManager(), item);
+            return new DamageableItemPoly(builder.getCMDManager(), item, Items.SHIELD);
         }
         if (item instanceof CompassItem) {
             return new CustomModelDataPoly(builder.getCMDManager(), item, Items.COMPASS);
         }
         if (item instanceof CrossbowItem) {
-            return new PredicateBasedDamageableItem(builder.getCMDManager(), item, Items.CROSSBOW);
+            return new DamageableItemPoly(builder.getCMDManager(), item, Items.CROSSBOW);
         }
         if (item instanceof RangedWeaponItem) {
-            return new BowPoly(builder.getCMDManager(), item);
+            return new DamageableItemPoly(builder.getCMDManager(), item, Items.BOW);
         }
         if (item.isDamageable()) {
             if (item instanceof DyeableItem) {
@@ -77,14 +78,7 @@ public class ItemPolyGenerator {
             PolyMc.LOGGER.error("Failed to generate a poly for item " + item.getTranslationKey());
             e.printStackTrace();
             PolyMc.LOGGER.error("Attempting to recover by using a default poly. Please report this");
-            builder.registerItemPoly(item, new ItemPoly() {
-                @Override
-                public ItemStack getClientItem(ItemStack input) {
-                    return new ItemStack(Items.BARRIER);
-                }
-
-                @Override public void addToResourcePack(Item item, ResourcePackMaker pack) {}
-            });
+            builder.registerItemPoly(item, (input, location) -> new ItemStack(Items.BARRIER));
         }
     }
 }

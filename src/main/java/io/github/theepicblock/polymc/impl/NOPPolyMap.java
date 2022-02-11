@@ -5,6 +5,7 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
+import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.impl.poly.item.ArmorMaterialPoly;
 import net.minecraft.block.Block;
@@ -20,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class NOPPolyMap implements PolyMap {
     @Override
-    public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player) {
+    public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
         return serverItem;
     }
 

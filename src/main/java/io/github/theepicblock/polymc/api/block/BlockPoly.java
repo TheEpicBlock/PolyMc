@@ -18,8 +18,10 @@
 package io.github.theepicblock.polymc.api.block;
 
 import io.github.theepicblock.polymc.api.DebugInfoProvider;
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
+import io.github.theepicblock.polymc.api.resource.ModdedResources;
+import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerWorld;
@@ -38,7 +40,9 @@ public interface BlockPoly extends DebugInfoProvider<Block> {
      * @param block block this BlockPoly was registered to, for reference.
      * @param pack  resource pack to add to.
      */
-    void addToResourcePack(Block block, ResourcePackMaker pack);
+    default void addToResourcePack(Block block, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
+
+    }
 
     default Wizard createWizard(ServerWorld world, Vec3d pos, Wizard.WizardState state) {
         return null;
