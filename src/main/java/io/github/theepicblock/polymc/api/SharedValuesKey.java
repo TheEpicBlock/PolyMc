@@ -32,11 +32,17 @@ public final class SharedValuesKey<T> {
 
     @FunctionalInterface
     public interface SharedValueFactory<T> {
+        /**
+         * @param registry Please don't keep this reference when moving to the resource container
+         */
         T create(PolyRegistry registry);
     }
 
     @FunctionalInterface
     public interface ResourceContainerFactory<T> {
+        /**
+         * Please get rid of any references to any {@link PolyRegistry} at this point
+         */
         ResourceContainer create(T sharedValues);
     }
 

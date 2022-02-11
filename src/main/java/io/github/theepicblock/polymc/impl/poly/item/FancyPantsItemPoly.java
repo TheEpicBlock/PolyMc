@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
+import io.github.theepicblock.polymc.impl.poly.ArmorColorManager;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -15,16 +16,24 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-public class ArmorItemPoly extends DamageableItemPoly {
+public class FancyPantsItemPoly extends DamageableItemPoly {
+    private final EquipmentSlot slot;
+    private final int color;
 
-    private ArmorMaterial material;
-    private EquipmentSlot slot;
-    private PolyRegistry registry;
-    private Item replacementItem;
+    public FancyPantsItemPoly(PolyRegistry builder, ArmorItem base) {
+        this(builder, base, getReplacementItem(base.getSlotType()));
+    }
+
+    public FancyPantsItemPoly(PolyRegistry registry, ArmorItem base, Item replacementItem) {
+        super(registry.getSharedValues(CustomModelDataManager.KEY), base, replacementItem);
+
+        ArmorMaterial material = base.getMaterial();
+        this.slot = base.getSlotType();
+        this.color = registry.getSharedValues(ArmorColorManager.KEY).getColorForMaterial(material);
+    }
 
     /**
      * Get the correct replacement item for the given slot
-     * @param slot
      */
     public static Item getReplacementItem(EquipmentSlot slot) {
         return switch (slot) {
@@ -36,53 +45,18 @@ public class ArmorItemPoly extends DamageableItemPoly {
         };
     }
 
-    public ArmorItemPoly(PolyRegistry builder, ArmorItem base) {
-        this(builder, base, getReplacementItem(base.getSlotType()));
-    }
-
-    public ArmorItemPoly(PolyRegistry builder, ArmorItem base, Item replacementItem) {
-        super(builder.getSharedValues(CustomModelDataManager.KEY), base, replacementItem);
-
-        this.material = base.getMaterial();
-        this.slot = base.getSlotType();
-        this.replacementItem = replacementItem;
-
-        // Also make sure the ArmorMaterial poly has been registered!
-        if (!builder.hasArmorMaterialPoly(material)) {
-            builder.registerArmorMaterialPoly(material, this);
-        }
-
-        this.registry = builder;
-    }
-
-    public Item getReplacementItem() {
-        return this.replacementItem;
-    }
-
-    public boolean useColorId() {
-        return true;
-    }
-
     @Override
     public ItemStack getClientItem(ItemStack input, @Nullable ItemLocation location) {
         ItemStack output = super.getClientItem(input, location);
 
-        // See if the this poly armor uses a color id (and thus FancyPants)
-        if (this.useColorId()) {
-            ArmorMaterialPoly materialPoly = registry.getArmorMaterialPoly(material);
-
-            if (materialPoly != null && materialPoly.getColorId() != null) {
-                NbtCompound nbt = output.getOrCreateSubNbt("display");
-                nbt.putInt("color", materialPoly.getColorId());
-            }
-        }
+        NbtCompound nbt = output.getOrCreateSubNbt("display");
+        nbt.putInt("color", this.color);
 
         // Get the armor attribute modifiers, so the correct stats are shown on the tooltip
         try {
             Multimap<EntityAttribute, EntityAttributeModifier> multimap = input.getItem().getAttributeModifiers(slot);
 
             if (!multimap.isEmpty()) {
-                NbtCompound nbt = output.getOrCreateNbt();
                 NbtList list = new NbtList();
 
                 // Iterate over the key & values of the multimap

@@ -30,14 +30,6 @@ import java.nio.file.Path;
 public class ResourcePackGenerator {
     // TODO event
 
-    /**
-     * Get the path to a file inside PolyMC's resources folder
-     * @param path the path to the file inside the resource folder
-     */
-    public static Path getPolymcPath(String path) {
-        return FabricLoader.getInstance().getModContainer("polymc").get().getPath(path);
-    }
-
     public static void cleanAndWrite(PolyMcResourcePack pack, String directory, SimpleLogger logger) {
 
         Path gameDir = FabricLoader.getInstance().getGameDir();

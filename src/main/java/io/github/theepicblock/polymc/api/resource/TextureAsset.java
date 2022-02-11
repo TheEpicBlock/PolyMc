@@ -19,6 +19,10 @@ public class TextureAsset implements PolyMcAsset {
         this.mcmeta = mcmeta;
     }
 
+    public @NotNull InputStream getTexture() {
+        return texture;
+    }
+
     @Override
     public void write(Path location, Gson gson) throws IOException {
         Files.copy(texture, location, StandardCopyOption.REPLACE_EXISTING);

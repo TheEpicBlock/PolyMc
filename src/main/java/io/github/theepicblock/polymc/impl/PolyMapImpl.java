@@ -33,7 +33,6 @@ import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
-import io.github.theepicblock.polymc.impl.poly.item.ArmorMaterialPoly;
 import io.github.theepicblock.polymc.impl.resource.ModdedResourceContainerImpl;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackImplementation;
 import net.fabricmc.fabric.api.util.NbtType;
@@ -41,7 +40,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -76,7 +74,6 @@ public class PolyMapImpl implements PolyMap {
     private final ImmutableMap<Block,BlockPoly> blockPolys;
     private final ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys;
     private final ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys;
-    private final ImmutableMap<ArmorMaterial, ArmorMaterialPoly> armorPolys;
     private final ImmutableList<SharedValuesKey.ResourceContainer> sharedValueResources;
 
     public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys,
@@ -84,14 +81,12 @@ public class PolyMapImpl implements PolyMap {
                        ImmutableMap<Block,BlockPoly> blockPolys,
                        ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys,
                        ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys,
-                       ImmutableMap<ArmorMaterial, ArmorMaterialPoly> armorPolys,
                        ImmutableList<SharedValuesKey.ResourceContainer> sharedValueResources) {
         this.itemPolys = itemPolys;
         this.globalItemPolys = globalItemPolys;
         this.blockPolys = blockPolys;
         this.guiPolys = guiPolys;
         this.entityPolys = entityPolys;
-        this.armorPolys = armorPolys;
         this.sharedValueResources = sharedValueResources;
     }
 
@@ -202,25 +197,6 @@ public class PolyMapImpl implements PolyMap {
                 e.printStackTrace();
             }
         });
-
-        // Add all ArmorMaterial polys
-        if (ArmorMaterialPoly.shouldUseFancyPants(this.armorPolys)) {
-            try {
-                ArmorMaterialPoly.addToResourcePack(this.armorPolys, moddedResources, pack, logger);
-            } catch (Exception e) {
-                logger.warn("Exception whilst generating resources for ArmorMaterialPolys");
-                e.printStackTrace();
-            }
-        } else {
-            this.armorPolys.forEach((armorMaterial, armorMaterialPoly) -> {
-                try {
-                    armorMaterialPoly.addToResourcePack(pack);
-                } catch (Exception e) {
-                    logger.warn("Exception whilst generating armor material resources for " + armorMaterial.getName());
-                    e.printStackTrace();
-                }
-            });
-        }
 
         // Import the language files for all mods
         var languageKeys = new HashMap<String,HashMap<String, String>>(); // The first hashmap is per-language. Then it's translationkey->translation

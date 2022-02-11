@@ -21,9 +21,9 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
-import io.github.theepicblock.polymc.impl.poly.item.ArmorItemPoly;
 import io.github.theepicblock.polymc.impl.poly.item.CustomModelDataPoly;
 import io.github.theepicblock.polymc.impl.poly.item.DamageableItemPoly;
+import io.github.theepicblock.polymc.impl.poly.item.FancyPantsItemPoly;
 import net.minecraft.item.*;
 
 /**
@@ -37,7 +37,7 @@ public class ItemPolyGenerator {
         var cmdManager = builder.getSharedValues(CustomModelDataManager.KEY);
 
         if (item instanceof ArmorItem armorItem) {
-            return new ArmorItemPoly(builder, armorItem);
+            return new FancyPantsItemPoly(builder, armorItem);
         }
         if (item instanceof ShieldItem) {
             return new DamageableItemPoly(cmdManager, item, Items.SHIELD);

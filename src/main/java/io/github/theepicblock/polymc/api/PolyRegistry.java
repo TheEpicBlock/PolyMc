@@ -25,12 +25,9 @@ import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.impl.PolyMapImpl;
-import io.github.theepicblock.polymc.impl.poly.item.ArmorItemPoly;
-import io.github.theepicblock.polymc.impl.poly.item.ArmorMaterialPoly;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
@@ -50,7 +47,6 @@ public class PolyRegistry {
     private final Map<Block,BlockPoly> blockPolys = new HashMap<>();
     private final Map<ScreenHandlerType<?>,GuiPoly> guiPolys = new HashMap<>();
     private final Map<EntityType<?>,EntityPoly<?>> entityPolys = new HashMap<>();
-    private final Map<ArmorMaterial, ArmorMaterialPoly> armorPolys = new HashMap<>();
 
     /**
      * Register a poly for an item.
@@ -99,53 +95,6 @@ public class PolyRegistry {
     }
 
     /**
-     * Register a poly for an armor material.
-     * @param material  material to associate poly with
-     * @param itemPoly  The ArmorItemPoly to register for. An ArmorMaterialPoly will be created.
-     */
-    public ArmorMaterialPoly registerArmorMaterialPoly(ArmorMaterial material, ArmorItemPoly itemPoly) {
-
-        ArmorMaterialPoly armorMaterialPoly;
-
-        if (armorPolys.containsKey(material)) {
-            armorMaterialPoly = armorPolys.get(material);
-        } else {
-            armorMaterialPoly = new ArmorMaterialPoly(material);
-            this.registerArmorMaterialPoly(material, armorMaterialPoly);
-        }
-
-        return armorMaterialPoly;
-    }
-
-    /**
-     * Register a poly for an armor material.
-     * @param material           material to associate poly with
-     * @param armorMaterialPoly  poly to register
-     */
-    public ArmorMaterialPoly registerArmorMaterialPoly(ArmorMaterial material, ArmorMaterialPoly armorMaterialPoly) {
-
-        ArmorMaterialPoly existingPoly = armorPolys.get(material);
-        Integer color = null;
-        Integer number = null;
-
-        // Add (or overwrite) the material's poly
-        armorPolys.put(material, armorMaterialPoly);
-
-        if (existingPoly == null) {
-            number = armorPolys.size();
-            color = 0xFFFFFF - number * 2;
-        } else {
-            number = existingPoly.getNumber();
-            color = existingPoly.getColorId();
-        }
-
-        armorMaterialPoly.setNumber(number);
-        armorMaterialPoly.setColorId(color);
-
-        return armorMaterialPoly;
-    }
-
-    /**
      * Checks if the item has a registered {@link ItemPoly}.
      * @param item item to check.
      * @return True if a {@link ItemPoly} exists for the given item.
@@ -181,24 +130,6 @@ public class PolyRegistry {
         return entityPolys.containsKey(entityType);
     }
 
-    /**
-     * Checks if this armor material has a registered {@link ArmorItemPoly}.
-     * @param material armor material type to check.
-     * @return True if a {@link ArmorItemPoly} exists for the given material.
-     */
-    public boolean hasArmorMaterialPoly(ArmorMaterial material) {
-        return armorPolys.containsKey(material);
-    }
-
-    /**
-     * Gets the ArmorMaterialPoly for the given material.
-     * @param material armor material type to check.
-     * @return True if a {@link ArmorItemPoly} exists for the given material.
-     */
-    public ArmorMaterialPoly getArmorMaterialPoly(ArmorMaterial material) {
-        return armorPolys.get(material);
-    }
-
     public <T> T getSharedValues(SharedValuesKey<T> key) {
         return (T)sharedValues.computeIfAbsent((SharedValuesKey<Object>)key, (key0) -> key0.createNew(this));
     }
@@ -213,7 +144,6 @@ public class PolyRegistry {
                 ImmutableMap.copyOf(blockPolys),
                 ImmutableMap.copyOf(guiPolys),
                 ImmutableMap.copyOf(entityPolys),
-                ImmutableMap.copyOf(armorPolys),
                 ImmutableList.copyOf(sharedValues.entrySet().stream().map((entry) -> entry.getKey().createResources(entry.getValue())).filter(Objects::nonNull).iterator()));
     }
 }
