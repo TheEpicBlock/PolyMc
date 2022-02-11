@@ -21,6 +21,7 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.impl.poly.ArmorColorManager;
 import io.github.theepicblock.polymc.impl.poly.item.CustomModelDataPoly;
 import io.github.theepicblock.polymc.impl.poly.item.DamageableItemPoly;
 import io.github.theepicblock.polymc.impl.poly.item.FancyPantsItemPoly;
@@ -37,6 +38,9 @@ public class ItemPolyGenerator {
         var cmdManager = builder.getSharedValues(CustomModelDataManager.KEY);
 
         if (item instanceof ArmorItem armorItem) {
+            if (builder.getSharedValues(ArmorColorManager.KEY).isEmpty()) {
+                FancyPantsItemPoly.onFirstRegister(builder);
+            }
             return new FancyPantsItemPoly(builder, armorItem);
         }
         if (item instanceof ShieldItem) {

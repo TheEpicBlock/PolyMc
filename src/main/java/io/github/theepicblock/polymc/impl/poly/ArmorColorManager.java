@@ -6,6 +6,8 @@ import io.github.theepicblock.polymc.api.SharedValuesKey;
 import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import net.minecraft.item.ArmorMaterial;
 
@@ -21,7 +23,8 @@ import java.util.Objects;
 public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
     public static final SharedValuesKey<ArmorColorManager> KEY = new SharedValuesKey<>(ArmorColorManager::new, (it) -> it);
 
-    private final Object2IntArrayMap<ArmorMaterial> colors = new Object2IntArrayMap<>();
+    private final Object2IntArrayMap<ArmorMaterial> material2Color = new Object2IntArrayMap<>();
+    private final IntSet colors = new IntOpenHashSet();
 
     public ArmorColorManager() {
 
@@ -31,14 +34,27 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
         this();
     }
 
+    public boolean isEmpty() {
+        return material2Color.isEmpty();
+    }
+
+    public boolean hasColor(int c) {
+        return colors.contains(c);
+    }
+
     public int getColorForMaterial(ArmorMaterial material) {
-        return colors.computeIfAbsent(material, (key) -> 0xFFFFFF - colors.size() * 2);
+        if (!material2Color.containsKey(material)) {
+            var color = 0xFFFFFF - material2Color.size() * 2;
+            material2Color.put(material, color);
+            colors.add(color);
+        }
+        return material2Color.getInt(material);
     }
 
     // We don't have any reference to the PolyRegistry, so the resource container can be the same class
     @Override
     public void addToResourcePack(ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
-        if (this.colors.isEmpty()) {
+        if (this.material2Color.isEmpty()) {
             return;
         }
 
@@ -50,7 +66,7 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
             var moddedTextures = new HashMap<ArmorMaterial, BufferedImage>();
 
             // Collect all modded textures and calculate the size of the output
-            for (var material : colors.keySet()) {
+            for (var material : material2Color.keySet()) {
                 try {
                     var texturePath = "models/armor/" + material.getName() + "_layer_" + layer;
                     var texture = moddedResources.getTexture("minecraft", texturePath);
@@ -89,7 +105,7 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
 
             // Write the modded textures to the output image
             var xIndex = 64;
-            for (var entry : colors.object2IntEntrySet()) {
+            for (var entry : material2Color.object2IntEntrySet()) {
                 var material = entry.getKey();
                 var color = entry.getIntValue();
                 var texture = moddedTextures.get(material);
