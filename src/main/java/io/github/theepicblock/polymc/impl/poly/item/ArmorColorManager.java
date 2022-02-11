@@ -44,7 +44,7 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
 
     public int getColorForMaterial(ArmorMaterial material) {
         if (!material2Color.containsKey(material)) {
-            var color = 0xFFFFFF - material2Color.size() * 2;
+            var color = 0xDDDDFF - material2Color.size() * 2;
             material2Color.put(material, color);
             colors.add(color);
         }
