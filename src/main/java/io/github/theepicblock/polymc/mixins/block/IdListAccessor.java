@@ -1,10 +1,10 @@
 package io.github.theepicblock.polymc.mixins.block;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.util.collection.IdList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-import java.util.IdentityHashMap;
 import java.util.List;
 
 /**
@@ -17,5 +17,5 @@ public interface IdListAccessor<T> {
     List<T> getList();
 
     @Accessor
-    IdentityHashMap<T, Integer> getIdMap();
+    Object2IntMap<T> getIdMap();
 }
