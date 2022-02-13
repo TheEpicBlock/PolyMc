@@ -1,18 +1,16 @@
 package io.github.theepicblock.polymc.impl.misc;
 
 import io.github.theepicblock.polymc.PolyMc;
-import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.mixins.block.IdListAccessor;
 import io.netty.buffer.Unpooled;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,37 +27,50 @@ public class BlockIdRemapper {
     }
 
     private static List<BlockState> readInternalList() throws IOException {
-        var blockIdPath = FabricLoader.getInstance().getModContainer(PolyMc.MODID).get().getPath("block-ids");
-        var blob = Files.readAllBytes(blockIdPath);
+        var blob = PolyMc.class.getResourceAsStream("/block-ids").readAllBytes();
 
         var buf = new PacketByteBuf(Unpooled.wrappedBuffer(blob));
 
+        var propertyLookupTable = new PropertyLookupTable(buf);
+
+        var vanillaBlocks = new BlockState[buf.readVarInt()];
         int totalBlocks = buf.readVarInt();
-        var vanillaBlocks = new ArrayList<BlockState>(totalBlocks);
         for (int i = 0; i < totalBlocks; i++) {
-            vanillaBlocks.add(readBlockstate(buf));
+            readBlock(buf, propertyLookupTable, vanillaBlocks);
         }
 
-        return vanillaBlocks;
+        return List.of(vanillaBlocks);
     }
 
-    private static BlockState readBlockstate(PacketByteBuf buf) {
-        Identifier id = buf.readIdentifier();
+    private static void readBlock(PacketByteBuf buf, PropertyLookupTable table, BlockState[] outputList) {
+        var path = buf.readString();
+        var id = new Identifier(path);
         Block block = Registry.BLOCK.get(id);
-        var state = block.getDefaultState();
 
-        int totalProperties = buf.readVarInt();
-        for (int i = 0; i < totalProperties; i++) {
-            var propertyName = buf.readString();
-            var valueName = buf.readString();
+        var baseState = block.getDefaultState();
 
-            var property = block.getStateManager().getProperty(propertyName);
-            if (property != null) {
-                state = Util.parseAndAddBlockState(state, property, valueName);
+        var properties = buf.readCollection(ArrayList::new,
+                (buf0) -> table.getProperty(buf.readVarInt(), block));
+
+        var firstStateId = buf.readVarInt();
+
+        var amountOfStates = buf.readVarInt();
+        for (int i = 0; i < amountOfStates; i++) {
+            var state = baseState;
+            for (var property : properties) {
+                var valueId = buf.readVarInt();
+                state = blockStateWith(state, property, table.getValue(property, valueId));
             }
+            var stateId = firstStateId+i;
+            if (outputList[stateId] != null) {
+                throw new IllegalStateException("Duplicate blockstate for id "+stateId+" : "+path);
+            }
+            outputList[stateId] = state;
         }
+    }
 
-        return state;
+    private static <T extends Comparable<T>, V extends T> BlockState blockStateWith(BlockState state, Property<T> property, Object value) {
+        return state.with(property, (V)value);
     }
 
     private static void remapBlocks(List<BlockState> vanillaBlocks) {
