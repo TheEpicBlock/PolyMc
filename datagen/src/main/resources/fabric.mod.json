@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "polymc-datagen",
+  "version": "${version}",
+
+  "name": "PolyMc Datagen",
+  "description": "",
+  "authors": [
+    "TheEpicBlock"
+  ],
+  "contact": {
+    "sources": "https://github.com/TheEpicBlock/PolyMc"
+  },
+
+  "license": "LGPL-3.0-or-later",
+  "icon": "",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.github.theepicblock.polymc.datagen.Main"
+    ]
+  },
+  "mixins": [
+  ],
+
+  "depends": {
+  },
+  "suggests": {
+  }
+}

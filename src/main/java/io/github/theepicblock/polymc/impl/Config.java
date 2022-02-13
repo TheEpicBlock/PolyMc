@@ -42,10 +42,11 @@ import java.util.List;
  */
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection", "JavadocReference"})
 public class Config {
-    public static final int LATEST_VERSION = 6;
+    public static final int LATEST_VERSION = 7;
     public MiscConfig misc;
     private int configVersion;
     private List<String> disabledMixins;
+    public boolean remapVanillaBlockIds;
 
     public int getConfigVersion() {
         return configVersion;

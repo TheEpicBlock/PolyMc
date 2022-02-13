@@ -7,5 +7,6 @@
     "processSyncedBlockEventServerSide": [
       "minecraft:note_block"
     ]
-  }
+  },
+  "remapVanillaBlockIds": false
 }

@@ -79,7 +79,7 @@ public class Util {
         return v;
     }
 
-    private static <T extends Comparable<T>> BlockState parseAndAddBlockState(BlockState v, Property<T> property, String value) {
+    public static <T extends Comparable<T>> BlockState parseAndAddBlockState(BlockState v, Property<T> property, String value) {
         Optional<T> optional = property.parse(value);
         if (optional.isPresent()) {
             return v.with(property, optional.get());
