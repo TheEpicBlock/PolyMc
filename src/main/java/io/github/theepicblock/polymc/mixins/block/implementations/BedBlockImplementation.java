@@ -18,7 +18,6 @@
 package io.github.theepicblock.polymc.mixins.block.implementations;
 
 import io.github.theepicblock.polymc.impl.mixin.PacketReplacementUtil;
-import io.github.theepicblock.polymc.mixins.block.FallbackBaseImplementation;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.BedPart;
@@ -34,7 +33,6 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
  * In the {@link BedBlock#onBreak(World, BlockPos, BlockState, PlayerEntity)} method, there is a call to create a WorldEvent for the breakage.
- * Normally the remapping of that would be caught by {@link FallbackBaseImplementation} but that method doesn't respect individuals their PolyMaps.
  */
 @Mixin(BedBlock.class)
 public class BedBlockImplementation {

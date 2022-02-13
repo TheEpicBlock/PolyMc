@@ -18,11 +18,12 @@
 package io.github.theepicblock.polymc.api.block;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
-import io.github.theepicblock.polymc.api.resource.ResourcePackMaker;
 import io.github.theepicblock.polymc.impl.poly.block.ConditionalSimpleBlockPoly;
 import io.github.theepicblock.polymc.impl.poly.block.PropertyRetainingReplacementPoly;
 import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
 import net.minecraft.block.*;
+import net.minecraft.block.enums.SculkSensorPhase;
+import net.minecraft.item.HoneycombItem;
 import net.minecraft.state.property.Properties;
 
 import java.util.function.BiConsumer;
@@ -46,6 +47,7 @@ public class BlockStateProfile {
         this.onFirstRegister = onFirstRegister;
         this.name = name;
     }
+
     public BlockStateProfile(String name, Block block, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) {
         this.blocks = new Block[]{block};
         this.filter = filter;
@@ -61,6 +63,8 @@ public class BlockStateProfile {
             Blocks.TRIPWIRE};
     private static final Block[] DOOR_BLOCKS = {Blocks.ACACIA_DOOR,Blocks.BIRCH_DOOR,Blocks.DARK_OAK_DOOR,Blocks.JUNGLE_DOOR,Blocks.OAK_DOOR,Blocks.SPRUCE_DOOR,Blocks.CRIMSON_DOOR,Blocks.WARPED_DOOR};
     private static final Block[] TRAPDOOR_BLOCKS = {Blocks.ACACIA_TRAPDOOR,Blocks.BIRCH_TRAPDOOR,Blocks.DARK_OAK_TRAPDOOR,Blocks.JUNGLE_TRAPDOOR,Blocks.OAK_TRAPDOOR,Blocks.SPRUCE_TRAPDOOR,Blocks.CRIMSON_TRAPDOOR,Blocks.WARPED_TRAPDOOR};
+    private static final Block[] WAXED_COPPER_STAIR_BLOCKS = {Blocks.WAXED_CUT_COPPER_STAIRS, Blocks.WAXED_EXPOSED_CUT_COPPER_STAIRS, Blocks.WAXED_WEATHERED_CUT_COPPER_STAIRS, Blocks.WAXED_OXIDIZED_CUT_COPPER_STAIRS};
+    private static final Block[] WAXED_COPPER_SLAB_BLOCKS = {Blocks.WAXED_CUT_COPPER_SLAB, Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB, Blocks.WAXED_WEATHERED_CUT_COPPER_SLAB, Blocks.WAXED_OXIDIZED_CUT_COPPER_SLAB};
 
     //FILTERS
     private static final Predicate<BlockState> DEFAULT_FILTER = (blockState) -> blockState != blockState.getBlock().getDefaultState();
@@ -77,25 +81,31 @@ public class BlockStateProfile {
         return moisture != 0 && moisture != 7;
     };
     private static final Predicate<BlockState> POWERED_FILTER = (blockState) -> blockState.get(Properties.POWERED) == true;
+    private static final Predicate<BlockState> SCULK_FILTER = (blockState) -> blockState.get(SculkSensorBlock.POWER) != 0 && blockState.get(SculkSensorBlock.SCULK_SENSOR_PHASE) != SculkSensorPhase.ACTIVE; // Active sculk sensors have particles and emissive lighting
 
     //ON FIRST REGISTERS
     private static final BiConsumer<Block,PolyRegistry> DEFAULT_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
     private static final BiConsumer<Block,PolyRegistry> NO_COLLISION_ON_FIRST_REGISTER = (block, polyRegistry) -> {
         if (block == Blocks.TRIPWIRE) {
-            polyRegistry.registerBlockPoly(block, new BlockPoly() {
-                @Override
-                public BlockState getClientBlock(BlockState input) {
-                    return input.with(Properties.POWERED, false).with(Properties.DISARMED,false);
-                }
-                @Override public void addToResourcePack(Block block, ResourcePackMaker pack) {}
-            });
+            polyRegistry.registerBlockPoly(block, (input) ->
+                input.with(Properties.POWERED, false).with(Properties.DISARMED,false)
+            );
         } else {
             polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
         }
     };
+    private static final BiConsumer<Block,PolyRegistry> SCULK_SENSOR_ON_FIRST_REGISTER = (block, polyRegistry) -> {
+        polyRegistry.registerBlockPoly(block, (input) ->
+                input.with(SculkSensorBlock.POWER, 0)
+        );
+    };
     private static final BiConsumer<Block,PolyRegistry> PETRIFIED_OAK_SLAB_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new PropertyRetainingReplacementPoly(Blocks.OAK_SLAB));
     private static final BiConsumer<Block,PolyRegistry> FARMLAND_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new ConditionalSimpleBlockPoly(Blocks.FARMLAND.getDefaultState(), FARMLAND_FILTER));
-    private static final BiConsumer<Block,PolyRegistry> POWERED_BLOCK_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, (BlockPolyPredicate)(block2) -> block2.with(Properties.POWERED, false));
+    private static final BiConsumer<Block,PolyRegistry> POWERED_BLOCK_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, (input) -> input.with(Properties.POWERED, false));
+    private static final BiConsumer<Block,PolyRegistry> WAXED_COPPER_ON_FIRST_REGISTER = (block, polyRegistry) -> {
+        var unwaxedBlock = HoneycombItem.WAXED_TO_UNWAXED_BLOCKS.get().get(block);
+        polyRegistry.registerBlockPoly(block, new PropertyRetainingReplacementPoly(unwaxedBlock));
+    };
 
     //PROFILES
     public static final BlockStateProfile NOTE_BLOCK_PROFILE = getProfileWithDefaultFilter("note block", Blocks.NOTE_BLOCK);
@@ -109,6 +119,9 @@ public class BlockStateProfile {
     public static final BlockStateProfile TRAPDOOR_PROFILE = new BlockStateProfile("trapdoor", TRAPDOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile METAL_DOOR_PROFILE = new BlockStateProfile("metal_door", Blocks.IRON_DOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile METAL_TRAPDOOR_PROFILE = new BlockStateProfile("metal_trapdoor", Blocks.IRON_TRAPDOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile WAXED_COPPER_STAIR_PROFILE = new BlockStateProfile("waxed_copper_stair", WAXED_COPPER_STAIR_BLOCKS, ALWAYS_TRUE_FILTER, WAXED_COPPER_ON_FIRST_REGISTER);
+    public static final BlockStateProfile WAXED_COPPER_SLAB_PROFILE = new BlockStateProfile("waxed_copper_slab", WAXED_COPPER_SLAB_BLOCKS, ALWAYS_TRUE_FILTER, WAXED_COPPER_ON_FIRST_REGISTER);
+    public static final BlockStateProfile SCULK_SENSOR_PROFILE = new BlockStateProfile("sculk_sensor", Blocks.SCULK_SENSOR, SCULK_FILTER, SCULK_SENSOR_ON_FIRST_REGISTER);
 
     //OTHER CODE
     public static BlockStateProfile getProfileWithDefaultFilter(String name, Block[] blocks) {
@@ -122,5 +135,9 @@ public class BlockStateProfile {
     private static boolean isStringUseable(BlockState state) {
         return  state.get(Properties.POWERED) == true ||
                 state.get(TripwireBlock.DISARMED) == true;
+    }
+
+    public BlockStateProfile and(Predicate<BlockState> filter) {
+        return new BlockStateProfile(this.name, this.blocks, this.filter.and(filter), this.onFirstRegister);
     }
 }

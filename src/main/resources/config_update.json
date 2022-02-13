@@ -28,6 +28,11 @@
     }
   },
   "6": {
+    "remove": [
+      "resourcepack"
+    ]
+  },
+  "7": {
     "add": {
       "remapVanillaBlockIds": false
     }

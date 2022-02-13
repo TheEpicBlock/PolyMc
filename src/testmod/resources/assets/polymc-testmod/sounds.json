@@ -1,0 +1,11 @@
+{
+  "testsoundevent": {
+    "sounds": [
+      "polymc-testmod:testsound1",
+      {
+        "name": "polymc-testmod:testsound2",
+        "pitch": 3
+      }
+    ]
+  }
+}

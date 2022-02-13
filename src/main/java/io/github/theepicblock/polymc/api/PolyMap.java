@@ -17,14 +17,19 @@
  */
 package io.github.theepicblock.polymc.api;
 
-import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
+import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
-import io.github.theepicblock.polymc.mixins.block.implementations.WorldEventImplementation;
+import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import io.github.theepicblock.polymc.mixins.gui.GuiPolyImplementation;
 import io.github.theepicblock.polymc.mixins.item.CreativeItemStackFix;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
@@ -35,38 +40,49 @@ public interface PolyMap {
     /**
      * Converts the serverside representation of an item into a clientside one that should be sent to the client.
      */
-    ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player);
+    ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location);
 
     /**
      * Converts the serverside representation of a block into a clientside one that should be sent to the client.
      */
-    BlockState getClientBlock(BlockState serverBlock);
+    default BlockState getClientBlock(BlockState serverBlock) {
+        BlockPoly poly = this.getBlockPoly(serverBlock.getBlock());
+        if (poly == null) return serverBlock;
+
+        return poly.getClientBlock(serverBlock);
+    }
 
     /**
-     * Gets the {@link GuiPoly} that this PolyMap associates with this {@link ScreenHandlerType}.
-     * @return A {@link GuiPoly} describing how to display this screen type on the client.
+     * Get the RawId of the client-state block
      */
-    GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType);
+    default int getClientStateRawId(BlockState state, ServerPlayerEntity playerEntity) {
+        BlockState clientState = this.getClientBlock(state);
+        return Block.STATE_IDS.getRawId(clientState);
+    }
 
     /**
-     * Gets the {@link BlockPoly} that this PolyMap associates with this {@link Block}.
-     * @return A {@link BlockPoly} describing how to display this screen type on the client.
+     * @return the {@link ItemPoly} that this PolyMap associates with this {@link Item}.
+     */
+    ItemPoly getItemPoly(Item item);
+
+    /**
+     * @return the {@link BlockPoly} that this PolyMap associates with this {@link Block}.
      */
     BlockPoly getBlockPoly(Block block);
 
     /**
-     * gets a map containing all itempolys that are registered in this map.
+     * @return the {@link GuiPoly} that this PolyMap associates with this {@link ScreenHandlerType}.
      */
-    ImmutableMap<Item,ItemPoly> getItemPolys();
+    GuiPoly getGuiPoly(ScreenHandlerType<?> serverGuiType);
 
     /**
-     * gets a map containing all blockpolys that are registered in this map.
+     * @return the {@link EntityPoly} that this PolyMap associates with this {@link EntityType}.
      */
-    ImmutableMap<Block,BlockPoly> getBlockPolys();
+    <T extends Entity> EntityPoly<T> getEntityPoly(EntityType<T> entity);
 
     /**
      * Reverts the clientside item into the serverside representation.
-     * This should be the reverse of {@link #getClientItem(ItemStack, ServerPlayerEntity)}.
+     * This should be the reverse of {@link #getClientItem(ItemStack, ServerPlayerEntity, ItemLocation)}.
      * For optimization reasons, this method only needs to be implemented for items gained by players in creative mode.
      * @see CreativeItemStackFix
      */
@@ -77,11 +93,15 @@ public interface PolyMap {
      * This is used to disable/enable miscellaneous patches
      * @see io.github.theepicblock.polymc.mixins.block.BlockBreakingPatch
      * @see io.github.theepicblock.polymc.mixins.CustomPacketDisabler
-     * @see io.github.theepicblock.polymc.mixins.TagSyncronizePatch
+     * @see io.github.theepicblock.polymc.mixins.tag.SerializedMixin
      * @see io.github.theepicblock.polymc.mixins.block.ResyncImplementation
-     * @see WorldEventImplementation
-     * @see io.github.theepicblock.polymc.mixins.gui.GuiHandlerIdImplementation
+     * @see io.github.theepicblock.polymc.impl.mixin.CustomBlockBreakingCheck#needsCustomBreaking(ServerPlayerEntity, Block)
+     * @see GuiPolyImplementation
      * @see io.github.theepicblock.polymc.mixins.item.CustomRecipeFix
      */
     boolean isVanillaLikeMap();
+
+    @Nullable PolyMcResourcePack generateResourcePack(SimpleLogger logger);
+
+    String dumpDebugInfo();
 }

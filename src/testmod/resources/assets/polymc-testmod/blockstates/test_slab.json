@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "polymc-testmod:block/test_slab"
+    },
+    "type=double": {
+      "model": "polymc-testmod:block/test_block"
+    },
+    "type=top": {
+      "model": "polymc-testmod:block/test_slab_top"
+    }
+  }
+}

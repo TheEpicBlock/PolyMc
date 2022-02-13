@@ -17,12 +17,14 @@
  */
 package io.github.theepicblock.polymc.mixins;
 
+import io.github.theepicblock.polymc.impl.Util;
 import net.fabricmc.fabric.impl.registry.sync.RegistrySyncManager;
-import net.minecraft.network.Packet;
+import net.fabricmc.fabric.impl.registry.sync.packet.RegistryPacketHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Fabric has a system in place to prevent Fabric clients from joining if the registries don't match.
@@ -31,8 +33,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(RegistrySyncManager.class)
 public class FabricRegistrySyncDisabler {
-    @Inject(method = "createPacket", at = @At("HEAD"), cancellable = true, remap = false)
-    private static void createPacketInject(CallbackInfoReturnable<Packet<?>> cir) {
-        cir.setReturnValue(null);
+    @Inject(method = "sendPacket(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/fabricmc/fabric/impl/registry/sync/packet/RegistryPacketHandler;)V", at = @At("HEAD"), cancellable = true)
+    private static void sendPacketInject(ServerPlayerEntity player, RegistryPacketHandler handler, CallbackInfo ci) {
+        if (Util.isPolyMapVanillaLike(player)) {
+            ci.cancel();
+        }
     }
 }

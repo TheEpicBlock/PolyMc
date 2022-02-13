@@ -18,4 +18,14 @@ public interface EntityAccessor {
     static TrackedData<Byte> getFlagTracker() {
         throw new IllegalStateException();
     }
+
+    @Accessor("NO_GRAVITY")
+    static TrackedData<Boolean> getNoGravityTracker() {
+        throw new IllegalStateException();
+    }
+
+    @Accessor("SILENT")
+    static TrackedData<Boolean> getSilentTracker() {
+        throw new IllegalStateException();
+    }
 }

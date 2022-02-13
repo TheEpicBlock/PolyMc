@@ -17,23 +17,22 @@
  */
 package io.github.theepicblock.polymc.api;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.api.block.BlockStateManager;
+import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
-import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.impl.PolyMapImpl;
 import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A class to register Polys.
@@ -41,13 +40,13 @@ import java.util.Map;
  * This eventually gets transformed to an {@link PolyMap}.
  */
 public class PolyRegistry {
-    private final CustomModelDataManager CMDManager = new CustomModelDataManager();
-    private final BlockStateManager blockStateManager = new BlockStateManager(this);
+    private final Map<SharedValuesKey<Object>, Object> sharedValues = new HashMap<>();
 
     private final Map<Item,ItemPoly> itemPolys = new HashMap<>();
     private final List<ItemTransformer> globalItemPolys = new ArrayList<>();
     private final Map<Block,BlockPoly> blockPolys = new HashMap<>();
     private final Map<ScreenHandlerType<?>,GuiPoly> guiPolys = new HashMap<>();
+    private final Map<EntityType<?>,EntityPoly<?>> entityPolys = new HashMap<>();
 
     /**
      * Register a poly for an item.
@@ -59,7 +58,7 @@ public class PolyRegistry {
     }
 
     /**
-     * Registers a global item poly. This {@link ItemPoly#getClientItem(ItemStack)} shall be called for all items.
+     * Registers a global item poly. This {@link ItemPoly#getClientItem(ItemStack, io.github.theepicblock.polymc.api.item.ItemLocation)} shall be called for all items.
      * <p>
      * The order is dependant on the registration order. If it is registered earlier it'll be called earlier.
      * @param poly poly to register.
@@ -84,6 +83,15 @@ public class PolyRegistry {
      */
     public void registerGuiPoly(ScreenHandlerType<?> screenHandler, GuiPoly poly) {
         guiPolys.put(screenHandler, poly);
+    }
+
+    /**
+     * Register a poly for an entity.
+     * @param entityType    entity type to associate poly with.
+     * @param poly          poly to register.
+     */
+    public <T extends Entity> void registerEntityPoly(EntityType<T> entityType, EntityPoly<T> poly) {
+        entityPolys.put(entityType, poly);
     }
 
     /**
@@ -114,17 +122,16 @@ public class PolyRegistry {
     }
 
     /**
-     * Gets the {@link CustomModelDataManager} allocated to assist during registration
+     * Checks if the entity type has a registered {@link EntityPoly}.
+     * @param entityType entity type to check.
+     * @return True if a {@link EntityPoly} exists for the given screen handler.
      */
-    public CustomModelDataManager getCMDManager() {
-        return CMDManager;
+    public boolean hasEntityPoly(EntityType<?> entityType) {
+        return entityPolys.containsKey(entityType);
     }
 
-    /**
-     * Gets the {@link BlockStateManager} allocated to assist during registration
-     */
-    public BlockStateManager getBlockStateManager() {
-        return blockStateManager;
+    public <T> T getSharedValues(SharedValuesKey<T> key) {
+        return (T)sharedValues.computeIfAbsent((SharedValuesKey<Object>)key, (key0) -> key0.createNew(this));
     }
 
     /**
@@ -135,7 +142,8 @@ public class PolyRegistry {
                 ImmutableMap.copyOf(itemPolys),
                 globalItemPolys.toArray(new ItemTransformer[0]),
                 ImmutableMap.copyOf(blockPolys),
-                ImmutableMap.copyOf(guiPolys)
-        );
+                ImmutableMap.copyOf(guiPolys),
+                ImmutableMap.copyOf(entityPolys),
+                ImmutableList.copyOf(sharedValues.entrySet().stream().map((entry) -> entry.getKey().createResources(entry.getValue())).filter(Objects::nonNull).iterator()));
     }
 }

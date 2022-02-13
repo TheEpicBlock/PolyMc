@@ -4,7 +4,6 @@ import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.Block;
 import net.minecraft.server.network.ServerPlayerEntity;
-import org.spongepowered.asm.mixin.Unique;
 
 public class CustomBlockBreakingCheck {
     /**
@@ -16,6 +15,6 @@ public class CustomBlockBreakingCheck {
             return false;
 
         var polyMap = PolyMapProvider.getPolyMap(player);
-        return polyMap.getBlockPoly(block) != null || polyMap.getItemPolys().containsKey(player.getMainHandStack().getItem());
+        return polyMap.getBlockPoly(block) != null || polyMap.getItemPoly(player.getMainHandStack().getItem()) != null;
     }
 }

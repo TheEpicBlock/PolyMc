@@ -1,6 +1,7 @@
 plugins {
-	id 'fabric-loom' version '0.8-SNAPSHOT'
+	id 'fabric-loom' version '0.10-SNAPSHOT'
 	id 'maven-publish'
+	id "io.github.juuxel.loom-quiltflower-mini" version "1.0.0"
 }
 
 sourceCompatibility = JavaVersion.VERSION_16
@@ -22,8 +23,35 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modImplementation include("com.github.theepicblock:resource-locator-api:${project.resource_lookup_api_version}")
 
 	modCompileOnly "com.github.CaffeineMC.lithium-fabric:lithium:${project.lithium_version}"
+}
+
+sourceSets {
+	testmod {
+		runtimeClasspath += main.runtimeClasspath + main.output
+		compileClasspath += main.compileClasspath + main.output
+	}
+}
+
+loom {
+	runs {
+		testmodClient {
+			client()
+			ideConfigGenerated project.rootProject == project
+			name = "Test Mod Client"
+			source sourceSets.testmod
+		}
+		testmodServer {
+			server()
+			ideConfigGenerated project.rootProject == project
+			name = "Test Mod Server"
+			source sourceSets.testmod
+		}
+	}
+
+	accessWidenerPath = file("src/main/resources/polymc.accesswidener")
 }
 
 processResources {
@@ -64,13 +92,7 @@ jar {
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
-			// add all the jars that should be included when publishing to maven
-			artifact(remapJar) {
-				builtBy remapJar
-			}
-			artifact(sourcesJar) {
-				builtBy remapSourcesJar
-			}
+			from components.java
 		}
 	}
 

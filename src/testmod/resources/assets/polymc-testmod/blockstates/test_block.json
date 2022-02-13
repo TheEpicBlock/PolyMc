@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "polymc-testmod:block/test_block"
+    }
+  }
+}

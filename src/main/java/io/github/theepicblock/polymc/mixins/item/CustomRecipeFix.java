@@ -24,7 +24,6 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -61,16 +60,6 @@ public class CustomRecipeFix implements PlayerContextContainer {
     @Inject(method = "write(Lnet/minecraft/network/PacketByteBuf;)V", at = @At("HEAD"))
     private void writeInject(PacketByteBuf buf, CallbackInfo ci) {
         ((PlayerContextContainer)buf).setPolyMcProvidedPlayer(player);
-    }
-
-    @Inject(method = "writeRecipe(Lnet/minecraft/network/PacketByteBuf;Lnet/minecraft/recipe/Recipe;)V",
-            at = @At("HEAD"),
-            cancellable = true)
-    private static <T extends Recipe<?>> void writeInject(PacketByteBuf packetByteBuf, T recipe, CallbackInfo ci) {
-        Identifier recipeId = Registry.RECIPE_SERIALIZER.getId(recipe.getSerializer());
-        if (!Util.isVanilla(recipeId)) {
-            ci.cancel();
-        }
     }
 
     /**

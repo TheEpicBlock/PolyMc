@@ -17,10 +17,14 @@
  */
 package io.github.theepicblock.polymc.impl;
 
+import com.google.common.base.Splitter;
+import com.google.gson.Gson;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.mixins.ItemStackAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
@@ -34,7 +38,9 @@ import java.util.Map;
 import java.util.Optional;
 
 public class Util {
+    public static final Gson GSON = new Gson();
     public static final String MC_NAMESPACE = "minecraft";
+    private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
 
     /**
      * Returns true if this identifier is in the minecraft namespace
@@ -82,6 +88,13 @@ public class Util {
     }
 
     /**
+     * Splits a string like `facing=east,half=lower,hinge=left,open=false` into ['facing=east', 'half=lower', etc...]
+     */
+    public static Iterable<String> splitBlockStateString(String string) {
+        return COMMA_SPLITTER.split(string);
+    }
+
+    /**
      * Get the properties of a blockstate as a string
      * @param state state to extract properties from
      * @return "facing=north,lit=false" for example
@@ -114,11 +127,7 @@ public class Util {
     public static String expandTo(String s, int amount) {
         int left = amount - s.length();
         if (left >= 0) {
-            StringBuilder out = new StringBuilder().append(s);
-            for (int i = 0; i < left; i++) {
-                out.append(" ");
-            }
-            return out.toString();
+            return s + " ".repeat(left);
         }
         return s;
     }
@@ -128,7 +137,7 @@ public class Util {
     }
 
     public static void copyAll(Path from, Path to) throws IOException {
-        FileVisitor<Path> visitor = new SimpleFileVisitor<Path>() {
+        FileVisitor<Path> visitor = new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if (!attrs.isDirectory()) {
@@ -170,8 +179,7 @@ public class Util {
      */
     public static int getPolydRawIdFromState(BlockState state, ServerPlayerEntity playerEntity) {
         PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
-        BlockState clientState = map.getClientBlock(state);
-        return Block.STATE_IDS.getRawId(clientState);
+        return map.getClientStateRawId(state, playerEntity);
     }
 
     /**
@@ -186,5 +194,18 @@ public class Util {
 
     public static BlockPos fromPalettedContainerIndex(int index) {
         return new BlockPos(index & 0xF, (index >> 8) & 0xF, (index >> 4) & 0xF);
+    }
+
+    public static boolean isSectionVisible(ItemStack stack, ItemStack.TooltipSection tooltipSection) {
+        int flags = ((ItemStackAccessor)(Object)stack).callGetHideFlags();
+        return ItemStackAccessor.callIsSectionVisible(flags, tooltipSection);
+    }
+
+    /**
+     * @return null if the id can't be parsed or the string is null
+     */
+    public static Identifier parseId(String id) {
+        if (id == null) return null;
+        return Identifier.tryParse(id);
     }
 }

@@ -19,7 +19,6 @@ package io.github.theepicblock.polymc.mixins.block.implementations;
 
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
-import io.github.theepicblock.polymc.mixins.block.FallbackBaseImplementation;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -30,7 +29,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
  * This packet writes the raw id of the updated {@link BlockState} to itself.
- * Normally the remapping of that would be caught by {@link FallbackBaseImplementation} but that method doesn't respect individuals their PolyMaps.
  * {@link io.github.theepicblock.polymc.mixins.context.NetworkHandlerContextProvider} will provide the player context to this packet via {@link #setPolyMcProvidedPlayer(ServerPlayerEntity)}
  */
 @Mixin(BlockUpdateS2CPacket.class)
