@@ -82,6 +82,9 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
                     moddedTextures.put(material, moddedImage);
                     outputHeight = Math.max(outputHeight, moddedImage.getHeight());
                     outputWidth += moddedImage.getWidth();
+
+                    // Write the modded armor textures standalone
+                    pack.setTexture("minecraft", texturePath, moddedResources.getTexture("minecraft", texturePath));
                 } catch (IOException e) {
                     logger.error("Couldn't read armor texture "+material.getName()+" (layer #"+layer+")");
                     e.printStackTrace();
