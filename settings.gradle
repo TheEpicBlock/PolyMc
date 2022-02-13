@@ -12,5 +12,3 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-
-includeBuild("datagen")
