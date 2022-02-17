@@ -105,12 +105,18 @@ public class JModelWrapper implements JModel {
     @Override
     public JModelDisplay getDisplay(JModelDisplayType position) {
         assertJson();
+        if (jsonRepresentation.display == null) {
+            return null;
+        }
         return jsonRepresentation.display.get(position);
     }
 
     @Override
     public void setDisplay(JModelDisplayType position, JModelDisplay display) {
         assertJson();
+        if (jsonRepresentation.display == null) {
+            jsonRepresentation.display = new HashMap<>();
+        }
         jsonRepresentation.display.put(position, display);
     }
 
