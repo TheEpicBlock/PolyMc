@@ -1,5 +1,7 @@
 #version 150
 
+// Credit: https://github.com/Ancientkingg/fancyPants
+
 #moj_import <light.glsl>
 
 in vec3 Position;
