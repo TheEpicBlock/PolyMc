@@ -17,6 +17,7 @@ public class Testmod implements ModInitializer {
     private static final String MODID = "polymc-testmod";
 
     public static final Item TEST_ITEM = new TestItem(new FabricItemSettings().group(ItemGroup.MISC).maxCount(6).rarity(Rarity.EPIC));
+    public static final Item TEST_FOOD = new Item(new FabricItemSettings().group(ItemGroup.FOOD).food(FoodComponents.COOKED_CHICKEN));
     public static final ArmorMaterial TEST_MATERIAL = new TestArmorMaterial();
     public static final Item TELMET = new ArmorItem(TEST_MATERIAL, EquipmentSlot.HEAD, new Item.Settings().group(ItemGroup.TRANSPORTATION));
     public static final Item TESTPLATE = new ArmorItem(TEST_MATERIAL, EquipmentSlot.CHEST, new Item.Settings().group(ItemGroup.TRANSPORTATION));
@@ -34,6 +35,7 @@ public class Testmod implements ModInitializer {
     @Override
     public void onInitialize() {
         Registry.register(Registry.ITEM, id("test_item"), TEST_ITEM);
+        Registry.register(Registry.ITEM, id("test_food"), TEST_FOOD);
 
         Registry.register(Registry.ITEM, id("test_helmet"), TELMET);
         Registry.register(Registry.ITEM, id("test_chestplate"), TESTPLATE);

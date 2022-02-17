@@ -29,6 +29,9 @@ A generic full block that emits light. It has a luminance of 9.
 ## `test_item`
 A generic item. Prints debug info when clicking with it. It also has an epic rarity and it's name should be coloured as such.
 
+## `test_food`
+A taste test item
+
 ## `test_enchantment`
 An enchantment that does nothing and can be applied to *any* item. Including blocks and such. Should range from level 1-4.
 
