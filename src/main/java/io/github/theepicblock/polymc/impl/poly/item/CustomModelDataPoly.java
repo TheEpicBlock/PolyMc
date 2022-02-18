@@ -95,9 +95,6 @@ public class CustomModelDataPoly implements ItemPoly {
             serverItem.getNbt().putInt("CustomModelData", cmdValue);
         }
 
-        if (location == null || location == ItemLocation.INVENTORY) {
-
-        }
         // Add custom tooltips. Don't bother showing them if the item's not in the inventory
         if (Util.isSectionVisible(input, ItemStack.TooltipSection.ADDITIONAL) && isInventory(location)) {
             Entity holder = input.getHolder(); // This is not usually guaranteed to get the correct player. It works here however.
