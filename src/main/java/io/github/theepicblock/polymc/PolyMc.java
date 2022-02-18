@@ -21,7 +21,6 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
-import io.github.theepicblock.polymc.impl.Config;
 import io.github.theepicblock.polymc.impl.ConfigManager;
 import io.github.theepicblock.polymc.impl.PolyMcCommands;
 import io.github.theepicblock.polymc.impl.generator.Generator;
@@ -32,7 +31,6 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
 import java.util.List;

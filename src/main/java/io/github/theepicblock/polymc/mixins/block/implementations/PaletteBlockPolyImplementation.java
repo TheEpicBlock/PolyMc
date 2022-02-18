@@ -28,7 +28,6 @@ import net.minecraft.world.chunk.ArrayPalette;
 import net.minecraft.world.chunk.BiMapPalette;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
