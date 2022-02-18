@@ -42,6 +42,7 @@ public class VItemFrame extends AbstractVirtualEntity {
                 false,
                 false,
                 true,
+                false,
                 false);
     }
 

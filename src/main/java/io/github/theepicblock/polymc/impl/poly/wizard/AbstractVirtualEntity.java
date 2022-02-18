@@ -79,14 +79,15 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
         ));
     }
 
-    public void sendFlags(ServerPlayerEntity playerEntity, boolean onFire, boolean sneaking, boolean sprinting, boolean swimming, boolean invisible, boolean glowing) {
+    public void sendFlags(ServerPlayerEntity playerEntity, boolean onFire, boolean sneaking, boolean sprinting, boolean swimming, boolean invisible, boolean glowing, boolean fallFlying) {
         byte flag = 0;
-        if (onFire)     flag += 0b00000001;
-        if (sneaking)   flag += 0b00000010;
-        if (sprinting)  flag += 0b00000100;
-        if (swimming)   flag += 0b00001000;
-        if (invisible)  flag += 0b00010000;
-        if (glowing)    flag += 0b00100000;
+        if (onFire)     flag += 1 << 0;
+        if (sneaking)   flag += 1 << 1;
+        if (sprinting)  flag += 1 << 3;
+        if (swimming)   flag += 1 << 4;
+        if (invisible)  flag += 1 << 5;
+        if (glowing)    flag += 1 << 6;
+        if (fallFlying) flag += 1 << 7;
 
         playerEntity.networkHandler.sendPacket(EntityUtil.createDataTrackerUpdate(
                 this.id,
