@@ -61,6 +61,7 @@
     "wizards.block.PalettedContainerAccessor",
     "wizards.block.WatchProviderMixin",
     "wizards.block.WorldChunkMixin",
+    "wizards.block.WorldMixin",
     "wizards.block.WorldWizardViewProvider"
   ],
   "injectors": {

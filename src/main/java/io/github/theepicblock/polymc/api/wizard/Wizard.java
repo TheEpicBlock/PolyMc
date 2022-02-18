@@ -30,6 +30,14 @@ public abstract class Wizard implements WatchListener {
 
     public void onStateChange() {}
 
+    public void onTick() {
+
+    }
+
+    public boolean needsTicking() {
+        return false;
+    }
+
     @Override
     public void removeAllPlayers() {
         //Default implementation.
@@ -40,6 +48,9 @@ public abstract class Wizard implements WatchListener {
         return world;
     }
 
+    /**
+     * @return the bottom center of this wizard's location. For a block this would be for example 11.5, 3, 45.5
+     */
     public final Vec3d getPosition() {
         return position;
     }

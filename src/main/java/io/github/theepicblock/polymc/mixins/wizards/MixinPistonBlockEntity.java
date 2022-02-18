@@ -72,10 +72,12 @@ public abstract class MixinPistonBlockEntity extends BlockEntity {
         float d = be.getAmountExtended(be.progress);
 
         be.wizards.forEach((polyMap, wizard) -> {
-            if (wizard != null) wizard.updatePosition(Vec3d.of(be.getPos()).add(
+            if (wizard == null) return;
+            wizard.updatePosition(Vec3d.of(be.getPos()).add(
                     0.5+d*be.facing.getOffsetX(),
                     d*be.facing.getOffsetY(),
                     0.5+d*be.facing.getOffsetZ()));
+            wizard.onTick();
         });
     }
 

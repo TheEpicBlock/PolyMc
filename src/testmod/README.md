@@ -38,4 +38,5 @@ An enchantment that does nothing and can be applied to *any* item. Including blo
 # Api tests
 ## `test_block_wizard`
 Test block for the wizard system. Its poly is set to replace it with red stained glass and 
-its wizard should spawn a diamond at its center. It is also affected by gravity.
+its wizard should spawn a diamond at its center as well as particles, although you won't see them without fabulous graphics. 
+It's also affected by gravity.

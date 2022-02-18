@@ -32,7 +32,9 @@ public class EntityTrackerMixin {
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
         wizards.forEach((polyMap, wizard) -> {
-            if (wizard != null) wizard.updatePosition(this.entity.getPos());
+            if (wizard == null) return;
+            wizard.updatePosition(this.entity.getPos());
+            wizard.onTick();
         });
     }
 

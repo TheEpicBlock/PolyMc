@@ -51,7 +51,9 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
     @Inject(method = "tick", at = @At("RETURN"))
     private void onTick(CallbackInfo ci) {
         wizards.forEach(((polyMap, wizard) -> {
-            if (wizard != null) wizard.updatePosition(this.getPos());
+            if (wizard == null) return;
+            wizard.updatePosition(this.getPos());
+            wizard.onTick();
         }));
     }
 

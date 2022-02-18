@@ -8,6 +8,7 @@ import io.github.theepicblock.polymc.api.wizard.WizardView;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
+import io.github.theepicblock.polymc.impl.mixin.WizardTickerDuck;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.block.BlockState;
@@ -52,7 +53,6 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
     }
 
     @Shadow public abstract World getWorld();
-
 
     @Unique
     private Map<BlockPos,Wizard> createWizardsForChunk(PolyMap map) {
@@ -128,7 +128,9 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
             BlockPoly poly = knownWizards.get(id);
             if (poly != null) {
                 BlockPos pos = Util.fromPalettedContainerIndex(i).add(this.pos.x * 16, yOffset, this.pos.z * 16);
-                ret.put(pos, poly.createWizard((ServerWorld)this.world, Vec3d.of(pos).add(0.5, 0, 0.5), Wizard.WizardState.BLOCK));
+                var wiz = poly.createWizard((ServerWorld)this.world, Vec3d.of(pos).add(0.5, 0, 0.5), Wizard.WizardState.BLOCK);
+                ((WizardTickerDuck)this.world).polymc$addTicker(wiz);
+                ret.put(pos, wiz);
             }
         }
 
@@ -171,7 +173,10 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
 
     @Override
     public void removeAllPlayers() {
-        this.wizards.values().forEach((wizardMap) -> wizardMap.values().forEach(WatchListener::removeAllPlayers));
+        this.wizards.values().forEach((wizardMap) -> wizardMap.values().forEach(wizard -> {
+            wizard.removeAllPlayers();
+            ((WizardTickerDuck)this.world).polymc$removeTicker(wizard);
+        }));
         this.wizards.clear();
         this.players.clear();
     }
@@ -180,7 +185,10 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
     private void onSet(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> cir) {
         wizards.forEach((polyMap, wizardMap) -> {
             Wizard oldWiz = wizardMap.remove(pos);
-            if (oldWiz != null) oldWiz.onRemove();
+            if (oldWiz != null) {
+                oldWiz.onRemove();
+                ((WizardTickerDuck)this.world).polymc$removeTicker(oldWiz);
+            }
 
             BlockPoly poly = polyMap.getBlockPoly(state.getBlock());
             if (poly != null && poly.hasWizard()) {
@@ -190,6 +198,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                 for (ServerPlayerEntity player : players) {
                     wiz.addPlayer(player);
                 }
+                ((WizardTickerDuck)this.world).polymc$addTicker(wiz);
             }
         });
     }
@@ -212,6 +221,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
             Wizard wizard = wizardMap.remove(pos);
             if (wizard != null) {
                 if (!move) wizard.onRemove();
+                ((WizardTickerDuck)this.world).polymc$removeTicker(wizard);
                 ret.put(polyMap, wizard);
             }
         });

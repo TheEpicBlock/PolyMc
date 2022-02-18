@@ -7,6 +7,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
@@ -40,6 +42,23 @@ public class TestWizardBlockPoly implements BlockPoly {
         public void onMove() {
             this.getPlayersWatchingChunk().forEach((player) -> item.move(player, this.getPosition(), (byte)0, (byte)0, true));
             super.onMove();
+        }
+
+        @Override
+        public void onTick() {
+            this.getPlayersWatchingChunk().forEach(player -> {
+                player.networkHandler.sendPacket(new ParticleS2CPacket(ParticleTypes.WAX_ON,
+                        false,
+                        this.getPosition().x,
+                        this.getPosition().y+0.5,
+                        this.getPosition().z,
+                        0, 0, 0, 0, 0));
+            });
+        }
+
+        @Override
+        public boolean needsTicking() {
+            return true;
         }
 
         @Override
