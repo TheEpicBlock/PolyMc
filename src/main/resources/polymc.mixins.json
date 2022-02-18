@@ -8,6 +8,7 @@
     "CommandSuggestionFix",
     "CustomPacketAccessor",
     "CustomPacketDisabler",
+    "DisableCustomParticles",
     "FabricRegistrySyncDisabler",
     "FabricRegistrySyncDisablerOld",
     "ItemStackAccessor",
