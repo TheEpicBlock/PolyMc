@@ -9,12 +9,10 @@ import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
 import io.github.theepicblock.polymc.impl.mixin.WizardTickerDuck;
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.collection.Int2ObjectBiMap;
+import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.util.collection.PaletteStorage;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -67,94 +65,108 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
             var data = ((PalettedContainerAccessor<BlockState>)container).getData();
             var palette = data.palette();
             var paletteData = data.storage();
-            if (palette instanceof ArrayPalette) {
-                ret.putAll(createWizardsArrayPalette(map, (ArrayPalette<BlockState>)palette, paletteData, section.getYOffset()));
-            } else if (palette instanceof BiMapPalette) {
-                ret.putAll(createWizardsBiMapPalette(map, (BiMapPalette<BlockState>)palette, paletteData, section.getYOffset()));
+            processWizards(map, palette, paletteData, section.getYOffset(), ret);
+        }
+
+        return ret;
+    }
+
+    @Unique
+    private void processWizards(PolyMap polyMap, Palette<BlockState> palette, PaletteStorage data, int yOffset, Map<BlockPos,Wizard> wizardMap) {
+        if (data.getSize() == 0) return;
+
+        if (palette.getSize() < 64) {
+            // The palette contains all block states present in the chunk
+            var idsWithPolys = new BlockPoly[palette.getSize()];
+            for (int i = 0; i < palette.getSize(); i++) {
+                var state = palette.get(i);
+                var poly = polyMap.getBlockPoly(state.getBlock());
+                if (poly != null && poly.hasWizard()) {
+                    idsWithPolys[i] = poly;
+                }
+            }
+
+            if (data instanceof PackedIntegerArray) {
+                // Fast way of iterating the packed data with an index
+                int i = 0;
+
+                var elementBits = data.getElementBits();
+                var elementsPerLong = (char)(64 / elementBits);
+                var maxValue = (1L << elementBits) - 1L;
+                var size = data.getSize();
+
+                data:
+                for (long l : data.getData()) {
+                    for (int j = 0; j < elementsPerLong; ++j) {
+                        var blockIndex = (int)(l & maxValue);
+
+                        processBlockWithPaletteInfo(idsWithPolys, i, blockIndex, yOffset, wizardMap);
+
+                        l >>= elementBits;
+                        ++i;
+                        if (i >= size) {
+                            break data;
+                        }
+                    }
+                }
             } else {
-                ret.putAll(createWizardsBruteForce(map, palette, paletteData, section.getYOffset()));
+                for (int i = 0; i < data.getSize(); i++) {
+                    var blockIndex = data.get(i);
+                    processBlockWithPaletteInfo(idsWithPolys, i, blockIndex, yOffset, wizardMap);
+                }
             }
-            //TODO implementation for Lithium's palette
-        }
+        } else {
+            // It's not worth iterating the palette, instead iterate the blocks in the data
+            if (data instanceof PackedIntegerArray) {
+                // Fast way of iterating the packed data with an index
+                int i = 0;
 
-        return ret;
+                var elementBits = data.getElementBits();
+                var elementsPerLong = (char)(64 / elementBits);
+                var maxValue = (1L << elementBits) - 1L;
+                var size = data.getSize();
+
+                data:
+                for (long l : data.getData()) {
+                    for (int j = 0; j < elementsPerLong; ++j) {
+                        var blockIndex = (int)(l & maxValue);
+
+                        processBlock(palette, polyMap, i, blockIndex, yOffset, wizardMap);
+
+                        l >>= elementBits;
+                        ++i;
+                        if (i >= size) {
+                            break data;
+                        }
+                    }
+                }
+            } else {
+                for (int i = 0; i < data.getSize(); i++) {
+                    var blockIndex = data.get(i);
+                    processBlock(palette, polyMap, i, blockIndex, yOffset, wizardMap);
+                }
+            }
+        }
     }
 
-    @Unique
-    private Map<BlockPos,Wizard> createWizardsBiMapPalette(PolyMap polyMap, BiMapPalette<BlockState> palette, PaletteStorage data, int yOffset) {
-        Int2ObjectMap<BlockPoly> idToWizMap = new Int2ObjectArrayMap<>(5);
-        Int2ObjectBiMap<BlockState> map = ((BiMapPaletteAccessor<BlockState>)palette).getMap();
-
-        int i = 0;
-        for (BlockState state : map) {
-            BlockPoly poly = polyMap.getBlockPoly(state.getBlock());
-            if (poly != null && poly.hasWizard()) {
-                idToWizMap.put(i, poly);
-            }
-            i++;
+    private void processBlockWithPaletteInfo(BlockPoly[] polysPerPaletteId, int index, int paletteId, int yOffset, Map<BlockPos,Wizard> wizardMap) {
+        var poly = polysPerPaletteId[paletteId];
+        if (poly != null) {
+            BlockPos pos = Util.fromPalettedContainerIndex(index).add(this.pos.x * 16, yOffset, this.pos.z * 16);
+            var wiz = poly.createWizard((ServerWorld)this.world, Vec3d.of(pos).add(0.5, 0, 0.5), Wizard.WizardState.BLOCK);
+            ((WizardTickerDuck)this.world).polymc$addTicker(wiz);
+            wizardMap.put(pos, wiz);
         }
-
-        return createWizards(idToWizMap, data, yOffset);
     }
 
-    @Unique
-    private Map<BlockPos,Wizard> createWizardsArrayPalette(PolyMap map, ArrayPalette<BlockState> palette, PaletteStorage data, int yOffset) {
-        Int2ObjectMap<BlockPoly> idToWizMap = new Int2ObjectArrayMap<>(5);
-        for (int i = 0; i < palette.getSize(); i++) {
-            BlockState state = palette.get(i);
-            if (state == null) continue;
-
-            BlockPoly poly = map.getBlockPoly(state.getBlock());
-            if (poly != null && poly.hasWizard()) {
-                idToWizMap.put(i, poly);
-            }
+    private void processBlock(Palette<BlockState> palette, PolyMap polyMap, int index, int paletteId, int yOffset, Map<BlockPos,Wizard> wizardMap) {
+        var poly = polyMap.getBlockPoly(palette.get(paletteId).getBlock());
+        if (poly != null) {
+            BlockPos pos = Util.fromPalettedContainerIndex(index).add(this.pos.x * 16, yOffset, this.pos.z * 16);
+            var wiz = poly.createWizard((ServerWorld)this.world, Vec3d.of(pos).add(0.5, 0, 0.5), Wizard.WizardState.BLOCK);
+            ((WizardTickerDuck)this.world).polymc$addTicker(wiz);
+            wizardMap.put(pos, wiz);
         }
-
-        return createWizards(idToWizMap, data, yOffset);
-    }
-
-    /**
-     * @param knownWizards `ids -> polys` of blocks inside this palettedContainer that are known to have wizards. This should only contain polys with wizards, not all polys.
-     */
-    private Map<BlockPos,Wizard> createWizards(Int2ObjectMap<BlockPoly> knownWizards, PaletteStorage data, int yOffset) {
-        Map<BlockPos,Wizard> ret = new HashMap<>();
-
-        if (knownWizards.size() == 0) {
-            return ret;
-        }
-
-        for (int i = 0; i < data.getSize(); i++) {
-            int id = data.get(i);
-            BlockPoly poly = knownWizards.get(id);
-            if (poly != null) {
-                BlockPos pos = Util.fromPalettedContainerIndex(i).add(this.pos.x * 16, yOffset, this.pos.z * 16);
-                var wiz = poly.createWizard((ServerWorld)this.world, Vec3d.of(pos).add(0.5, 0, 0.5), Wizard.WizardState.BLOCK);
-                ((WizardTickerDuck)this.world).polymc$addTicker(wiz);
-                ret.put(pos, wiz);
-            }
-        }
-
-        return ret;
-    }
-
-    private Map<BlockPos,Wizard> createWizardsBruteForce(PolyMap map, Palette<BlockState> palette, PaletteStorage data, int yOffset) {
-        Map<BlockPos,Wizard> ret = new HashMap<>();
-
-        for (int i = 0; i < data.getSize(); i++) {
-            int id = data.get(i);
-
-            BlockState state = palette.get(id);
-            if (state == null)
-                throw new IllegalStateException(String.format("Id exists in data but not in palette. (local)ID: %d DATA: %s PALETTE: %s", id, data, palette));
-
-            BlockPoly poly = map.getBlockPoly(state.getBlock());
-            if (poly != null && poly.hasWizard()) {
-                BlockPos pos = Util.fromPalettedContainerIndex(i).add(this.pos.x * 16, yOffset, this.pos.z * 16);
-                ret.put(pos, poly.createWizard((ServerWorld)this.world, Vec3d.of(pos).add(0.5, 0, 0.5), Wizard.WizardState.BLOCK));
-            }
-        }
-
-        return ret;
     }
 
     @Override
