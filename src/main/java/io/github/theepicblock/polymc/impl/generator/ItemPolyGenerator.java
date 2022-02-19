@@ -52,7 +52,7 @@ public class ItemPolyGenerator {
         if (item instanceof CrossbowItem) {
             return new DamageableItemPoly(cmdManager, item, Items.CROSSBOW);
         }
-        if (item instanceof RangedWeaponItem) {
+        if (item instanceof RangedWeaponItem && item.getMaxUseTime(new ItemStack(item)) != 0) {
             return new DamageableItemPoly(cmdManager, item, Items.BOW);
         }
         if (item.isDamageable()) {
