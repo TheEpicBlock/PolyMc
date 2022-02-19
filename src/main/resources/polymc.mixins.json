@@ -58,6 +58,7 @@
     "wizards.ItemEntityAccessor",
     "wizards.ItemFrameEntityAccessor",
     "wizards.MixinPistonBlockEntity",
+    "wizards.ThrownItemEntityAccessor",
     "wizards.block.BiMapPaletteAccessor",
     "wizards.block.ChunkHolderMixin",
     "wizards.block.PalettedContainerAccessor",
