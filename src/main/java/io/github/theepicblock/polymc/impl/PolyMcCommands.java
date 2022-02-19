@@ -101,7 +101,7 @@ public class PolyMcCommands {
                                                     commandSource.error("An error occurred whilst trying to save the resource pack! Please check the console.");
                                                     e.printStackTrace();
                                                 }
-                                            } catch (Exception e) {
+                                            } catch (Throwable e) {
                                                 commandSource.error("An error occurred whilst trying to generate the resource pack! Please check the console.");
                                                 e.printStackTrace();
                                             }
