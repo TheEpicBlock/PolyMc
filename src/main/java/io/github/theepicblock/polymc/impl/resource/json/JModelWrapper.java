@@ -7,6 +7,7 @@ import io.github.theepicblock.polymc.api.resource.json.*;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.resource.ResourceGenerationException;
 import io.github.theepicblock.polymc.impl.resource.ResourceSaveException;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.FileWriter;
@@ -85,7 +86,7 @@ public class JModelWrapper implements JModel {
     }
 
     @Override
-    public Map<String,String> getTextures() {
+    public @NotNull Map<String,String> getTextures() {
         assertJson();
         if (jsonRepresentation.textures == null) {
             jsonRepresentation.textures = new HashMap<>();
@@ -94,7 +95,7 @@ public class JModelWrapper implements JModel {
     }
 
     @Override
-    public List<JElement> getElements() {
+    public @NotNull List<JElement> getElements() {
         assertJson();
         if (jsonRepresentation.elements == null) {
             jsonRepresentation.elements = new ArrayList<>();
@@ -121,13 +122,13 @@ public class JModelWrapper implements JModel {
     }
 
     @Override
-    public List<JModelOverride> getOverridesReadOnly() {
+    public @NotNull List<JModelOverride> getOverridesReadOnly() {
         assertJson();
         return jsonRepresentation.overrides == null ? Collections.emptyList() : Collections.unmodifiableList(jsonRepresentation.overrides);
     }
 
     @Override
-    public List<JModelOverride> getOverrides() {
+    public @NotNull List<JModelOverride> getOverrides() {
         assertJson();
         if (jsonRepresentation.overrides == null) {
             jsonRepresentation.overrides = new ArrayList<>();

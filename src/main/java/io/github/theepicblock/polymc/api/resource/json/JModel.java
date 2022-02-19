@@ -6,6 +6,8 @@ import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.json.JModelWrapper;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -57,15 +59,15 @@ public interface JModel extends PolyMcAsset {
     JGuiLight getGuiLight();
     void setGuiLight(JGuiLight v);
 
-    Map<String, String> getTextures();
+    @NotNull Map<String, String> getTextures();
 
-    List<JElement> getElements();
+    @NotNull List<JElement> getElements();
 
-    JModelDisplay getDisplay(JModelDisplayType position);
-    void setDisplay(JModelDisplayType position, JModelDisplay display);
+    @Nullable JModelDisplay getDisplay(JModelDisplayType position);
+    void setDisplay(JModelDisplayType position, @Nullable JModelDisplay display);
 
-    List<JModelOverride> getOverridesReadOnly();
-    List<JModelOverride> getOverrides();
+    @NotNull List<JModelOverride> getOverridesReadOnly();
+    @NotNull List<JModelOverride> getOverrides();
 
     static JModel create() {
         return new JModelWrapper();
