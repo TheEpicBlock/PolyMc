@@ -53,9 +53,9 @@ loom {
 			name = "Test Mod Server"
 			source sourceSets.testmod
 		}
-		datagenServer {
+		datagen {
 			server()
-			name = "Datagen Server (Do not use)"
+			ideConfigGenerated false
 			source sourceSets.datagen
 		}
 	}
@@ -75,12 +75,14 @@ processResources {
 def datagenDir = "$rootProject.buildDir/polymc-datagen/$project.minecraft_version"
 sourceSets.main.resources.srcDirs += datagenDir
 
-runDatagenServer {
+runDatagen {
 	environment("output-dir", datagenDir)
 }
 
-if (!file(datagenDir).exists()) {
-	build.dependsOn(":runDatagenServer")
+build.doLast {
+	if (!file(datagenDir).exists()) {
+		logger.error("!! Datagen hasn't been run. Vanilla ids aren't included in the build")
+	}
 }
 
 // Ensure that the encoding is set to UTF-8, no matter what the system default is

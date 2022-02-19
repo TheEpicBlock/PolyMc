@@ -38,5 +38,8 @@ jobs:
       - name: Validate the gradle wrapper
         uses: gradle/wrapper-validation-action@v1
 
+      - name: Run datagen
+        run: ./gradlew runDatagen
+
       - name: Build
         run: ./gradlew build

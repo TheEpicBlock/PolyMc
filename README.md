@@ -12,6 +12,9 @@ Doing it this way also means that PolyMc doesn't actually touch the registering 
 
 Do you want to get started? [Check out the wiki!](https://theepicblock.github.io/PolyMc/)
 
+## Building
+Run `./gradlew runDatagen` once. Then just run `./gradlew build`
+
 <a href="https://discord.gg/hbp9Gv2">![discord](https://img.shields.io/badge/Fabric_server--side_development-PolyMc-7289DA?logo=discord&logoColor=white&style=flat-square)</a> 
 <a href="https://github.com/TheEpicBlock/PolyMc/issues/">![issues](https://img.shields.io/github/issues-raw/TheEpicBlock/PolyMc?color=succes&logo=github&style=flat-square)</a> 
 <a href="https://github.com/TheEpicBlock/PolyMc/releases/">![latest release](https://img.shields.io/github/v/release/TheEpicBlock/PolyMc?style=flat-square&label=latest%20release)</a> 
