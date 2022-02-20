@@ -7,6 +7,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,16 @@ public class EntityUtil {
         byteBuf.writeBoolean(onGround);
 
         return new EntityPositionS2CPacket(byteBuf);
+    }
+
+    public static EntityVelocityUpdateS2CPacket createEntityVelocityUpdate(int id, int x, int y, int z) {
+        PacketByteBuf byteBuf = PacketByteBufs.create();
+        byteBuf.writeVarInt(id);
+        byteBuf.writeShort(x);
+        byteBuf.writeShort(y);
+        byteBuf.writeShort(z);
+
+        return new EntityVelocityUpdateS2CPacket(byteBuf);
     }
 
     public static <T> EntityTrackerUpdateS2CPacket createDataTrackerUpdate(int id, TrackedData<T> tracker, T value) {

@@ -71,6 +71,19 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
         ));
     }
 
+    public void sendVelocity(ServerPlayerEntity playerEntity, Vec3d velocity) {
+        sendVelocity(playerEntity, velocity.x, velocity.y, velocity.z);
+    }
+
+    public void sendVelocity(ServerPlayerEntity playerEntity, double x, double y, double z) {
+        playerEntity.networkHandler.sendPacket(EntityUtil.createEntityVelocityUpdate(
+                this.id,
+                (int)(MathHelper.clamp(x, -3.9, 3.9) * 8000.0),
+                (int)(MathHelper.clamp(x, -3.9, 3.9) * 8000.0),
+                (int)(MathHelper.clamp(x, -3.9, 3.9) * 8000.0)
+        ));
+    }
+
     @Override
     public void remove(ServerPlayerEntity playerEntity) {
         playerEntity.networkHandler.sendPacket(
