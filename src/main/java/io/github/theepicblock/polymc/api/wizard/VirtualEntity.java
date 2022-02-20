@@ -11,6 +11,8 @@ import net.minecraft.util.math.Vec3d;
 public interface VirtualEntity {
     EntityType<?> getEntityType();
 
+    int getId();
+
     void spawn(ServerPlayerEntity playerEntity, Vec3d pos);
 
     void remove(ServerPlayerEntity playerEntity);

@@ -78,6 +78,11 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
         );
     }
 
+    @Override
+    public int getId() {
+        return this.id;
+    }
+
     public void setSilent(ServerPlayerEntity playerEntity, boolean isSilent) {
         playerEntity.networkHandler.sendPacket(EntityUtil.createDataTrackerUpdate(
                 this.id,
