@@ -17,7 +17,6 @@ public final class SharedValuesKey<T> {
 
     @ApiStatus.Internal
     public T createNew(PolyRegistry registry) {
-        if (this.hasResources()) registry = null; // Prevents there being a reference to PolyRegistry after it has been built
         return factory.create(registry);
     }
 
