@@ -60,6 +60,11 @@ public class NOPPolyMap implements PolyMap {
     }
 
     @Override
+    public boolean hasBlockWizards() {
+        return false;
+    }
+
+    @Override
     public @Nullable PolyMcResourcePack generateResourcePack(SimpleLogger logger) {
         return null;
     }

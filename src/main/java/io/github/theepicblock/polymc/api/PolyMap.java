@@ -101,6 +101,8 @@ public interface PolyMap {
      */
     boolean isVanillaLikeMap();
 
+    boolean hasBlockWizards();
+
     @Nullable PolyMcResourcePack generateResourcePack(SimpleLogger logger);
 
     String dumpDebugInfo();

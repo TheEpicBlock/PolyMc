@@ -57,6 +57,8 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
         Map<BlockPos,Wizard> ret = new HashMap<>();
         if (!(this.world instanceof ServerWorld))
             return ret; //Wizards are only passed ServerWorlds, so we can't create any wizards here.
+        if (!map.hasBlockWizards())
+            return ret;
 
         for (ChunkSection section : this.sectionArray) {
             if (section == null) continue;

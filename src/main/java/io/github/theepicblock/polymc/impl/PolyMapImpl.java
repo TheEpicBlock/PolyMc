@@ -75,6 +75,7 @@ public class PolyMapImpl implements PolyMap {
     private final ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys;
     private final ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys;
     private final ImmutableList<SharedValuesKey.ResourceContainer> sharedValueResources;
+    private final boolean hasBlockWizards;
 
     public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys,
                        ItemTransformer[] globalItemPolys,
@@ -88,6 +89,8 @@ public class PolyMapImpl implements PolyMap {
         this.guiPolys = guiPolys;
         this.entityPolys = entityPolys;
         this.sharedValueResources = sharedValueResources;
+
+        this.hasBlockWizards = blockPolys.values().stream().anyMatch(BlockPoly::hasWizard);
     }
 
     @Override
@@ -155,6 +158,11 @@ public class PolyMapImpl implements PolyMap {
     @Override
     public boolean isVanillaLikeMap() {
         return true;
+    }
+
+    @Override
+    public boolean hasBlockWizards() {
+        return hasBlockWizards;
     }
 
     @Override
