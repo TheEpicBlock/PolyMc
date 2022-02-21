@@ -9,6 +9,7 @@ import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
 import io.github.theepicblock.polymc.impl.mixin.WizardTickerDuck;
+import io.github.theepicblock.polymc.impl.poly.wizard.PlacedWizardInfo;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -16,7 +17,6 @@ import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.util.collection.PaletteStorage;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.World;
@@ -155,7 +155,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
         var poly = polysPerPaletteId[paletteId];
         if (poly != null) {
             BlockPos pos = Util.fromPalettedContainerIndex(index).add(this.pos.x * 16, yOffset, this.pos.z * 16);
-            var wiz = poly.createWizard((ServerWorld)this.world, Vec3d.of(pos).add(0.5, 0, 0.5), Wizard.WizardState.BLOCK);
+            var wiz = poly.createWizard(new PlacedWizardInfo(pos, (ServerWorld)this.world));
             ((WizardTickerDuck)this.world).polymc$addTicker(wiz);
             wizardMap.put(pos, wiz);
         }
@@ -165,7 +165,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
         var poly = polyMap.getBlockPoly(palette.get(paletteId).getBlock());
         if (poly != null) {
             BlockPos pos = Util.fromPalettedContainerIndex(index).add(this.pos.x * 16, yOffset, this.pos.z * 16);
-            var wiz = poly.createWizard((ServerWorld)this.world, Vec3d.of(pos).add(0.5, 0, 0.5), Wizard.WizardState.BLOCK);
+            var wiz = poly.createWizard(new PlacedWizardInfo(pos, (ServerWorld)this.world));
             ((WizardTickerDuck)this.world).polymc$addTicker(wiz);
             wizardMap.put(pos, wiz);
         }
@@ -207,7 +207,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
             BlockPoly poly = polyMap.getBlockPoly(state.getBlock());
             if (poly != null && poly.hasWizard()) {
                 BlockPos ipos = pos.toImmutable();
-                Wizard wiz = poly.createWizard((ServerWorld)this.world, Vec3d.of(ipos).add(0.5, 0, 0.5), Wizard.WizardState.BLOCK);
+                Wizard wiz = poly.createWizard(new PlacedWizardInfo(ipos, (ServerWorld)this.world));
                 wizardMap.put(ipos, wiz);
                 for (ServerPlayerEntity player : players) {
                     wiz.addPlayer(player);

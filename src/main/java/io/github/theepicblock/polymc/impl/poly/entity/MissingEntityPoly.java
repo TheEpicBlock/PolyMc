@@ -3,19 +3,18 @@ package io.github.theepicblock.polymc.impl.poly.entity;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.wizard.VItem;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
+import io.github.theepicblock.polymc.api.wizard.WizardInfo;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 
 public class MissingEntityPoly<T extends Entity> implements EntityPoly<T> {
     @Override
-    public Wizard createWizard(ServerWorld world, Vec3d pos, T entity) {
-        return new MissingEntityWizard<>(world, pos, entity);
+    public Wizard createWizard(WizardInfo info, T entity) {
+        return new MissingEntityWizard<>(info, entity);
     }
 
     public static class MissingEntityWizard<T extends Entity> extends EntityWizard<T> {
@@ -23,8 +22,8 @@ public class MissingEntityPoly<T extends Entity> implements EntityPoly<T> {
         private final VItem item;
         private final ArrayList<ServerPlayerEntity> players = new ArrayList<>();
 
-        public MissingEntityWizard(ServerWorld world, Vec3d position, T entity) {
-            super(world, position, entity);
+        public MissingEntityWizard(WizardInfo info, T entity) {
+            super(info, entity);
             item = new VItem();
         }
 

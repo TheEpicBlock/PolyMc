@@ -5,6 +5,7 @@ import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.api.wizard.WizardView;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
+import io.github.theepicblock.polymc.impl.poly.wizard.FallingBlockWizardInfo;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -29,7 +30,7 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
 
         BlockPoly poly = map.getBlockPoly(this.block.getBlock());
         if (poly != null && poly.hasWizard()) {
-            return poly.createWizard((ServerWorld)this.world, this.getPos(), Wizard.WizardState.FALLING_BLOCK);
+            return poly.createWizard(new FallingBlockWizardInfo((FallingBlockEntity)(Object)this));
         }
         return null;
     });
@@ -43,7 +44,7 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
         //When a falling block falls. The block is actually removed by the falling block entity on the first tick.
         PolyMapMap<Wizard> previousWizards = WizardView.removeWizards(this.world, this.getBlockPos(), true);
         previousWizards.forEach((polyMap, wizard) -> {
-            wizard.setState(Wizard.WizardState.FALLING_BLOCK);
+            wizard.changeInfo(new FallingBlockWizardInfo((FallingBlockEntity)(Object)this));
         });
         this.wizards.putAll(previousWizards);
     }
@@ -52,7 +53,7 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
     private void onTick(CallbackInfo ci) {
         wizards.forEach(((polyMap, wizard) -> {
             if (wizard == null) return;
-            wizard.updatePosition(this.getPos());
+            wizard.onMove(); // It is assumed that sand is constantly falling
             wizard.onTick();
         }));
     }

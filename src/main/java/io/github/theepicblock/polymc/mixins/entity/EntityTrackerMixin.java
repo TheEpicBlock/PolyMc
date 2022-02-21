@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc.mixins.entity;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
+import io.github.theepicblock.polymc.impl.poly.wizard.EntityWizardInfo;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.server.network.EntityTrackerEntry;
@@ -26,14 +27,14 @@ public class EntityTrackerMixin {
     private final PolyMapMap<Wizard> wizards = new PolyMapMap<>(polyMap -> {
         var poly = polyMap.getEntityPoly((EntityType<Entity>)this.entity.getType());
         if (poly == null) return null;
-        return poly.createWizard(this.world, this.entity.getPos(), this.entity);
+        return poly.createWizard(new EntityWizardInfo(this.entity), this.entity);
     });
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
         wizards.forEach((polyMap, wizard) -> {
             if (wizard == null) return;
-            wizard.updatePosition(this.entity.getPos());
+            wizard.onMove(); // TODO check if the entity actually moved
             wizard.onTick();
         });
     }

@@ -1,15 +1,14 @@
 package io.github.theepicblock.polymc.impl.poly.entity;
 
 import io.github.theepicblock.polymc.api.wizard.Wizard;
+import io.github.theepicblock.polymc.api.wizard.WizardInfo;
 import net.minecraft.entity.Entity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
 
 public abstract class EntityWizard<T extends Entity> extends Wizard {
     private final T entity;
 
-    public EntityWizard(ServerWorld world, Vec3d position, T entity) {
-        super(world, position, WizardState.MISC_MOVING);
+    public EntityWizard(WizardInfo info, T entity) {
+        super(info);
         this.entity = entity;
     }
 

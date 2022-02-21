@@ -3,6 +3,7 @@ package nl.theepicblock.polymc.testmod.poly;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.wizard.VItem;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
+import io.github.theepicblock.polymc.api.wizard.WizardInfo;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
@@ -10,8 +11,6 @@ import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
 
 public class TestWizardBlockPoly implements BlockPoly {
     @Override
@@ -25,16 +24,16 @@ public class TestWizardBlockPoly implements BlockPoly {
     }
 
     @Override
-    public Wizard createWizard(ServerWorld world, Vec3d pos, Wizard.WizardState state) {
-        return new TestWizard(world, pos, state);
+    public Wizard createWizard(WizardInfo info) {
+        return new TestWizard(info);
     }
 
     public static class TestWizard extends Wizard {
         private static final ItemStack ITEM = new ItemStack(Items.DIAMOND);
         private final VItem item;
 
-        public TestWizard(ServerWorld world, Vec3d position, WizardState state) {
-            super(world, position, state);
+        public TestWizard(WizardInfo info) {
+            super(info);
             item = new VItem();
         }
 
