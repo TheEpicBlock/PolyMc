@@ -1,6 +1,8 @@
 package io.github.theepicblock.polymc.api.resource.json;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 @SuppressWarnings("ClassCanBeRecord") // Records don't work with GSON
 public final class JElement {
@@ -36,5 +38,21 @@ public final class JElement {
 
     public Map<JDirection,JElementFace> faces() {
         return faces;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        JElement jElement = (JElement)o;
+        return shade == jElement.shade && Arrays.equals(from, jElement.from) && Arrays.equals(to, jElement.to) && Objects.equals(rotation, jElement.rotation) && Objects.equals(faces, jElement.faces);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(rotation, shade, faces);
+        result = 31 * result + Arrays.hashCode(from);
+        result = 31 * result + Arrays.hashCode(to);
+        return result;
     }
 }

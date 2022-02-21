@@ -7,6 +7,8 @@ import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.util.Identifier;
 
+import java.util.Objects;
+
 @SuppressWarnings("ClassCanBeRecord") // Records don't work with GSON
 public class JBlockStateVariant implements AssetWithDependencies {
     private final String model;
@@ -50,5 +52,18 @@ public class JBlockStateVariant implements AssetWithDependencies {
 
     public boolean uvlock() {
         return uvlock;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        JBlockStateVariant that = (JBlockStateVariant)o;
+        return x == that.x && y == that.y && uvlock == that.uvlock && Objects.equals(model, that.model);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(model, x, y, uvlock);
     }
 }

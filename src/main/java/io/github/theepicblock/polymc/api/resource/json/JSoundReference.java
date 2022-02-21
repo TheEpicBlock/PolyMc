@@ -6,6 +6,8 @@ import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 
+import java.util.Objects;
+
 public class JSoundReference implements AssetWithDependencies {
     public String name;
     public float volume = 1;
@@ -44,5 +46,18 @@ public class JSoundReference implements AssetWithDependencies {
                 logger.error("Couldn't find sound model %s".formatted(this.name));
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        JSoundReference that = (JSoundReference)o;
+        return Float.compare(that.volume, volume) == 0 && Float.compare(that.pitch, pitch) == 0 && weight == that.weight && stream == that.stream && attenuation_distance == that.attenuation_distance && preload == that.preload && Objects.equals(name, that.name) && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, volume, pitch, weight, stream, attenuation_distance, preload, type);
     }
 }
