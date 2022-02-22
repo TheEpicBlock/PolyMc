@@ -1,6 +1,6 @@
 package io.github.theepicblock.polymc.mixins.wizards;
 
-import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
@@ -28,13 +28,21 @@ public abstract class MixinPistonBlockEntity extends BlockEntity {
 
     @Shadow private BlockState pushedBlock;
 
+    @Shadow public abstract BlockState getPushedBlock();
+
     @Unique
     private final PolyMapMap<Wizard> wizards = new PolyMapMap<>((map) -> {
         if (!(world instanceof ServerWorld)) return null;
 
-        BlockPoly poly = map.getBlockPoly(this.pushedBlock.getBlock());
+        var block = this.getPushedBlock().getBlock();
+        var poly = map.getBlockPoly(block);
         if (poly != null && poly.hasWizard()) {
-            return poly.createWizard(new PistonWizardInfo((PistonBlockEntity)(Object)this));
+            try {
+                return poly.createWizard(new PistonWizardInfo((PistonBlockEntity)(Object)this));
+            } catch (Throwable t) {
+                PolyMc.LOGGER.error("Failed to create block wizard for "+block.getTranslationKey()+" | "+poly);
+                t.printStackTrace();
+            }
         }
         return null;
     });

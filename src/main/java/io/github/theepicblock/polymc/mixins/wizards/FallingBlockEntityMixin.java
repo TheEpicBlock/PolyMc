@@ -1,6 +1,6 @@
 package io.github.theepicblock.polymc.mixins.wizards;
 
-import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.api.wizard.WizardView;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
@@ -28,9 +28,15 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
     private final PolyMapMap<Wizard> wizards = new PolyMapMap<>((map) -> {
         if (!(world instanceof ServerWorld)) return null;
 
-        BlockPoly poly = map.getBlockPoly(this.block.getBlock());
+        var block = this.block.getBlock();
+        var poly = map.getBlockPoly(block);
         if (poly != null && poly.hasWizard()) {
-            return poly.createWizard(new FallingBlockWizardInfo((FallingBlockEntity)(Object)this));
+            try {
+                return poly.createWizard(new FallingBlockWizardInfo((FallingBlockEntity)(Object)this));
+            } catch (Throwable t) {
+                PolyMc.LOGGER.error("Failed to create block wizard for "+block.getTranslationKey()+" | "+poly);
+                t.printStackTrace();
+            }
         }
         return null;
     });
