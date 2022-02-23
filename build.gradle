@@ -85,6 +85,14 @@ build.doLast {
 	}
 }
 
+task getClientSha1 {
+	doLast {
+		def loomExt = net.fabricmc.loom.LoomGradleExtension.get(project)
+		def mcProvider = loomExt.getMinecraftProvider()
+		println(mcProvider.getVersionInfo().download("client").sha1())
+	}
+}
+
 // Ensure that the encoding is set to UTF-8, no matter what the system default is
 // This fixes some edge cases with special characters not displaying correctly
 // See http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html

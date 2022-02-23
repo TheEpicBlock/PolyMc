@@ -1,6 +1,8 @@
 package io.github.theepicblock.polymc.impl.resource;
 
+import io.github.theepicblock.polymc.api.resource.ClientJarResources;
 import io.github.theepicblock.polymc.api.resource.ModdedResources;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.util.Identifier;
 import nl.theepicblock.resourcelocatorapi.ResourceLocatorApi;
 import nl.theepicblock.resourcelocatorapi.api.AssetContainer;
@@ -15,6 +17,7 @@ import java.util.Set;
 
 public class ModdedResourceContainerImpl implements ModdedResources {
     private final AssetContainer inner = ResourceLocatorApi.createGlobalAssetContainer();
+    private ClientJarResourcesImpl clientJar = null;
 
     @Override
     public @Nullable InputStream getInputStream(String namespace, String path) {
@@ -45,6 +48,24 @@ public class ModdedResourceContainerImpl implements ModdedResources {
     }
 
     @Override
+    public ClientJarResources getClientJar(SimpleLogger logger) {
+        if (clientJar == null) {
+            try {
+                clientJar = new ClientJarResourcesImpl(logger);
+            } catch (IOException e) {
+                logger.error("Failed to get the client jar");
+                e.printStackTrace();
+            }
+        }
+        return this.clientJar;
+    }
+
+    @Override
+    public ModdedResources includeClientJar(SimpleLogger logger) {
+        return new MergedModdedResources(this, this.getClientJar(logger));
+    }
+
+    @Override
     public boolean containsAsset(String namespace, String path) {
         return inner.containsAsset(namespace, path);
     }
@@ -52,5 +73,8 @@ public class ModdedResourceContainerImpl implements ModdedResources {
     @Override
     public void close() throws Exception {
         inner.close();
+        if (clientJar != null) {
+            clientJar.close();
+        }
     }
 }
