@@ -2,13 +2,14 @@ plugins {
 	id 'fabric-loom' version '0.10-SNAPSHOT'
 	id 'maven-publish'
 	id "io.github.juuxel.loom-quiltflower-mini" version "1.0.0"
+	id 'org.ajoberstar.grgit' version '4.1.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_16
 targetCompatibility = JavaVersion.VERSION_16
 
 archivesBaseName = project.archives_base_name
-version = "${project.mod_version}+${project.minecraft_version}"
+version = "${project.mod_version}${getVersionMetadata()}+${project.minecraft_version}"
 group = project.maven_group
 
 repositories {
@@ -91,6 +92,29 @@ task getClientSha1 {
 		def mcProvider = loomExt.getMinecraftProvider()
 		println(mcProvider.getVersionInfo().download("client").sha1())
 	}
+}
+
+def getVersionMetadata() {
+	if (grgit != null) {
+		def head = grgit.head()
+		def headTag = grgit.tag.list().find {
+			it.commit == head
+		}
+
+		if (headTag) {
+			return "" // This is a release
+		}
+
+		def id = head.abbreviatedId
+
+		// Flag the build if the build tree is not clean
+		if (!grgit.status().clean) {
+			id += "-dirty"
+		}
+
+		return "-rev.${id}"
+	}
+	return "";
 }
 
 // Ensure that the encoding is set to UTF-8, no matter what the system default is
