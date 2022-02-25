@@ -147,6 +147,10 @@ publishing {
 	}
 
 	repositories {
-		 mavenLocal()
+		maven {
+			name = "teb"
+			credentials(PasswordCredentials)
+			url = "https://maven.theepicblock.nl"
+		}
 	}
 }
