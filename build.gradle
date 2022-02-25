@@ -16,6 +16,12 @@ repositories {
 	maven {
 		url "https://jitpack.io"
 	}
+	maven {
+		url "https://maven.theepicblock.nl"
+		content {
+			includeGroup("nl.theepicblock")
+		}
+	}
 }
 
 dependencies {
@@ -24,7 +30,7 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation include("com.github.theepicblock:resource-locator-api:${project.resource_lookup_api_version}")
+	modImplementation include("nl.theepicblock:resource-locator-api:${project.resource_lookup_api_version}")
 
 	modCompileOnly "com.github.CaffeineMC.lithium-fabric:lithium:${project.lithium_version}"
 }
