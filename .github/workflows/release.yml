@@ -20,6 +20,10 @@ jobs:
       - name: Ensure gradlew is executable
         run: chmod +x gradlew
 
+
+      - name: Run datagen
+        run: ./gradlew runDatagen
+
       - name: Build mod
         run: ./gradlew build
 
