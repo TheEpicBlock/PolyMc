@@ -107,7 +107,7 @@ public class BlockPolyGenerator {
         }
 
         //=== LEAVES ===
-        if (moddedBlock instanceof LeavesBlock || BlockTags.LEAVES.contains(moddedBlock)) { //TODO I don't like that leaves can be set tags in datapacks, it might cause issues. However, as not every leaf block extends LeavesBlock I can't see much of a better option. Except to maybe check the id if it ends on "_leaves"
+        if (moddedBlock instanceof LeavesBlock || moddedState.isIn(BlockTags.LEAVES)) { //TODO I don't like that leaves can be set tags in datapacks, it might cause issues. However, as not every leaf block extends LeavesBlock I can't see much of a better option. Except to maybe check the id if it ends on "_leaves"
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.LEAVES_PROFILE);

@@ -35,7 +35,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
         EntityTrackerUpdateS2CPacket.class,
         ParticleS2CPacket.class,
         SynchronizeTagsS2CPacket.class,
-        EntitySpawnS2CPacket.class})
+        EntitySpawnS2CPacket.class,
+        SynchronizeTagsS2CPacket.class})
 public class PacketPlayerContextContainer implements PlayerContextContainer {
     @Unique
     private ServerPlayerEntity player;
