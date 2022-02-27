@@ -10,6 +10,7 @@ public final class SharedValuesKey<T> {
     private final SharedValueFactory<T> factory;
     private final @Nullable ResourceContainerFactory<T> resourceContainerFactory;
 
+    @ApiStatus.Experimental
     public SharedValuesKey(SharedValueFactory<T> factory, @Nullable ResourceContainerFactory<T> resourceContainerFactory) {
         this.factory = factory;
         this.resourceContainerFactory = resourceContainerFactory;

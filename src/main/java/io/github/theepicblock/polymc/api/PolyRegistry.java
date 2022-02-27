@@ -20,8 +20,10 @@ package io.github.theepicblock.polymc.api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.block.BlockStateManager;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
+import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.impl.PolyMapImpl;
@@ -128,6 +130,24 @@ public class PolyRegistry {
      */
     public boolean hasEntityPoly(EntityType<?> entityType) {
         return entityPolys.containsKey(entityType);
+    }
+
+    /**
+     * Gets the {@link CustomModelDataManager} allocated to assist during registration
+     * @deprecated Use {@code getSharedValues(CustomModelDataManager.KEY)} instead
+     */
+    @Deprecated(since = "4.0.0")
+    public CustomModelDataManager getCMDManager() {
+        return getSharedValues(CustomModelDataManager.KEY);
+    }
+
+    /**
+     * Gets the {@link BlockStateManager} allocated to assist during registration
+     * @deprecated Use {@code getSharedValues(BlockStateManager.KEY)} instead
+     */
+    @Deprecated(since = "4.0.0")
+    public BlockStateManager getBlockStateManager() {
+        return getSharedValues(BlockStateManager.KEY);
     }
 
     public <T> T getSharedValues(SharedValuesKey<T> key) {
