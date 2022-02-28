@@ -10,7 +10,7 @@ public interface TACSAccessor {
     @Accessor
     int getWatchDistance();
 
-    @Invoker("method_39975")
+    @Invoker
     static boolean callIsOnDistanceEdge(int sourceChunkX, int sourceChunkZ, int playerChunkX, int playerChunkZ, int watchDistance) {
         throw new IllegalStateException();
     }

@@ -38,7 +38,7 @@ public class Generator {
     }
 
     private static <T> void generateMissingPolys(PolyRegistry builder, Registry<T> registry, BiConsumer<T, PolyRegistry> generator, BooleanFunction<T> contains) {
-        registry.getEntries()
+        registry.getEntrySet()
                 .stream()
                 .filter(entry -> !Util.isVanilla(entry.getKey().getValue()))
                 .filter(entry -> !contains.accept(entry.getValue()))

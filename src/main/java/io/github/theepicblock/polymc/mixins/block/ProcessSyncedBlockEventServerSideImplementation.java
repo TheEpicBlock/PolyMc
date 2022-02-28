@@ -25,14 +25,13 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.gen.Spawner;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.level.ServerWorldProperties;
 import net.minecraft.world.level.storage.LevelStorage;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -49,21 +48,22 @@ import java.util.concurrent.Executor;
  */
 @Mixin(ServerWorld.class)
 public class ProcessSyncedBlockEventServerSideImplementation {
-    private final List<Block> ServerCalculatedBlockEvents = new ArrayList<>();
+    @Unique
+    private final List<Block> serverCalculatedBlockEvents = new ArrayList<>();
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    public void InitInject(MinecraftServer server, Executor workerExecutor, LevelStorage.Session session, ServerWorldProperties properties, RegistryKey<World> registryKey, DimensionType dimensionType, WorldGenerationProgressListener worldGenerationProgressListener, ChunkGenerator chunkGenerator, boolean bl, long l, List<Spawner> list, boolean bl2, CallbackInfo ci) {
-        List<String> ServerCalculatedBlockEventsAsString = ConfigManager.getConfig().misc.getProcessSyncedBlockEventServerSide();
-        for (String s : ServerCalculatedBlockEventsAsString) {
+    public void initInject(MinecraftServer server, Executor workerExecutor, LevelStorage.Session session, ServerWorldProperties properties, RegistryKey worldKey, RegistryEntry registryEntry, WorldGenerationProgressListener worldGenerationProgressListener, ChunkGenerator chunkGenerator, boolean debugWorld, long seed, List spawners, boolean shouldTickTime, CallbackInfo ci) {
+        List<String> serverCalculatedBlockEventsAsString = ConfigManager.getConfig().misc.getProcessSyncedBlockEventServerSide();
+        for (String s : serverCalculatedBlockEventsAsString) {
             Block e = Registry.BLOCK.get(new Identifier(s));
-            ServerCalculatedBlockEvents.add(e);
+            serverCalculatedBlockEvents.add(e);
         }
     }
 
     @Inject(method = "addSyncedBlockEvent(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V", at = @At("HEAD"), cancellable = true)
     public void addSyncedBlockEventInject(BlockPos pos, Block block, int type, int data, CallbackInfo ci) {
         //if the events for this block should be processed serverside, execute it immediately. Instead of adding it to a queue to be sent to the client.
-        if (ServerCalculatedBlockEvents.contains(block)) {
+        if (serverCalculatedBlockEvents.contains(block)) {
             ((ServerWorld)(Object)this).getBlockState(pos).onSyncedBlockEvent(((ServerWorld)(Object)this), pos, type, data);
             ci.cancel();
         }
