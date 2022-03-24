@@ -1,6 +1,7 @@
 package nl.theepicblock.polymc.testmod;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.*;
@@ -51,6 +52,8 @@ public class Testmod implements ModInitializer {
         registerBlock(id("test_block_wizard"), TEST_BLOCK_WIZARD);
 
         Registry.register(Registry.ENCHANTMENT, id("test_enchantment"), new TestEnchantment());
+
+        CommandRegistrationCallback.EVENT.register(TestCommands::register);
     }
 
     public static void debugSend(@Nullable PlayerEntity playerEntity, String text) {

@@ -40,3 +40,8 @@ An enchantment that does nothing and can be applied to *any* item. Including blo
 Test block for the wizard system. Its poly is set to replace it with red stained glass and 
 its wizard should spawn a diamond at its center as well as particles, although you won't see them without fabulous graphics. 
 It's also affected by gravity.
+
+# Misc
+## `/polymc-test find-states`
+A command that searches through the client jar for states that use the same texture. 
+Useful when looking for unused states in new versions. Note that this might not detect everything and that some of the things that are detected may not be usable.
