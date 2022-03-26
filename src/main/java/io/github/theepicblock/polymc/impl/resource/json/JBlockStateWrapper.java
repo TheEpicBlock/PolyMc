@@ -108,9 +108,11 @@ public class JBlockStateWrapper implements JBlockState {
         if (inputStreamRepresentation != null) {
             Files.copy(inputStreamRepresentation, location, StandardCopyOption.REPLACE_EXISTING);
         } else if (jsonRepresentation != null) {
-            var writer = new FileWriter(location.toFile());
-            gson.toJson(jsonRepresentation, writer);
-            writer.close();
+            if (!jsonRepresentation.variants.isEmpty()) { // TODO check for multipart
+                var writer = new FileWriter(location.toFile());
+                gson.toJson(jsonRepresentation, writer);
+                writer.close();
+            }
         } else {
             if (name != null) {
                 throw new ResourceSaveException("Failed to save block state definition "+name+". File is unrepresented. This is usually caused by some earlier error concerning json parsing");
