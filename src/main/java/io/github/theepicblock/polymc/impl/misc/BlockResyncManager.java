@@ -40,6 +40,8 @@ public class BlockResyncManager {
         Block block = clientState.getBlock();
         if (block == Blocks.NOTE_BLOCK) {
             return direction == Direction.UP;
+        } else if (block == Blocks.MYCELIUM || block == Blocks.PODZOL) {
+            return direction == Direction.DOWN;
         } else if (block == Blocks.TRIPWIRE) {
             if (sourceState == null) return direction.getAxis().isHorizontal();
 

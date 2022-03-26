@@ -114,6 +114,15 @@ public class BlockPolyGenerator {
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
+        //=== FENCE GATES ===
+        if (moddedBlock instanceof FenceGateBlock) {
+            try {
+                isUniqueCallback.set(true);
+                return manager.requestBlockState((moddedState.get(FenceGateBlock.OPEN) ? BlockStateProfile.OPEN_FENCE_GATE_PROFILE : BlockStateProfile.FENCE_GATE_PROFILE)
+                        .and(state -> propertyMatches(state, moddedState, FenceGateBlock.IN_WALL, HorizontalFacingBlock.FACING)));
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+        }
+
         //=== (TRAP)DOORS ===
         boolean isMetal = ((MaterialAccessor)moddedBlock).getMaterial() == Material.METAL;
         if (moddedBlock instanceof DoorBlock) {
@@ -135,13 +144,7 @@ public class BlockPolyGenerator {
         if (moddedBlock instanceof SlabBlock) {
             try {
                 isUniqueCallback.set(true);
-                return manager.requestBlockState(BlockStateProfile.PETRIFIED_OAK_SLAB_PROFILE.and(
-                        state -> propertyMatches(state, moddedState, SlabBlock.WATERLOGGED, SlabBlock.TYPE)
-                ));
-            } catch (BlockStateManager.StateLimitReachedException ignored) {}
-            try {
-                isUniqueCallback.set(true);
-                return manager.requestBlockState(BlockStateProfile.WAXED_COPPER_SLAB_PROFILE.and(
+                return manager.requestBlockState(BlockStateProfile.SLAB_PROFILE.and(
                         state -> propertyMatches(state, moddedState, SlabBlock.WATERLOGGED, SlabBlock.TYPE)
                 ));
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
@@ -170,20 +173,17 @@ public class BlockPolyGenerator {
         if (Block.isShapeFullCube(collisionShape)) {
             try {
                 isUniqueCallback.set(true);
-                return manager.requestBlockState(BlockStateProfile.NOTE_BLOCK_PROFILE);
+                return manager.requestBlockState(BlockStateProfile.FULL_BLOCK_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
         //=== NO COLLISION BLOCKS ===
         if (collisionShape.isEmpty()) {
             try {
-                if (moddedState.getFluidState().isEmpty()) {
-                    isUniqueCallback.set(true);
-                    return manager.requestBlockState(BlockStateProfile.NO_COLLISION_PROFILE);
-                } else {
-                    isUniqueCallback.set(true);
-                    return manager.requestBlockState(BlockStateProfile.KELP_PROFILE);
-                }
+                isUniqueCallback.set(true);
+                return manager.requestBlockState(BlockStateProfile.NO_COLLISION_PROFILE.and(
+                        state -> moddedState.getFluidState().equals(state.getFluidState())
+                ));
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
