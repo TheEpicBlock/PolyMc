@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc;
 
+import com.google.common.base.Stopwatch;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import io.github.theepicblock.polymc.api.PolyRegistry;
@@ -51,6 +52,7 @@ public class PolyMc implements ModInitializer {
     @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
     public static void generatePolyMap() {
+        var stopwatch = Stopwatch.createStarted();
         PolyRegistry registry = new PolyRegistry();
 
         // Register default global ItemPolys
@@ -66,6 +68,8 @@ public class PolyMc implements ModInitializer {
         Generator.generateMissing(registry);
 
         map = registry.build();
+        stopwatch.stop();
+        LOGGER.info("Generated main polymap in "+stopwatch);
     }
 
     /**
