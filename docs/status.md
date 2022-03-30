@@ -19,10 +19,10 @@ In general, you should be completely fine with using items with PolyMc.
 ## Blocks <img align="right" style="height:20px" width="400" height="20" src="https://raw.githubusercontent.com/wiki/TheEpicBlock/PolyMc/Images/Orange.png">
 Blocks need to consider their clientside collision shapes. And be careful not to replace any vanilla blocks.
 A few block shapes have been implemented in PolyMc:
-* Full blocks: 799
+* Full blocks: 979
 * Doors: 8
 * Trapdoors: 8
-* Uncollidable blocks: 116
+* Uncollidable blocks: 119
 * Path blocks: 5
 * Slabs: 5
 * Stairs: 4
