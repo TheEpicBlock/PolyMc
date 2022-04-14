@@ -20,6 +20,7 @@ package io.github.theepicblock.polymc.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.api.PolyMap;
@@ -212,10 +213,15 @@ public class PolyMapImpl implements PolyMap {
             // Ignore fapi
             if (lang.getNamespace().equals("fabric")) continue;
             for (var stream : moddedResources.getInputStreams(lang.getNamespace(), lang.getPath())) {
-                // Copy all of the language keys into the main map
-                var languageObject = pack.getGson().fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), JsonObject.class);
-                var mainLangMap = languageKeys.computeIfAbsent(lang.getPath(), (key) -> new HashMap<>());
-                languageObject.entrySet().forEach(entry -> mainLangMap.put(entry.getKey(), JsonHelper.asString(entry.getValue(), entry.getKey())));
+                try {
+                    // Copy all of the language keys into the main map
+                    var languageObject = pack.getGson().fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), JsonObject.class);
+                    var mainLangMap = languageKeys.computeIfAbsent(lang.getPath(), (key) -> new HashMap<>());
+                    languageObject.entrySet().forEach(entry -> mainLangMap.put(entry.getKey(), JsonHelper.asString(entry.getValue(), entry.getKey())));
+                } catch (JsonParseException e) {
+                    logger.error("Couldn't parse lang file "+lang);
+                    e.printStackTrace();
+                }
             }
         }
         // It doesn't actually matter which namespace the language files are under. We're just going to put them all under 'polymc-lang'
