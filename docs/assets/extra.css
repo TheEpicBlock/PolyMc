@@ -1,5 +1,5 @@
 .md-header {
-  background-image: url("/assets/header.png");
+  background-image: url("https://theepicblock.github.io/PolyMc/assets/header.png");
   background-repeat: repeat-x;
   background-size: contain;
   background-position-x: right;
@@ -8,7 +8,7 @@
 }
 
 .md-header::after {
-    background-image: url("/assets/header_corner.svg");
+    background-image: url("https://theepicblock.github.io/PolyMc/assets/header_corner.svg");
     background-size: contain;
     background-repeat: no-repeat;
     background-position-x: right;

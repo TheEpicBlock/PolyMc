@@ -1,7 +1,10 @@
-name: ci
+name: Build docs
 
 on:
   push:
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
     branches:
       - master
 jobs:
