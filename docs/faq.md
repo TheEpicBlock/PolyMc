@@ -1,18 +1,14 @@
----
-layout: default
-title: FAQ
-nav_order: 4
----
+# Frequently asked questions
 
-# Frequently asked / fully anticipated questions
 ## Does this work with Bedrock/GeyserMc?
-**tl;dr**: no.  
+**tl;dr: no.**
 
-I do not play or use Bedrock often. I do know that the hacks and tricks PolyMc use don't translate well to it.
-Bedrock actually includes ways to do a lot better than we can on Java.
-A project allowing mods on Bedrock should be separate from PolyMc.
-If such a project comes into existence I will try to add compatibility with it in PolyMc, 
-so that both projects can be used together, with PolyMc only affecting java clients.
+The way bedrock works is quite different from Java. The hacks PolyMc does won't work well for Bedrock.
+I believe Geyser has a way to convert resource packs, so you might have some luck with that. 
+Ideally a separate mod would be created that handles Bedrock clients, 
+considering Bedrock actually supports custom blocks/items/entities, such a mod should work really well. 
+Unfortunately nobody actually has had the time to make it.
 
 ## Why is this block stone?
-PolyMc can't handle all collision shapes and there's a finite limit of blocks that can be added. See [the status page](status.html).
+PolyMc might not be able to handle the collision shape of the block, or PolyMc might have run out of blocks. 
+See [the limitations page](limitations.md).

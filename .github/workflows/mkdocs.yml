@@ -1,0 +1,18 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - master
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      - run: pip install mkdocs-material
+      - run: pip install "mkdocs-redirects>=1.0"
+      - run: pip install mkdocs-git-revision-date-localized-plugin
+      - run: mkdocs gh-deploy --force
