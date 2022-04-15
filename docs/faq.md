@@ -1,4 +1,4 @@
-# Frequently asked questions
+# FAQ
 
 ## Does this work with Bedrock/GeyserMc?
 **tl;dr: no.**

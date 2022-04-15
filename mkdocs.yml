@@ -7,6 +7,7 @@ repo_name: TheEpicBlock/PolyMc
 nav:
   - index.md
   - getting_started.md
+  - faq.md
   - limitations.md
   - config.md
   - The Api:
@@ -75,3 +76,4 @@ plugins:
   - redirects:
       redirect_maps:
         status.md: limitations.md
+  - search
