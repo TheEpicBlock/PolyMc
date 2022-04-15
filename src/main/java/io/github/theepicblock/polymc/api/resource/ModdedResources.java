@@ -26,7 +26,7 @@ public interface ModdedResources extends AutoCloseable, ResourceContainer {
     ClientJarResources getClientJar(SimpleLogger logger);
 
     /**
-     * @return A view of the resources in this class combined with the resources you'd get from {@link #getClientJar()}
+     * @return A view of the resources in this class combined with the resources you'd get from {@link #getClientJar(SimpleLogger)}
      */
     ModdedResources includeClientJar(SimpleLogger logger);
 }
