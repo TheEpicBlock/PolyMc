@@ -4,6 +4,8 @@ on:
   push:
     paths-ignore:
       - 'docs/**'
+      - 'mkdocs.yml'
+      - 'README.md'
   pull_request:
 
 jobs:
