@@ -5,10 +5,12 @@ Well, that's impossible. But we can try! *Nothing is impossible!*
 **Note:** if you're a mod developer looking to make a mod that'll be solely used serverside, you might want to consider [Polymer](https://github.com/Patbox/polymer). It has some advantages and disadvantages over PolyMc.
 
 ## How PolyMc works
-PolyMc is unique in that it operates on packet level. The advantage is that the mechanics are separated from how it's rendered.  
-Usually when you would make custom items, you would pick a CustomModelData value and in the right-click event of that item you might check for that value and do some custom stuff. PolyMc doesn't work like that. With PolyMc, the server is *actually modded*, meaning the custom item is genuinely its own item; you have full control over its properties.  
+PolyMc is unique in that it operates on packet level. This means PolyMc doesn't touch the mechanics of the mod at all.
+The server is *genuinely modded*. This results in the server being quite stable, all the hacks PolyMc does to display things
+are separated from what's actually happening. 
 
-Doing it this way also means that PolyMc doesn't actually touch the registering of items. It just converts all non-vanilla items/blocks it finds. This means it works with any Fabric mod you can find. If you have some way of running other types of mods on Fabric, it should work too. Do you want to know which things will work with PolyMc? Look [here](https://theepicblock.github.io/PolyMc/status.html)
+PolyMc uses a host of techniques to automatically try and display your modded things. PolyMc also features a large api
+to customize how items/blocks/entities/whatevers are transformed.
 
 Do you want to get started? [Check out the wiki!](https://theepicblock.github.io/PolyMc/)
 
