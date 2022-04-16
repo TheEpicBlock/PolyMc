@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-   modImplementation "nl.TheEpicBlock:PolyMc:VERSION"
+   modImplementation "nl.theepicblock:PolyMc:VERSION"
 }
 ```
 
