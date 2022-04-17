@@ -73,7 +73,7 @@ public class EntityTrackerMixin {
             try {
                 wizard.removePlayer(player);
             } catch (Throwable t) {
-                PolyMc.LOGGER.error("Error adding player to entity wizard");
+                PolyMc.LOGGER.error("Error removing player from entity wizard");
                 t.printStackTrace();
             }
         }
