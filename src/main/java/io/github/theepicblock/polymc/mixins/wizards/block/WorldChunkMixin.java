@@ -33,7 +33,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,8 +41,6 @@ import java.util.Map;
 public abstract class WorldChunkMixin extends Chunk implements WatchListener, WizardView {
     @Unique
     private final PolyMapMap<Map<BlockPos,Wizard>> wizards = new PolyMapMap<>(this::createWizardsForChunk);
-    @Unique
-    private final ArrayList<ServerPlayerEntity> players = new ArrayList<>();
 
     @Shadow @Final World world;
 
@@ -177,7 +174,6 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                 PolyMc.LOGGER.error("Failed to add player to wizard "+wizard);
             }
         });
-        players.add(playerEntity);
     }
 
     @Override
@@ -190,7 +186,6 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                 PolyMc.LOGGER.error("Failed to remove player from wizard "+wizard);
             }
         });
-        players.remove(playerEntity);
     }
 
     @Override
@@ -204,7 +199,6 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
             ((WizardTickerDuck)this.world).polymc$removeTicker(wizard);
         }));
         this.wizards.clear();
-        this.players.clear();
     }
 
     @Inject(method = "setBlockState", at = @At("TAIL"))
@@ -222,9 +216,11 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                     BlockPos ipos = pos.toImmutable();
                     Wizard wiz = poly.createWizard(new PlacedWizardInfo(ipos, (ServerWorld)this.world));
                     wizardMap.put(ipos, wiz);
-                    for (ServerPlayerEntity player : players) {
-                        wiz.addPlayer(player);
-                    }
+                    ((ServerWorld)this.getWorld()).getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(this.getPos()).forEach(player -> {
+                        if (PolyMapProvider.getPolyMap(player) == polyMap) {
+                            wiz.addPlayer(player);
+                        }
+                    });
                     ((WizardTickerDuck)this.world).polymc$addTicker(wiz);
                 } catch (Throwable t) {
                     PolyMc.LOGGER.error("Failed to create block wizard for "+state.getBlock().getTranslationKey()+" | "+poly);
