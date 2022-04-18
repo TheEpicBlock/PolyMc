@@ -37,6 +37,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Class to automatically generate {@link BlockPoly}s for {@link Block}s
@@ -252,7 +253,7 @@ public class BlockPolyGenerator {
      */
     public static class FakedWorld implements BlockView {
         public final BlockState blockState;
-        public final BlockEntity blockEntity;
+        public @Nullable BlockEntity blockEntity;
 
         /**
          * Initializes a new fake world. This world is filled with air except for 0,0,0
@@ -260,20 +261,15 @@ public class BlockPolyGenerator {
          */
         public FakedWorld(BlockState block) {
             blockState = block;
-
-            if (blockState.getBlock() instanceof BlockEntityProvider beProvider) {
-                blockEntity = beProvider.createBlockEntity(BlockPos.ORIGIN, blockState);
-            } else {
-                blockEntity = null;
-            }
         }
 
         @Override
+        @Nullable
         public BlockEntity getBlockEntity(BlockPos pos) {
-            if (pos.equals(BlockPos.ORIGIN)) {
-                return blockEntity;
+            if (this.blockEntity == null && blockState.getBlock() instanceof BlockEntityProvider beProvider) {
+                this.blockEntity = beProvider.createBlockEntity(BlockPos.ORIGIN, blockState);
             }
-            return null;
+            return blockEntity;
         }
 
         @Override
@@ -281,15 +277,12 @@ public class BlockPolyGenerator {
             if (pos.equals(BlockPos.ORIGIN)) {
                 return blockState;
             }
-            return null;
+            return Blocks.AIR.getDefaultState();
         }
 
         @Override
         public FluidState getFluidState(BlockPos pos) {
-            if (pos.equals(BlockPos.ORIGIN)) {
-                return blockState.getFluidState();
-            }
-            return null;
+            return this.getBlockState(pos).getFluidState();
         }
 
         @Override
