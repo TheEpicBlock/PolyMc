@@ -227,7 +227,7 @@ public class PolyMapImpl implements PolyMap {
         // It doesn't actually matter which namespace the language files are under. We're just going to put them all under 'polymc-lang'
         languageKeys.forEach((path, translations) -> {
             pack.setAsset("polymc-lang", path, (location, gson) -> {
-                try (var writer = new FileWriter(location.toFile())) {
+                try (var writer = new FileWriter(location.toFile(), StandardCharsets.UTF_8)) {
                     gson.toJson(translations, writer);
                 }
             });

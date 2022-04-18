@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -109,7 +110,7 @@ public class JBlockStateWrapper implements JBlockState {
             Files.copy(inputStreamRepresentation, location, StandardCopyOption.REPLACE_EXISTING);
         } else if (jsonRepresentation != null) {
             if (!jsonRepresentation.variants.isEmpty()) { // TODO check for multipart
-                var writer = new FileWriter(location.toFile());
+                var writer = new FileWriter(location.toFile(), StandardCharsets.UTF_8);
                 gson.toJson(jsonRepresentation, writer);
                 writer.close();
             }
