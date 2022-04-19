@@ -40,6 +40,7 @@ public class FancyPantsItemPoly extends DamageableItemPoly {
         super.addCustomTagsToItem(stack);
         NbtCompound nbt = stack.getOrCreateSubNbt("display");
         nbt.putInt("color", this.color);
+        stack.addHideFlag(ItemStack.TooltipSection.DYE);
     }
 
     public static void onFirstRegister(PolyRegistry registry) {
