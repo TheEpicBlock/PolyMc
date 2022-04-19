@@ -28,11 +28,13 @@ import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ResourceConstants;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.text.MutableText;
@@ -78,10 +80,34 @@ public class CustomModelDataPoly implements ItemPoly {
         Pair<Item,Integer> pair = registerManager.requestCMD(targets);
         cmdValue = pair.getRight();
         cachedClientItem = new ItemStack(pair.getLeft());
-        NbtCompound tag = new NbtCompound();
+        addCustomTagsToItem(cachedClientItem);
+    }
+
+    /**
+     * Adds PolyMc specific tags to the item to display correctly on the client.
+     * These shouldn't change depending on the stack as this method will be cached.
+     * For un-cached tags, use {@link #getClientItem(ItemStack, ItemLocation)}
+     */
+    protected void addCustomTagsToItem(ItemStack stack) {
+        var item = stack.getItem();
+
+        NbtCompound tag = stack.getOrCreateNbt();
         tag.putInt("CustomModelData", cmdValue);
         cachedClientItem.setNbt(tag);
-        cachedClientItem.setCustomName(new TranslatableText(base.getTranslationKey()).setStyle(Style.EMPTY.withItalic(false)));
+        cachedClientItem.setCustomName(new TranslatableText(item.getTranslationKey()).setStyle(Style.EMPTY.withItalic(false)));
+
+        if (!tag.contains("AttributeModifiers", NbtElement.LIST_TYPE)) {
+            tag.put("AttributeModifiers", new NbtList());
+            try {
+                for (var slotType : EquipmentSlot.values()) {
+                    // This will only include the default attributes
+                    var attributes = item.getAttributeModifiers(slotType);
+                    for (var attribute : attributes.entries()) {
+                        stack.addAttributeModifier(attribute.getKey(), attribute.getValue(), slotType);
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -91,8 +117,9 @@ public class CustomModelDataPoly implements ItemPoly {
         if (input.hasNbt()) {
             serverItem = cachedClientItem.copy();
             serverItem.setNbt(input.getNbt().copy());
-            //doing this removes the CMD, so we should add that again
-            serverItem.getNbt().putInt("CustomModelData", cmdValue);
+
+            // Doing this removes the custom tags so we should add that again
+            addCustomTagsToItem(serverItem);
         }
 
         // Add custom tooltips. Don't bother showing them if the item's not in the inventory
@@ -115,6 +142,7 @@ public class CustomModelDataPoly implements ItemPoly {
                     list.add(NbtString.of(Text.Serializer.toJson(line)));
                 }
 
+                // serveritem is always either the cached item or a copy, so it's okay to modify
                 NbtCompound display = serverItem.getOrCreateSubNbt("display");
                 display.put("Lore", list);
             }
