@@ -7,7 +7,6 @@ import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 
 public class FancyPantsItemPoly extends DamageableItemPoly {
-    private final EquipmentSlot slot;
     private final int color;
 
     public FancyPantsItemPoly(PolyRegistry builder, ArmorItem base) {
@@ -18,7 +17,6 @@ public class FancyPantsItemPoly extends DamageableItemPoly {
         super(registry.getSharedValues(CustomModelDataManager.KEY), base, replacementItem);
 
         ArmorMaterial material = base.getMaterial();
-        this.slot = base.getSlotType();
         this.color = registry.getSharedValues(ArmorColorManager.KEY).getColorForMaterial(material);
     }
 

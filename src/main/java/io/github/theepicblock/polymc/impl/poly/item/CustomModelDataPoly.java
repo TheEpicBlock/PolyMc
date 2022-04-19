@@ -38,10 +38,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
@@ -55,6 +52,7 @@ import java.util.HashMap;
 public class CustomModelDataPoly implements ItemPoly {
     protected final ItemStack cachedClientItem;
     protected final int cmdValue;
+    protected final Item base;
 
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item base) {
         this(registerManager, base, CustomModelDataManager.DEFAULT_ITEMS);
@@ -80,6 +78,7 @@ public class CustomModelDataPoly implements ItemPoly {
         Pair<Item,Integer> pair = registerManager.requestCMD(targets);
         cmdValue = pair.getRight();
         cachedClientItem = new ItemStack(pair.getLeft());
+        this.base = base;
         addCustomTagsToItem(cachedClientItem);
     }
 
@@ -93,15 +92,14 @@ public class CustomModelDataPoly implements ItemPoly {
 
         NbtCompound tag = stack.getOrCreateNbt();
         tag.putInt("CustomModelData", cmdValue);
-        cachedClientItem.setNbt(tag);
-        cachedClientItem.setCustomName(new TranslatableText(item.getTranslationKey()).setStyle(Style.EMPTY.withItalic(false)));
+        stack.setNbt(tag);
 
         if (!tag.contains("AttributeModifiers", NbtElement.LIST_TYPE)) {
             tag.put("AttributeModifiers", new NbtList());
             try {
                 for (var slotType : EquipmentSlot.values()) {
                     // This will only include the default attributes
-                    var attributes = item.getAttributeModifiers(slotType);
+                    var attributes = base.getAttributeModifiers(slotType);
                     for (var attribute : attributes.entries()) {
                         stack.addAttributeModifier(attribute.getKey(), attribute.getValue(), slotType);
                     }
@@ -118,13 +116,13 @@ public class CustomModelDataPoly implements ItemPoly {
             serverItem = cachedClientItem.copy();
             serverItem.setNbt(input.getNbt().copy());
 
-            // Doing this removes the custom tags so we should add that again
+            // Doing this removes the custom tags, so we should add that again
             addCustomTagsToItem(serverItem);
         }
 
         // Add custom tooltips. Don't bother showing them if the item's not in the inventory
         if (Util.isSectionVisible(input, ItemStack.TooltipSection.ADDITIONAL) && isInventory(location)) {
-            Entity holder = input.getHolder(); // This is not usually guaranteed to get the correct player. It works here however.
+            Entity holder = input.getHolder(); // This is not usually guaranteed to get the correct player. It works here though.
 
             var tooltips = new ArrayList<Text>(0);
             try {
@@ -136,7 +134,12 @@ public class CustomModelDataPoly implements ItemPoly {
                 for (Text line : tooltips) {
                     if (line instanceof MutableText mText) {
                         // Cancels the styling of the lore
-                        line = mText.setStyle(line.getStyle().withItalic(false).withColor(Formatting.GRAY));
+                        var style = line.getStyle();
+                        style = style.withItalic(style.isItalic());
+                        if (style.getColor() == null) {
+                            style = style.withColor(style.getColor());
+                        }
+                        line = mText.setStyle(style);
                     }
 
                     list.add(NbtString.of(Text.Serializer.toJson(line)));
