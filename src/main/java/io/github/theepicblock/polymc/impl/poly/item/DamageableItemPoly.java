@@ -25,16 +25,21 @@ import net.minecraft.item.Items;
 import org.jetbrains.annotations.Nullable;
 
 public class DamageableItemPoly extends CustomModelDataPoly {
+    private static final Item[] GENERIC_DAMAGEABLE = new Item[]{Items.WOODEN_PICKAXE, Items.STONE_PICKAXE};
     private final int clientSideMaxDamage;
     private final int serverSideMaxDamage;
 
     public DamageableItemPoly(CustomModelDataManager registerManager, Item base) {
-        this(registerManager, base, Items.WARPED_FUNGUS_ON_A_STICK);
+        this(registerManager, base, GENERIC_DAMAGEABLE);
     }
 
     public DamageableItemPoly(CustomModelDataManager registerManager, Item base, Item target) {
-        super(registerManager, base, target);
-        clientSideMaxDamage = target.getMaxDamage();
+        this(registerManager, base, new Item[]{target});
+    }
+
+    public DamageableItemPoly(CustomModelDataManager registerManager, Item base, Item[] targets) {
+        super(registerManager, base, targets);
+        clientSideMaxDamage = this.cachedClientItem.getMaxDamage();
         serverSideMaxDamage = base.getMaxDamage();
     }
 
