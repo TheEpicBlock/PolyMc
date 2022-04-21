@@ -46,6 +46,7 @@
     "gui.GuiPolyImplementation",
     "item.CreativeItemStackFix",
     "item.CustomRecipeFix",
+    "item.EntityAttributeUuidAccessor",
     "item.GameModeUpdateMixin",
     "item.ItemPolyImplementation",
     "item.locationproviders.EntityEquipmentLocationProvider",

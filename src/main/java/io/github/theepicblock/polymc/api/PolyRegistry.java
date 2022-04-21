@@ -24,6 +24,7 @@ import io.github.theepicblock.polymc.api.block.BlockStateManager;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
+import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.impl.PolyMapImpl;
@@ -33,6 +34,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.*;
 
@@ -60,7 +62,7 @@ public class PolyRegistry {
     }
 
     /**
-     * Registers a global item poly. This {@link ItemPoly#getClientItem(ItemStack, io.github.theepicblock.polymc.api.item.ItemLocation)} shall be called for all items.
+     * Registers a global item poly. This {@link ItemTransformer#transform(ItemStack, ServerPlayerEntity, ItemLocation)} shall be called for all items.
      * <p>
      * The order is dependant on the registration order. If it is registered earlier it'll be called earlier.
      * @param poly poly to register.

@@ -24,6 +24,8 @@ import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 public interface ItemPoly extends DebugInfoProvider<Item> {
@@ -37,6 +39,11 @@ public interface ItemPoly extends DebugInfoProvider<Item> {
      * @apiNote this method should never edit the incoming ItemStack. As that might have unspecified consequences for the actual serverside representation of the item.
      */
     ItemStack getClientItem(ItemStack input, @Nullable ItemLocation location);
+
+    @ApiStatus.Experimental
+    default ItemStack getClientItem(ItemStack input, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
+        return getClientItem(input, location);
+    }
 
     /**
      * Callback to add all resources needed for this item to a resource pack.

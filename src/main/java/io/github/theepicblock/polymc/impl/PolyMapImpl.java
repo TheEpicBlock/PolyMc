@@ -100,7 +100,7 @@ public class PolyMapImpl implements PolyMap {
         NbtCompound originalNbt = serverItem.writeNbt(new NbtCompound());
 
         ItemPoly poly = itemPolys.get(serverItem.getItem());
-        if (poly != null) ret = poly.getClientItem(serverItem, location);
+        if (poly != null) ret = poly.getClientItem(serverItem, player, location);
 
         for (ItemTransformer globalPoly : globalItemPolys) {
             ret = globalPoly.transform(ret, player, location);

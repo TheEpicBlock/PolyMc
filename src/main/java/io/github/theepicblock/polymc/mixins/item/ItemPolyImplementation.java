@@ -37,6 +37,6 @@ public class ItemPolyImplementation {
     public ItemStack writeItemStackHook(ItemStack itemStack) {
         ServerPlayerEntity player = PlayerContextContainer.retrieve(this);
         var map = player == null ? PolyMc.getMainMap() : PolyMapProvider.getPolyMap(player);
-        return map.getClientItem(itemStack, null, ItemLocationStaticHack.location.get());
+        return map.getClientItem(itemStack, player, ItemLocationStaticHack.location.get());
     }
 }

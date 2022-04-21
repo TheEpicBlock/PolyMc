@@ -22,6 +22,7 @@ import io.github.theepicblock.polymc.api.item.ItemLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
 public class DamageableItemPoly extends CustomModelDataPoly {
@@ -40,10 +41,10 @@ public class DamageableItemPoly extends CustomModelDataPoly {
     }
 
     @Override
-    public ItemStack getClientItem(ItemStack input, @Nullable ItemLocation location) {
-        ItemStack sup = super.getClientItem(input, location);
+    public ItemStack getClientItem(ItemStack input, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
+        ItemStack sup = super.getClientItem(input, player, location);
         int inputDamage = input.getDamage();
-        int damage = (int)(((float)inputDamage / base.getMaxDamage()) * input.getMaxDamage()); //convert serverside damage to clientside damage
+        int damage = (int)(((float)inputDamage / input.getMaxDamage()) * sup.getMaxDamage()); //convert serverside damage to clientside damage
         if (damage == 0 && inputDamage > 0) damage = 1; //If the item is damaged in any way it should show up
         sup.setDamage(damage);
 
