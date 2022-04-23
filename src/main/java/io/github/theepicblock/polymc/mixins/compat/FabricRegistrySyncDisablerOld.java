@@ -1,4 +1,4 @@
-package io.github.theepicblock.polymc.mixins;
+package io.github.theepicblock.polymc.mixins.compat;
 
 import net.fabricmc.fabric.impl.registry.sync.RegistrySyncManager;
 import net.minecraft.network.Packet;

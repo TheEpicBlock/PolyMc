@@ -68,13 +68,13 @@ public class Config {
         // Use `FabricRegistrySyncDisabler` for >=0.9.0 and `FabricRegistrySyncDisablerOld` for <0.9.0
         // If registry sync is not present both will be disabled
         try {
-            if (mixin.equals("FabricRegistrySyncDisabler")) {
+            if (mixin.equals("compat.FabricRegistrySyncDisabler")) {
                 var regSync = FabricLoader.getInstance().getModContainer("fabric-registry-sync-v0");
                 if (regSync.isEmpty()) return true;
                 return VersionComparisonOperator.LESS.test(regSync.get().getMetadata().getVersion(), Version.parse("0.9.0"));
             }
 
-            if (mixin.equals("FabricRegistrySyncDisablerOld")) {
+            if (mixin.equals("compat.FabricRegistrySyncDisablerOld")) {
                 var regSync = FabricLoader.getInstance().getModContainer("fabric-registry-sync-v0");
                 if (regSync.isEmpty()) return true;
                 return VersionComparisonOperator.GREATER_EQUAL.test(regSync.get().getMetadata().getVersion(), Version.parse("0.9.0"));
