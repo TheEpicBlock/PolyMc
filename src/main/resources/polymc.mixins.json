@@ -38,6 +38,8 @@
     "block.implementations.ZombieBreakDoorImplementation",
     "compat.FabricRegistrySyncDisabler",
     "compat.FabricRegistrySyncDisablerOld",
+    "compat.immersive_portals.ChunkDataSyncManagerMixin",
+    "compat.immersive_portals.IPNetworkingMixin",
     "context.ByteBufPlayerContextContainer",
     "context.NetworkHandlerContextProvider",
     "context.PacketPlayerContextContainer",

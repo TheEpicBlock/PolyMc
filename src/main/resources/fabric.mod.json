@@ -35,6 +35,5 @@
     "java": ">=16"
   },
   "breaks": {
-    "immersive_portals": "*"
   }
 }
