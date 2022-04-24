@@ -32,7 +32,16 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	modImplementation include("nl.theepicblock:resource-locator-api:${project.resource_lookup_api_version}")
 
+	// Compat
 	modCompileOnly "com.github.CaffeineMC.lithium-fabric:lithium:${project.lithium_version}"
+	modCompileOnly("com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:${project.immersive_portals_version}") {
+		exclude(group: "net.fabricmc.fabric-api")
+		transitive(false)
+	}
+	modImplementation("com.github.qouteall.ImmersivePortalsMod:q_misc_util:${project.immersive_portals_version}"){
+		exclude(group: "net.fabricmc.fabric-api")
+		transitive(false)
+	}
 }
 
 sourceSets {

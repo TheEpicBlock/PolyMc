@@ -65,9 +65,9 @@ public class Config {
             return true;
         }
 
-        // Use `FabricRegistrySyncDisabler` for >=0.9.0 and `FabricRegistrySyncDisablerOld` for <0.9.0
-        // If registry sync is not present both will be disabled
         try {
+            // Use `FabricRegistrySyncDisabler` for >=0.9.0 and `FabricRegistrySyncDisablerOld` for <0.9.0
+            // If registry sync is not present both will be disabled
             if (mixin.equals("compat.FabricRegistrySyncDisabler")) {
                 var regSync = FabricLoader.getInstance().getModContainer("fabric-registry-sync-v0");
                 if (regSync.isEmpty()) return true;
@@ -78,6 +78,13 @@ public class Config {
                 var regSync = FabricLoader.getInstance().getModContainer("fabric-registry-sync-v0");
                 if (regSync.isEmpty()) return true;
                 return VersionComparisonOperator.GREATER_EQUAL.test(regSync.get().getMetadata().getVersion(), Version.parse("0.9.0"));
+            }
+
+            if (mixin.startsWith("compat.immersive_portals")) {
+                return !FabricLoader.getInstance().isModLoaded("imm_ptl_core");
+            }
+            if (mixin.equals("block.implementations.ChunkDataPlayerProvider") || mixin.equals("wizards.block.WatchProviderMixin")) {
+                return FabricLoader.getInstance().isModLoaded("imm_ptl_core");
             }
         } catch (VersionParsingException e) {
             throw new RuntimeException(e);
