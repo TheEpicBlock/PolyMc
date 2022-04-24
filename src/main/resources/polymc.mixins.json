@@ -30,6 +30,7 @@
     "block.implementations.ChunkDataPlayerProvider",
     "block.implementations.ChunkDeltaUpdateImplementation",
     "block.implementations.FallingBlockEntityImplementation",
+    "block.implementations.IdListImplementation",
     "block.implementations.PaletteBlockPolyImplementation",
     "block.implementations.PlayerActionResponseImplementation",
     "block.implementations.TallPlantBreakImplementation",
