@@ -19,6 +19,7 @@ package io.github.theepicblock.polymc.impl;
 
 import com.google.common.base.Splitter;
 import com.google.gson.Gson;
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.mixins.ItemStackAccessor;
@@ -178,7 +179,7 @@ public class Util {
      * @return the int associated with the state after being transformed by the players {@link PolyMap}
      */
     public static int getPolydRawIdFromState(BlockState state, ServerPlayerEntity playerEntity) {
-        PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
+        PolyMap map = playerEntity == null ? PolyMc.getMainMap() : PolyMapProvider.getPolyMap(playerEntity);
         return map.getClientStateRawId(state, playerEntity);
     }
 
