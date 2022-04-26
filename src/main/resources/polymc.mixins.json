@@ -38,6 +38,7 @@
     "compat.FabricRegistrySyncDisabler",
     "compat.FabricRegistrySyncDisablerOld",
     "compat.immersive_portals.ChunkDataSyncManagerMixin",
+    "compat.immersive_portals.DisableCustomEntities",
     "compat.immersive_portals.IPPacketRewriter",
     "context.ByteBufPlayerContextContainer",
     "context.NetworkHandlerContextProvider",

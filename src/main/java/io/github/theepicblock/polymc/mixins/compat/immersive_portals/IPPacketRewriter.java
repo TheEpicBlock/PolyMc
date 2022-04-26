@@ -46,7 +46,6 @@ public abstract class IPPacketRewriter {
                 var packetId = buf.readInt();
                 if (packetId == CHUNK_DATA_PACKET) {
                     // We ain't deserializing that
-                    buf.resetReaderIndex();
                     return originalPacket;
                 }
 
