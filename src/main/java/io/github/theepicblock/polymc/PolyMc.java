@@ -99,6 +99,10 @@ public class PolyMc implements ModInitializer {
             BlockIdRemapper.remapFromInternalList();
         }
 
+        if (FabricLoader.getInstance().isModLoaded("imm_ptl_core")) {
+            LOGGER.warn("PolyMc detected immersive portals. Keep in mind that the compat with IP is really quite janky. You're on your own");
+        }
+
         ServerTickEvents.END_WORLD_TICK.register(server -> ((WizardTickerDuck)server).polymc$getTickers().forEach(Wizard::onTick));
     }
 }
