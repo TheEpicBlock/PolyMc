@@ -2,6 +2,8 @@ package io.github.theepicblock.polymc.impl.resource;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.github.theepicblock.polymc.api.resource.AssetWithDependencies;
+import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.api.resource.PolyMcAsset;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
@@ -15,6 +17,11 @@ import java.util.Map;
 public class ResourcePackImplementation implements PolyMcResourcePack {
     private final Map<String, Map<String, PolyMcAsset>> assets = new HashMap<>();
     private final Gson gson = new GsonBuilder().enableComplexMapKeySerialization().disableHtmlEscaping().create();
+
+    @Override
+    public void importRequirements(ModdedResources input, AssetWithDependencies asset, SimpleLogger logger) {
+        asset.importRequirements(input, this, logger);
+    }
 
     @Override
     public void setAsset(String namespace, String path, PolyMcAsset asset) {
