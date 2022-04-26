@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.impl.poly.item;
 
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import net.minecraft.entity.EquipmentSlot;
@@ -17,7 +18,14 @@ public class FancyPantsItemPoly extends DamageableItemPoly {
         super(registry.getSharedValues(CustomModelDataManager.KEY), base, replacementItem);
 
         ArmorMaterial material = base.getMaterial();
-        this.color = registry.getSharedValues(ArmorColorManager.KEY).getColorForMaterial(material);
+        int color;
+        try {
+            color = registry.getSharedValues(ArmorColorManager.KEY).getColorForMaterial(material);
+        } catch (Throwable e) {
+            PolyMc.LOGGER.warn("Error getting color for armor "+ base.getTranslationKey() + ": "+e);
+            color = 0;
+        }
+        this.color = color;
     }
 
     /**
