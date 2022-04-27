@@ -17,9 +17,8 @@
  */
 package io.github.theepicblock.polymc.mixins.block.implementations;
 
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
-import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.mixin.ChunkPacketStaticHack;
 import me.jellysquid.mods.lithium.common.world.chunk.LithiumHashPalette;
 import net.minecraft.block.BlockState;
@@ -43,7 +42,7 @@ public abstract class PaletteBlockPolyImplementation<T> {
         if (object instanceof BlockState) {
             var player = ChunkPacketStaticHack.player.get();
 
-            PolyMap map = player == null ? PolyMc.getMainMap() : PolyMapProvider.getPolyMap(player);
+            PolyMap map = Util.tryGetPolyMap(player);
             //noinspection unchecked
             return map.getClientStateRawId((BlockState)object, player);
         }

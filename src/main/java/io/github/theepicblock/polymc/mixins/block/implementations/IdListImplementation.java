@@ -1,8 +1,7 @@
 package io.github.theepicblock.polymc.mixins.block.implementations;
 
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
-import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.mixin.ChunkPacketStaticHack;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -29,7 +28,7 @@ public class IdListImplementation {
         }
 
         var player = ChunkPacketStaticHack.player.get();
-        var polyMap = player == null ? PolyMc.getMainMap() : PolyMapProvider.getPolyMap(player);
+        var polyMap = Util.tryGetPolyMap(player);
 
         if (!polyMap.isVanillaLikeMap()) {
             return originalStorage;

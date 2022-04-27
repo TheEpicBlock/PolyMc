@@ -17,8 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins.item;
 
-import io.github.theepicblock.polymc.PolyMc;
-import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.mixin.ItemLocationStaticHack;
 import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
 import net.minecraft.item.ItemStack;
@@ -36,7 +35,7 @@ public class ItemPolyImplementation {
     @ModifyVariable(method = "writeItemStack(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/network/PacketByteBuf;", at = @At("HEAD"), argsOnly = true)
     public ItemStack writeItemStackHook(ItemStack itemStack) {
         ServerPlayerEntity player = PlayerContextContainer.retrieve(this);
-        var map = player == null ? PolyMc.getMainMap() : PolyMapProvider.getPolyMap(player);
+        var map = Util.tryGetPolyMap(player);
         return map.getClientItem(itemStack, player, ItemLocationStaticHack.location.get());
     }
 }

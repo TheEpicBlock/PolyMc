@@ -19,6 +19,7 @@ package io.github.theepicblock.polymc.impl;
 
 import com.google.common.base.Splitter;
 import com.google.gson.Gson;
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.mixins.ItemStackAccessor;
@@ -30,6 +31,7 @@ import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -41,6 +43,7 @@ public class Util {
     public static final Gson GSON = new Gson();
     public static final String MC_NAMESPACE = "minecraft";
     private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
+    private static boolean HAS_LOGGED_POLYMAP_ERROR = false;
 
     /**
      * Returns true if this identifier is in the minecraft namespace
@@ -169,6 +172,18 @@ public class Util {
         return a.getBoundingBox().equals(b.getBoundingBox());
     }
 
+    public static PolyMap tryGetPolyMap(@Nullable ServerPlayerEntity player) {
+        if (player == null) {
+            if (!HAS_LOGGED_POLYMAP_ERROR) {
+                PolyMc.LOGGER.error("Tried to get polymap but there's no player context. PolyMc will use the default PolyMap. If PolyMc is transforming things it shouldn't, this is why. Further errors of this kind will be silenced. Have a thread dump: ");
+                Thread.dumpStack();
+                HAS_LOGGED_POLYMAP_ERROR = true;
+            }
+            return PolyMc.getMainMap();
+        }
+        return PolyMapProvider.getPolyMap(player);
+    }
+
     /**
      * Utility method to get the polyd raw id.
      * PolyMc also redirects {@link Block#getRawIdFromState(BlockState)} but that doesn't respect the player's {@link PolyMap}.
@@ -178,7 +193,7 @@ public class Util {
      * @return the int associated with the state after being transformed by the players {@link PolyMap}
      */
     public static int getPolydRawIdFromState(BlockState state, ServerPlayerEntity playerEntity) {
-        PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
+        PolyMap map = Util.tryGetPolyMap(playerEntity);
         return map.getClientStateRawId(state, playerEntity);
     }
 

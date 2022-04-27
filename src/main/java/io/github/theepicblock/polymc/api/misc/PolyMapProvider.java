@@ -20,6 +20,7 @@ package io.github.theepicblock.polymc.api.misc;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.NotNull;
 
 public interface PolyMapProvider {
     PolyMapProviderEvent EVENT = new PolyMapProviderEvent();
@@ -27,7 +28,7 @@ public interface PolyMapProvider {
     /**
      * @return the {@link PolyMap} that is used for this player.
      */
-    static PolyMap getPolyMap(ServerPlayerEntity player) {
+    static PolyMap getPolyMap(@NotNull ServerPlayerEntity player) {
         return ((PolyMapProvider)player).getPolyMap();
     }
 

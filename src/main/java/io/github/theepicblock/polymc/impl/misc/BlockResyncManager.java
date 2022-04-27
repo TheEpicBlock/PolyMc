@@ -18,7 +18,7 @@
 package io.github.theepicblock.polymc.impl.misc;
 
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.*;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
@@ -60,7 +60,7 @@ public class BlockResyncManager {
             if (checkedBlocks != null && checkedBlocks.contains(pos)) continue;
 
             BlockState state = world.getBlockState(pos);
-            BlockPoly poly = PolyMapProvider.getPolyMap(player).getBlockPoly(state.getBlock());
+            BlockPoly poly = Util.tryGetPolyMap(player).getBlockPoly(state.getBlock());
 
             if (poly != null) {
                 BlockState clientState = poly.getClientBlock(state);

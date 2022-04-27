@@ -1,6 +1,6 @@
 package io.github.theepicblock.polymc.mixins.block;
 
-import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.BlockResyncManager;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.TargetBlock;
@@ -19,7 +19,7 @@ public class ResyncTargetBlock {
     private static void onSetPower(WorldAccess world, BlockState state, int power, BlockPos pos, int delay, CallbackInfo ci) {
         if (world instanceof ServerWorld serverWorld) {
             serverWorld.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(new ChunkPos(pos)).forEach(player -> {
-                if (PolyMapProvider.getPolyMap(player).isVanillaLikeMap()) {
+                if (Util.tryGetPolyMap(player).isVanillaLikeMap()) {
                     BlockResyncManager.onBlockUpdate(null, pos, serverWorld, player, null);
                 }
             });

@@ -1,6 +1,6 @@
 package io.github.theepicblock.polymc.mixins.block;
 
-import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.mixins.TACSAccessor;
 import net.minecraft.network.Packet;
 import net.minecraft.server.world.ChunkHolder;
@@ -40,7 +40,7 @@ public abstract class FixLighting {
 
         var watchers = this.playersWatchingChunkProvider.getPlayersWatchingChunk(this.getPos(), false);
         watchers.forEach((watcher) -> {
-            var polymap = PolyMapProvider.getPolyMap(watcher);
+            var polymap = Util.tryGetPolyMap(watcher);
             var isVanilla = polymap.isVanillaLikeMap();
             var watcherChunk = watcher.getWatchedSection();
 
