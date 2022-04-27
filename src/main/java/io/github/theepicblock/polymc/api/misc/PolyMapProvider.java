@@ -79,7 +79,7 @@ public interface PolyMapProvider {
                 PolyMap map = handler.getMap(playerEntity);
                 if (map != null) return map;
             }
-            return PolyMc.getMainMap();
+            return PolyMc.getGeneratedMap();
         }
     }
 }

@@ -36,6 +36,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.logging.log4j.LogManager;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 
@@ -80,6 +81,12 @@ public class PolyMc implements ModInitializer {
      */
     @Deprecated
     public static PolyMap getMainMap() {
+        return getGeneratedMap();
+    }
+
+    @Deprecated
+    @ApiStatus.Internal
+    public static PolyMap getGeneratedMap() {
         if (map == null) {
             throw new NullPointerException("Tried to access the PolyMap before it was initialized");
         }
