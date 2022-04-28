@@ -17,7 +17,6 @@
  */
 package io.github.theepicblock.polymc.mixins;
 
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.Config;
 import io.github.theepicblock.polymc.impl.ConfigManager;
 import org.objectweb.asm.tree.ClassNode;
@@ -36,12 +35,12 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
         try {
             config = ConfigManager.getConfig();
         } catch (Exception e) {
-            PolyMc.LOGGER.warn("PolyMc: couldn't read config due to exception.");
+            ConfigManager.LOGGER.warn("PolyMc: couldn't read config due to exception.");
             e.printStackTrace();
             throw new NullPointerException("Couldn't read config");
         }
         if (config == null) {
-            PolyMc.LOGGER.warn("PolyMc: couldn't read config.");
+            ConfigManager.LOGGER.warn("PolyMc: couldn't read config.");
             throw new NullPointerException("Couldn't read config");
         }
     }
@@ -55,11 +54,11 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         String mixin = mixinClassName.substring(MIXIN_PACKAGE_ROOT.length());
         if (config.isMixinDisabled(mixin)) {
-            PolyMc.LOGGER.info(String.format("%s is disabled by config", mixin));
+            ConfigManager.LOGGER.info(String.format("%s is disabled by config", mixin));
             return false;
         }
         if (config.isMixinAutoDisabled(mixin)) {
-            PolyMc.LOGGER.info(String.format("%s is disabled automatically", mixin));
+            ConfigManager.LOGGER.info(String.format("%s is disabled automatically", mixin));
             return false;
         }
         return true;

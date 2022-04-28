@@ -19,9 +19,10 @@ package io.github.theepicblock.polymc.impl;
 
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
-import io.github.theepicblock.polymc.PolyMc;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -30,6 +31,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class ConfigManager {
+    public static final Logger LOGGER = LogManager.getLogger("PolyMc-config");
     private static Config config;
 
     /**
@@ -49,7 +51,7 @@ public class ConfigManager {
             try {
                 Files.copy(defaultConfig, Paths.get(configFile.getAbsolutePath()));
             } catch (IOException e) {
-                PolyMc.LOGGER.warn("error whilst copying over default config. An error trying to load said config will most likely appear soon");
+                LOGGER.warn("error whilst copying over default config. An error trying to load said config will most likely appear soon");
                 e.printStackTrace();
             }
         }
@@ -63,7 +65,7 @@ public class ConfigManager {
             //Update the config
             if (configobj.getConfigVersion() < Config.LATEST_VERSION) {
                 int cVersion = configobj.getConfigVersion();
-                PolyMc.LOGGER.info("Updating config from v" + cVersion + " to v" + Config.LATEST_VERSION);
+                LOGGER.info("Updating config from v" + cVersion + " to v" + Config.LATEST_VERSION);
 
                 Path updatesPath = getPathFromResources("config_update.json");
                 Objects.requireNonNull(updatesPath);
@@ -72,12 +74,12 @@ public class ConfigManager {
 
                 for (int i = cVersion + 1; i <= Config.LATEST_VERSION; i++) {
                     if (cVersion == 0) {
-                        PolyMc.LOGGER.error("PolyMc: Config file seems to be corrupt. You might need to delete it");
+                        LOGGER.error("PolyMc: Config file seems to be corrupt. You might need to delete it");
                     }
                     try {
                         update(i, configJson.getAsJsonObject(), updates);
                     } catch (Exception e) {
-                        PolyMc.LOGGER.warn("failed to update config to v" + i);
+                        LOGGER.warn("failed to update config to v" + i);
                         e.printStackTrace();
                     }
                 }
@@ -90,11 +92,11 @@ public class ConfigManager {
             }
             ConfigManager.config = configobj;
         } catch (FileNotFoundException e) {
-            PolyMc.LOGGER.warn("Couldn't find config file: " + configFile.getPath());
-            PolyMc.LOGGER.warn(e);
+            LOGGER.warn("Couldn't find config file: " + configFile.getPath());
+            LOGGER.warn(e);
         } catch (IOException e) {
-            PolyMc.LOGGER.warn("failed to update config");
-            PolyMc.LOGGER.warn(e);
+            LOGGER.warn("failed to update config");
+            LOGGER.warn(e);
         }
     }
 
@@ -104,9 +106,9 @@ public class ConfigManager {
             ModContainer polymcContainer = container.get();
             return polymcContainer.getPath(path);
         } else {
-            PolyMc.LOGGER.warn("The modcontainer for 'polymc' couldn't be found.");
-            PolyMc.LOGGER.warn("Did someone change the modid in the fabric.mod.json!?");
-            PolyMc.LOGGER.warn("The server will probably crash due to a NullPointer exception now");
+            LOGGER.warn("The modcontainer for 'polymc' couldn't be found.");
+            LOGGER.warn("Did someone change the modid in the fabric.mod.json!?");
+            LOGGER.warn("The server will probably crash due to a NullPointer exception now");
             return null;
         }
     }
