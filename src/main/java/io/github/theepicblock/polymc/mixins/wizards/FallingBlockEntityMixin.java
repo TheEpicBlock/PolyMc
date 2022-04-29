@@ -87,23 +87,23 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
 
     @Inject(method = "onStartedTrackingBy(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At("RETURN"))
     private void onStartTracking(ServerPlayerEntity player, CallbackInfo ci) {
-        this.addPlayer(player);
+        this.polymc$addPlayer(player);
     }
 
     @Inject(method = "onStoppedTrackingBy(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At("RETURN"))
     private void onStopTracking(ServerPlayerEntity player, CallbackInfo ci) {
-        this.removePlayer(player);
+        this.polymc$removePlayer(player);
     }
 
     @Override
-    public void addPlayer(ServerPlayerEntity playerEntity) {
+    public void polymc$addPlayer(ServerPlayerEntity playerEntity) {
         wizards.forEach(((polyMap, wizard) -> {
             if (wizard != null) wizard.addPlayer(playerEntity);
         }));
     }
 
     @Override
-    public void removePlayer(ServerPlayerEntity playerEntity) {
+    public void polymc$removePlayer(ServerPlayerEntity playerEntity) {
         wizards.forEach(((polyMap, wizard) -> {
             if (wizard != null) wizard.removePlayer(playerEntity);
         }));
@@ -119,7 +119,7 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
     }
 
     @Override
-    public void removeAllPlayers() {
+    public void polymc$removeAllPlayers() {
         var allNearbyPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)this.getWorld(), this.getChunkPos());
         wizards.forEach(((polyMap, wizard) -> {
             var filteredView = new PolyMapFilteredPlayerView(allNearbyPlayers, polyMap);

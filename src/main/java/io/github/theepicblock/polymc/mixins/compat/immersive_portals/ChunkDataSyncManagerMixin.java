@@ -39,7 +39,7 @@ public abstract class ChunkDataSyncManagerMixin {
         if (chunkPos.dimension == player.getWorld().getRegistryKey()) {
             var pos = chunkPos.getChunkPos();
             var chunk = player.getWorld().getChunk(pos.x, pos.z);
-            ((WatchListener)chunk).addPlayer(player);
+            ((WatchListener)chunk).polymc$addPlayer(player);
         }
     }
 
@@ -48,7 +48,7 @@ public abstract class ChunkDataSyncManagerMixin {
         if (chunkPos.dimension == player.getWorld().getRegistryKey()) {
             var pos = chunkPos.getChunkPos();
             var chunk = player.getWorld().getChunk(pos.x, pos.z);
-            ((WatchListener)chunk).removePlayer(player);
+            ((WatchListener)chunk).polymc$removePlayer(player);
         }
     }
 

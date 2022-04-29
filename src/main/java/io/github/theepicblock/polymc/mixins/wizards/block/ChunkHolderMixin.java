@@ -18,7 +18,7 @@ public abstract class ChunkHolderMixin {
     private void onLevelSet(int level, CallbackInfo ci) {
         if (level > ThreadedAnvilChunkStorage.MAX_LEVEL) {
             WorldChunk chunk = this.getWorldChunk();
-            if (chunk != null) ((WatchListener)chunk).removeAllPlayers();
+            if (chunk != null) ((WatchListener)chunk).polymc$removeAllPlayers();
         }
     }
 }

@@ -21,7 +21,7 @@ public abstract class WatchProviderMixin {
     @Inject(method = "sendChunkDataPackets(Lnet/minecraft/server/network/ServerPlayerEntity;Lorg/apache/commons/lang3/mutable/MutableObject;Lnet/minecraft/world/chunk/WorldChunk;)V",
             at = @At("HEAD"))
     private void onSendChunkData(ServerPlayerEntity player, MutableObject<ChunkDataS2CPacket> cachedDataPacket, WorldChunk chunk, CallbackInfo ci) {
-        ((WatchListener)chunk).addPlayer(player);
+        ((WatchListener)chunk).polymc$addPlayer(player);
     }
 
     @Inject(method = "sendWatchPackets(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/util/math/ChunkPos;Lorg/apache/commons/lang3/mutable/MutableObject;ZZ)V",
@@ -33,6 +33,6 @@ public abstract class WatchProviderMixin {
         var chunk = chunkHolder.getWorldChunk();
         if (chunk == null) return;
 
-        ((WatchListener)chunk).removePlayer(player);
+        ((WatchListener)chunk).polymc$removePlayer(player);
     }
 }

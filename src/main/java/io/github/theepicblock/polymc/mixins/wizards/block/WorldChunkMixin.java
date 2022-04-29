@@ -26,6 +26,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.*;
 import net.minecraft.world.gen.chunk.BlendingData;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -43,7 +44,7 @@ import java.util.Map;
 @Mixin(WorldChunk.class)
 public abstract class WorldChunkMixin extends Chunk implements WatchListener, WizardView {
     @Unique
-    private final PolyMapMap<Map<BlockPos,Wizard>> wizards = new PolyMapMap<>(this::createWizardsForChunk);
+    private final PolyMapMap<@NotNull Map<@NotNull BlockPos,@NotNull Wizard>> wizards = new PolyMapMap<>(this::createWizardsForChunk);
 
     @Shadow @Final World world;
 
@@ -75,10 +76,10 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
     }
 
     @Unique
-    private void processWizards(PolyMap polyMap, Palette<BlockState> palette, PaletteStorage data, int yOffset, Map<BlockPos,Wizard> wizardMap) {
+    private void processWizards(PolyMap polyMap, Palette<BlockState> palette, PaletteStorage data, int yOffset, Map<@NotNull BlockPos,@NotNull Wizard> wizardMap) {
         if (data.getSize() == 0) return;
 
-        if (palette.getSize() < 64) {
+        if (palette.getSize() < 256) {
             // The palette contains all block states present in the chunk
             var idsWithPolys = new BlockPoly[palette.getSize()];
             for (int i = 0; i < palette.getSize(); i++) {
@@ -103,7 +104,9 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                     for (int j = 0; j < elementsPerLong; ++j) {
                         var blockIndex = (int)(l & maxValue);
                         var poly = idsWithPolys[blockIndex];
-                        processBlock(polyMap, poly, i, yOffset, wizardMap);
+                        if (poly != null) {
+                            processBlock(polyMap, poly, i, yOffset, wizardMap);
+                        }
 
                         l >>= elementBits;
                         ++i;
@@ -116,7 +119,9 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                 for (int i = 0; i < data.getSize(); i++) {
                     var blockIndex = data.get(i);
                     var poly = idsWithPolys[blockIndex];
-                    processBlock(polyMap, poly, i, yOffset, wizardMap);
+                    if (poly != null) {
+                        processBlock(polyMap, poly, i, yOffset, wizardMap);
+                    }
                 }
             }
         } else {
@@ -135,7 +140,9 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                     for (int j = 0; j < elementsPerLong; ++j) {
                         var blockIndex = (int)(l & maxValue);
                         var poly = polyMap.getBlockPoly(palette.get(blockIndex).getBlock());
-                        processBlock(polyMap, poly, i, yOffset, wizardMap);
+                        if (poly != null && poly.hasWizard()) {
+                            processBlock(polyMap, poly, i, yOffset, wizardMap);
+                        }
 
                         l >>= elementBits;
                         ++i;
@@ -148,27 +155,32 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                 for (int i = 0; i < data.getSize(); i++) {
                     var blockIndex = data.get(i);
                     var poly = polyMap.getBlockPoly(palette.get(blockIndex).getBlock());
-                    processBlock(polyMap, poly, i, yOffset, wizardMap);
+                    if (poly != null && poly.hasWizard()) {
+                        processBlock(polyMap, poly, i, yOffset, wizardMap);
+                    }
                 }
             }
         }
     }
 
-    private void processBlock(PolyMap map, BlockPoly poly, int index, int yOffset, Map<BlockPos,Wizard> wizardMap) {
-        if (poly != null) {
-            BlockPos pos = Util.fromPalettedContainerIndex(index).add(this.pos.x * 16, yOffset, this.pos.z * 16);
-            try {
-                var wiz = poly.createWizard(new PlacedWizardInfo(pos, (ServerWorld)this.world));
-                ((WizardTickerDuck)this.world).polymc$addTicker(map, this.getPos(), wiz);
-                wizardMap.put(pos, wiz);
-            } catch (Throwable t) {
-                PolyMc.LOGGER.warn("Failed to create block wizard for block at "+pos+" | "+poly);
+    @Unique
+    private void processBlock(@NotNull PolyMap map, @NotNull BlockPoly poly, int index, int yOffset, @NotNull Map<@NotNull BlockPos,@NotNull Wizard> wizardMap) {
+        BlockPos pos = Util.fromPalettedContainerIndex(index).add(this.pos.x * 16, yOffset, this.pos.z * 16);
+        try {
+            var wiz = poly.createWizard(new PlacedWizardInfo(pos, (ServerWorld)this.world));
+            if (wiz == null) {
+                PolyMc.LOGGER.warn(poly+" is creating null wizards! This is bad!");
+                return;
             }
+            ((WizardTickerDuck)this.world).polymc$addTicker(map, this.getPos(), wiz);
+            wizardMap.put(pos, wiz);
+        } catch (Throwable t) {
+            PolyMc.LOGGER.warn("Failed to create block wizard for block at "+pos+" | "+poly);
         }
     }
 
     @Override
-    public void addPlayer(ServerPlayerEntity playerEntity) {
+    public void polymc$addPlayer(ServerPlayerEntity playerEntity) {
         PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
         this.wizards.get(map).values().forEach((wizard) -> {
             try {
@@ -180,7 +192,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
     }
 
     @Override
-    public void removePlayer(ServerPlayerEntity playerEntity) {
+    public void polymc$removePlayer(ServerPlayerEntity playerEntity) {
         PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
         this.wizards.get(map).values().forEach((wizard) -> {
             try {
@@ -192,7 +204,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
     }
 
     @Override
-    public void removeAllPlayers() {
+    public void polymc$removeAllPlayers() {
         var allPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)world, this.getPos());
         this.wizards.forEach((polyMap, wizardMap) -> {
             if (!wizardMap.isEmpty()) {
