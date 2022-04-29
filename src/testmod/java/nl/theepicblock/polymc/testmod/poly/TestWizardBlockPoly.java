@@ -1,6 +1,7 @@
 package nl.theepicblock.polymc.testmod.poly;
 
 import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.wizard.PlayerView;
 import io.github.theepicblock.polymc.api.wizard.VItem;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.api.wizard.WizardInfo;
@@ -38,9 +39,8 @@ public class TestWizardBlockPoly implements BlockPoly {
         }
 
         @Override
-        public void onMove() {
-            this.getPlayersWatchingChunk().forEach((player) -> item.move(player, this.getPosition(), (byte)0, (byte)0, true));
-            super.onMove();
+        public void onMove(PlayerView playerView) {
+            playerView.forEach((player) -> item.move(player, this.getPosition(), (byte)0, (byte)0, true));
         }
 
         @Override

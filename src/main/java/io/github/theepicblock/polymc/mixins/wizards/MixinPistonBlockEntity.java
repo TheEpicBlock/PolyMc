@@ -5,13 +5,13 @@ import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.poly.wizard.PistonWizardInfo;
+import io.github.theepicblock.polymc.impl.poly.wizard.PolyMapFilteredPlayerView;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.PistonBlockEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -60,7 +60,7 @@ public abstract class MixinPistonBlockEntity extends BlockEntity {
     @Inject(method = "setWorld(Lnet/minecraft/world/World;)V", at = @At("RETURN"))
     private void onInit(World world, CallbackInfo ci) {
         if (!world.isClient) {
-            ((ServerWorld)world).getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(new ChunkPos(this.getPos()), false).forEach((player) -> {
+            PolyMapFilteredPlayerView.getAll((ServerWorld)world, this.getPos()).forEach((player) -> {
                 Wizard wiz = wizards.get(PolyMapProvider.getPolyMap(player));
                 if (wiz != null) wiz.addPlayer(player);
             });
@@ -72,17 +72,22 @@ public abstract class MixinPistonBlockEntity extends BlockEntity {
         MixinPistonBlockEntity be = (MixinPistonBlockEntity)(Object)blockEntity;
         if (be == null) return;
 
+        var allNearbyPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)be.getWorld(), be.getPos());
         be.wizards.forEach((polyMap, wizard) -> {
             if (wizard == null) return;
-            wizard.onMove(); // Pistons move constantly
-            wizard.onTick();
+            var filteredView = new PolyMapFilteredPlayerView(allNearbyPlayers, polyMap);
+            wizard.onMove(filteredView); // Pistons move constantly
+            wizard.onTick(filteredView);
         });
     }
 
     @Inject(method = "markRemoved()V", at = @At("HEAD"))
     private void onRemove(CallbackInfo ci) {
+        if (!(this.getWorld() instanceof ServerWorld)) return;
+        var allNearbyPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)this.getWorld(), this.getPos());
         wizards.forEach((polyMap, wizard) -> {
-            if (wizard != null) wizard.onRemove();
+            var filteredView = new PolyMapFilteredPlayerView(allNearbyPlayers, polyMap);
+            if (wizard != null) wizard.onRemove(filteredView);
         });
     }
 }

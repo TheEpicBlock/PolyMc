@@ -5,6 +5,7 @@ import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.poly.wizard.EntityWizardInfo;
+import io.github.theepicblock.polymc.impl.poly.wizard.PolyMapFilteredPlayerView;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.server.network.EntityTrackerEntry;
@@ -39,11 +40,14 @@ public class EntityTrackerMixin {
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
+        // FIXME, use the list of listener inside ThreadedAnvilChunkStorage$EntityTracker
+        var allPlayers = PolyMapFilteredPlayerView.getAll(world, this.entity.getBlockPos());
         wizards.forEach((polyMap, wizard) -> {
             if (wizard == null) return;
+            var filteredView = new PolyMapFilteredPlayerView(allPlayers, polyMap);
             try {
-                wizard.onMove(); // TODO check if the entity actually moved
-                wizard.onTick();
+                wizard.onMove(filteredView); // TODO check if the entity actually moved
+                wizard.onTick(filteredView);
             } catch (Throwable t) {
                 PolyMc.LOGGER.error("Error ticking entity wizard");
                 t.printStackTrace();

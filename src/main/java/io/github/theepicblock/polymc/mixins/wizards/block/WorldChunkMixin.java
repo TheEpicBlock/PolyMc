@@ -10,7 +10,9 @@ import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
 import io.github.theepicblock.polymc.impl.mixin.WizardTickerDuck;
+import io.github.theepicblock.polymc.impl.poly.wizard.CachedPolyMapFilteredPlayerView;
 import io.github.theepicblock.polymc.impl.poly.wizard.PlacedWizardInfo;
+import io.github.theepicblock.polymc.impl.poly.wizard.PolyMapFilteredPlayerView;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -34,6 +36,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
@@ -190,23 +193,36 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
 
     @Override
     public void removeAllPlayers() {
-        this.wizards.values().forEach((wizardMap) -> wizardMap.values().forEach(wizard -> {
-            try {
-                wizard.removeAllPlayers();
-            } catch (Throwable t) {
-                PolyMc.LOGGER.error("Failed to remove all players from wizard "+wizard);
+        var allPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)world, this.getPos());
+        this.wizards.forEach((polyMap, wizardMap) -> {
+            if (!wizardMap.isEmpty()) {
+                var players = new CachedPolyMapFilteredPlayerView(allPlayers, polyMap); // The players nearby this chunk, for packet purposes
+                wizardMap.values().forEach(wizard -> {
+                    try {
+                        wizard.removeAllPlayers(players);
+                    } catch (Throwable t) {
+                        PolyMc.LOGGER.error("Failed to remove all players from wizard " + wizard);
+                    }
+                    ((WizardTickerDuck)this.world).polymc$removeTicker(wizard);
+                });
             }
-            ((WizardTickerDuck)this.world).polymc$removeTicker(wizard);
-        }));
+        });
         this.wizards.clear();
     }
 
     @Inject(method = "setBlockState", at = @At("TAIL"))
     private void onSet(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> cir) {
-        wizards.forEach((polyMap, wizardMap) -> {
+        List<ServerPlayerEntity> allPlayers = null;
+        for (var entry : wizards.entrySet()) {
+            var polyMap = entry.getKey();
+            var wizardMap = entry.getValue();
+
             Wizard oldWiz = wizardMap.remove(pos);
             if (oldWiz != null) {
-                oldWiz.onRemove();
+                if (allPlayers == null) {
+                    allPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)this.getWorld(), this.getPos());
+                }
+                oldWiz.onRemove(new PolyMapFilteredPlayerView(allPlayers, polyMap));
                 ((WizardTickerDuck)this.world).polymc$removeTicker(oldWiz);
             }
 
@@ -216,18 +232,22 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                     BlockPos ipos = pos.toImmutable();
                     Wizard wiz = poly.createWizard(new PlacedWizardInfo(ipos, (ServerWorld)this.world));
                     wizardMap.put(ipos, wiz);
-                    ((ServerWorld)this.getWorld()).getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(this.getPos()).forEach(player -> {
+                    if (allPlayers == null) {
+                        allPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)this.getWorld(), this.getPos());
+                    }
+
+                    allPlayers.forEach(player -> {
                         if (PolyMapProvider.getPolyMap(player) == polyMap) {
                             wiz.addPlayer(player);
                         }
                     });
                     ((WizardTickerDuck)this.world).polymc$addTicker(wiz);
                 } catch (Throwable t) {
-                    PolyMc.LOGGER.error("Failed to create block wizard for "+state.getBlock().getTranslationKey()+" | "+poly);
+                    PolyMc.LOGGER.error("Failed to create block wizard for " + state.getBlock().getTranslationKey() + " | " + poly);
                     t.printStackTrace();
                 }
             }
-        });
+        }
     }
 
     @Override
@@ -243,12 +263,13 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
     @Override
     public PolyMapMap<Wizard> removeWizards(BlockPos pos, boolean move) {
         PolyMapMap<Wizard> ret = new PolyMapMap<>(null);
+        var allPlayers = move ? null : PolyMapFilteredPlayerView.getAll((ServerWorld)this.getWorld(), this.getPos());
 
         this.wizards.forEach((polyMap, wizardMap) -> {
             Wizard wizard = wizardMap.remove(pos);
             if (wizard != null) {
                 try {
-                    if (!move) wizard.onRemove();
+                    if (!move) wizard.onRemove(new PolyMapFilteredPlayerView(allPlayers, polyMap));
                 } catch (Throwable t) {
                     PolyMc.LOGGER.error("Failed to remove wizard "+wizard);
                     t.printStackTrace();

@@ -1,6 +1,5 @@
 package io.github.theepicblock.polymc.api.wizard;
 
-import io.github.theepicblock.polymc.impl.misc.WatchListener;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -13,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public abstract class Wizard implements WatchListener {
+public abstract class Wizard {
     private WizardInfo info;
 
     public Wizard(WizardInfo info) {
@@ -27,19 +26,43 @@ public abstract class Wizard implements WatchListener {
         this.info = newInfo;
     }
 
-    public void onRemove() {
-        this.removeAllPlayers();
+
+    public abstract void addPlayer(ServerPlayerEntity playerEntity);
+
+    public abstract void removePlayer(ServerPlayerEntity playerEntity);
+
+    public void onRemove(PlayerView players) {
+        this.removeAllPlayers(players);
     }
 
-    @Override
-    public void removeAllPlayers() {
+    public void removeAllPlayers(PlayerView players) {
         //Default implementation.
-        this.getPlayersWatchingChunk().forEach(this::removePlayer);
+        players.forEach(this::removePlayer);
     }
 
+    public void onMove(PlayerView players) { this.onMove(); }
+
+    /**
+     * @deprecated use {@link #onMove(PlayerView)}
+     */
+    @Deprecated
     public void onMove() {}
 
+    /**
+     * This function is called every tick, as long as {@link #needsTicking()} is true.
+     * This function is called on the main thread, it's recommended to do any packet sending inside of {@link #update()}
+     */
+    public void onTick(PlayerView players) { this.onTick(); }
+
+    /**
+     * This function is called every tick, as long as {@link #needsTicking()} is true.
+     * This function is called on the main thread, it's recommended to do any packet sending inside of {@link #update()}
+     * @deprecated use {@link #onTick(PlayerView)}
+     */
+    @Deprecated
     public void onTick() {}
+
+    public void update(PlayerView players) {}
 
     public boolean needsTicking() {
         return false;
@@ -76,6 +99,7 @@ public abstract class Wizard implements WatchListener {
         return info.getWorld();
     }
 
+    @Deprecated
     public List<ServerPlayerEntity> getPlayersWatchingChunk() {
         return this.getWorld().getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(
                 new ChunkPos((int)this.getPosition().x >> 4, (int)this.getPosition().z >> 4), false);

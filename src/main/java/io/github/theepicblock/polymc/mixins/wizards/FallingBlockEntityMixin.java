@@ -6,6 +6,7 @@ import io.github.theepicblock.polymc.api.wizard.WizardView;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
 import io.github.theepicblock.polymc.impl.poly.wizard.FallingBlockWizardInfo;
+import io.github.theepicblock.polymc.impl.poly.wizard.PolyMapFilteredPlayerView;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -60,10 +61,12 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
 
     @Inject(method = "tick", at = @At("RETURN"))
     private void onTick(CallbackInfo ci) {
+        var allNearbyPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)this.getWorld(), this.getChunkPos());
         wizards.forEach(((polyMap, wizard) -> {
             if (wizard == null) return;
-            wizard.onMove(); // It is assumed that sand is constantly falling
-            wizard.onTick();
+            var filteredView = new PolyMapFilteredPlayerView(allNearbyPlayers, polyMap);
+            wizard.onMove(filteredView); // It is assumed that sand is constantly falling
+            wizard.onTick(filteredView);
         }));
     }
 
@@ -92,13 +95,6 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
         this.removePlayer(player);
     }
 
-    @Inject(method = "setRemoved(Lnet/minecraft/entity/Entity$RemovalReason;)V", at = @At("RETURN"))
-    private void onRemove(CallbackInfo ci) {
-        wizards.forEach(((polyMap, wizard) -> {
-            if (wizard != null) wizard.onRemove();
-        }));
-    }
-
     @Override
     public void addPlayer(ServerPlayerEntity playerEntity) {
         wizards.forEach(((polyMap, wizard) -> {
@@ -113,10 +109,21 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
         }));
     }
 
+    @Inject(method = "setRemoved(Lnet/minecraft/entity/Entity$RemovalReason;)V", at = @At("RETURN"))
+    private void onRemove(CallbackInfo ci) {
+        var allNearbyPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)this.getWorld(), this.getChunkPos());
+        wizards.forEach(((polyMap, wizard) -> {
+            var filteredView = new PolyMapFilteredPlayerView(allNearbyPlayers, polyMap);
+            if (wizard != null) wizard.onRemove(filteredView);
+        }));
+    }
+
     @Override
     public void removeAllPlayers() {
+        var allNearbyPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)this.getWorld(), this.getChunkPos());
         wizards.forEach(((polyMap, wizard) -> {
-            if (wizard != null) wizard.removeAllPlayers();
+            var filteredView = new PolyMapFilteredPlayerView(allNearbyPlayers, polyMap);
+            if (wizard != null) wizard.removeAllPlayers(filteredView);
         }));
     }
 }
