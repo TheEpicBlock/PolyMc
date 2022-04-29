@@ -18,13 +18,10 @@ public class PolyMapMap<K> extends Reference2ObjectArrayMap<PolyMap,K> {
 
     @Override
     public K get(Object k) {
-        K returnValue = super.get(k);
-
-        if (returnValue == null && builder != null) {
-            returnValue = builder.apply((PolyMap)k);
-            this.put((PolyMap)k, returnValue);
+        if (!this.containsKey(k)) {
+            this.put((PolyMap)k, builder.apply((PolyMap)k));
         }
 
-        return returnValue;
+        return super.get(k);
     }
 }
