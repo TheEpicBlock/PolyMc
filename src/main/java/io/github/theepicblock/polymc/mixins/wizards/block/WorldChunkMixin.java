@@ -103,7 +103,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                     for (int j = 0; j < elementsPerLong; ++j) {
                         var blockIndex = (int)(l & maxValue);
                         var poly = idsWithPolys[blockIndex];
-                        processBlock(poly, i, yOffset, wizardMap);
+                        processBlock(polyMap, poly, i, yOffset, wizardMap);
 
                         l >>= elementBits;
                         ++i;
@@ -116,7 +116,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                 for (int i = 0; i < data.getSize(); i++) {
                     var blockIndex = data.get(i);
                     var poly = idsWithPolys[blockIndex];
-                    processBlock(poly, i, yOffset, wizardMap);
+                    processBlock(polyMap, poly, i, yOffset, wizardMap);
                 }
             }
         } else {
@@ -135,7 +135,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                     for (int j = 0; j < elementsPerLong; ++j) {
                         var blockIndex = (int)(l & maxValue);
                         var poly = polyMap.getBlockPoly(palette.get(blockIndex).getBlock());
-                        processBlock(poly, i, yOffset, wizardMap);
+                        processBlock(polyMap, poly, i, yOffset, wizardMap);
 
                         l >>= elementBits;
                         ++i;
@@ -148,18 +148,18 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                 for (int i = 0; i < data.getSize(); i++) {
                     var blockIndex = data.get(i);
                     var poly = polyMap.getBlockPoly(palette.get(blockIndex).getBlock());
-                    processBlock(poly, i, yOffset, wizardMap);
+                    processBlock(polyMap, poly, i, yOffset, wizardMap);
                 }
             }
         }
     }
 
-    private void processBlock(BlockPoly poly, int index, int yOffset, Map<BlockPos,Wizard> wizardMap) {
+    private void processBlock(PolyMap map, BlockPoly poly, int index, int yOffset, Map<BlockPos,Wizard> wizardMap) {
         if (poly != null) {
             BlockPos pos = Util.fromPalettedContainerIndex(index).add(this.pos.x * 16, yOffset, this.pos.z * 16);
             try {
                 var wiz = poly.createWizard(new PlacedWizardInfo(pos, (ServerWorld)this.world));
-                ((WizardTickerDuck)this.world).polymc$addTicker(wiz);
+                ((WizardTickerDuck)this.world).polymc$addTicker(map, this.getPos(), wiz);
                 wizardMap.put(pos, wiz);
             } catch (Throwable t) {
                 PolyMc.LOGGER.warn("Failed to create block wizard for block at "+pos+" | "+poly);
@@ -203,7 +203,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                     } catch (Throwable t) {
                         PolyMc.LOGGER.error("Failed to remove all players from wizard " + wizard);
                     }
-                    ((WizardTickerDuck)this.world).polymc$removeTicker(wizard);
+                    ((WizardTickerDuck)this.world).polymc$removeTicker(polyMap, this.getPos(), wizard);
                 });
             }
         });
@@ -223,7 +223,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                     allPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)this.getWorld(), this.getPos());
                 }
                 oldWiz.onRemove(new PolyMapFilteredPlayerView(allPlayers, polyMap));
-                ((WizardTickerDuck)this.world).polymc$removeTicker(oldWiz);
+                ((WizardTickerDuck)this.world).polymc$removeTicker(polyMap, this.getPos(), oldWiz);
             }
 
             BlockPoly poly = polyMap.getBlockPoly(state.getBlock());
@@ -241,7 +241,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                             wiz.addPlayer(player);
                         }
                     });
-                    ((WizardTickerDuck)this.world).polymc$addTicker(wiz);
+                    ((WizardTickerDuck)this.world).polymc$addTicker(polyMap, this.getPos(), wiz);
                 } catch (Throwable t) {
                     PolyMc.LOGGER.error("Failed to create block wizard for " + state.getBlock().getTranslationKey() + " | " + poly);
                     t.printStackTrace();
@@ -274,7 +274,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                     PolyMc.LOGGER.error("Failed to remove wizard "+wizard);
                     t.printStackTrace();
                 }
-                ((WizardTickerDuck)this.world).polymc$removeTicker(wizard);
+                ((WizardTickerDuck)this.world).polymc$removeTicker(polyMap, this.getPos(), wizard);
                 ret.put(polyMap, wizard);
             }
         });
