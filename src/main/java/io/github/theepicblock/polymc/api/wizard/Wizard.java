@@ -7,6 +7,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,7 +63,11 @@ public abstract class Wizard {
     @Deprecated
     public void onTick() {}
 
-    public void update(PlayerView players) {}
+    /**
+     * An off-thread ticking method
+     */
+    @ApiStatus.Experimental
+    public void update(PlayerView players, UpdateInfo info) {}
 
     public boolean needsTicking() {
         return false;

@@ -31,6 +31,7 @@ import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.mixin.WizardTickerDuck;
 import io.github.theepicblock.polymc.impl.poly.wizard.CachedPolyMapFilteredPlayerView;
 import io.github.theepicblock.polymc.impl.poly.wizard.PolyMapFilteredPlayerView;
+import io.github.theepicblock.polymc.impl.poly.wizard.WizardUpdateThread;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -110,6 +111,8 @@ public class PolyMc implements ModInitializer {
         if (FabricLoader.getInstance().isModLoaded("imm_ptl_core")) {
             LOGGER.warn("PolyMc detected immersive portals. Keep in mind that the compat with IP is really quite janky. You're on your own");
         }
+
+        WizardUpdateThread.registerEvents();
 
         ServerTickEvents.END_WORLD_TICK.register(world -> ((WizardTickerDuck)world).polymc$getTickers()
                 .forEach((polyMap, wizardsPerPos) -> {
