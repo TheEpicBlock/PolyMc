@@ -15,7 +15,7 @@ import java.util.Set;
 
 public class WizardUpdateThread extends ReentrantThreadExecutor<Runnable> {
     public static WizardUpdateThread MAIN_THREAD = null;
-    private static final int MILLIS_PER_TICK = 1000/40;
+    private static final int MILLIS_PER_TICK = 1000/60;
 
     private final MinecraftServer server;
     public final Set<ServerWorld> worlds = new ObjectArraySet<>();
@@ -52,6 +52,7 @@ public class WizardUpdateThread extends ReentrantThreadExecutor<Runnable> {
         });
 
         ServerTickEvents.START_SERVER_TICK.register(server -> {
+            if (MAIN_THREAD == null) return;
             MAIN_THREAD.tickTime = server.getTicks();
             MAIN_THREAD.tickStart = System.nanoTime();
         });
@@ -60,9 +61,9 @@ public class WizardUpdateThread extends ReentrantThreadExecutor<Runnable> {
     public void start() {
         // Ran on the main thread
         server.getWorlds().forEach(this.worlds::add);
-        myThread.start();
         myThread.setDaemon(true);
         myThread.setName("PolyMc wizard updater");
+        myThread.start();
     }
 
     public void stop() {
@@ -87,7 +88,7 @@ public class WizardUpdateThread extends ReentrantThreadExecutor<Runnable> {
                 var tickers = ((WizardTickerDuck)world).polymc$getTickers();
                 tickers.forEach((polyMap, wizardsPerPos) -> {
                     wizardsPerPos.forEach((pos, wizards) -> {
-                        var playerView = new CachedPolyMapFilteredPlayerView(PolyMapFilteredPlayerView.getAll(world, pos), polyMap);
+                        var playerView = new CachedPolyMapFilteredPlayerView(PolyMapFilteredPlayerView.getAll(world, pos), polyMap); // FIXME this is *not* threadsafe
                         var updateInfo = new UpdateInfoImpl(this.tickTime, getTickDelta());
                         wizards.forEach(wizard -> wizard.update(playerView, updateInfo));
                     });
@@ -96,13 +97,13 @@ public class WizardUpdateThread extends ReentrantThreadExecutor<Runnable> {
 
             var tickStartMilli = this.tickStart / 1000000;
             try {
-                Thread.sleep(tickStartMilli + MILLIS_PER_TICK); // TODO more intelligent scheduling
+                Thread.sleep(MILLIS_PER_TICK); // TODO more intelligent scheduling
             } catch (InterruptedException ignored) {}
         }
     }
 
     private float getTickDelta() {
-        return (System.nanoTime()-this.tickStart) / 1000000000f;
+        return (System.nanoTime()-this.tickStart) / (1000000000f/20f);
     }
 
     @Override
@@ -131,12 +132,12 @@ public class WizardUpdateThread extends ReentrantThreadExecutor<Runnable> {
 
         @Override
         public int getTick() {
-            return 0;
+            return tick;
         }
 
         @Override
         public float getTickDelta() {
-            return 0;
+            return tickDelta;
         }
     }
 }
