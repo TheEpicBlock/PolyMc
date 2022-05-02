@@ -60,10 +60,16 @@ public abstract class MixinPistonBlockEntity extends BlockEntity {
     @Inject(method = "setWorld(Lnet/minecraft/world/World;)V", at = @At("RETURN"))
     private void onInit(World world, CallbackInfo ci) {
         if (!world.isClient) {
-            PolyMapFilteredPlayerView.getAll((ServerWorld)world, this.getPos()).forEach((player) -> {
+            var allPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)world, this.getPos());
+            allPlayers.forEach((player) -> {
                 Wizard wiz = wizards.get(PolyMapProvider.getPolyMap(player));
-                if (wiz != null) wiz.addPlayer(player);
             });
+            wizards.forEach(((polyMap, wizard) -> {
+                if (wizard == null) return;
+                var filteredView = new PolyMapFilteredPlayerView(allPlayers, polyMap);
+                wizard.addPlayer(filteredView);
+                filteredView.sendBatched();
+            }));
         }
     }
 
@@ -78,6 +84,7 @@ public abstract class MixinPistonBlockEntity extends BlockEntity {
             var filteredView = new PolyMapFilteredPlayerView(allNearbyPlayers, polyMap);
             wizard.onMove(filteredView); // Pistons move constantly
             wizard.onTick(filteredView);
+            filteredView.sendBatched();
         });
     }
 
@@ -88,6 +95,7 @@ public abstract class MixinPistonBlockEntity extends BlockEntity {
         wizards.forEach((polyMap, wizard) -> {
             var filteredView = new PolyMapFilteredPlayerView(allNearbyPlayers, polyMap);
             if (wizard != null) wizard.onRemove(filteredView);
+            filteredView.sendBatched();
         });
     }
 }

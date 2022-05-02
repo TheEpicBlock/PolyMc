@@ -121,6 +121,7 @@ public class PolyMc implements ModInitializer {
                         wizards.forEach(wizard -> {
                             wizard.onTick(playerView);
                         });
+                        playerView.sendBatched();
                     });
                 }));
     }

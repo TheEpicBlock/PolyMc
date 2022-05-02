@@ -13,6 +13,7 @@ import io.github.theepicblock.polymc.impl.mixin.WizardTickerDuck;
 import io.github.theepicblock.polymc.impl.poly.wizard.CachedPolyMapFilteredPlayerView;
 import io.github.theepicblock.polymc.impl.poly.wizard.PlacedWizardInfo;
 import io.github.theepicblock.polymc.impl.poly.wizard.PolyMapFilteredPlayerView;
+import io.github.theepicblock.polymc.impl.poly.wizard.SinglePlayerView;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -184,7 +185,9 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
         PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
         this.wizards.get(map).values().forEach((wizard) -> {
             try {
-               wizard.addPlayer(playerEntity);
+                var playerView = new SinglePlayerView(playerEntity);
+                wizard.addPlayer(playerView);
+                playerView.sendBatched();
             } catch (Throwable t) {
                 PolyMc.LOGGER.error("Failed to add player to wizard "+wizard);
             }
@@ -196,7 +199,9 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
         PolyMap map = PolyMapProvider.getPolyMap(playerEntity);
         this.wizards.get(map).values().forEach((wizard) -> {
             try {
-                wizard.removePlayer(playerEntity);
+                var playerView = new SinglePlayerView(playerEntity);
+                wizard.removePlayer(playerView);
+                playerView.sendBatched();
             } catch (Throwable t) {
                 PolyMc.LOGGER.error("Failed to remove player from wizard "+wizard);
             }
@@ -217,6 +222,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                     }
                     ((WizardTickerDuck)this.world).polymc$removeTicker(polyMap, this.getPos(), wizard);
                 });
+                players.sendBatched();
             }
         });
         this.wizards.clear();
@@ -234,7 +240,9 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                 if (allPlayers == null) {
                     allPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)this.getWorld(), this.getPos());
                 }
-                oldWiz.onRemove(new PolyMapFilteredPlayerView(allPlayers, polyMap));
+                var view = new PolyMapFilteredPlayerView(allPlayers, polyMap);
+                oldWiz.onRemove(view);
+                view.sendBatched();
                 ((WizardTickerDuck)this.world).polymc$removeTicker(polyMap, this.getPos(), oldWiz);
             }
 
@@ -248,11 +256,8 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                         allPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)this.getWorld(), this.getPos());
                     }
 
-                    allPlayers.forEach(player -> {
-                        if (PolyMapProvider.getPolyMap(player) == polyMap) {
-                            wiz.addPlayer(player);
-                        }
-                    });
+                    var filteredView = new PolyMapFilteredPlayerView(allPlayers, polyMap);
+                    wiz.addPlayer(filteredView);
                     ((WizardTickerDuck)this.world).polymc$addTicker(polyMap, this.getPos(), wiz);
                 } catch (Throwable t) {
                     PolyMc.LOGGER.error("Failed to create block wizard for " + state.getBlock().getTranslationKey() + " | " + poly);
@@ -281,7 +286,11 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
             Wizard wizard = wizardMap.remove(pos);
             if (wizard != null) {
                 try {
-                    if (!move) wizard.onRemove(new PolyMapFilteredPlayerView(allPlayers, polyMap));
+                    if (!move) {
+                        var view = new PolyMapFilteredPlayerView(allPlayers, polyMap);
+                        wizard.onRemove(view);
+                        view.sendBatched();
+                    }
                 } catch (Throwable t) {
                     PolyMc.LOGGER.error("Failed to remove wizard "+wizard);
                     t.printStackTrace();

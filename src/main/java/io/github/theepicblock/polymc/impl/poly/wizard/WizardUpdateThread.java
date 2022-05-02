@@ -91,6 +91,7 @@ public class WizardUpdateThread extends ReentrantThreadExecutor<Runnable> {
                         var playerView = new CachedPolyMapFilteredPlayerView(PolyMapFilteredPlayerView.getAll(world, pos), polyMap); // FIXME this is *not* threadsafe
                         var updateInfo = new UpdateInfoImpl(this.tickTime, getTickDelta());
                         wizards.forEach(wizard -> wizard.update(playerView, updateInfo));
+                        playerView.sendBatched();
                     });
                 });
             });

@@ -1,7 +1,6 @@
 package io.github.theepicblock.polymc.api.wizard;
 
 import net.minecraft.entity.EntityType;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
 
 /**
@@ -13,7 +12,7 @@ public interface VirtualEntity {
 
     int getId();
 
-    void spawn(ServerPlayerEntity playerEntity, Vec3d pos);
+    void spawn(PacketConsumer player, Vec3d pos);
 
-    void remove(ServerPlayerEntity playerEntity);
+    void remove(PacketConsumer player);
 }

@@ -6,6 +6,7 @@ import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.poly.wizard.EntityWizardInfo;
 import io.github.theepicblock.polymc.impl.poly.wizard.PolyMapFilteredPlayerView;
+import io.github.theepicblock.polymc.impl.poly.wizard.SinglePlayerView;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.server.network.EntityTrackerEntry;
@@ -52,6 +53,7 @@ public class EntityTrackerMixin {
                 PolyMc.LOGGER.error("Error ticking entity wizard");
                 t.printStackTrace();
             }
+            filteredView.sendBatched();
         });
     }
 
@@ -61,7 +63,9 @@ public class EntityTrackerMixin {
         var wizard = wizards.get(polymap);
         if (wizard != null) {
             try {
-                wizard.addPlayer(player);
+                var view = new SinglePlayerView(player);
+                wizard.addPlayer(view);
+                view.sendBatched();
             } catch (Throwable t) {
                 PolyMc.LOGGER.error("Error adding player to entity wizard");
                 t.printStackTrace();
@@ -75,7 +79,9 @@ public class EntityTrackerMixin {
         var wizard = wizards.get(polymap);
         if (wizard != null) {
             try {
-                wizard.removePlayer(player);
+                var view = new SinglePlayerView(player);
+                wizard.removePlayer(view);
+                view.sendBatched();
             } catch (Throwable t) {
                 PolyMc.LOGGER.error("Error removing player from entity wizard");
                 t.printStackTrace();

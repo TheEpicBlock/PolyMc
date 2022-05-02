@@ -7,6 +7,7 @@ import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
 import io.github.theepicblock.polymc.impl.poly.wizard.FallingBlockWizardInfo;
 import io.github.theepicblock.polymc.impl.poly.wizard.PolyMapFilteredPlayerView;
+import io.github.theepicblock.polymc.impl.poly.wizard.SinglePlayerView;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -67,6 +68,7 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
             var filteredView = new PolyMapFilteredPlayerView(allNearbyPlayers, polyMap);
             wizard.onMove(filteredView); // It is assumed that sand is constantly falling
             wizard.onTick(filteredView);
+            filteredView.sendBatched();
         }));
     }
 
@@ -98,14 +100,20 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
     @Override
     public void polymc$addPlayer(ServerPlayerEntity playerEntity) {
         wizards.forEach(((polyMap, wizard) -> {
-            if (wizard != null) wizard.addPlayer(playerEntity);
+            if (wizard == null) return;
+            var view = new SinglePlayerView(playerEntity);
+            wizard.addPlayer(view);
+            view.sendBatched();
         }));
     }
 
     @Override
     public void polymc$removePlayer(ServerPlayerEntity playerEntity) {
         wizards.forEach(((polyMap, wizard) -> {
-            if (wizard != null) wizard.removePlayer(playerEntity);
+            if (wizard == null) return;
+            var view = new SinglePlayerView(playerEntity);
+            wizard.removePlayer(view);
+            view.sendBatched();
         }));
     }
 
@@ -115,6 +123,7 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
         wizards.forEach(((polyMap, wizard) -> {
             var filteredView = new PolyMapFilteredPlayerView(allNearbyPlayers, polyMap);
             if (wizard != null) wizard.onRemove(filteredView);
+            filteredView.sendBatched();
         }));
     }
 
@@ -124,6 +133,7 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
         wizards.forEach(((polyMap, wizard) -> {
             var filteredView = new PolyMapFilteredPlayerView(allNearbyPlayers, polyMap);
             if (wizard != null) wizard.removeAllPlayers(filteredView);
+            filteredView.sendBatched();
         }));
     }
 }

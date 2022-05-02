@@ -28,37 +28,37 @@ public abstract class Wizard {
     }
 
 
-    public abstract void addPlayer(ServerPlayerEntity playerEntity);
+    public abstract void addPlayer(PacketConsumer player);
 
-    public abstract void removePlayer(ServerPlayerEntity playerEntity);
+    public abstract void removePlayer(PacketConsumer player);
 
-    public void onRemove(PlayerView players) {
+    public void onRemove(PacketConsumer players) {
         this.removeAllPlayers(players);
     }
 
-    public void removeAllPlayers(PlayerView players) {
+    public void removeAllPlayers(PacketConsumer players) {
         //Default implementation.
-        players.forEach(this::removePlayer);
+        this.removePlayer(players);
     }
 
-    public void onMove(PlayerView players) { this.onMove(); }
+    public void onMove(PacketConsumer players) { this.onMove(); }
 
     /**
-     * @deprecated use {@link #onMove(PlayerView)}
+     * @deprecated use {@link #onMove(PacketConsumer)}
      */
     @Deprecated
     public void onMove() {}
 
     /**
      * This function is called every tick, as long as {@link #needsTicking()} is true.
-     * This function is called on the main thread, it's recommended to do any packet sending inside of {@link #update()}
+     * This function is called on the main thread, it's recommended to do any packet sending inside of {@link #update(PacketConsumer, UpdateInfo)}
      */
-    public void onTick(PlayerView players) { this.onTick(); }
+    public void onTick(PacketConsumer players) { this.onTick(); }
 
     /**
      * This function is called every tick, as long as {@link #needsTicking()} is true.
-     * This function is called on the main thread, it's recommended to do any packet sending inside of {@link #update()}
-     * @deprecated use {@link #onTick(PlayerView)}
+     * This function is called on the main thread, it's recommended to do any packet sending inside of {@link #update(PacketConsumer, UpdateInfo)}
+     * @deprecated use {@link #onTick(PacketConsumer)}
      */
     @Deprecated
     public void onTick() {}
@@ -67,7 +67,7 @@ public abstract class Wizard {
      * An off-thread ticking method
      */
     @ApiStatus.Experimental
-    public void update(PlayerView players, UpdateInfo info) {}
+    public void update(PacketConsumer players, UpdateInfo info) {}
 
     public boolean needsTicking() {
         return false;

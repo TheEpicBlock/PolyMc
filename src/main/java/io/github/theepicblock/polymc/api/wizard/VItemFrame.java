@@ -6,14 +6,13 @@ import io.github.theepicblock.polymc.mixins.wizards.ItemFrameEntityAccessor;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 public class VItemFrame extends AbstractVirtualEntity {
-    public void spawn(ServerPlayerEntity playerEntity, Vec3d pos, Direction facing) {
-        playerEntity.networkHandler.sendPacket(new EntitySpawnS2CPacket(
+    public void spawn(PacketConsumer player, Vec3d pos, Direction facing) {
+        player.sendPacket(new EntitySpawnS2CPacket(
                 id,
                 MathHelper.randomUuid(),
                 pos.getX(),
@@ -27,15 +26,15 @@ public class VItemFrame extends AbstractVirtualEntity {
         ));
     }
 
-    public void sendItemStack(ServerPlayerEntity playerEntity, ItemStack stack) {
-        playerEntity.networkHandler.sendPacket(EntityUtil.createDataTrackerUpdate(
+    public void sendItemStack(PacketConsumer player, ItemStack stack) {
+        player.sendPacket(EntityUtil.createDataTrackerUpdate(
                 this.id,
                 ItemFrameEntityAccessor.getItemStackTracker(),
                 stack.copy()
         ));
     }
 
-    public void makeInvisible(ServerPlayerEntity playerEntity) {
+    public void makeInvisible(PacketConsumer playerEntity) {
         this.sendFlags(playerEntity,
                 false,
                 false,

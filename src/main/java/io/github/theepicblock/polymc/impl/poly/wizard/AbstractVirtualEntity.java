@@ -1,10 +1,9 @@
 package io.github.theepicblock.polymc.impl.poly.wizard;
 
+import io.github.theepicblock.polymc.api.wizard.PacketConsumer;
 import io.github.theepicblock.polymc.api.wizard.VirtualEntity;
 import io.github.theepicblock.polymc.mixins.wizards.EntityAccessor;
-import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
@@ -25,8 +24,8 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
     }
 
     @Override
-    public void spawn(ServerPlayerEntity playerEntity, Vec3d pos) {
-        playerEntity.networkHandler.sendPacket(new EntitySpawnS2CPacket(
+    public void spawn(PacketConsumer player, Vec3d pos) {
+        player.sendPacket(new EntitySpawnS2CPacket(
                 this.id,
                 MathHelper.randomUuid(),
                 pos.getX(),
@@ -40,8 +39,8 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
         ));
     }
 
-    public void spawn(ServerPlayerEntity playerEntity, Vec3d pos, float pitch, float yaw, int entityData, Vec3d velocity) {
-        playerEntity.networkHandler.sendPacket(new EntitySpawnS2CPacket(
+    public void spawn(PacketConsumer player, Vec3d pos, float pitch, float yaw, int entityData, Vec3d velocity) {
+        player.sendPacket(new EntitySpawnS2CPacket(
                 this.id,
                 MathHelper.randomUuid(),
                 pos.getX(),
@@ -55,12 +54,12 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
         ));
     }
 
-    public void move(ServerPlayerEntity playerEntity, Vec3d pos, byte yaw, byte pitch, boolean onGround) {
-        move(playerEntity, pos.getX(), pos.getY(), pos.getZ(), yaw, pitch, onGround);
+    public void move(PacketConsumer player, Vec3d pos, byte yaw, byte pitch, boolean onGround) {
+        move(player, pos.getX(), pos.getY(), pos.getZ(), yaw, pitch, onGround);
     }
 
-    public void move(ServerPlayerEntity playerEntity, double x, double y, double z, byte yaw, byte pitch, boolean onGround) {
-        playerEntity.networkHandler.sendPacket(EntityUtil.createEntityPositionPacket(
+    public void move(PacketConsumer player, double x, double y, double z, byte yaw, byte pitch, boolean onGround) {
+        player.sendPacket(EntityUtil.createEntityPositionPacket(
                 this.id,
                 x,
                 y,
@@ -71,12 +70,12 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
         ));
     }
 
-    public void sendVelocity(ServerPlayerEntity playerEntity, Vec3d velocity) {
-        sendVelocity(playerEntity, velocity.x, velocity.y, velocity.z);
+    public void sendVelocity(PacketConsumer player, Vec3d velocity) {
+        sendVelocity(player, velocity.x, velocity.y, velocity.z);
     }
 
-    public void sendVelocity(ServerPlayerEntity playerEntity, double x, double y, double z) {
-        playerEntity.networkHandler.sendPacket(EntityUtil.createEntityVelocityUpdate(
+    public void sendVelocity(PacketConsumer player, double x, double y, double z) {
+        player.sendPacket(EntityUtil.createEntityVelocityUpdate(
                 this.id,
                 (int)(MathHelper.clamp(x, -3.9, 3.9) * 8000.0),
                 (int)(MathHelper.clamp(x, -3.9, 3.9) * 8000.0),
@@ -85,10 +84,8 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
     }
 
     @Override
-    public void remove(ServerPlayerEntity playerEntity) {
-        playerEntity.networkHandler.sendPacket(
-                new EntitiesDestroyS2CPacket(this.id)
-        );
+    public void remove(PacketConsumer player) {
+        player.sendDeathPacket(this.id);
     }
 
     @Override
@@ -96,23 +93,23 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
         return this.id;
     }
 
-    public void setSilent(ServerPlayerEntity playerEntity, boolean isSilent) {
-        playerEntity.networkHandler.sendPacket(EntityUtil.createDataTrackerUpdate(
+    public void setSilent(PacketConsumer player, boolean isSilent) {
+        player.sendPacket(EntityUtil.createDataTrackerUpdate(
                 this.id,
                 EntityAccessor.getSilentTracker(),
                 isSilent
         ));
     }
 
-    public void setNoGravity(ServerPlayerEntity playerEntity, boolean noGrav) {
-        playerEntity.networkHandler.sendPacket(EntityUtil.createDataTrackerUpdate(
+    public void setNoGravity(PacketConsumer player, boolean noGrav) {
+        player.sendPacket(EntityUtil.createDataTrackerUpdate(
                 this.id,
                 EntityAccessor.getNoGravityTracker(),
                 noGrav
         ));
     }
 
-    public void sendFlags(ServerPlayerEntity playerEntity, boolean onFire, boolean sneaking, boolean sprinting, boolean swimming, boolean invisible, boolean glowing, boolean fallFlying) {
+    public void sendFlags(PacketConsumer player, boolean onFire, boolean sneaking, boolean sprinting, boolean swimming, boolean invisible, boolean glowing, boolean fallFlying) {
         byte flag = 0;
         if (onFire)     flag += 1 << 0;
         if (sneaking)   flag += 1 << 1;
@@ -122,7 +119,7 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
         if (glowing)    flag += 1 << 6;
         if (fallFlying) flag += 1 << 7;
 
-        playerEntity.networkHandler.sendPacket(EntityUtil.createDataTrackerUpdate(
+        player.sendPacket(EntityUtil.createDataTrackerUpdate(
                 this.id,
                 EntityAccessor.getFlagTracker(),
                 flag
