@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.impl.poly.wizard;
 
+import io.github.theepicblock.polymc.api.wizard.UpdateInfo;
 import io.github.theepicblock.polymc.api.wizard.WizardInfo;
 import io.github.theepicblock.polymc.mixins.wizards.PistonBlockEntityAccessor;
 import net.minecraft.block.BlockState;
@@ -22,6 +23,17 @@ public class PistonWizardInfo implements WizardInfo {
     public @NotNull Vec3d getPosition() {
         var accessor = (PistonBlockEntityAccessor)be;
         var d = accessor.callGetAmountExtended(accessor.getProgress());
+
+        return Vec3d.of(be.getPos()).add(
+                0.5+d*be.getFacing().getOffsetX(),
+                d*be.getFacing().getOffsetY(),
+                0.5+d*be.getFacing().getOffsetZ());
+    }
+
+    @Override
+    public @NotNull Vec3d getPosition(UpdateInfo info) {
+        var accessor = (PistonBlockEntityAccessor)be;
+        var d = accessor.callGetAmountExtended(be.getProgress(info.getTickDelta()));  // TODO ensure that the progress of the piston is threadsafe
 
         return Vec3d.of(be.getPos()).add(
                 0.5+d*be.getFacing().getOffsetX(),

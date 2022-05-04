@@ -11,6 +11,8 @@ import org.jetbrains.annotations.Nullable;
 public interface WizardInfo {
     @NotNull Vec3d getPosition();
 
+    @NotNull Vec3d getPosition(UpdateInfo info);
+
     @Nullable BlockPos getBlockPos();
 
     @Nullable BlockState getBlockState();

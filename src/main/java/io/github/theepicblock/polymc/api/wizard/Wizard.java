@@ -86,8 +86,18 @@ public abstract class Wizard {
     /**
      * @return the bottom center of this wizard's location. For a block this would be for example 11.5, 3, 45.5
      */
+    @ThreadedWizardUpdater.Unsafe // Purely for if I want to do some weird stuff with this method later
     public @NotNull Vec3d getPosition() {
         return info.getPosition();
+    }
+
+    /**
+     * @return the bottom center of this wizard's location. For a block this would be for example 11.5, 3, 45.5
+     */
+    @ApiStatus.Experimental
+    @ThreadedWizardUpdater.Safe
+    public @NotNull Vec3d getPosition(UpdateInfo uInfo) {
+        return info.getPosition(uInfo);
     }
 
     /**
