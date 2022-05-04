@@ -134,14 +134,7 @@ public class ThreadedWizardUpdater extends ReentrantThreadExecutor<Runnable> {
         return myThread;
     }
 
-    public class UpdateInfoImpl implements UpdateInfo {
-        private final int tick;
-        private final float tickDelta;
-
-        public UpdateInfoImpl(int tick, float tickDelta) {
-            this.tick = tick;
-            this.tickDelta = tickDelta;
-        }
+    public record UpdateInfoImpl(int tick, float tickDelta) implements UpdateInfo {
 
         @Override
         public int getTick() {

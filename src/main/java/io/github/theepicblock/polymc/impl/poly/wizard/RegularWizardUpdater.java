@@ -10,11 +10,14 @@ public class RegularWizardUpdater {
     }
 
     private static void tick(ServerWorld world) {
+        var tick = world.getServer().getTicks();
+        var updateInfo = new ThreadedWizardUpdater.UpdateInfoImpl(tick, 1); // Called at the end of the tick, therefore delta is 1
         ((WizardTickerDuck)world).polymc$getTickers()
                 .forEach((polyMap, wizardsPerPos) -> {
                     wizardsPerPos.forEach((pos, wizards) -> {
                         var playerView = new CachedPolyMapFilteredPlayerView(PolyMapFilteredPlayerView.getAll(world, pos), polyMap);
                         wizards.forEach(wizard -> {
+                            wizard.update(playerView, updateInfo);
                             wizard.onTick(playerView);
                         });
                         playerView.sendBatched();
