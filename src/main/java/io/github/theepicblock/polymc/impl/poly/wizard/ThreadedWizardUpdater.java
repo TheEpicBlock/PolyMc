@@ -13,8 +13,8 @@ import net.minecraft.util.thread.ReentrantThreadExecutor;
 
 import java.util.Set;
 
-public class WizardUpdateThread extends ReentrantThreadExecutor<Runnable> {
-    public static WizardUpdateThread MAIN_THREAD = null;
+public class ThreadedWizardUpdater extends ReentrantThreadExecutor<Runnable> {
+    public static ThreadedWizardUpdater MAIN = null;
     private static final int MILLIS_PER_TICK = 1000/60;
 
     private final MinecraftServer server;
@@ -24,38 +24,50 @@ public class WizardUpdateThread extends ReentrantThreadExecutor<Runnable> {
     private volatile int tickTime = 0;
     private volatile long tickStart = System.nanoTime(); // The time in milliseconds of when this tick started, used to calculate tick delta
 
-    public WizardUpdateThread(MinecraftServer server) {
+    public ThreadedWizardUpdater(MinecraftServer server) {
         super("PolyMc wizard updater");
         this.server = server;
     }
 
     public static void registerEvents() {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            var wizardTicker = new WizardUpdateThread(server);
+            var wizardTicker = new ThreadedWizardUpdater(server);
             wizardTicker.start();
-            MAIN_THREAD = wizardTicker;
+            MAIN = wizardTicker;
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
-            if (MAIN_THREAD == null) return;
-            MAIN_THREAD.stop();
+            if (MAIN == null) return;
+            MAIN.stop();
         });
 
         ServerWorldEvents.LOAD.register((server, world) -> {
-            if (MAIN_THREAD == null) return;
-            MAIN_THREAD.execute(() -> MAIN_THREAD.worlds.add(world));
+            if (MAIN == null) return;
+            MAIN.execute(() -> MAIN.worlds.add(world));
         });
 
         ServerWorldEvents.UNLOAD.register((server, world) -> {
-            if (MAIN_THREAD == null) return;
-            MAIN_THREAD.execute(() -> MAIN_THREAD.worlds.remove(world));
+            if (MAIN == null) return;
+            MAIN.execute(() -> MAIN.worlds.remove(world));
         });
 
         ServerTickEvents.START_SERVER_TICK.register(server -> {
-            if (MAIN_THREAD == null) return;
-            MAIN_THREAD.tickTime = server.getTicks();
-            MAIN_THREAD.tickStart = System.nanoTime();
+            if (MAIN == null) return;
+            MAIN.tickTime = server.getTicks();
+            MAIN.tickStart = System.nanoTime();
         });
+
+        // This calls the regular on tick method (not the update method). This is done on the main thread like normal
+        ServerTickEvents.END_WORLD_TICK.register(world -> ((WizardTickerDuck)world).polymc$getTickers()
+                .forEach((polyMap, wizardsPerPos) -> {
+                    wizardsPerPos.forEach((pos, wizards) -> {
+                        var playerView = new CachedPolyMapFilteredPlayerView(PolyMapFilteredPlayerView.getAll(world, pos), polyMap);
+                        wizards.forEach(wizard -> {
+                            wizard.onTick(playerView);
+                        });
+                        playerView.sendBatched();
+                    });
+                }));
     }
 
     public void start() {

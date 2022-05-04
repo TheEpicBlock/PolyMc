@@ -17,7 +17,6 @@
  */
 package io.github.theepicblock.polymc.impl;
 
-import com.google.common.collect.Iterators;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.theepicblock.polymc.PolyMc;
@@ -26,7 +25,6 @@ import io.github.theepicblock.polymc.impl.misc.PolyDumper;
 import io.github.theepicblock.polymc.impl.misc.logging.CommandSourceLogger;
 import io.github.theepicblock.polymc.impl.misc.logging.ErrorTrackerWrapper;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
-import io.github.theepicblock.polymc.impl.poly.wizard.WizardUpdateThread;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackGenerator;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.minecraft.item.ItemStack;
@@ -34,11 +32,9 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 
 import java.io.IOException;
-import java.util.List;
 
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -75,20 +71,6 @@ public class PolyMcCommands {
                                                 player.getInventory().setStack(i, new ItemStack(Items.RED_STAINED_GLASS_PANE, i));
                                             }
                                         }
-                                        return Command.SINGLE_SUCCESS;
-                                    }))
-                            .then(literal("resyncWizardThread")
-                                    .executes((context) -> {
-                                        if (WizardUpdateThread.MAIN_THREAD == null) {
-                                            WizardUpdateThread.MAIN_THREAD = new WizardUpdateThread(context.getSource().getServer());
-                                            WizardUpdateThread.MAIN_THREAD.start();
-                                        }
-
-                                        var worlds = Iterators.toArray(context.getSource().getServer().getWorlds().iterator(), ServerWorld.class);
-                                        WizardUpdateThread.MAIN_THREAD.execute(() -> {
-                                            WizardUpdateThread.MAIN_THREAD.worlds.clear();
-                                            WizardUpdateThread.MAIN_THREAD.worlds.addAll(List.of(worlds));
-                                        });
                                         return Command.SINGLE_SUCCESS;
                                     })))
                     .then(literal("generate")

@@ -36,5 +36,10 @@
     "add": {
       "remapVanillaBlockIds": false
     }
+  },
+  "8": {
+    "add": {
+      "enableWizardThreading": false
+    }
   }
 }

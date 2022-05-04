@@ -182,8 +182,4 @@ public class ConfigManager {
         }
         return config;
     }
-
-    public static class config_update {
-        private JsonElement add;
-    }
 }
