@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.impl.poly.wizard;
 
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.api.wizard.PacketConsumer;
 import io.github.theepicblock.polymc.api.wizard.UpdateInfo;
 import io.github.theepicblock.polymc.impl.mixin.WizardTickerDuck;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
@@ -10,7 +11,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
+import org.jetbrains.annotations.ApiStatus;
 
+import java.lang.annotation.*;
 import java.util.Set;
 
 public class ThreadedWizardUpdater extends ReentrantThreadExecutor<Runnable> {
@@ -145,5 +148,39 @@ public class ThreadedWizardUpdater extends ReentrantThreadExecutor<Runnable> {
         public float getTickDelta() {
             return tickDelta;
         }
+    }
+
+    /**
+     * Marks a method to be safe to call from a threaded context such as {@link io.github.theepicblock.polymc.api.wizard.Wizard#update(PacketConsumer, UpdateInfo)}
+     */
+    @Documented
+    @ApiStatus.Experimental
+    @Retention(RetentionPolicy.CLASS)
+    @Target({ElementType.METHOD})
+    public @interface Safe {
+
+    }
+
+    /**
+     * Marks a method to be kind of safe to call from a threaded context such as {@link io.github.theepicblock.polymc.api.wizard.Wizard#update(PacketConsumer, UpdateInfo)}
+     * Usually the method itself is safe to call, but there are some other things that aren't safe. These might be explained in the javadoc.
+     */
+    @Documented
+    @ApiStatus.Experimental
+    @Retention(RetentionPolicy.CLASS)
+    @Target({ElementType.METHOD})
+    public @interface KindaSafe {
+
+    }
+
+    /**
+     * Marks a method to be unsafe to call from a threaded context such as {@link io.github.theepicblock.polymc.api.wizard.Wizard#update(PacketConsumer, UpdateInfo)}
+     */
+    @Documented
+    @ApiStatus.Experimental
+    @Retention(RetentionPolicy.CLASS)
+    @Target({ElementType.METHOD})
+    public @interface Unsafe {
+
     }
 }
