@@ -66,6 +66,11 @@ public class Config {
             return true;
         }
 
+        if (!enableWizardThreading &&
+                mixin.equals("entity.RemoveTickerOnUnloadMixin")) {
+            return true;
+        }
+
         try {
             // Use `FabricRegistrySyncDisabler` for >=0.9.0 and `FabricRegistrySyncDisablerOld` for <0.9.0
             // If registry sync is not present both will be disabled

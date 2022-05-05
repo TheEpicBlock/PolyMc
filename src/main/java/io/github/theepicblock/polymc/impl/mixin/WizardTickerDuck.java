@@ -6,9 +6,15 @@ import net.minecraft.util.math.ChunkPos;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface WizardTickerDuck {
-    void polymc$addTicker(PolyMap polyMap, ChunkPos pos, Wizard wizard);
-    void polymc$removeTicker(PolyMap polyMap, ChunkPos pos, Wizard wizard);
-    Map<PolyMap, Map<ChunkPos, List<Wizard>>> polymc$getTickers();
+    void polymc$addBlockTicker(PolyMap polyMap, ChunkPos pos, Wizard wizard);
+    void polymc$removeBlockTicker(PolyMap polyMap, ChunkPos pos, Wizard wizard);
+    Map<PolyMap, Map<ChunkPos, List<Wizard>>> polymc$getBlockTickers();
+
+    // Entity tickers are only used in threaded mode
+    void polymc$addEntityTicker(PolyMap polyMap, Wizard wizard);
+    void polymc$removeEntityTicker(PolyMap polyMap, Wizard wizard);
+    Map<PolyMap, Set<Wizard>> polymc$getEntityTickers();
 }

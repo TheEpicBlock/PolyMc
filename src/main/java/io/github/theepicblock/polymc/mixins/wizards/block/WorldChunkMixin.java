@@ -173,7 +173,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                 PolyMc.LOGGER.warn(poly+" is creating null wizards! This is bad!");
                 return;
             }
-            ((WizardTickerDuck)this.world).polymc$addTicker(map, this.getPos(), wiz);
+            ((WizardTickerDuck)this.world).polymc$addBlockTicker(map, this.getPos(), wiz);
             wizardMap.put(pos, wiz);
         } catch (Throwable t) {
             PolyMc.LOGGER.warn("Failed to create block wizard for block at "+pos+" | "+poly);
@@ -220,7 +220,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                     } catch (Throwable t) {
                         PolyMc.LOGGER.error("Failed to remove all players from wizard " + wizard);
                     }
-                    ((WizardTickerDuck)this.world).polymc$removeTicker(polyMap, this.getPos(), wizard);
+                    ((WizardTickerDuck)this.world).polymc$removeBlockTicker(polyMap, this.getPos(), wizard);
                 });
                 players.sendBatched();
             }
@@ -243,7 +243,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                 var view = new PolyMapFilteredPlayerView(allPlayers, polyMap);
                 oldWiz.onRemove(view);
                 view.sendBatched();
-                ((WizardTickerDuck)this.world).polymc$removeTicker(polyMap, this.getPos(), oldWiz);
+                ((WizardTickerDuck)this.world).polymc$removeBlockTicker(polyMap, this.getPos(), oldWiz);
             }
 
             BlockPoly poly = polyMap.getBlockPoly(state.getBlock());
@@ -258,7 +258,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
 
                     var filteredView = new PolyMapFilteredPlayerView(allPlayers, polyMap);
                     wiz.addPlayer(filteredView);
-                    ((WizardTickerDuck)this.world).polymc$addTicker(polyMap, this.getPos(), wiz);
+                    ((WizardTickerDuck)this.world).polymc$addBlockTicker(polyMap, this.getPos(), wiz);
                 } catch (Throwable t) {
                     PolyMc.LOGGER.error("Failed to create block wizard for " + state.getBlock().getTranslationKey() + " | " + poly);
                     t.printStackTrace();
@@ -295,7 +295,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                     PolyMc.LOGGER.error("Failed to remove wizard "+wizard);
                     t.printStackTrace();
                 }
-                ((WizardTickerDuck)this.world).polymc$removeTicker(polyMap, this.getPos(), wizard);
+                ((WizardTickerDuck)this.world).polymc$removeBlockTicker(polyMap, this.getPos(), wizard);
                 ret.put(polyMap, wizard);
             }
         });

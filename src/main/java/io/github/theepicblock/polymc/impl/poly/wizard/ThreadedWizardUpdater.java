@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -61,7 +62,7 @@ public class ThreadedWizardUpdater extends ReentrantThreadExecutor<Runnable> {
         });
 
         // This calls the regular on tick method (not the update method). This is done on the main thread like normal
-        ServerTickEvents.END_WORLD_TICK.register(world -> ((WizardTickerDuck)world).polymc$getTickers()
+        ServerTickEvents.END_WORLD_TICK.register(world -> ((WizardTickerDuck)world).polymc$getBlockTickers()
                 .forEach((polyMap, wizardsPerPos) -> {
                     wizardsPerPos.forEach((pos, wizards) -> {
                         var playerView = new CachedPolyMapFilteredPlayerView(PolyMapFilteredPlayerView.getAll(world, pos), polyMap);
@@ -100,8 +101,16 @@ public class ThreadedWizardUpdater extends ReentrantThreadExecutor<Runnable> {
             }
 
             this.worlds.forEach(world -> {
-                var tickers = ((WizardTickerDuck)world).polymc$getTickers();
-                tickers.forEach((polyMap, wizardsPerPos) -> {
+
+                var entityUpdateInfo = new UpdateInfoImpl(this.tickTime, getTickDelta());
+                ((WizardTickerDuck)world).polymc$getEntityTickers().forEach((polyMap, wizards) -> {
+                    wizards.forEach(wizard -> {
+                        var playerView = new CachedPolyMapFilteredPlayerView(PolyMapFilteredPlayerView.getAll(world, new ChunkPos((int)wizard.getPosition().x >> 4, (int)wizard.getPosition().z >> 4)), polyMap); // FIXME this is *not* threadsafe
+                        wizard.update(playerView, entityUpdateInfo);
+                        playerView.sendBatched();
+                    });
+                });
+                ((WizardTickerDuck)world).polymc$getBlockTickers().forEach((polyMap, wizardsPerPos) -> {
                     wizardsPerPos.forEach((pos, wizards) -> {
                         var playerView = new CachedPolyMapFilteredPlayerView(PolyMapFilteredPlayerView.getAll(world, pos), polyMap); // FIXME this is *not* threadsafe
                         var updateInfo = new UpdateInfoImpl(this.tickTime, getTickDelta());
@@ -111,7 +120,6 @@ public class ThreadedWizardUpdater extends ReentrantThreadExecutor<Runnable> {
                 });
             });
 
-            var tickStartMilli = this.tickStart / 1000000;
             try {
                 Thread.sleep(MILLIS_PER_TICK); // TODO more intelligent scheduling
             } catch (InterruptedException ignored) {}

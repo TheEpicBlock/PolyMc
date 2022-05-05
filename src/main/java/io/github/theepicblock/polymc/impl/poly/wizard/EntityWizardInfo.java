@@ -25,13 +25,7 @@ public class EntityWizardInfo implements WizardInfo {
 
     @Override
     public @NotNull Vec3d getPosition(UpdateInfo info) {
-        var d = info.getTickDelta();
-        var d1 = 1-d;
-        return new Vec3d(
-                source.prevX * d1 + source.getX() * d,
-                source.prevY * d1 + source.getY() * d,
-                source.prevZ * d1 + source.getZ() * d
-        );
+        return source.getLerpedPos(info.getTickDelta());
     }
 
     @Override

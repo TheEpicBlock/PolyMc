@@ -1,10 +1,11 @@
-package io.github.theepicblock.polymc.mixins.wizards.block;
+package io.github.theepicblock.polymc.mixins.wizards;
 
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.impl.ConfigManager;
 import io.github.theepicblock.polymc.impl.mixin.WizardTickerDuck;
 import io.github.theepicblock.polymc.impl.poly.wizard.ThreadedWizardUpdater;
+import io.github.theepicblock.polymc.mixins.wizards.block.WorldChunkMixin;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
@@ -13,10 +14,7 @@ import net.minecraft.util.math.ChunkPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -26,17 +24,19 @@ import java.util.concurrent.ConcurrentHashMap;
 @Mixin(ServerWorld.class)
 public class WorldMixin implements WizardTickerDuck {
     @Unique
-    private final Map<PolyMap, Map<ChunkPos, List<Wizard>>> tickingWizards = new Reference2ObjectArrayMap<>();
+    private final Map<PolyMap, Map<ChunkPos, List<Wizard>>> blockTickers = new Reference2ObjectArrayMap<>();
+    @Unique // This field is only used in threaded mode
+    private final Map<PolyMap, Set<Wizard>> entityTickers = new Reference2ObjectArrayMap<>();
 
     @Override
-    public void polymc$addTicker(PolyMap polyMap, ChunkPos pos, Wizard wizard) {
+    public void polymc$addBlockTicker(PolyMap polyMap, ChunkPos pos, Wizard wizard) {
         if (ConfigManager.getConfig().enableWizardThreading) {
-            this.tickingWizards
+            this.blockTickers
                     .computeIfAbsent(polyMap, v -> new ConcurrentHashMap<>())
                     .computeIfAbsent(pos, v -> ObjectLists.synchronize(new ObjectArrayList<>()))
                     .add(wizard);
         } else {
-            this.tickingWizards
+            this.blockTickers
                     .computeIfAbsent(polyMap, v -> new HashMap<>())
                     .computeIfAbsent(pos, v -> new ArrayList<>())
                     .add(wizard);
@@ -44,8 +44,8 @@ public class WorldMixin implements WizardTickerDuck {
     }
 
     @Override
-    public void polymc$removeTicker(PolyMap polyMap, ChunkPos pos, Wizard wizard) {
-        var wizardsPerPos = this.tickingWizards.get(polyMap);
+    public void polymc$removeBlockTicker(PolyMap polyMap, ChunkPos pos, Wizard wizard) {
+        var wizardsPerPos = this.blockTickers.get(polyMap);
         if (wizardsPerPos == null) return;
 
         var wizardList = wizardsPerPos.get(pos);
@@ -56,7 +56,30 @@ public class WorldMixin implements WizardTickerDuck {
     }
 
     @Override
-    public Map<PolyMap, Map<ChunkPos, List<Wizard>>> polymc$getTickers() {
-        return tickingWizards;
+    public Map<PolyMap, Map<ChunkPos, List<Wizard>>> polymc$getBlockTickers() {
+        return blockTickers;
+    }
+
+    @Override
+    public void polymc$addEntityTicker(PolyMap map, Wizard wizard) {
+        if (ConfigManager.getConfig().enableWizardThreading) {
+            entityTickers.computeIfAbsent(map, v -> Collections.synchronizedSet(new HashSet<>()))
+                    .add(wizard);
+        }
+    }
+
+    @Override
+    public void polymc$removeEntityTicker(PolyMap map, Wizard wizard) {
+        if (ConfigManager.getConfig().enableWizardThreading) {
+            var set = entityTickers.get(map);
+            if (set != null) {
+                set.remove(wizard);
+            }
+        }
+    }
+
+    @Override
+    public Map<PolyMap, Set<Wizard>> polymc$getEntityTickers() {
+        return entityTickers;
     }
 }
