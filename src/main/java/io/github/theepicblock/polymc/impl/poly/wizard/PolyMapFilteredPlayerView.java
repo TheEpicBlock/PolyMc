@@ -33,6 +33,6 @@ public class PolyMapFilteredPlayerView extends AbstractPacketConsumer {
     }
 
     public static List<ServerPlayerEntity> getAll(ServerWorld world, ChunkPos pos) {
-        return world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(pos);
+        return world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(pos, false);
     }
 }
