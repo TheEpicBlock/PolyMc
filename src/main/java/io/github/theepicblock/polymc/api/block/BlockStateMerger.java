@@ -1,10 +1,16 @@
 package io.github.theepicblock.polymc.api.block;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.SlabType;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
 
+import java.util.function.BiFunction;
+
+/**
+ * It's recommended to read the comments inside the code of {@link io.github.theepicblock.polymc.impl.poly.block.FunctionBlockStatePoly#FunctionBlockStatePoly(Block, BiFunction, BlockStateMerger)}, which is where the merger will be used.
+ */
 @FunctionalInterface
 public interface BlockStateMerger {
     BlockStateMerger DEFAULT = new PropertyMerger<>(Properties.STAGE)
@@ -35,18 +41,18 @@ public interface BlockStateMerger {
             });
     BlockStateMerger ALL = (a) -> {
         for (var property : a.getProperties()) {
-            a = neutralizeProperty(a, property);
+            a = normalizeProperty(a, property);
         }
         return a;
     };
 
-    BlockState neutralize(BlockState b);
+    BlockState normalize(BlockState b);
 
     default BlockStateMerger combine(BlockStateMerger other) {
-        return (a) -> this.neutralize(other.neutralize(a));
+        return (a) -> this.normalize(other.normalize(a));
     }
 
-    static <T extends Comparable<T>> BlockState neutralizeProperty(BlockState state, Property<T> property) {
+    static <T extends Comparable<T>> BlockState normalizeProperty(BlockState state, Property<T> property) {
         return state.with(property, property.getValues().iterator().next());
     }
 }

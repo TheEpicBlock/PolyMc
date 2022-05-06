@@ -21,7 +21,7 @@ public class PropertyMerger<T extends Comparable<T>> implements BlockStateMerger
     }
 
     @Override
-    public BlockState neutralize(BlockState state) {
+    public BlockState normalize(BlockState state) {
         if (activation.test(state) && state.contains(property)) {
             return state.with(property, defaultValue);
         } else {

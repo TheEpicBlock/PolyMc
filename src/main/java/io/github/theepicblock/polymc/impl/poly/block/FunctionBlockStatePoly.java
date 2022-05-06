@@ -17,7 +17,9 @@
  */
 package io.github.theepicblock.polymc.impl.poly.block;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockStateMerger;
 import io.github.theepicblock.polymc.api.resource.ModdedResources;
@@ -55,34 +57,35 @@ public class FunctionBlockStatePoly implements BlockPoly {
          * @param merger function to use to merge block states which use the same model on the client
          */
     public FunctionBlockStatePoly(Block moddedBlock, BiFunction<BlockState, BooleanContainer, BlockState> registrationProvider, BlockStateMerger merger) {
-        var moddedStateGroups = new ArrayList<BlockStateGroup>();
-        var states = new HashMap<BlockState, BlockState>();
+        var server2ClientStates = new HashMap<BlockState, BlockState>();
 
-        // Sort all the modded states into groups
+        // Sort all the modded states into groups:
+        // Each group has one block state which is the canonical block state of that group,
+        // this canonical version is defined by a BlockStateMerger
+        // The BlockStateMerger's purpose is to remove all properties and stuff that don't change the model, for example
+        // the distance and persistence fields on leaves: the merger will normalize the distance property by setting it to 0.
+        // this way, all the different leaves will be grouped together under the [distance=0,persistent=false]
+        // Ofc, you might not want leaves to be grouped this way if you have different models for them,
+        // that's why the BlockStateMerger can be swapped out with a different one
+        Multimap<BlockState, BlockState> moddedStateGroups = HashMultimap.create();
         for (var moddedState : moddedBlock.getStateManager().getStates()) {
-            boolean foundGroup = false;
-            for (var group : moddedStateGroups) {
-                if (group.add(moddedState, merger)) {
-                    foundGroup = true;
-                    break;
-                }
-            }
-            if (!foundGroup) {
-                moddedStateGroups.add(new BlockStateGroup(moddedState, merger));
-            }
+            moddedStateGroups.put(merger.normalize(moddedState), moddedState);
         }
 
         var isUniqueCallback = new BooleanContainer();
-        for (var group : moddedStateGroups) {
+        moddedStateGroups.asMap().forEach((normalizedState, group) -> {
+            // Only call registrationProvider once for each normalized state,
+            // then we apply the result to all blocks in the group
             isUniqueCallback.set(false);
-            var clientState = registrationProvider.apply(group.getNeutralizedState(), isUniqueCallback);
-            for (var moddedState : group.getStates()) {
-                states.put(moddedState, clientState);
+            var clientState = registrationProvider.apply(normalizedState, isUniqueCallback);
+            for (var moddedState : group) {
+                server2ClientStates.put(moddedState, clientState);
             }
             if (isUniqueCallback.get()) uniqueClientBlocks.add(clientState);
-        }
 
-        this.states = ImmutableMap.copyOf(states);
+        });
+
+        this.states = ImmutableMap.copyOf(server2ClientStates);
     }
 
     @Override
