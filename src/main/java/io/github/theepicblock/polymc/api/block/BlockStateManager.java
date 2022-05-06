@@ -32,7 +32,7 @@ import java.util.function.Predicate;
 public class BlockStateManager {
     public static final SharedValuesKey<BlockStateManager> KEY = new SharedValuesKey<>(BlockStateManager::new, null);
 
-    private final Map<Block,Set<BlockState>> availableBlockStates = new HashMap<>();
+    private final Map<Block, List<BlockState>> availableBlockStates = new HashMap<>();
     private final PolyRegistry polyRegistry;
 
     public BlockStateManager(PolyRegistry polyRegistry) {
@@ -51,7 +51,7 @@ public class BlockStateManager {
         for (var block : searchSpace) {
             var availableStates = availableBlockStates.computeIfAbsent(block, (b) -> {
                 onFirstRegister.accept(b, this.polyRegistry);
-                return new LinkedHashSet<>(b.getStateManager().getStates());
+                return new LinkedList<>(b.getStateManager().getStates());
             });
 
             // Return first block state that matches `blockStatePredicate`
