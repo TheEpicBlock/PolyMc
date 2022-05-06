@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.impl;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
@@ -25,14 +26,22 @@ import io.github.theepicblock.polymc.impl.misc.PolyDumper;
 import io.github.theepicblock.polymc.impl.misc.logging.CommandSourceLogger;
 import io.github.theepicblock.polymc.impl.misc.logging.ErrorTrackerWrapper;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import io.github.theepicblock.polymc.impl.poly.wizard.PacketCountManager;
+import io.github.theepicblock.polymc.impl.poly.wizard.ThreadedWizardUpdater;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackGenerator;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 import java.io.IOException;
 
@@ -72,7 +81,11 @@ public class PolyMcCommands {
                                             }
                                         }
                                         return Command.SINGLE_SUCCESS;
-                                    })))
+                                    }))
+                            .then(literal("getWizardRestrictions")
+                                    .executes(context -> doGetWizardRestrictions(context, context.getSource().getPlayer()))
+                                    .then(CommandManager.argument("player", EntityArgumentType.player())
+                                            .executes(context -> doGetWizardRestrictions(context, EntityArgumentType.getPlayer(context, "player"))))))
                     .then(literal("generate")
                             .then(literal("resources")
                                     .executes((context -> {
@@ -128,5 +141,66 @@ public class PolyMcCommands {
                                         return Command.SINGLE_SUCCESS;
                                     }))));
         });
+    }
+
+    public static int doGetWizardRestrictions(CommandContext<ServerCommandSource> context, ServerPlayerEntity player) {
+        if (ConfigManager.getConfig().enableWizardThreading && !ThreadedWizardUpdater.MAIN.isOnThread()) {
+            ThreadedWizardUpdater.MAIN.executeSync(() -> doGetWizardRestrictions(context, player));
+        }
+
+        var trackerInfo = PacketCountManager.INSTANCE.getTrackerInfoForPlayer(player);
+        var source = context.getSource();
+
+        var headerColour = ConfigManager.getConfig().enableWizardThreading ? Formatting.GOLD : Formatting.AQUA;
+        source.sendFeedback(new LiteralText("=== Packet restriction info for ").formatted(headerColour)
+                .append(player.getDisplayName())
+                .append(new LiteralText(" ===").formatted(headerColour)), false);
+
+        var hoverTxt = new LiteralText("Target packet count: ").append(new LiteralText(PacketCountManager.MIN_PACKETS+"-"+PacketCountManager.MAX_PACKETS+" packets per tick").formatted(Formatting.AQUA));
+        source.sendFeedback(new LiteralText("Average packet count per tick: ")
+                .styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverTxt)))
+                .append(packetCount2Text(trackerInfo.calculateAveragePacketCount())), false);
+        var packetHistory = new LiteralText("History: [");
+        for (int i = 0; ; i++) {
+            packetHistory.append(packetCount2Text(trackerInfo.getPacketHistory()[i]));
+            if (i == trackerInfo.getPacketHistory().length-1) {
+                source.sendFeedback(packetHistory.append("]"), false);
+                break;
+            }
+            packetHistory.append(", ");
+        }
+
+        var restrictionLevelTxt = new LiteralText(String.valueOf(trackerInfo.getRestrictionLevel()));
+        if (trackerInfo.getRestrictionLevel() > PacketCountManager.MAX_RESTRICTION) {
+            restrictionLevelTxt.formatted(Formatting.DARK_PURPLE);
+        } else if (trackerInfo.getRestrictionLevel() > 8) {
+            restrictionLevelTxt.formatted(Formatting.RED);
+        } else if (trackerInfo.getRestrictionLevel() > 5) {
+            restrictionLevelTxt.formatted(Formatting.YELLOW);
+        } else {
+            restrictionLevelTxt.formatted(Formatting.DARK_GREEN);
+        }
+        source.sendFeedback(new LiteralText("Restriction level: ").append(restrictionLevelTxt), false);
+        source.sendFeedback(new LiteralText("Watch distance/radius: ").append(new LiteralText(PacketCountManager.INSTANCE.getWatchDistance()+"/"+PacketCountManager.INSTANCE.getWatchRadius()).formatted(Formatting.AQUA)), false);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static Text packetCount2Text(int count) {
+        var t = new LiteralText(String.valueOf(count));
+        if (count > PacketCountManager.MAX_PACKETS * 1.6) {
+            t.formatted(Formatting.RED);
+        } else if (count > PacketCountManager.MAX_PACKETS) {
+            t.formatted(Formatting.YELLOW);
+        } else if (count > PacketCountManager.MIN_PACKETS) {
+            t.formatted(Formatting.DARK_GREEN);
+        } else {
+            t.formatted(Formatting.GREEN);
+        }
+        var hoverText = new LiteralText("")
+                .append(t.copy().setStyle(t.getStyle()))
+                .append(new LiteralText(" packets per tick =  ").formatted(Formatting.RESET))
+                .append(new LiteralText(String.valueOf(count * 20)).setStyle(t.getStyle()))
+                .append(new LiteralText(" packets per second").formatted(Formatting.RESET));
+        return t.styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText)));
     }
 }

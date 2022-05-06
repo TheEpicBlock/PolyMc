@@ -41,5 +41,10 @@
     "add": {
       "enableWizardThreading": false
     }
+  },
+  "9": {
+    "add": {
+      "maxPacketsPerSecond": 600
+    }
   }
 }

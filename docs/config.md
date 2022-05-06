@@ -16,3 +16,6 @@ This will ensure vanilla blocks keep the right ids. Switch this to true if a mod
 
 ## enableWizardThreading
 Executes wizard updates on a different thread. This is experimental and *will crash* at this point in time. If you don't use add-on mods that add wizard you don't need to worry about this.
+
+## maxPacketsPerSecond
+Provides a rough estimate of the maximum amount of packets that should be sent per second. This isn't a hard limit.

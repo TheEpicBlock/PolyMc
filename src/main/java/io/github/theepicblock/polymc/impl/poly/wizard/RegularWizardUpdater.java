@@ -1,21 +1,17 @@
 package io.github.theepicblock.polymc.impl.poly.wizard;
 
 import io.github.theepicblock.polymc.api.PolyMap;
-import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
-import io.github.theepicblock.polymc.api.wizard.PacketConsumer;
+import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.impl.mixin.EntityTrackerEntryDuck;
 import io.github.theepicblock.polymc.impl.mixin.WizardTickerDuck;
 import io.github.theepicblock.polymc.mixins.TACSAccessor;
 import io.github.theepicblock.polymc.mixins.entity.EntityTrackerAccessor;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.network.Packet;
-import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
-import net.minecraft.server.world.EntityTrackingListener;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.ChunkPos;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public class RegularWizardUpdater {
     public static void registerEvents() {
@@ -25,58 +21,40 @@ public class RegularWizardUpdater {
     private static void tick(ServerWorld world) {
         var tick = world.getServer().getTicks();
         var updateInfo = new ThreadedWizardUpdater.UpdateInfoImpl(tick, 1); // Called at the end of the tick, therefore delta is 1
+        var packetCountManager = PacketCountManager.INSTANCE;
+        packetCountManager.updateWatchRadius(((TACSAccessor)world.getChunkManager().threadedAnvilChunkStorage).getWatchDistance());
 
         var entityTrackers = ((TACSAccessor)world.getChunkManager().threadedAnvilChunkStorage).getEntityTrackers();
+        int seed = 0;
         for (var tracker : entityTrackers.values()) {
             var trackerEntry = (EntityTrackerEntryDuck)((EntityTrackerAccessor)tracker).getEntry();
             var wizards = trackerEntry.polymc$getWizards();
             var listeners = ((EntityTrackerAccessor)tracker).getListeners();
-            wizards.forEach((polyMap, wizard) -> {
-                if (wizard == null) return;
-                var playerView = new EntityListenerPlayerView(listeners, polyMap);
+            for (Map.Entry<PolyMap,Wizard> entry : wizards.entrySet()) {
+                var polyMap = entry.getKey();
+                var wizard = entry.getValue();
+                if (wizard == null) continue;
+                var playerView = packetCountManager.getView(listeners, polyMap, ((EntityTrackerAccessor)tracker).getEntry().getLastPos(), tick, seed++);
                 wizard.update(playerView, updateInfo);
-            });
+                playerView.sendBatched();
+            }
         }
 
-        ((WizardTickerDuck)world).polymc$getBlockTickers()
-                .forEach((polyMap, wizardsPerPos) -> {
-                    wizardsPerPos.forEach((pos, wizards) -> {
-                        var playerView = new CachedPolyMapFilteredPlayerView(PolyMapFilteredPlayerView.getAll(world, pos), polyMap);
-                        wizards.forEach(wizard -> {
-                            wizard.update(playerView, updateInfo);
-                            wizard.onTick(playerView);
-                        });
-                        playerView.sendBatched();
-                    });
+        for (Map.Entry<PolyMap,Map<ChunkPos,List<Wizard>>> e : ((WizardTickerDuck)world).polymc$getBlockTickers().entrySet()) {
+            var polyMap = e.getKey();
+            var wizardsPerPos = e.getValue();
+            for (Map.Entry<ChunkPos,List<Wizard>> entry : wizardsPerPos.entrySet()) {
+                var pos = entry.getKey();
+                var wizards = entry.getValue();
+                var playerView = packetCountManager.getView(world, pos, polyMap, tick, seed++);
+                wizards.forEach(wizard -> {
+                    wizard.update(playerView, updateInfo);
+                    wizard.onTick(playerView);
                 });
-    }
-
-    public static class EntityListenerPlayerView implements PacketConsumer {
-        private final List<EntityTrackingListener> listeners;
-
-        public EntityListenerPlayerView(Set<EntityTrackingListener> listeners, PolyMap filter) {
-            this.listeners = new ArrayList<>();
-            for (var listener : listeners) {
-                if (PolyMapProvider.getPolyMap(listener.getPlayer()) == filter) {
-                    this.listeners.add(listener);
-                }
+                playerView.sendBatched();
             }
         }
 
-        @Override
-        public void sendPacket(Packet<?> packet) {
-            for (var listener : listeners) {
-                listener.sendPacket(packet);
-            }
-        }
-
-        @Override
-        public void sendDeathPacket(int id) {
-            this.sendPacket(new EntitiesDestroyS2CPacket(id));
-        }
-
-        @Override
-        public void sendBatched() {
-        }
+        packetCountManager.adjust(tick);
     }
 }

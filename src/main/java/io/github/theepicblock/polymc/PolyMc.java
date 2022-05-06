@@ -28,6 +28,7 @@ import io.github.theepicblock.polymc.impl.generator.Generator;
 import io.github.theepicblock.polymc.impl.misc.BlockIdRemapper;
 import io.github.theepicblock.polymc.impl.misc.logging.Log4JWrapper;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import io.github.theepicblock.polymc.impl.poly.wizard.PacketCountManager;
 import io.github.theepicblock.polymc.impl.poly.wizard.RegularWizardUpdater;
 import io.github.theepicblock.polymc.impl.poly.wizard.ThreadedWizardUpdater;
 import net.fabricmc.api.ModInitializer;
@@ -114,5 +115,7 @@ public class PolyMc implements ModInitializer {
         } else {
             RegularWizardUpdater.registerEvents();
         }
+
+        PacketCountManager.registerEvents();
     }
 }
