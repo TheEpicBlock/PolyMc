@@ -1,7 +1,7 @@
 package nl.theepicblock.polymc.testmod.poly;
 
 import io.github.theepicblock.polymc.api.block.BlockPoly;
-import io.github.theepicblock.polymc.api.wizard.PlayerView;
+import io.github.theepicblock.polymc.api.wizard.PacketConsumer;
 import io.github.theepicblock.polymc.api.wizard.VItem;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.api.wizard.WizardInfo;
@@ -11,7 +11,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.network.ServerPlayerEntity;
 
 public class TestWizardBlockPoly implements BlockPoly {
     @Override
@@ -39,20 +38,18 @@ public class TestWizardBlockPoly implements BlockPoly {
         }
 
         @Override
-        public void onMove(PlayerView playerView) {
-            playerView.forEach((player) -> item.move(player, this.getPosition(), (byte)0, (byte)0, true));
+        public void onMove(PacketConsumer players) {
+            item.move(players, this.getPosition(), (byte)0, (byte)0, true);
         }
 
         @Override
-        public void onTick() {
-            this.getPlayersWatchingChunk().forEach(player -> {
-                player.networkHandler.sendPacket(new ParticleS2CPacket(ParticleTypes.WAX_ON,
-                        false,
-                        this.getPosition().x,
-                        this.getPosition().y+0.5,
-                        this.getPosition().z,
-                        0, 0, 0, 0, 0));
-            });
+        public void onTick(PacketConsumer players) {
+            players.sendPacket(new ParticleS2CPacket(ParticleTypes.WAX_ON,
+                    false,
+                    this.getPosition().x,
+                    this.getPosition().y+0.5,
+                    this.getPosition().z,
+                    0, 0, 0, 0, 0));
         }
 
         @Override
@@ -61,15 +58,15 @@ public class TestWizardBlockPoly implements BlockPoly {
         }
 
         @Override
-        public void addPlayer(ServerPlayerEntity playerEntity) {
-            item.spawn(playerEntity, this.getPosition());
-            item.setNoGravity(playerEntity, true);
-            item.sendItem(playerEntity, ITEM);
+        public void addPlayer(PacketConsumer player) {
+            item.spawn(player, this.getPosition());
+            item.setNoGravity(player, true);
+            item.sendItem(player, ITEM);
         }
 
         @Override
-        public void removePlayer(ServerPlayerEntity playerEntity) {
-            item.remove(playerEntity);
+        public void removePlayer(PacketConsumer player) {
+            item.remove(player);
         }
     }
 }

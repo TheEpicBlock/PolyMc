@@ -28,11 +28,10 @@ import io.github.theepicblock.polymc.impl.generator.Generator;
 import io.github.theepicblock.polymc.impl.misc.BlockIdRemapper;
 import io.github.theepicblock.polymc.impl.misc.logging.Log4JWrapper;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
-import io.github.theepicblock.polymc.impl.mixin.WizardTickerDuck;
-import io.github.theepicblock.polymc.impl.poly.wizard.CachedPolyMapFilteredPlayerView;
-import io.github.theepicblock.polymc.impl.poly.wizard.PolyMapFilteredPlayerView;
+import io.github.theepicblock.polymc.impl.poly.wizard.PacketCountManager;
+import io.github.theepicblock.polymc.impl.poly.wizard.RegularWizardUpdater;
+import io.github.theepicblock.polymc.impl.poly.wizard.ThreadedWizardUpdater;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -111,14 +110,12 @@ public class PolyMc implements ModInitializer {
             LOGGER.warn("PolyMc detected immersive portals. Keep in mind that the compat with IP is really quite janky. You're on your own");
         }
 
-        ServerTickEvents.END_WORLD_TICK.register(world -> ((WizardTickerDuck)world).polymc$getTickers()
-                .forEach((polyMap, wizardsPerPos) -> {
-                    wizardsPerPos.forEach((pos, wizards) -> {
-                        var playerView = new CachedPolyMapFilteredPlayerView(PolyMapFilteredPlayerView.getAll(world, pos), polyMap);
-                        wizards.forEach(wizard -> {
-                            wizard.onTick(playerView);
-                        });
-                    });
-                }));
+        if (ConfigManager.getConfig().enableWizardThreading) {
+            ThreadedWizardUpdater.registerEvents();
+        } else {
+            RegularWizardUpdater.registerEvents();
+        }
+
+        PacketCountManager.registerEvents();
     }
 }

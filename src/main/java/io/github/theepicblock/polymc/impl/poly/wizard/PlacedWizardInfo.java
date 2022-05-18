@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.impl.poly.wizard;
 
+import io.github.theepicblock.polymc.api.wizard.UpdateInfo;
 import io.github.theepicblock.polymc.api.wizard.WizardInfo;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -26,18 +27,23 @@ public class PlacedWizardInfo implements WizardInfo {
     }
 
     @Override
+    public @NotNull Vec3d getPosition(UpdateInfo info) {
+        return this.position;
+    }
+
+    @Override
     public @Nullable BlockPos getBlockPos() {
         return this.blockPos;
     }
 
     @Override
     public @Nullable BlockState getBlockState() {
-        return this.getWorld().getBlockState(this.getBlockPos());
+        return this.world.getBlockState(this.getBlockPos());
     }
 
     @Override
     public @Nullable BlockEntity getBlockEntity() {
-        return this.getWorld().getBlockEntity(this.getBlockPos());
+        return this.world.getBlockEntity(this.getBlockPos());
     }
 
     @Override

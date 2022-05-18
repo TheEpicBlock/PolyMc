@@ -42,11 +42,13 @@ import java.util.List;
  */
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection", "JavadocReference"})
 public class Config {
-    public static final int LATEST_VERSION = 7;
+    public static final int LATEST_VERSION = 9;
     public MiscConfig misc;
     private int configVersion;
     private List<String> disabledMixins;
     public boolean remapVanillaBlockIds;
+    public boolean enableWizardThreading;
+    public int maxPacketsPerSecond;
 
     public int getConfigVersion() {
         return configVersion;
@@ -62,6 +64,11 @@ public class Config {
         if (misc.processSyncedBlockEventServerSide.size() == 0 &&
                    (mixin.equals("block.ProcessSyncedBlockEventServerSideImplementation") ||
                    mixin.equals("ServerParticlePatch"))) {
+            return true;
+        }
+
+        if (!enableWizardThreading &&
+                mixin.equals("entity.RemoveTickerOnUnloadMixin")) {
             return true;
         }
 
