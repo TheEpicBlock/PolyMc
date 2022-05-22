@@ -19,6 +19,7 @@ nav:
     - api/resources.md
     - api/wizards.md
     - api/misc.md
+  - blockstates.md
 
 theme:
   features:
@@ -40,7 +41,12 @@ theme:
 
 extra_css:
   - assets/extra.css
-  -
+
+extra_javascript:
+  - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
+  - https://unpkg.com/tablesort@5.3.0/dist/sorts/tablesort.number.min.js
+  - assets/table.js
+
 markdown_extensions:
   - abbr
   - admonition
