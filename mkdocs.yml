@@ -77,6 +77,9 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
+  - pymdownx.snippets
+  - mkpatcher:
+      location: docs/assets/states.py
 
 plugins:
   - redirects:

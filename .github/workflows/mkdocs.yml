@@ -16,6 +16,7 @@ jobs:
         with:
           python-version: 3.x
       - run: pip install mkdocs-material
+      - run: pip install "mkpatcher==1.0.2"
       - run: pip install "mkdocs-redirects>=1.0"
       - run: pip install mkdocs-git-revision-date-localized-plugin
       - run: mkdocs gh-deploy --force
