@@ -38,7 +38,7 @@ dependencies {
 		exclude(group: "net.fabricmc.fabric-api")
 		transitive(false)
 	}
-	modImplementation("com.github.qouteall.ImmersivePortalsMod:q_misc_util:${project.immersive_portals_version}"){
+	modCompileOnly("com.github.qouteall.ImmersivePortalsMod:q_misc_util:${project.immersive_portals_version}"){
 		exclude(group: "net.fabricmc.fabric-api")
 		transitive(false)
 	}
