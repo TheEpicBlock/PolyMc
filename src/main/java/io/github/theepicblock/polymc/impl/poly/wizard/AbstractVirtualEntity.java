@@ -35,7 +35,8 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
                 0,
                 this.getEntityType(),
                 0,
-                Vec3d.ZERO
+                Vec3d.ZERO,
+                0
         ));
     }
 
@@ -50,7 +51,8 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
                 yaw,
                 this.getEntityType(),
                 entityData,
-                velocity
+                velocity,
+                0
         ));
     }
 

@@ -42,10 +42,9 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.registry.Registry;
@@ -185,8 +184,8 @@ public class CustomModelDataPoly implements ItemPoly {
                     // This will only include the default attributes
                     var attributes = base.getAttributeModifiers(slotType);
                     if (!attributes.isEmpty()) {
-                        lore.add(toStr(LiteralText.EMPTY));
-                        lore.add(toStr(explicitlySetItalics((new TranslatableText("item.modifiers." + slotType.getName())).formatted(Formatting.GRAY))));
+                        lore.add(toStr(Text.empty()));
+                        lore.add(toStr(explicitlySetItalics((Text.translatable("item.modifiers." + slotType.getName())).formatted(Formatting.GRAY))));
                         for (var entry : attributes.entries()) {
                             var attributeModifier = entry.getValue();
                             double v = attributeModifier.getValue();
@@ -214,12 +213,12 @@ public class CustomModelDataPoly implements ItemPoly {
                             }
 
                             if (bl) {
-                                lore.add(toStr(explicitlySetItalics((new LiteralText(" ")).append(new TranslatableText("attribute.modifier.equals." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), new TranslatableText(entry.getKey().getTranslationKey()))).formatted(Formatting.DARK_GREEN))));
+                                lore.add(toStr(explicitlySetItalics((Text.literal(" ")).append(Text.translatable("attribute.modifier.equals." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), new TranslatableTextContent(entry.getKey().getTranslationKey()))).formatted(Formatting.DARK_GREEN))));
                             } else if (v > 0.0) {
-                                lore.add(toStr(explicitlySetItalics((new TranslatableText("attribute.modifier.plus." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), new TranslatableText(entry.getKey().getTranslationKey()))).formatted(Formatting.BLUE))));
+                                lore.add(toStr(explicitlySetItalics((Text.translatable("attribute.modifier.plus." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), new TranslatableTextContent(entry.getKey().getTranslationKey()))).formatted(Formatting.BLUE))));
                             } else if (v < 0.0) {
                                 e *= -1.0;
-                                lore.add(toStr(explicitlySetItalics((new TranslatableText("attribute.modifier.take." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), new TranslatableText(entry.getKey().getTranslationKey()))).formatted(Formatting.RED))));
+                                lore.add(toStr(explicitlySetItalics((Text.translatable("attribute.modifier.take." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), new TranslatableTextContent(entry.getKey().getTranslationKey()))).formatted(Formatting.RED))));
                             }
                         }
                     }

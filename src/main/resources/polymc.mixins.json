@@ -9,6 +9,7 @@
     "CustomPacketAccessor",
     "CustomPacketDisabler",
     "DisableCustomParticles",
+    "EntityTrackerEntryAccessor",
     "ItemStackAccessor",
     "RefreshPolyMapOnCopy",
     "ServerParticlePatch",

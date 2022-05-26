@@ -32,7 +32,8 @@ public class SoundPacketFix {
                         soundPacket.getCategory(),
                         new Vec3d(soundPacket.getX(), soundPacket.getY(), soundPacket.getZ()),
                         soundPacket.getVolume(),
-                        soundPacket.getPitch()
+                        soundPacket.getPitch(),
+                        soundPacket.getSeed()
                 );
             }
         }
