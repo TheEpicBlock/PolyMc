@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.impl.poly.wizard;
 
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.mixins.wizards.EntityAccessor;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.data.DataTracker;
@@ -19,6 +20,15 @@ public class EntityUtil {
 
     public static EntityPositionS2CPacket createEntityPositionPacket(
             int id, double x, double y, double z, byte yaw, byte pitch, boolean onGround) {
+        if (UnsafeEntityUtil.UNSAFE != null) {
+            try {
+                return UnsafeEntityUtil.createEntityPositionPacketUnsafe(id, x, y, z, yaw, pitch, onGround);
+            } catch (InstantiationException | IllegalAccessException e) {
+                PolyMc.LOGGER.warn("Exception whilst creating entity position packet. Attempting to recover");
+                e.printStackTrace();
+            }
+        }
+
         PacketByteBuf byteBuf = PacketByteBufs.create();
         byteBuf.writeVarInt(id);
         byteBuf.writeDouble(x);
@@ -32,6 +42,15 @@ public class EntityUtil {
     }
 
     public static EntityVelocityUpdateS2CPacket createEntityVelocityUpdate(int id, int x, int y, int z) {
+        if (UnsafeEntityUtil.UNSAFE != null) {
+            try {
+                return UnsafeEntityUtil.createEntityVelocityUpdateUnsafe(id, x, y, z);
+            } catch (InstantiationException | IllegalAccessException e) {
+                PolyMc.LOGGER.warn("Exception whilst creating entity velocity packet. Attempting to recover");
+                e.printStackTrace();
+            }
+        }
+
         PacketByteBuf byteBuf = PacketByteBufs.create();
         byteBuf.writeVarInt(id);
         byteBuf.writeShort(x);
