@@ -4,9 +4,9 @@ import io.github.theepicblock.polymc.api.resource.json.JBlockState;
 import io.github.theepicblock.polymc.api.resource.json.JModel;
 import io.github.theepicblock.polymc.api.resource.json.JSoundEventRegistry;
 import io.github.theepicblock.polymc.impl.resource.ResourceConstants;
-import io.github.theepicblock.polymc.impl.resource.json.JBlockStateWrapper;
-import io.github.theepicblock.polymc.impl.resource.json.JModelWrapper;
-import io.github.theepicblock.polymc.impl.resource.json.JSoundEventRegistryWrapper;
+import io.github.theepicblock.polymc.impl.resource.json.JBlockStateImpl;
+import io.github.theepicblock.polymc.impl.resource.json.JModelImpl;
+import io.github.theepicblock.polymc.impl.resource.json.JSoundEventRegistryImpl;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
@@ -35,13 +35,13 @@ public interface ResourceContainer {
      */
     default @Nullable JSoundEventRegistry getSoundRegistry(String namespace, String path) {
         var stream = getInputStream(namespace, path);
-        return stream == null ? null : new JSoundEventRegistryWrapper(stream, namespace+":"+path);
+        return stream == null ? null : JSoundEventRegistryImpl.of(stream, namespace+":"+path);
     }
 
     default @Nullable JBlockState getBlockState(String namespace, String block) {
         var path = ResourceConstants.blockstate(block);
         var stream = getInputStream(namespace, path);
-        return stream == null ? null : new JBlockStateWrapper(stream, namespace+":"+path);
+        return stream == null ? null : JBlockStateImpl.of(stream, namespace+":"+path);
     }
 
     default @Nullable JModel getItemModel(String namespace, String model) {
@@ -51,7 +51,7 @@ public interface ResourceContainer {
     default @Nullable JModel getModel(String namespace, String model) {
         var path = ResourceConstants.model(model);
         var stream = getInputStream(namespace, path);
-        return stream == null ? null : new JModelWrapper(stream, namespace+":"+path);
+        return stream == null ? null : JModelImpl.of(stream, namespace+":"+path);
     }
 
     @Nullable InputStream getInputStream(String namespace, String path);

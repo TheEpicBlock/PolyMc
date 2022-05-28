@@ -5,7 +5,7 @@ import io.github.theepicblock.polymc.api.resource.PolyMcAsset;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
-import io.github.theepicblock.polymc.impl.resource.json.JModelWrapper;
+import io.github.theepicblock.polymc.impl.resource.json.JModelImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,6 +70,6 @@ public interface JModel extends PolyMcAsset {
     @NotNull List<JModelOverride> getOverrides();
 
     static JModel create() {
-        return new JModelWrapper();
+        return new JModelImpl();
     }
 }

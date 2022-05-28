@@ -4,7 +4,7 @@ import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.api.resource.PolyMcAsset;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
-import io.github.theepicblock.polymc.impl.resource.json.JSoundEventRegistryWrapper;
+import io.github.theepicblock.polymc.impl.resource.json.JSoundEventRegistryImpl;
 
 import java.util.Map;
 
@@ -17,6 +17,6 @@ public interface JSoundEventRegistry extends PolyMcAsset {
     }
 
     static JSoundEventRegistry create() {
-        return new JSoundEventRegistryWrapper();
+        return new JSoundEventRegistryImpl();
     }
 }
