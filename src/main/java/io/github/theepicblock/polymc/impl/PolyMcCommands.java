@@ -99,7 +99,7 @@ public class PolyMcCommands {
                                         isGeneratingResources = true;
                                         new Thread(() -> {
                                             try {
-                                                var pack = PolyMc.getGeneratedMap().generateResourcePack(logger);
+                                                var pack = PolyMc.getMapForResourceGen().generateResourcePack(logger);
                                                 if (logger.errors != 0) {
                                                     commandSource.error("There have been errors whilst generating the resource pack. These are usually completely normal. It only means that PolyMc couldn't find some of the textures or models. See the console for more info.");
                                                 }
@@ -128,7 +128,7 @@ public class PolyMcCommands {
                                     .executes((context) -> {
                                         SimpleLogger logger = new CommandSourceLogger(context.getSource(), true);
                                         try {
-                                            PolyDumper.dumpPolyMap(PolyMc.getGeneratedMap(), "PolyDump.txt", logger);
+                                            PolyDumper.dumpPolyMap(PolyMc.getMapForResourceGen(), "PolyDump.txt", logger);
                                         } catch (IOException e) {
                                             logger.error(e.getMessage());
                                             return 0;

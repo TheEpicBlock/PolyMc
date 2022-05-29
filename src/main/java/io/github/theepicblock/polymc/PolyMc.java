@@ -85,6 +85,11 @@ public class PolyMc implements ModInitializer {
     }
 
     @Deprecated
+    public static PolyMap getMapForResourceGen() {
+        return getGeneratedMap();
+    }
+
+    @Deprecated
     @ApiStatus.Internal
     public static PolyMap getGeneratedMap() {
         if (map == null) {
