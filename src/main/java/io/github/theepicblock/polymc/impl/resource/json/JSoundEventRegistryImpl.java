@@ -27,7 +27,7 @@ public class JSoundEventRegistryImpl extends PolyMcAssetBase implements JSoundEv
         this.jsonRepresentation = new HashMap<>();
     }
 
-    public JSoundEventRegistryImpl(HashMap<String,JSoundEvent> jsonRepresentation) {
+    public JSoundEventRegistryImpl(Map<String,JSoundEvent> jsonRepresentation) {
         this.jsonRepresentation = jsonRepresentation;
     }
 
