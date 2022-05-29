@@ -6,19 +6,16 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.api.resource.json.*;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.resource.PolyMcAssetBase;
 import io.github.theepicblock.polymc.impl.resource.ResourceGenerationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.*;
 
-public class JModelImpl implements JModel {
+public class JModelImpl extends PolyMcAssetBase implements JModel {
     /**
      * If there's a credit field, keep it. We don't want to erase attribution
      */
@@ -128,10 +125,8 @@ public class JModelImpl implements JModel {
     }
 
     @Override
-    public void write(Path location, Gson gson) throws IOException {
+    public void writeToStream(OutputStream stream, Gson gson) throws IOException {
         this.sortOverrides();
-        var writer = new FileWriter(location.toFile(), StandardCharsets.UTF_8);
-        gson.toJson(this, writer);
-        writer.close();
+        gson.toJson(this, new OutputStreamWriter(stream, StandardCharsets.UTF_8));
     }
 }

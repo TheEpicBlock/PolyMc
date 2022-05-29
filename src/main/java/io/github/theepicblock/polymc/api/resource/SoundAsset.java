@@ -1,14 +1,13 @@
 package io.github.theepicblock.polymc.api.resource;
 
 import com.google.gson.Gson;
+import io.github.theepicblock.polymc.impl.resource.PolyMcAssetBase;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.io.OutputStream;
 
-public class SoundAsset implements PolyMcAsset {
+public class SoundAsset extends PolyMcAssetBase implements PolyMcAsset {
     private final InputStream inner;
 
     public SoundAsset(InputStream inner) {
@@ -16,7 +15,8 @@ public class SoundAsset implements PolyMcAsset {
     }
 
     @Override
-    public void write(Path location, Gson gson) throws IOException {
-        Files.copy(inner, location, StandardCopyOption.REPLACE_EXISTING);
+    public void writeToStream(OutputStream stream, Gson gson) throws IOException {
+        inner.transferTo(stream);
+        inner.close(); // TODO take a proper look at where things are closed
     }
 }

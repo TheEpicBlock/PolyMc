@@ -19,6 +19,7 @@ package io.github.theepicblock.polymc.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import io.github.theepicblock.polymc.PolyMc;
@@ -35,6 +36,7 @@ import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ModdedResourceContainerImpl;
+import io.github.theepicblock.polymc.impl.resource.PolyMcAssetBase;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackImplementation;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.fabricmc.loader.api.FabricLoader;
@@ -52,8 +54,10 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.JsonHelper;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -226,9 +230,10 @@ public class PolyMapImpl implements PolyMap {
         }
         // It doesn't actually matter which namespace the language files are under. We're just going to put them all under 'polymc-lang'
         languageKeys.forEach((path, translations) -> {
-            pack.setAsset("polymc-lang", path, (location, gson) -> {
-                try (var writer = new FileWriter(location.toFile(), StandardCharsets.UTF_8)) {
-                    gson.toJson(translations, writer);
+            pack.setAsset("polymc-lang", path, new PolyMcAssetBase() {
+                @Override
+                public void writeToStream(OutputStream stream, Gson gson) throws IOException {
+                    gson.toJson(translations, new OutputStreamWriter(stream));
                 }
             });
         });

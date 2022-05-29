@@ -6,22 +6,19 @@ import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.api.resource.json.JBlockState;
 import io.github.theepicblock.polymc.api.resource.json.JBlockStateVariant;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.resource.PolyMcAssetBase;
 import io.github.theepicblock.polymc.impl.resource.ResourceGenerationException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 @ApiStatus.Internal
-public class JBlockStateImpl implements JBlockState {
+public class JBlockStateImpl extends PolyMcAssetBase implements JBlockState {
     /**
      * If there's a credit field, keep it. We don't want to erase attribution
      */
@@ -85,9 +82,7 @@ public class JBlockStateImpl implements JBlockState {
     }
 
     @Override
-    public void write(Path location, Gson gson) throws IOException {
-        var writer = new FileWriter(location.toFile(), StandardCharsets.UTF_8);
-        gson.toJson(this, writer);
-        writer.close();
+    public void writeToStream(OutputStream stream, Gson gson) throws IOException {
+        gson.toJson(this, new OutputStreamWriter(stream, StandardCharsets.UTF_8));
     }
 }

@@ -7,22 +7,19 @@ import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.api.resource.json.JSoundEvent;
 import io.github.theepicblock.polymc.api.resource.json.JSoundEventRegistry;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.resource.PolyMcAssetBase;
 import io.github.theepicblock.polymc.impl.resource.ResourceGenerationException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
 @ApiStatus.Internal
-public class JSoundEventRegistryImpl implements JSoundEventRegistry {
+public class JSoundEventRegistryImpl extends PolyMcAssetBase implements JSoundEventRegistry {
     private static final Type TYPE = new TypeToken<Map<String,JSoundEventImpl>>() {}.getType();
     private Map<String, JSoundEvent> jsonRepresentation;
 
@@ -51,9 +48,7 @@ public class JSoundEventRegistryImpl implements JSoundEventRegistry {
     }
 
     @Override
-    public void write(Path location, Gson gson) throws IOException {
-        var writer = new FileWriter(location.toFile(), StandardCharsets.UTF_8);
-        gson.toJson(jsonRepresentation, writer);
-        writer.close();
+    public void writeToStream(OutputStream stream, Gson gson) throws IOException {
+        gson.toJson(jsonRepresentation, new OutputStreamWriter(stream, StandardCharsets.UTF_8));
     }
 }
