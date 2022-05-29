@@ -217,12 +217,12 @@ public class PolyMapImpl implements PolyMap {
             // Ignore fapi
             if (lang.getNamespace().equals("fabric")) continue;
             for (var stream : moddedResources.getInputStreams(lang.getNamespace(), lang.getPath())) {
-                try {
+                try (var streamReader = new InputStreamReader(stream, StandardCharsets.UTF_8)){
                     // Copy all of the language keys into the main map
-                    var languageObject = pack.getGson().fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), JsonObject.class);
+                    var languageObject = pack.getGson().fromJson(streamReader, JsonObject.class);
                     var mainLangMap = languageKeys.computeIfAbsent(lang.getPath(), (key) -> new HashMap<>());
                     languageObject.entrySet().forEach(entry -> mainLangMap.put(entry.getKey(), JsonHelper.asString(entry.getValue(), entry.getKey())));
-                } catch (JsonParseException e) {
+                } catch (JsonParseException | IOException e) {
                     logger.error("Couldn't parse lang file "+lang);
                     e.printStackTrace();
                 }

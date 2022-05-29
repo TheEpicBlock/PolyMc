@@ -10,23 +10,19 @@ import io.github.theepicblock.polymc.impl.resource.json.JSoundEventRegistryImpl;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
+import java.util.function.Supplier;
 
 public interface ResourceContainer {
     default @Nullable TextureAsset getTexture(String namespace, String texture) {
-        InputStream textureStream = getInputStream(namespace, ResourceConstants.texture(texture));
-
+        var textureStream = getInputStreamSupplier(namespace, ResourceConstants.texture(texture));
         if (textureStream == null) return null;
 
         var metaPath = ResourceConstants.textureMeta(texture);
-        if (this.containsAsset(namespace, metaPath)) {
-            return new TextureAsset(textureStream, getInputStream(namespace, metaPath));
-        } else {
-            return new TextureAsset(textureStream, null);
-        }
+        return new TextureAsset(textureStream, getInputStreamSupplier(namespace, metaPath));
     }
 
     default @Nullable SoundAsset getSound(String namespace, String sound) {
-        var stream = getInputStream(namespace, ResourceConstants.sound(sound));
+        var stream = getInputStreamSupplier(namespace, ResourceConstants.sound(sound));
         return stream == null ? null : new SoundAsset(stream);
     }
 
@@ -52,6 +48,14 @@ public interface ResourceContainer {
         var path = ResourceConstants.model(model);
         var stream = getInputStream(namespace, path);
         return stream == null ? null : JModelImpl.of(stream, namespace+":"+path);
+    }
+
+    default @Nullable Supplier<InputStream> getInputStreamSupplier(String namespace, String path) {
+        if (this.containsAsset(namespace, path)) {
+            return () -> getInputStream(namespace, path);
+        } else {
+            return null;
+        }
     }
 
     @Nullable InputStream getInputStream(String namespace, String path);

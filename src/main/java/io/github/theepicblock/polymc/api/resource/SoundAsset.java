@@ -6,17 +6,19 @@ import io.github.theepicblock.polymc.impl.resource.PolyMcAssetBase;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.function.Supplier;
 
 public class SoundAsset extends PolyMcAssetBase implements PolyMcAsset {
-    private final InputStream inner;
+    private final Supplier<InputStream> inner;
 
-    public SoundAsset(InputStream inner) {
+    public SoundAsset(Supplier<InputStream> inner) {
         this.inner = inner;
     }
 
     @Override
     public void writeToStream(OutputStream stream, Gson gson) throws IOException {
-        inner.transferTo(stream);
-        inner.close(); // TODO take a proper look at where things are closed
+        try (var iStream = inner.get()) {
+            iStream.transferTo(stream);
+        }
     }
 }

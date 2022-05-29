@@ -8,6 +8,7 @@ import io.github.theepicblock.polymc.api.resource.json.*;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.resource.PolyMcAssetBase;
 import io.github.theepicblock.polymc.impl.resource.ResourceGenerationException;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,13 +34,13 @@ public class JModelImpl extends PolyMcAssetBase implements JModel {
 
     }
 
+    @ApiStatus.Internal
     public static JModelImpl of(InputStream inputStream, @Nullable String name) {
-        try {
-            var jsonReader = new JsonReader(new InputStreamReader(inputStream));
+        try (var jsonReader = new JsonReader(new InputStreamReader(inputStream))) {
             jsonReader.setLenient(true);
 
             return Util.GSON.fromJson(jsonReader, JModelImpl.class);
-        } catch (JsonSyntaxException e) {
+        } catch (JsonSyntaxException | IOException e) {
             throw new ResourceGenerationException("Error reading model for "+name, e);
         }
     }

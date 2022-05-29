@@ -8,33 +8,36 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.function.Supplier;
 
 public class TextureAsset extends PolyMcAssetBase implements PolyMcAsset {
-    private final @NotNull InputStream texture;
-    private final @Nullable InputStream mcmeta;
+    private final @NotNull Supplier<InputStream> texture;
+    private final @Nullable Supplier<InputStream> mcmeta;
 
-    public TextureAsset(@NotNull InputStream inner, @Nullable InputStream mcmeta) {
+    public TextureAsset(@NotNull Supplier<InputStream> inner, @Nullable Supplier<InputStream> mcmeta) {
         this.texture = inner;
         this.mcmeta = mcmeta;
     }
 
     public @NotNull InputStream getTexture() {
-        return texture;
+        return texture.get();
     }
 
     @Override
     public void writeToStream(OutputStream stream, Gson gson) throws IOException {
-        texture.transferTo(stream);
-        texture.close(); // TODO take a proper look at where things are closed
+        try (var iStream = texture.get()) {
+            iStream.transferTo(stream);
+        }
     }
 
     @Override
     public void writeMetaToStream(StreamSupplier streamS, Gson gson) throws IOException {
         if (mcmeta != null) {
-            var stream = streamS.get();
-            mcmeta.transferTo(stream);
-            mcmeta.close(); // TODO take a proper look at where things are closed
-            stream.close();
+            try (var iStream = mcmeta.get()) {
+                var oStream = streamS.get();
+                iStream.transferTo(oStream);
+                oStream.close();
+            }
         }
     }
 }

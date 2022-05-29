@@ -31,13 +31,13 @@ public class JSoundEventRegistryImpl extends PolyMcAssetBase implements JSoundEv
         this.jsonRepresentation = jsonRepresentation;
     }
 
+    @ApiStatus.Internal
     public static JSoundEventRegistryImpl of(InputStream inputStream, @Nullable String name) {
-        try {
-            var jsonReader = new JsonReader(new InputStreamReader(inputStream));
+        try (var jsonReader = new JsonReader(new InputStreamReader(inputStream))) {
             jsonReader.setLenient(true);
 
             return new JSoundEventRegistryImpl(Util.GSON.fromJson(jsonReader, TYPE));
-        } catch (JsonSyntaxException e) {
+        } catch (JsonSyntaxException | IOException e) {
             throw new ResourceGenerationException("Error reading sound event registry for "+name, e);
         }
     }

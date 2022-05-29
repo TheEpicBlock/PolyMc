@@ -30,13 +30,13 @@ public class JBlockStateImpl extends PolyMcAssetBase implements JBlockState {
     public JBlockStateImpl() {
     }
 
+    @ApiStatus.Internal
     public static JBlockStateImpl of(InputStream inputStream, @Nullable String name) {
-        try {
-            var jsonReader = new JsonReader(new InputStreamReader(inputStream));
+        try (var jsonReader = new JsonReader(new InputStreamReader(inputStream));) {
             jsonReader.setLenient(true);
 
             return Util.GSON.fromJson(jsonReader, JBlockStateImpl.class);
-        } catch (JsonSyntaxException e) {
+        } catch (JsonSyntaxException | IOException e) {
             throw new ResourceGenerationException("Error reading block state definition for "+name, e);
         }
     }
