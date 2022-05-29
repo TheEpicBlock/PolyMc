@@ -10,6 +10,7 @@ import io.github.theepicblock.polymc.impl.resource.ResourceConstants;
 import io.github.theepicblock.polymc.impl.resource.json.JBlockStateImpl;
 import io.github.theepicblock.polymc.impl.resource.json.JModelImpl;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -129,6 +130,11 @@ public interface PolyMcResourcePack {
     @Nullable PolyMcAsset getAsset(String namespace, String path);
 
     void write(Path location, SimpleLogger logger);
+
+    /**
+     * @param consumer consumes the namespace, path and the asset of each asset in this resource pack
+     */
+    void forEachAsset(TriConsumer<String, String, PolyMcAsset> consumer);
 
     @NotNull Gson getGson();
 }

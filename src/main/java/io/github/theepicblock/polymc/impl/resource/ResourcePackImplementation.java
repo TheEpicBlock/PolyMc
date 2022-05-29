@@ -7,6 +7,7 @@ import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.api.resource.PolyMcAsset;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -40,19 +41,24 @@ public class ResourcePackImplementation implements PolyMcResourcePack {
     public void write(Path location, SimpleLogger logger) {
         var assetsFolder = location.resolve(ResourceConstants.ASSETS);
 
-        assets.forEach((namespace, innerMap) -> innerMap.forEach((path, asset) -> {
+        this.forEachAsset((namespace, path, asset) -> {
             var destination = assetsFolder.resolve(namespace).resolve(path);
             destination.getParent().toFile().mkdirs();
             try {
                 asset.write(destination, this.getGson());
             } catch (IOException e) {
-                e.printStackTrace();
                 logger.error("Error writing to "+destination);
-            } catch (Exception e) {
                 e.printStackTrace();
+            } catch (Exception e) {
                 logger.error("Unknown error whilst writing to "+destination);
+                e.printStackTrace();
             }
-        }));
+        });
+    }
+
+    @Override
+    public void forEachAsset(TriConsumer<String,String,PolyMcAsset> consumer) {
+        assets.forEach((namespace, innerMap) -> innerMap.forEach((path, asset) -> consumer.accept(namespace, path, asset)));
     }
 
     @Override
