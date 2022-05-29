@@ -233,7 +233,9 @@ public class PolyMapImpl implements PolyMap {
             pack.setAsset("polymc-lang", path, new PolyMcAssetBase() {
                 @Override
                 public void writeToStream(OutputStream stream, Gson gson) throws IOException {
-                    gson.toJson(translations, new OutputStreamWriter(stream));
+                    try (var writer = new OutputStreamWriter(stream)) {
+                        gson.toJson(translations, writer);
+                    }
                 }
             });
         });

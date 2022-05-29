@@ -128,6 +128,8 @@ public class JModelImpl extends PolyMcAssetBase implements JModel {
     @Override
     public void writeToStream(OutputStream stream, Gson gson) throws IOException {
         this.sortOverrides();
-        gson.toJson(this, new OutputStreamWriter(stream, StandardCharsets.UTF_8));
+        try (var writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
+            gson.toJson(this, writer);
+        }
     }
 }

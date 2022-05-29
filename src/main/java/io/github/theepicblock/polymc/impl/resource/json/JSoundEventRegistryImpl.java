@@ -49,6 +49,8 @@ public class JSoundEventRegistryImpl extends PolyMcAssetBase implements JSoundEv
 
     @Override
     public void writeToStream(OutputStream stream, Gson gson) throws IOException {
-        gson.toJson(jsonRepresentation, new OutputStreamWriter(stream, StandardCharsets.UTF_8));
+        try (var writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
+            gson.toJson(jsonRepresentation, writer);
+        }
     }
 }
