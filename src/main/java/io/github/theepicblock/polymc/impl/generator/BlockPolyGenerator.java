@@ -179,10 +179,10 @@ public class BlockPolyGenerator {
         }
 
         //=== NO COLLISION BLOCKS ===
-        if (collisionShape.isEmpty()) {
+        if (collisionShape.isEmpty() && !(moddedState.getBlock() instanceof WallBlock)) {
             var outlineShape = moddedState.getOutlineShape(fakeWorld, BlockPos.ORIGIN);
 
-            if (outlineShape.isEmpty() && !(moddedState.getBlock() instanceof WallBlock)) {
+            if (outlineShape.isEmpty()) {
                 try {
                     isUniqueCallback.set(true);
                     return manager.requestBlockState(BlockStateProfile.NO_COLLISION_WALL_PROFILE.and(
