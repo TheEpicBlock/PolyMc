@@ -49,7 +49,7 @@ public class UnsafeEntityUtil {
             epos_yaw = tryGet(EntityPositionS2CPacket.class, "field_12707", "B");
             epos_pitch = tryGet(EntityPositionS2CPacket.class, "field_12706", "B");
             epos_onground = tryGet(EntityPositionS2CPacket.class, "field_12704", "Z");
-            evol_id = tryGet(EntityVelocityUpdateS2CPacket.class, "id", "I");
+            evol_id = tryGet(EntityVelocityUpdateS2CPacket.class, "field_12564", "I");
             evol_x = tryGet(EntityVelocityUpdateS2CPacket.class, "field_12563", "I");
             evol_y = tryGet(EntityVelocityUpdateS2CPacket.class, "field_12562", "I");
             evol_z = tryGet(EntityVelocityUpdateS2CPacket.class, "field_12561", "I");
