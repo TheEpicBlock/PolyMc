@@ -175,6 +175,8 @@ public class PolyMapImpl implements PolyMap {
         var moddedResources = new ModdedResourceContainerImpl();
         var pack = new ResourcePackImplementation();
 
+        PolyMc.LOGGER.info("Using: "+moddedResources);
+
         //Let mods register resources via the api
         List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("polymc", PolyMcEntrypoint.class);
         for (PolyMcEntrypoint entrypointEntry : entrypoints) {

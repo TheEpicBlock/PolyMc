@@ -71,6 +71,11 @@ public class ModdedResourceContainerImpl implements ModdedResources {
     }
 
     @Override
+    public String toString() {
+        return inner.toString();
+    }
+
+    @Override
     public void close() throws Exception {
         inner.close();
         if (clientJar != null) {
