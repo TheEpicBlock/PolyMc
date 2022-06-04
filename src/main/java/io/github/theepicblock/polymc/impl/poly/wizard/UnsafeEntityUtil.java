@@ -54,20 +54,20 @@ public class UnsafeEntityUtil {
             evol_y = tryGet(EntityVelocityUpdateS2CPacket.class, "field_12562", "I");
             evol_z = tryGet(EntityVelocityUpdateS2CPacket.class, "field_12561", "I");
 
-            var test = createEntityPositionPacketUnsafe(123, 0.1, 0.2, 0.3, (byte)12, (byte)23, false);
-            assert test.getId() == 123;
-            assert test.getX() == 0.1;
-            assert test.getY() == 0.2;
-            assert test.getZ() == 0.3;
-            assert test.getYaw() == 12;
-            assert test.getPitch() == 23;
-            assert !test.isOnGround();
-
-            var test2 = createEntityVelocityUpdateUnsafe(124, 2, 1, 9);
-            assert test2.getId() == 124;
-            assert test2.getVelocityX() == 2;
-            assert test2.getVelocityY() == 1;
-            assert test2.getVelocityZ() == 9;
+//            var test = createEntityPositionPacketUnsafe(123, 0.1, 0.2, 0.3, (byte)12, (byte)23, false);
+//            assert test.getId() == 123;
+//            assert test.getX() == 0.1;
+//            assert test.getY() == 0.2;
+//            assert test.getZ() == 0.3;
+//            assert test.getYaw() == 12;
+//            assert test.getPitch() == 23;
+//            assert !test.isOnGround();
+//
+//            var test2 = createEntityVelocityUpdateUnsafe(124, 2, 1, 9);
+//            assert test2.getId() == 124;
+//            assert test2.getVelocityX() == 2;
+//            assert test2.getVelocityY() == 1;
+//            assert test2.getVelocityZ() == 9;
         } catch (Exception ex) {
             unsafe = null;
             epos_id = null;
