@@ -82,7 +82,11 @@ public class PacketCountManager {
 
     public void updateWatchRadius(int watchDistance) {
         this.watchDistance = watchDistance;
-        this.watchRadius = (watchDistance+3)*16;
+        this.watchRadius = getWatchRadiusFromDistance(watchDistance);
+    }
+
+    public static int getWatchRadiusFromDistance(int watchDistance) {
+        return (watchDistance+3)*16;
     }
 
     public PacketConsumer getView(Set<EntityTrackingListener> listeners, PolyMap map, Vec3d pos, int tick, int seed) {
@@ -122,14 +126,6 @@ public class PacketCountManager {
 
     public PlayerInfo getTrackerInfoForPlayer(ServerPlayerEntity player) {
         return playerTrackers.get(player);
-    }
-
-    public int getWatchDistance() {
-        return watchDistance;
-    }
-
-    public int getWatchRadius() {
-        return watchRadius;
     }
 
     public static class PlayerInfo {

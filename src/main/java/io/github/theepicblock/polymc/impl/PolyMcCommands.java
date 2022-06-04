@@ -29,6 +29,7 @@ import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.poly.wizard.PacketCountManager;
 import io.github.theepicblock.polymc.impl.poly.wizard.ThreadedWizardUpdater;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackGenerator;
+import io.github.theepicblock.polymc.mixins.TACSAccessor;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.item.ItemStack;
@@ -181,7 +182,8 @@ public class PolyMcCommands {
             restrictionLevelTxt.formatted(Formatting.DARK_GREEN);
         }
         source.sendFeedback(new LiteralText("Restriction level: ").append(restrictionLevelTxt), false);
-        source.sendFeedback(new LiteralText("Watch distance/radius: ").append(new LiteralText(PacketCountManager.INSTANCE.getWatchDistance()+"/"+PacketCountManager.INSTANCE.getWatchRadius()).formatted(Formatting.AQUA)), false);
+        var watchDistance = ((TACSAccessor)context.getSource().getWorld().getChunkManager().threadedAnvilChunkStorage).getWatchDistance();
+        source.sendFeedback(new LiteralText("Watch distance/radius: ").append(new LiteralText(watchDistance+"/"+PacketCountManager.getWatchRadiusFromDistance(watchDistance)).formatted(Formatting.AQUA)), false);
         return Command.SINGLE_SUCCESS;
     }
 

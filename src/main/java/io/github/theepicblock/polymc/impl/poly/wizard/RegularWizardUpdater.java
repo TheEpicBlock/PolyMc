@@ -16,6 +16,9 @@ import java.util.Map;
 public class RegularWizardUpdater {
     public static void registerEvents() {
         ServerTickEvents.END_WORLD_TICK.register(RegularWizardUpdater::tick);
+        ServerTickEvents.END_SERVER_TICK.register((server) -> {
+            PacketCountManager.INSTANCE.adjust(server.getTicks());
+        });
     }
 
     private static void tick(ServerWorld world) {
@@ -54,7 +57,5 @@ public class RegularWizardUpdater {
                 playerView.sendBatched();
             }
         }
-
-        packetCountManager.adjust(tick);
     }
 }
