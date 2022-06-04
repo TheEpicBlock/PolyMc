@@ -30,7 +30,7 @@ import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.poly.wizard.PacketCountManager;
 import io.github.theepicblock.polymc.impl.poly.wizard.ThreadedWizardUpdater;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackGenerator;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -54,7 +54,7 @@ public class PolyMcCommands {
     private static boolean isGeneratingResources = false;
 
     public static void registerCommands() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(literal("polymc").requires(source -> source.hasPermissionLevel(2))
                     .then(literal("debug")
                             .then(literal("clientItem")
