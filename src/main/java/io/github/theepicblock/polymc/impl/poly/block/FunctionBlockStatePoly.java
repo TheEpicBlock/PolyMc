@@ -17,8 +17,8 @@
  */
 package io.github.theepicblock.polymc.impl.poly.block;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockStateMerger;
@@ -67,7 +67,7 @@ public class FunctionBlockStatePoly implements BlockPoly {
         // this way, all the different leaves will be grouped together under the [distance=0,persistent=false]
         // Ofc, you might not want leaves to be grouped this way if you have different models for them,
         // that's why the BlockStateMerger can be swapped out with a different one
-        Multimap<BlockState, BlockState> moddedStateGroups = HashMultimap.create();
+        Multimap<BlockState, BlockState> moddedStateGroups = LinkedHashMultimap.create();
         for (var moddedState : moddedBlock.getStateManager().getStates()) {
             moddedStateGroups.put(merger.normalize(moddedState), moddedState);
         }
