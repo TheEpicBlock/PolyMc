@@ -2,6 +2,8 @@ package io.github.theepicblock.polymc.api.block;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.DoorBlock;
+import net.minecraft.block.TrapdoorBlock;
 import net.minecraft.block.enums.SlabType;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
@@ -17,7 +19,7 @@ public interface BlockStateMerger {
             .combine(new PropertyMerger<>(Properties.DISTANCE_1_7))
             .combine(new PropertyMerger<>(Properties.DISTANCE_0_7))
             .combine(new PropertyMerger<>(Properties.AGE_15))
-            .combine(new PropertyMerger<>(Properties.POWERED))
+            .combine(new PropertyMerger<>(Properties.POWERED, state -> state.getBlock() instanceof DoorBlock || state.getBlock() instanceof TrapdoorBlock))
             .combine(new PropertyMerger<>(Properties.TRIGGERED))
             .combine(new PropertyMerger<>(Properties.PERSISTENT))
             .combine(new PropertyMerger<>(Properties.NOTE))
