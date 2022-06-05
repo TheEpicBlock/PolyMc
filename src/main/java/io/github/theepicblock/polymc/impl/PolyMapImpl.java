@@ -59,6 +59,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -263,12 +264,24 @@ public class PolyMapImpl implements PolyMap {
     public String dumpDebugInfo() {
         StringBuilder builder = new StringBuilder();
         builder.append("###########\n## ITEMS ##\n###########\n");
-        this.itemPolys.forEach((item, poly) -> {
-            addDebugProviderToDump(builder, item, item.getTranslationKey(), poly);
+        this.itemPolys
+                .entrySet()
+                .stream()
+                .sorted(Comparator.comparing(item -> item.getKey().getTranslationKey()))
+                .forEach(entry -> {
+                    var item = entry.getKey();
+                    var poly = entry.getValue();
+                    addDebugProviderToDump(builder, item, item.getTranslationKey(), poly);
         });
         builder.append("############\n## BLOCKS ##\n############\n");
-        this.blockPolys.forEach((block, poly) -> {
-            addDebugProviderToDump(builder, block, block.getTranslationKey(), poly);
+        this.blockPolys
+                .entrySet()
+                .stream()
+                .sorted(Comparator.comparing(block -> block.getKey().getTranslationKey()))
+                .forEach(entry -> {
+                    var block = entry.getKey();
+                    var poly = entry.getValue();
+                    addDebugProviderToDump(builder, block, block.getTranslationKey(), poly);
         });
         return builder.toString();
     }
