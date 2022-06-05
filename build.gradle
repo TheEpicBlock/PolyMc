@@ -22,6 +22,12 @@ repositories {
 			includeGroup("nl.theepicblock")
 		}
 	}
+	maven {
+		url "https://maven.nucleoid.xyz"
+		content {
+			includeGroup("xyz.nucleoid")
+		}
+	}
 }
 
 dependencies {
@@ -30,7 +36,9 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
 	modImplementation include("nl.theepicblock:resource-locator-api:${project.resource_lookup_api_version}")
+	modImplementation include("xyz.nucleoid:packet-tweaker:${project.packet_tweaker_version}")
 
 	// Compat
 	modCompileOnly "com.github.CaffeineMC.lithium-fabric:lithium:${project.lithium_version}"

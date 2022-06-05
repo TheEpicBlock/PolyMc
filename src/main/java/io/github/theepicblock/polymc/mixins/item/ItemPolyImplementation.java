@@ -19,13 +19,13 @@ package io.github.theepicblock.polymc.mixins.item;
 
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.mixin.ItemLocationStaticHack;
-import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 /**
  * This is the class responsible for replacing the serverside items with the clientside items
@@ -34,7 +34,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 public class ItemPolyImplementation {
     @ModifyVariable(method = "writeItemStack(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/network/PacketByteBuf;", at = @At("HEAD"), argsOnly = true)
     public ItemStack writeItemStackHook(ItemStack itemStack) {
-        ServerPlayerEntity player = PlayerContextContainer.retrieve(this);
+        ServerPlayerEntity player = PacketContext.get().getTarget();
         var map = Util.tryGetPolyMap(player);
         return map.getClientItem(itemStack, player, ItemLocationStaticHack.location.get());
     }

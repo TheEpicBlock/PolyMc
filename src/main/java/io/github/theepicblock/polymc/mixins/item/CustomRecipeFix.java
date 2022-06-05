@@ -18,19 +18,13 @@
 package io.github.theepicblock.polymc.mixins.item;
 
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
-import io.github.theepicblock.polymc.mixins.context.ByteBufPlayerContextContainer;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.Recipe;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.registry.Registry;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -41,33 +35,13 @@ import java.util.stream.Collectors;
  * This fix prevents those from being sent
  */
 @Mixin(SynchronizeRecipesS2CPacket.class)
-public class CustomRecipeFix implements PlayerContextContainer {
-    @Unique private ServerPlayerEntity player;
-
-    @Override
-    public ServerPlayerEntity getPolyMcProvidedPlayer() {
-        return player;
-    }
-
-    @Override
-    public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
-        player = v;
-    }
-
-    /**
-     * @see ByteBufPlayerContextContainer
-     */
-    @Inject(method = "write(Lnet/minecraft/network/PacketByteBuf;)V", at = @At("HEAD"))
-    private void writeInject(PacketByteBuf buf, CallbackInfo ci) {
-        ((PlayerContextContainer)buf).setPolyMcProvidedPlayer(player);
-    }
-
+public class CustomRecipeFix {
     /**
      * Modifies the recipes to remove custom serializers (which will crash vanilla clients).
      */
     @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeCollection(Ljava/util/Collection;Ljava/util/function/BiConsumer;)V"))
     public Collection<Recipe<?>> modifyRecipes(Collection<Recipe<?>> input) {
-        if (!Util.isPolyMapVanillaLike(player)) {
+        if (!Util.isPolyMapVanillaLike(PacketContext.get().getTarget())) {
             return input;
         }
 

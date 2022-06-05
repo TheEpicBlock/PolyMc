@@ -18,35 +18,20 @@
 package io.github.theepicblock.polymc.mixins.block.implementations;
 
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 /**
  * This packet writes the raw id of the updated {@link BlockState} to itself.
- * {@link io.github.theepicblock.polymc.mixins.context.NetworkHandlerContextProvider} will provide the player context to this packet via {@link #setPolyMcProvidedPlayer(ServerPlayerEntity)}
  */
 @Mixin(BlockUpdateS2CPacket.class)
-public class BlockUpdateImplementation implements PlayerContextContainer {
-    @Unique private ServerPlayerEntity player;
-
-    @Override
-    public ServerPlayerEntity getPolyMcProvidedPlayer() {
-        return player;
-    }
-
-    @Override
-    public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
-        player = v;
-    }
-
+public class BlockUpdateImplementation {
     @Redirect(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getRawIdFromState(Lnet/minecraft/block/BlockState;)I"))
     public int getRawIdFromStateRedirect(BlockState state) {
-        return Util.getPolydRawIdFromState(state, this.player);
+        return Util.getPolydRawIdFromState(state, PacketContext.get().getTarget());
     }
 }

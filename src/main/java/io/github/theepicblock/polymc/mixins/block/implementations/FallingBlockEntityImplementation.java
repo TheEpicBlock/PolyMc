@@ -1,7 +1,6 @@
 package io.github.theepicblock.polymc.mixins.block.implementations;
 
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
 import net.minecraft.network.PacketByteBuf;
@@ -13,6 +12,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 @Mixin(EntitySpawnS2CPacket.class)
 public class FallingBlockEntityImplementation {
@@ -23,8 +23,7 @@ public class FallingBlockEntityImplementation {
     private void redirectEntityData(PacketByteBuf buf, CallbackInfo ci) {
         if (this.entityTypeId == EntityType.FALLING_BLOCK) {
             var block = Block.getStateFromRawId(this.entityData);
-            // This class implements `PlayerContextContainer` and the player context will be set by another mixin
-            this.entityData = Util.getPolydRawIdFromState(block, ((PlayerContextContainer)this).getPolyMcProvidedPlayer());
+            this.entityData = Util.getPolydRawIdFromState(block, PacketContext.get().getTarget());
         }
     }
 }

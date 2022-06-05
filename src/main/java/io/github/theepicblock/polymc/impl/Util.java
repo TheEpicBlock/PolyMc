@@ -204,7 +204,7 @@ public class Util {
      * @see PolyMap#isVanillaLikeMap()
      */
     public static boolean isPolyMapVanillaLike(ServerPlayerEntity client) {
-        return PolyMapProvider.getPolyMap(client).isVanillaLikeMap();
+        return tryGetPolyMap(client).isVanillaLikeMap();
     }
 
     public static BlockPos fromPalettedContainerIndex(int index) {

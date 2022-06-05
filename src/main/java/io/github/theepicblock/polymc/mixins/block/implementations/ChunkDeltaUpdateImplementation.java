@@ -18,31 +18,17 @@
 package io.github.theepicblock.polymc.mixins.block.implementations;
 
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.mixin.PlayerContextContainer;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.packet.s2c.play.ChunkDeltaUpdateS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 @Mixin(ChunkDeltaUpdateS2CPacket.class)
-public class ChunkDeltaUpdateImplementation implements PlayerContextContainer {
-    @Unique private ServerPlayerEntity player;
-
-    @Override
-    public ServerPlayerEntity getPolyMcProvidedPlayer() {
-        return player;
-    }
-
-    @Override
-    public void setPolyMcProvidedPlayer(ServerPlayerEntity v) {
-        player = v;
-    }
-
+public class ChunkDeltaUpdateImplementation {
     @Redirect(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getRawIdFromState(Lnet/minecraft/block/BlockState;)I"))
     public int getRawIdFromStateRedirect(BlockState state) {
-        return Util.getPolydRawIdFromState(state, this.player);
+        return Util.getPolydRawIdFromState(state, PacketContext.get().getTarget());
     }
 }
