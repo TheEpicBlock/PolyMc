@@ -19,9 +19,6 @@ package io.github.theepicblock.polymc.impl;
 
 import com.google.gson.JsonObject;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.Version;
-import net.fabricmc.loader.api.VersionParsingException;
-import net.fabricmc.loader.api.metadata.version.VersionComparisonOperator;
 
 import java.util.List;
 
@@ -72,29 +69,15 @@ public class Config {
             return true;
         }
 
-        try {
-            // Use `FabricRegistrySyncDisabler` for >=0.9.0 and `FabricRegistrySyncDisablerOld` for <0.9.0
-            // If registry sync is not present both will be disabled
-            if (mixin.equals("compat.FabricRegistrySyncDisabler")) {
-                var regSync = FabricLoader.getInstance().getModContainer("fabric-registry-sync-v0");
-                if (regSync.isEmpty()) return true;
-                return VersionComparisonOperator.LESS.test(regSync.get().getMetadata().getVersion(), Version.parse("0.9.0"));
-            }
+        if (mixin.equals("compat.FabricRegistrySyncDisabler")) {
+            return FabricLoader.getInstance().isModLoaded("fabric-registry-sync-v0");
+        }
 
-            if (mixin.equals("compat.FabricRegistrySyncDisablerOld")) {
-                var regSync = FabricLoader.getInstance().getModContainer("fabric-registry-sync-v0");
-                if (regSync.isEmpty()) return true;
-                return VersionComparisonOperator.GREATER_EQUAL.test(regSync.get().getMetadata().getVersion(), Version.parse("0.9.0"));
-            }
-
-            if (mixin.startsWith("compat.immersive_portals")) {
-                return !FabricLoader.getInstance().isModLoaded("imm_ptl_core");
-            }
-            if (mixin.equals("block.implementations.ChunkDataPlayerProvider") || mixin.equals("wizards.block.WatchProviderMixin")) {
-                return FabricLoader.getInstance().isModLoaded("imm_ptl_core");
-            }
-        } catch (VersionParsingException e) {
-            throw new RuntimeException(e);
+        if (mixin.startsWith("compat.immersive_portals")) {
+            return !FabricLoader.getInstance().isModLoaded("imm_ptl_core");
+        }
+        if (mixin.equals("block.implementations.ChunkDataPlayerProvider") || mixin.equals("wizards.block.WatchProviderMixin")) {
+            return FabricLoader.getInstance().isModLoaded("imm_ptl_core");
         }
 
         return false;

@@ -35,7 +35,6 @@
     "block.implementations.WriteRegistryValueImplementation",
     "block.implementations.ZombieBreakDoorImplementation",
     "compat.FabricRegistrySyncDisabler",
-    "compat.FabricRegistrySyncDisablerOld",
     "compat.immersive_portals.ChunkDataSyncManagerMixin",
     "entity.DisableCustomEntities",
     "entity.EntityTrackerAccessor",
