@@ -1,14 +1,14 @@
 package nl.theepicblock.polymc.testmod;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.*;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.registry.Registry;
@@ -57,7 +57,7 @@ public class Testmod implements ModInitializer {
     }
 
     public static void debugSend(@Nullable PlayerEntity playerEntity, String text) {
-        if (playerEntity != null) playerEntity.sendMessage(new LiteralText(text), false);
+        if (playerEntity != null) playerEntity.sendMessage(Text.literal(text), false);
     }
 
     private static void registerBlock(Identifier id, Block block) {

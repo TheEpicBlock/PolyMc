@@ -8,7 +8,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.screen.slot.Slot;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
@@ -23,8 +22,8 @@ public class TestItem extends Item {
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        tooltip.add(new LiteralText("Normal tooltip"));
-        tooltip.add(new LiteralText("Red tooltip").formatted(Formatting.RED));
+        tooltip.add(Text.literal("Normal tooltip"));
+        tooltip.add(Text.literal("Red tooltip").formatted(Formatting.RED));
         super.appendTooltip(stack, world, tooltip, context);
     }
 
