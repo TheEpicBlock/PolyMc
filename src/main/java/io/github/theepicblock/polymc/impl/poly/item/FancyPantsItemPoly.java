@@ -53,7 +53,7 @@ public class FancyPantsItemPoly extends DamageableItemPoly {
         // Ensure colors with a modded texture assigned aren't used by vanilla items
         var armorManager = registry.getSharedValues(ArmorColorManager.KEY);
         for (var leatherItem : new Item[]{Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS}) {
-            registry.registerItemPoly(leatherItem, (stack, location) -> {
+            registry.registerItemPoly(leatherItem, (stack, player, location) -> {
                 var dyeableItem = (DyeableItem)stack.getItem();
                 if (armorManager.hasColor(dyeableItem.getColor(stack))) {
                     var copy = stack.copy();

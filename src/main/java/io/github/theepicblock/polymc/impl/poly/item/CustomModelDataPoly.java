@@ -104,11 +104,6 @@ public class CustomModelDataPoly implements ItemPoly {
         stack.setNbt(tag);
     }
 
-    @Override
-    public ItemStack getClientItem(ItemStack input, @Nullable ItemLocation location) {
-        return getClientItem(input, null, location);
-    }
-
     @SuppressWarnings("ConstantConditions")
     @Override
     public ItemStack getClientItem(ItemStack input, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
