@@ -1,7 +1,6 @@
 package io.github.theepicblock.polymc.api.resource;
 
 import com.google.gson.Gson;
-import io.github.theepicblock.polymc.impl.resource.PolyMcAssetBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,7 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.function.Supplier;
 
-public class TextureAsset extends PolyMcAssetBase implements PolyMcAsset {
+public class TextureAsset implements PolyMcAsset {
     private final @NotNull Supplier<InputStream> texture;
     private final @Nullable Supplier<InputStream> mcmeta;
 

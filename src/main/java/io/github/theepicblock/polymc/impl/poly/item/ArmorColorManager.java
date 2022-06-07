@@ -1,13 +1,11 @@
 package io.github.theepicblock.polymc.impl.poly.item;
 
-import com.google.gson.Gson;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.SharedValuesKey;
 import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
-import io.github.theepicblock.polymc.impl.resource.PolyMcAssetBase;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -17,7 +15,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -134,20 +131,12 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
             }
 
             // Add the output image to the resource pack
-            pack.setAsset("minecraft", "textures/models/armor/leather_layer_" + layer + ".png", new PolyMcAssetBase() {
-                @Override
-                public void writeToStream(OutputStream stream, Gson gson) throws IOException {
-                    ImageIO.write(image, "png", stream);
-                }
-            });
+            pack.setAsset("minecraft", "textures/models/armor/leather_layer_" + layer + ".png",
+                    (stream, gson) -> ImageIO.write(image, "png", stream));
 
             // Write something small to the overlay texture because apparently that's needed
-            pack.setAsset("minecraft", "textures/models/armor/leather_layer_" + layer + "_overlay.png", new PolyMcAssetBase() {
-                @Override
-                public void writeToStream(OutputStream stream, Gson gson) throws IOException {
-                    ImageIO.write(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), "png", stream);
-                }
-            });
+            pack.setAsset("minecraft", "textures/models/armor/leather_layer_" + layer + "_overlay.png",
+                    (stream, gson) -> ImageIO.write(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), "png", stream));
         }
 
         try {
@@ -156,12 +145,8 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
                 var stream = PolyMc.class.getResourceAsStream("/fancypants/rendertype_armor_cutout_no_cull." +string);
                 assert stream != null;
 
-                pack.setAsset("minecraft", "shaders/core/rendertype_armor_cutout_no_cull." + string, new PolyMcAssetBase() {
-                    @Override
-                    public void writeToStream(OutputStream oStream, Gson gson) throws IOException {
-                        stream.transferTo(oStream);
-                    }
-                });
+                pack.setAsset("minecraft", "shaders/core/rendertype_armor_cutout_no_cull." + string,
+                        (oStream, gson) -> stream.transferTo(oStream));
             }
         } catch (Exception e) {
             logger.warn("Error occurred when writing armor shader!");

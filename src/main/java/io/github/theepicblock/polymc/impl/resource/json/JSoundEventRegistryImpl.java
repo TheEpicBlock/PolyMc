@@ -7,7 +7,6 @@ import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.api.resource.json.JSoundEvent;
 import io.github.theepicblock.polymc.api.resource.json.JSoundEventRegistry;
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.resource.PolyMcAssetBase;
 import io.github.theepicblock.polymc.impl.resource.ResourceGenerationException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @ApiStatus.Internal
-public class JSoundEventRegistryImpl extends PolyMcAssetBase implements JSoundEventRegistry {
+public class JSoundEventRegistryImpl implements JSoundEventRegistry {
     private static final Type TYPE = new TypeToken<Map<String,JSoundEventImpl>>() {}.getType();
     private Map<String, JSoundEvent> jsonRepresentation;
 

@@ -6,7 +6,6 @@ import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.api.resource.json.JBlockState;
 import io.github.theepicblock.polymc.api.resource.json.JBlockStateVariant;
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.resource.PolyMcAssetBase;
 import io.github.theepicblock.polymc.impl.resource.ResourceGenerationException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -18,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 @ApiStatus.Internal
-public class JBlockStateImpl extends PolyMcAssetBase implements JBlockState {
+public class JBlockStateImpl implements JBlockState {
     /**
      * If there's a credit field, keep it. We don't want to erase attribution
      */

@@ -6,7 +6,6 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import io.github.theepicblock.polymc.api.resource.json.*;
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.resource.PolyMcAssetBase;
 import io.github.theepicblock.polymc.impl.resource.ResourceGenerationException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +15,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class JModelImpl extends PolyMcAssetBase implements JModel {
+public class JModelImpl implements JModel {
     /**
      * If there's a credit field, keep it. We don't want to erase attribution
      */
