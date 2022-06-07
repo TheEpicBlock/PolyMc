@@ -22,7 +22,7 @@ import java.util.jar.JarFile;
 public class ClientJarResourcesImpl implements ClientJarResources {
     // Retrievable by using the getClientSha1 gradle task
     // Or you can look around https://launchermeta.mojang.com/mc/game/version_manifest_v2.json
-    private final static String CLIENT_SHA1 = "7e46fb47609401970e2818989fa584fd467cd036";
+    private final static String CLIENT_SHA1 = "c0898ec7c6a5a2eaa317770203a1554260699994";
     private final static String CLIENT_URL = "https://launcher.mojang.com/v1/objects/" + CLIENT_SHA1 + "/client.jar";
 
     private final JarFile clientJar;
