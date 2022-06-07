@@ -49,7 +49,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.JsonHelper;
 import org.jetbrains.annotations.Nullable;
@@ -156,7 +156,7 @@ public class PolyMapImpl implements PolyMap {
 
         if (stack.isEmpty() && !input.isEmpty()) {
             stack = new ItemStack(Items.CLAY_BALL);
-            stack.setCustomName(new LiteralText("Invalid Item").formatted(Formatting.ITALIC));
+            stack.setCustomName(Text.literal("Invalid Item").formatted(Formatting.ITALIC));
         }
         return stack;
     }

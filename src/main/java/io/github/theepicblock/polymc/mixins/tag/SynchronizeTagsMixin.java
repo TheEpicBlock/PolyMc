@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Mixin(SynchronizeTagsS2CPacket.class)
 public class SynchronizeTagsMixin {
-    @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeMap(Ljava/util/Map;Ljava/util/function/BiConsumer;Ljava/util/function/BiConsumer;)V"))
+    @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeMap(Ljava/util/Map;Lnet/minecraft/network/PacketByteBuf$PacketWriter;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V"))
     public Map<RegistryKey<? extends Registry<?>>, TagPacketSerializer.Serialized> editTagMap(Map<RegistryKey<? extends Registry<?>>, TagPacketSerializer.Serialized> in) {
         var player = PacketContext.get().getTarget();
         if (Util.isPolyMapVanillaLike(player)) {

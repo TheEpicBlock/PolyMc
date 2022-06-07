@@ -22,7 +22,8 @@ public class VItemFrame extends AbstractVirtualEntity {
                 0,
                 this.getEntityType(),
                 facing.ordinal(),
-                Vec3d.ZERO
+                Vec3d.ZERO,
+                0
         ));
     }
 

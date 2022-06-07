@@ -25,7 +25,7 @@ public class NOPPolyMap implements PolyMap {
     }
 
     @Override
-    public BlockState getClientBlock(BlockState serverBlock) {
+    public BlockState getClientState(BlockState serverBlock, @Nullable ServerPlayerEntity player) {
         return serverBlock;
     }
 

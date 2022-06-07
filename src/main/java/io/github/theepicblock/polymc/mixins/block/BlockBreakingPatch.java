@@ -53,7 +53,7 @@ public abstract class BlockBreakingPatch {
     private int blockBreakingCooldown;
 
     @Shadow
-    public abstract void finishMining(BlockPos pos, PlayerActionC2SPacket.Action action, String reason);
+    public abstract void finishMining(BlockPos pos, int sequence, String reason);
 
     @Shadow protected ServerWorld world;
 
@@ -73,7 +73,7 @@ public abstract class BlockBreakingPatch {
             if (f >= 1.0F) {
                 blockBreakingCooldown = 5;
                 player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, -1));
-                finishMining(pos, PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, "destroyed");
+                finishMining(pos, 0, "destroyed");
             }
         }
     }
@@ -91,7 +91,7 @@ public abstract class BlockBreakingPatch {
     }
 
     @Inject(method = "processBlockBreakingAction", at = @At("HEAD"))
-    public void packetReceivedInject(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
+    public void packetReceivedInject(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
         if (CustomBlockBreakingCheck.needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
                 // This prevents the client from trying to break the block themselves.
@@ -104,7 +104,7 @@ public abstract class BlockBreakingPatch {
     }
 
     @Inject(method = "processBlockBreakingAction", at = @At("TAIL"))
-    public void enforceBlockBreakingCooldown(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
+    public void enforceBlockBreakingCooldown(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
         if (CustomBlockBreakingCheck.needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
                 this.startMiningTime += blockBreakingCooldown;
@@ -113,7 +113,7 @@ public abstract class BlockBreakingPatch {
     }
 
     @Inject(method = "finishMining", at = @At("HEAD"))
-    private void clearEffects(BlockPos pos, PlayerActionC2SPacket.Action action, String reason, CallbackInfo ci) {
+    private void clearEffects(BlockPos pos, int sequence, String reason, CallbackInfo ci) {
         if (CustomBlockBreakingCheck.needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
             removeFakeMiningFatigue();
         }

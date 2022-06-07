@@ -10,6 +10,8 @@ import io.github.theepicblock.polymc.impl.misc.logging.CommandSourceLogger;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ClientJarResourcesImpl;
 import net.minecraft.block.BlockState;
+import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.registry.Registry;
@@ -22,12 +24,13 @@ import java.util.List;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class TestCommands {
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated) {
+    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment environment) {
         dispatcher.register(literal("polymc-test")
                 .then(literal("find-states").executes(TestCommands::findState)));
     }
 
     private static int findState(CommandContext<ServerCommandSource> ctx) {
+
         SimpleLogger commandSource = new CommandSourceLogger(ctx.getSource(), true);
         try {
             // Using internal PolyMc api's to access the client jar

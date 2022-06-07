@@ -70,6 +70,6 @@ public class IdListImplementation {
     @Unique
     private long transform(long in, PolyMap map, ServerPlayerEntity playerEntity) {
         var state = Block.getStateFromRawId((int)in);
-        return map.getClientStateRawId(state, playerEntity);
+        return Block.STATE_IDS.getRawId(map.getClientState(state, playerEntity));
     }
 }

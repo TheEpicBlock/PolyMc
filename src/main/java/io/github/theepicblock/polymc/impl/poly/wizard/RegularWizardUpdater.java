@@ -37,7 +37,7 @@ public class RegularWizardUpdater {
                 var polyMap = entry.getKey();
                 var wizard = entry.getValue();
                 if (wizard == null) continue;
-                var playerView = packetCountManager.getView(listeners, polyMap, ((EntityTrackerAccessor)tracker).getEntry().getLastPos(), tick, seed++);
+                var playerView = packetCountManager.getView(listeners, polyMap, ((EntityTrackerAccessor)tracker).getEntity().getSyncedPos(), tick, seed++);
                 wizard.update(playerView, updateInfo);
                 playerView.sendBatched();
             }

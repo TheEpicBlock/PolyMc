@@ -18,6 +18,7 @@
 package io.github.theepicblock.polymc.impl;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.theepicblock.polymc.PolyMc;
@@ -30,7 +31,7 @@ import io.github.theepicblock.polymc.impl.poly.wizard.PacketCountManager;
 import io.github.theepicblock.polymc.impl.poly.wizard.ThreadedWizardUpdater;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackGenerator;
 import io.github.theepicblock.polymc.mixins.TACSAccessor;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -40,7 +41,6 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -55,12 +55,12 @@ public class PolyMcCommands {
     private static boolean isGeneratingResources = false;
 
     public static void registerCommands() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(literal("polymc").requires(source -> source.hasPermissionLevel(2))
                     .then(literal("debug")
                             .then(literal("clientItem")
                                     .executes((context) -> {
-                                        var player = context.getSource().getPlayer();
+                                        var player = context.getSource().getPlayerOrThrow();
                                         var heldItem = player.getInventory().getMainHandStack();
                                         var polydItem = PolyMapProvider.getPolyMap(player).getClientItem(heldItem, player, null);
                                         var heldItemTag = polydItem.writeNbt(new NbtCompound());
@@ -70,9 +70,9 @@ public class PolyMcCommands {
                                     }))
                             .then(literal("replaceInventoryWithDebug")
                                     .executes((context) -> {
-                                        ServerPlayerEntity player = context.getSource().getPlayer();
+                                        ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
                                         if (!player.isCreative()) {
-                                            throw new SimpleCommandExceptionType(new LiteralText("You must be in creative mode to execute this command. Keep in mind that this will wipe your inventory.")).create();
+                                            throw new SimpleCommandExceptionType(new LiteralMessage("You must be in creative mode to execute this command. Keep in mind that this will wipe your inventory.")).create();
                                         }
                                         for (int i = 0; i < player.getInventory().size(); i++) {
                                             if (i == 0) {
@@ -84,7 +84,7 @@ public class PolyMcCommands {
                                         return Command.SINGLE_SUCCESS;
                                     }))
                             .then(literal("getWizardRestrictions")
-                                    .executes(context -> doGetWizardRestrictions(context, context.getSource().getPlayer()))
+                                    .executes(context -> doGetWizardRestrictions(context, context.getSource().getPlayerOrThrow()))
                                     .then(CommandManager.argument("player", EntityArgumentType.player())
                                             .executes(context -> doGetWizardRestrictions(context, EntityArgumentType.getPlayer(context, "player"))))))
                     .then(literal("generate")
@@ -153,15 +153,15 @@ public class PolyMcCommands {
         var source = context.getSource();
 
         var headerColour = ConfigManager.getConfig().enableWizardThreading ? Formatting.GOLD : Formatting.AQUA;
-        source.sendFeedback(new LiteralText("=== Packet restriction info for ").formatted(headerColour)
+        source.sendFeedback(Text.literal("=== Packet restriction info for ").formatted(headerColour)
                 .append(player.getDisplayName())
-                .append(new LiteralText(" ===").formatted(headerColour)), false);
+                .append(Text.literal(" ===").formatted(headerColour)), false);
 
-        var hoverTxt = new LiteralText("Target packet count: ").append(new LiteralText(PacketCountManager.MIN_PACKETS+"-"+PacketCountManager.MAX_PACKETS+" packets per tick").formatted(Formatting.AQUA));
-        source.sendFeedback(new LiteralText("Average packet count per tick: ")
+        var hoverTxt = Text.literal("Target packet count: ").append(Text.literal(PacketCountManager.MIN_PACKETS+"-"+PacketCountManager.MAX_PACKETS+" packets per tick").formatted(Formatting.AQUA));
+        source.sendFeedback(Text.literal("Average packet count per tick: ")
                 .styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverTxt)))
                 .append(packetCount2Text(trackerInfo.calculateAveragePacketCount())), false);
-        var packetHistory = new LiteralText("History: [");
+        var packetHistory = Text.literal("History: [");
         for (int i = 0; ; i++) {
             packetHistory.append(packetCount2Text(trackerInfo.getPacketHistory()[i]));
             if (i == trackerInfo.getPacketHistory().length-1) {
@@ -171,7 +171,7 @@ public class PolyMcCommands {
             packetHistory.append(", ");
         }
 
-        var restrictionLevelTxt = new LiteralText(String.valueOf(trackerInfo.getRestrictionLevel()));
+        var restrictionLevelTxt = Text.literal(String.valueOf(trackerInfo.getRestrictionLevel()));
         if (trackerInfo.getRestrictionLevel() > PacketCountManager.MAX_RESTRICTION) {
             restrictionLevelTxt.formatted(Formatting.DARK_PURPLE);
         } else if (trackerInfo.getRestrictionLevel() > 8) {
@@ -181,14 +181,14 @@ public class PolyMcCommands {
         } else {
             restrictionLevelTxt.formatted(Formatting.DARK_GREEN);
         }
-        source.sendFeedback(new LiteralText("Restriction level: ").append(restrictionLevelTxt), false);
+        source.sendFeedback(Text.literal("Restriction level: ").append(restrictionLevelTxt), false);
         var watchDistance = ((TACSAccessor)context.getSource().getWorld().getChunkManager().threadedAnvilChunkStorage).getWatchDistance();
-        source.sendFeedback(new LiteralText("Watch distance/radius: ").append(new LiteralText(watchDistance+"/"+PacketCountManager.getWatchRadiusFromDistance(watchDistance)).formatted(Formatting.AQUA)), false);
+        source.sendFeedback(Text.literal("Watch distance/radius: ").append(Text.literal(watchDistance+"/"+PacketCountManager.getWatchRadiusFromDistance(watchDistance)).formatted(Formatting.AQUA)), false);
         return Command.SINGLE_SUCCESS;
     }
 
     private static Text packetCount2Text(int count) {
-        var t = new LiteralText(String.valueOf(count));
+        var t = Text.literal(String.valueOf(count));
         if (count > PacketCountManager.MAX_PACKETS * 1.6) {
             t.formatted(Formatting.RED);
         } else if (count > PacketCountManager.MAX_PACKETS) {
@@ -198,11 +198,11 @@ public class PolyMcCommands {
         } else {
             t.formatted(Formatting.GREEN);
         }
-        var hoverText = new LiteralText("")
+        var hoverText = Text.literal("")
                 .append(t.copy().setStyle(t.getStyle()))
-                .append(new LiteralText(" packets per tick =  ").formatted(Formatting.RESET))
-                .append(new LiteralText(String.valueOf(count * 20)).setStyle(t.getStyle()))
-                .append(new LiteralText(" packets per second").formatted(Formatting.RESET));
+                .append(Text.literal(" packets per tick =  ").formatted(Formatting.RESET))
+                .append(Text.literal(String.valueOf(count * 20)).setStyle(t.getStyle()))
+                .append(Text.literal(" packets per second").formatted(Formatting.RESET));
         return t.styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText)));
     }
 }

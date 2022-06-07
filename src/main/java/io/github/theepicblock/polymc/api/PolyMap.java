@@ -45,19 +45,11 @@ public interface PolyMap {
     /**
      * Converts the serverside representation of a block into a clientside one that should be sent to the client.
      */
-    default BlockState getClientBlock(BlockState serverBlock) {
+    default BlockState getClientState(BlockState serverBlock, @Nullable ServerPlayerEntity player) {
         BlockPoly poly = this.getBlockPoly(serverBlock.getBlock());
         if (poly == null) return serverBlock;
 
         return poly.getClientBlock(serverBlock);
-    }
-
-    /**
-     * Get the RawId of the client-state block
-     */
-    default int getClientStateRawId(BlockState state, ServerPlayerEntity playerEntity) {
-        BlockState clientState = this.getClientBlock(state);
-        return Block.STATE_IDS.getRawId(clientState);
     }
 
     /**
