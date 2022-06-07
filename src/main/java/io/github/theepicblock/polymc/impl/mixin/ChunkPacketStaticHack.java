@@ -24,7 +24,7 @@ public class ChunkPacketStaticHack {
     /**
      * The chunk palette is serialized on the construction of {@link net.minecraft.network.packet.s2c.play.ChunkData}, which is made on the construction of the {@link net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket}.
      * PolyMc wants to have a reference to the player whilst we serialize the palette so we can account for per player polymaps.
-     * For most packets we just add a reference when the packet object in {@link io.github.theepicblock.polymc.mixins.context.NetworkHandlerContextProvider} and use that in a mixin to the packet's toPacket method.
+     * Normally we use Nucleoid's packet tweaker library which puts the player into a static variable right before writing.
      * But as things are being done in constructors here, before the packet reaches that method, that won't work. Therefore, we instead place a reference to the player right here, inside the method that the packet is being constructed in.
      *
      * @see ChunkDataPlayerProvider

@@ -39,7 +39,7 @@ public class CustomRecipeFix {
     /**
      * Modifies the recipes to remove custom serializers (which will crash vanilla clients).
      */
-    @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeCollection(Ljava/util/Collection;Ljava/util/function/BiConsumer;)V"))
+    @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeCollection(Ljava/util/Collection;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V"))
     public Collection<Recipe<?>> modifyRecipes(Collection<Recipe<?>> input) {
         if (!Util.isPolyMapVanillaLike(PacketContext.get().getTarget())) {
             return input;

@@ -18,7 +18,7 @@ public interface JSoundEvent extends AssetWithDependencies {
     void setSubtitle(String v);
 
     /**
-     * Modifying this list won't do anything. You must use {@link #setSounds()} when done.
+     * Modifying this list won't do anything. You must use {@link #setSounds(List)} when done.
      */
     List<JSoundReference> getSounds();
     void setSounds(List<JSoundReference> newSounds);

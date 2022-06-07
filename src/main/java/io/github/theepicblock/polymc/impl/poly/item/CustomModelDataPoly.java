@@ -29,7 +29,6 @@ import io.github.theepicblock.polymc.impl.resource.ResourceConstants;
 import io.github.theepicblock.polymc.mixins.item.EntityAttributeUuidAccessor;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityGroup;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -44,7 +43,6 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.registry.Registry;
@@ -125,8 +123,6 @@ public class CustomModelDataPoly implements ItemPoly {
 
         // Add custom tooltips. Don't bother showing them if the item's not in the inventory
         if (Util.isSectionVisible(input, ItemStack.TooltipSection.ADDITIONAL) && isInventory(location)) {
-            Entity holder = input.getHolder(); // This is not usually guaranteed to get the correct player. It works here though.
-
             var tooltips = new ArrayList<Text>(0);
             try {
                 input.getItem().appendTooltip(input, player == null ? null : player.world, tooltips, TooltipContext.Default.NORMAL);
@@ -213,12 +209,12 @@ public class CustomModelDataPoly implements ItemPoly {
                             }
 
                             if (bl) {
-                                lore.add(toStr(explicitlySetItalics((Text.literal(" ")).append(Text.translatable("attribute.modifier.equals." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), new TranslatableTextContent(entry.getKey().getTranslationKey()))).formatted(Formatting.DARK_GREEN))));
+                                lore.add(toStr(explicitlySetItalics((Text.literal(" ")).append(Text.translatable("attribute.modifier.equals." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), Text.translatable(entry.getKey().getTranslationKey()))).formatted(Formatting.DARK_GREEN))));
                             } else if (v > 0.0) {
-                                lore.add(toStr(explicitlySetItalics((Text.translatable("attribute.modifier.plus." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), new TranslatableTextContent(entry.getKey().getTranslationKey()))).formatted(Formatting.BLUE))));
+                                lore.add(toStr(explicitlySetItalics((Text.translatable("attribute.modifier.plus." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), Text.translatable(entry.getKey().getTranslationKey()))).formatted(Formatting.BLUE))));
                             } else if (v < 0.0) {
                                 e *= -1.0;
-                                lore.add(toStr(explicitlySetItalics((Text.translatable("attribute.modifier.take." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), new TranslatableTextContent(entry.getKey().getTranslationKey()))).formatted(Formatting.RED))));
+                                lore.add(toStr(explicitlySetItalics((Text.translatable("attribute.modifier.take." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), Text.translatable(entry.getKey().getTranslationKey()))).formatted(Formatting.RED))));
                             }
                         }
                     }
