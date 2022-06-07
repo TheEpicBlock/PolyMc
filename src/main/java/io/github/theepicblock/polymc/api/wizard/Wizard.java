@@ -48,27 +48,13 @@ public abstract class Wizard {
      * For entities, you might want to take a look at using {@link #update(PacketConsumer, UpdateInfo)} instead,
      * depending on your needs.
      */
-    public void onMove(PacketConsumer players) { this.onMove(); }
-
-    /**
-     * @deprecated use {@link #onMove(PacketConsumer)}
-     */
-    @Deprecated
-    public void onMove() {}
+    public void onMove(PacketConsumer players) {}
 
     /**
      * This function is called every tick, as long as {@link #needsTicking()} is true.
      * This function is called on the main thread, it's recommended to do any packet sending inside of {@link #update(PacketConsumer, UpdateInfo)}
      */
-    public void onTick(PacketConsumer players) { this.onTick(); }
-
-    /**
-     * This function is called every tick, as long as {@link #needsTicking()} is true.
-     * This function is called on the main thread, it's recommended to do any packet sending inside of {@link #update(PacketConsumer, UpdateInfo)}
-     * @deprecated use {@link #onTick(PacketConsumer)}
-     */
-    @Deprecated
-    public void onTick() {}
+    public void onTick(PacketConsumer players) {}
 
     /**
      * This method can be called off-thread and can be called more than 20 times per second. This is the preferred method to send packets from, although multithreading might get in the way.
