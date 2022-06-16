@@ -48,9 +48,7 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The most standard ItemPoly implementation
@@ -261,7 +259,7 @@ public class CustomModelDataPoly implements ItemPoly {
         if (moddedItemModel != null && !moddedItemModel.getOverridesReadOnly().isEmpty()) {
             // The modded item has overrides, we should remove them and use them as basis for the client item model instead
             for (var override : moddedItemModel.getOverridesReadOnly()) {
-                var predicates = new HashMap<>(override.predicates());
+                var predicates = new TreeMap<>(override.predicates());
                 predicates.put("custom_model_data", (float)cmdValue);
                 clientItemModel.getOverrides().add(new JModelOverride(predicates, override.model()));
             }
