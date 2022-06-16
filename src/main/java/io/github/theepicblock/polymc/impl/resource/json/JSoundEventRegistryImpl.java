@@ -14,8 +14,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 @ApiStatus.Internal
 public class JSoundEventRegistryImpl implements JSoundEventRegistry {
@@ -23,7 +23,7 @@ public class JSoundEventRegistryImpl implements JSoundEventRegistry {
     private Map<String, JSoundEvent> jsonRepresentation;
 
     public JSoundEventRegistryImpl() {
-        this.jsonRepresentation = new HashMap<>();
+        this.jsonRepresentation = new TreeMap<>();
     }
 
     public JSoundEventRegistryImpl(Map<String,JSoundEvent> jsonRepresentation) {

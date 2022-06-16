@@ -12,9 +12,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 @ApiStatus.Internal
 public class JBlockStateImpl implements JBlockState {
@@ -24,7 +24,7 @@ public class JBlockStateImpl implements JBlockState {
     @SerializedName(value = "credit", alternate = "__comment")
     private String credit;
 
-    public final Map<String, JsonElement> variants = new HashMap<>();
+    public final Map<String, JsonElement> variants = new TreeMap<>();
 
     public JBlockStateImpl() {
     }
