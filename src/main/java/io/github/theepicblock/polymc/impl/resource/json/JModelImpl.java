@@ -33,6 +33,24 @@ public class JModelImpl implements JModel {
 
     }
 
+    public JModelImpl(JModel clientModel) {
+        this();
+        this.setParent(clientModel.getParent());
+        this.setGuiLight(clientModel.getGuiLight());
+        this.textures = clientModel.getTextures();
+        this.elements = clientModel.getElements();
+
+        for (JModelDisplayType displayType : JModelDisplayType.values()) {
+            JModelDisplay display = clientModel.getDisplay(displayType);
+
+            if (display != null) {
+                this.setDisplay(displayType, display);
+            }
+        }
+
+        this.overrides = clientModel.getOverrides();
+    }
+
     @ApiStatus.Internal
     public static JModelImpl of(InputStream inputStream, @Nullable String name) {
         try (var jsonReader = new JsonReader(new InputStreamReader(inputStream))) {
