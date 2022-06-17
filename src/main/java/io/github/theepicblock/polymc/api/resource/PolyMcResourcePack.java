@@ -105,9 +105,9 @@ public interface PolyMcResourcePack {
             if (defaultModel == null) {
                 throw new IllegalArgumentException(namespace+":"+model+" is not a valid vanilla model. Couldn't find it in jar");
             }
-            this.setModel(namespace, model, defaultModel);
+            this.setItemModel(namespace, model, defaultModel);
         }
-        return this.getItemModel(namespace, model);
+        return this.getOrDefaultVanillaItemModel(namespace, model);
     }
 
     /**
