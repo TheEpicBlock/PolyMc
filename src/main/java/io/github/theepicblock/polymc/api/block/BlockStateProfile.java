@@ -119,15 +119,6 @@ public class BlockStateProfile {
     private static final Predicate<BlockState> DOUBLE_SLAB_FILTER = (blockState) -> blockState.get(SlabBlock.TYPE) == SlabType.DOUBLE;
     private static final Predicate<BlockState> WATERLOGGED_SLAB_FILTER = (blockState) -> blockState.get(SlabBlock.TYPE) == SlabType.DOUBLE && blockState.get(SlabBlock.WATERLOGGED);
     private static final Predicate<BlockState> SLAB_FILTER = (blockState) -> blockState.get(SlabBlock.TYPE) != SlabType.DOUBLE;
-    private static final Predicate<BlockState> CLIMBABLE_FILTER = (blockState) -> {
-        if (blockState.getBlock() == Blocks.CAVE_VINES) {
-            // Berries cause right-click updates, so we don't use them
-            if (blockState.get(Properties.AGE_25) == 0 || blockState.get(CaveVines.BERRIES) == true) {
-                return false;
-            }
-        }
-        return DEFAULT_FILTER.test(blockState);
-    };
 
     //////////////////////////
     //  ON FIRST REGISTERS  //
