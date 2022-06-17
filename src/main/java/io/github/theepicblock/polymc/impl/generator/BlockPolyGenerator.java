@@ -190,6 +190,16 @@ public class BlockPolyGenerator {
                     ));
                 } catch (BlockStateManager.StateLimitReachedException ignored) {}
             }
+
+            if (outlineShape.getMax(Direction.Axis.Y) <= (1.0f / 16.0f)) {
+                try {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.PRESSURE_PLATE_PROFILE.and(
+                            state -> moddedState.getFluidState().equals(state.getFluidState())
+                    ));
+                } catch (BlockStateManager.StateLimitReachedException ignored) {}
+            }
+
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.NO_COLLISION_PROFILE.and(
