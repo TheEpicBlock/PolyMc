@@ -14,14 +14,16 @@ import xyz.nucleoid.packettweaker.PacketContext;
 @Mixin(PacketByteBuf.class)
 public class WriteRegistryValueImplementation {
 
-    @Redirect(method = "writeRegistryValue", at=@At(value="INVOKE", target="Lnet/minecraft/util/collection/IndexedIterable;getRawId(Ljava/lang/Object;)I"))
-    private <T> int redirectGetRawId(IndexedIterable<T> registry, T value) {
+    @ModifyVariable(method = "writeRegistryValue", at = @At("HEAD"), argsOnly = true)
+    private <T> T redirectBlock(T original, IndexedIterable<T> registry) {
         if (registry == Block.STATE_IDS) {
             var player = PacketContext.get().getTarget();
             var polymap = Util.tryGetPolyMap(player);
-            return polymap.getClientStateRawId((BlockState) value, player);
-        }
+            int clientStateId = polymap.getClientStateRawId((BlockState)original, player);
 
-        return registry.getRawId(value);
+            //noinspection unchecked
+            return (T) Block.STATE_IDS.get(clientStateId);
+        }
+        return original;
     }
 }
