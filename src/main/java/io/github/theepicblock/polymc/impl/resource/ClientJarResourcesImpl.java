@@ -56,8 +56,7 @@ public class ClientJarResourcesImpl implements ClientJarResources {
     }
 
     public static void downloadJar(File location, SimpleLogger logger) throws IOException {
-        logger.info("Something is requesting access to the vanilla client jar's resources. " +
-                "PolyMc is automatically downloading them.");
+        logger.info("PolyMc is automatically downloading the vanilla client jar to access a few of it's resources. This may take a while.");
         FileUtils.forceMkdirParent(location);
         FileUtils.copyURLToFile(new URL(CLIENT_URL), location, 10000, 10000);
         logger.info("Finished downloading the minecraft jar");

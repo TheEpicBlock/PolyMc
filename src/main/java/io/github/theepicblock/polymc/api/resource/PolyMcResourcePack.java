@@ -94,6 +94,27 @@ public interface PolyMcResourcePack {
         return getModel(namespace, "item/"+model);
     }
 
+    /**
+     * Retrieves the model of a specified asset. If the asset is not yet in the resource pack, it'll look in {@code baseResources} to copy it.
+     * The intended use-case for this function is for when retrieving vanilla item models to add overrides to them.
+     */
+    default JModel getOrDefaultVanillaItemModel(ModdedResources baseResources, String namespace, String model, SimpleLogger logger) {
+        if (this.getItemModel(namespace, model) == null) {
+            var clientJar = baseResources.includeClientJar(logger);
+            var defaultModel = clientJar.getItemModel(namespace, model);
+            if (defaultModel == null) {
+                throw new IllegalArgumentException(namespace+":"+model+" is not a valid vanilla model. Couldn't find it in jar");
+            }
+            this.setModel(namespace, model, defaultModel);
+        }
+        return this.getItemModel(namespace, model);
+    }
+
+    /**
+     * Generates the model file for a vanilla asset
+     * @deprecated use {@link #getOrDefaultVanillaItemModel(ModdedResources, String, String, SimpleLogger)}
+     */
+    @Deprecated
     default JModel getOrDefaultVanillaItemModel(String namespace, String model) {
         if (this.getItemModel(namespace, model) == null) {
             if (!Util.isNamespaceVanilla(namespace)) {

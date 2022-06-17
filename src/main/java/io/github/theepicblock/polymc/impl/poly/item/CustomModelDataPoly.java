@@ -48,7 +48,9 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.TreeMap;
+import java.util.UUID;
 
 /**
  * The most standard ItemPoly implementation
@@ -250,9 +252,9 @@ public class CustomModelDataPoly implements ItemPoly {
 
         var clientitemId = Registry.ITEM.getId(this.cachedClientItem.getItem());
 
-        // Get the json for the vanilla item, so we can inject an override into it
-        var clientItemModel = pack.getOrDefaultVanillaItemModel(clientitemId.getNamespace(), clientitemId.getPath());
-        // Add the override
+        // Copy and retrieve the vanilla item's model
+        var clientItemModel = pack.getOrDefaultVanillaItemModel(moddedResources, clientitemId.getNamespace(), clientitemId.getPath(), logger);
+        // Add an override into the vanilla item's model that references the modded one
         clientItemModel.getOverrides().add(JModelOverride.ofCMD(cmdValue, ResourceConstants.itemLocation(moddedItemId)));
 
         // Check if the modded item model has overrides

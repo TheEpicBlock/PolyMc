@@ -100,10 +100,10 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
 
             // Write vanilla leather
             try {
-                var leatherTexture = ImageIO.read(Objects.requireNonNull(PolyMc.class.getResourceAsStream("/fancypants/leather_layer_" + layer + ".png")));
+                var leatherTexture = ImageIO.read(Objects.requireNonNull(moddedResources.includeClientJar(logger).getInputStream("minecraft", "textures/models/armor/vanilla_leather_layer_" + layer + ".png")));
                 graphics.drawImage(leatherTexture, 0, 0, null);
 
-                var leatherOverlayTexture = ImageIO.read(Objects.requireNonNull(PolyMc.class.getResourceAsStream("/fancypants/leather_layer_" + layer + "_overlay.png")));
+                var leatherOverlayTexture = ImageIO.read(Objects.requireNonNull(moddedResources.includeClientJar(logger).getInputStream("minecraft", "textures/models/armor/vanilla_leather_layer_" + layer + "_overlay.png")));
                 graphics.drawImage(leatherOverlayTexture, 0, 0, null);
             } catch (Exception e) {
                 logger.error("Error reading vanilla armor textures, please report this");
