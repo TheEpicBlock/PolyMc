@@ -12,13 +12,16 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 @Mixin(PacketByteBuf.class)
 public class WriteRegistryValueImplementation {
+
     @ModifyVariable(method = "writeRegistryValue", at = @At("HEAD"), argsOnly = true)
     private <T> T redirectBlock(T original, IndexedIterable<T> registry) {
         if (registry == Block.STATE_IDS) {
             var player = PacketContext.get().getTarget();
             var polymap = Util.tryGetPolyMap(player);
+            int clientStateId = polymap.getClientStateRawId((BlockState)original, player);
+
             //noinspection unchecked
-            return (T)polymap.getClientState((BlockState)original, player);
+            return (T)Block.STATE_IDS.get(clientStateId);
         }
         return original;
     }
