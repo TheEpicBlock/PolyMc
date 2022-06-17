@@ -28,6 +28,7 @@ import io.github.theepicblock.polymc.mixins.gui.GuiPolyImplementation;
 import io.github.theepicblock.polymc.mixins.item.CreativeItemStackFix;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
@@ -50,6 +51,19 @@ public interface PolyMap {
         if (poly == null) return serverBlock;
 
         return poly.getClientBlock(serverBlock);
+    }
+
+    /**
+     * Get the raw id of the clientside blockstate.
+     */
+    default int getClientStateRawId(BlockState state, ServerPlayerEntity playerEntity) {
+        BlockState clientState = this.getClientState(state, playerEntity);
+
+        if (clientState == null) {
+            clientState = Blocks.STONE.getDefaultState();
+        }
+
+        return Block.STATE_IDS.getRawId(clientState);
     }
 
     /**

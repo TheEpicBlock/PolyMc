@@ -181,6 +181,14 @@ public class BlockPolyGenerator {
 
         //=== NO COLLISION BLOCKS ===
         if (collisionShape.isEmpty() && !(moddedState.getBlock() instanceof WallBlock)) {
+
+            try {
+                if (moddedState.isIn(BlockTags.CLIMBABLE)) {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.CLIMBABLE_PROFILE);
+                }
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+
             var outlineShape = moddedState.getOutlineShape(fakeWorld, BlockPos.ORIGIN);
 
             if (outlineShape.isEmpty()) {
