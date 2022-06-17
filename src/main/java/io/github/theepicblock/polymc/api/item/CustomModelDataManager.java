@@ -146,7 +146,7 @@ public class CustomModelDataManager {
                 Item item = getRoundRobin(items);
                 return new Pair<>(item, requestCMD(item, amount));
             } catch (OutOfCustomModelDataValuesException ignored) {}
-        } while (roundRobin != startingRR);
+        } while (roundRobin % items.length != startingRR % items.length);
 
         throw new OutOfCustomModelDataValuesException(amount, items);
     }
