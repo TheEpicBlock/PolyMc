@@ -59,11 +59,15 @@ public class CustomModelDataManager {
             Items.NAUTILUS_SHELL,
             Items.PHANTOM_MEMBRANE,
             Items.ECHO_SHARD,
-            Items.BLAZE_POWDER,
             Items.GUNPOWDER,
             Items.SUGAR,
             Items.BLAZE_ROD,
             Items.PAPER,
+    };
+    public final static Item[] FUEL_ITEMS = {
+            Items.COAL,
+            Items.CHARCOAL,
+            Items.BLAZE_ROD,
     };
     public final static Item[] FOOD_ITEMS = {
             Items.COOKED_BEEF,
