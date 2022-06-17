@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.impl.misc;
 
+import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.*;
@@ -36,22 +37,6 @@ import java.util.List;
  * These methods are called by {@link io.github.theepicblock.polymc.mixins.block.ResyncImplementation} to resync the blocks with the server's state.
  */
 public class BlockResyncManager {
-    public static boolean shouldForceSync(BlockState sourceState, BlockState clientState, Direction direction) {
-        Block block = clientState.getBlock();
-        if (block == Blocks.NOTE_BLOCK) {
-            return direction == Direction.UP;
-        } else if (block == Blocks.MYCELIUM || block == Blocks.PODZOL) {
-            return direction == Direction.DOWN;
-        } else if (block == Blocks.TRIPWIRE) {
-            if (sourceState == null) return direction.getAxis().isHorizontal();
-
-            //Checks if the connected property for the block isn't what it should be
-            //If the source block in that direction is string, it should be true. Otherwise false
-            return direction.getAxis().isHorizontal() &&
-                    clientState.get(ConnectingBlock.FACING_PROPERTIES.get(direction.getOpposite())) != (sourceState.getBlock() instanceof TripwireBlock);
-        }
-        return false;
-    }
 
     public static void onBlockUpdate(BlockState sourceState, BlockPos sourcePos, World world, ServerPlayerEntity player, List<BlockPos> checkedBlocks) {
         BlockPos.Mutable pos = new BlockPos.Mutable();
@@ -60,12 +45,13 @@ public class BlockResyncManager {
             if (checkedBlocks != null && checkedBlocks.contains(pos)) continue;
 
             BlockState state = world.getBlockState(pos);
-            BlockPoly poly = Util.tryGetPolyMap(player).getBlockPoly(state.getBlock());
+            PolyMap map = Util.tryGetPolyMap(player);
+            BlockPoly poly = map.getBlockPoly(state.getBlock());
 
             if (poly != null) {
                 BlockState clientState = poly.getClientBlock(state);
 
-                if (BlockResyncManager.shouldForceSync(sourceState, clientState, direction)) {
+                if (map.shouldForceBlockStateSync(world, sourceState, sourcePos, pos, clientState, direction)) {
                     BlockPos newPos = pos.toImmutable();
                     player.networkHandler.sendPacket(new BlockUpdateS2CPacket(newPos, state));
 

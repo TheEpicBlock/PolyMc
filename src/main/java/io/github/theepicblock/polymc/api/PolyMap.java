@@ -35,6 +35,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 public interface PolyMap {
@@ -107,6 +110,11 @@ public interface PolyMap {
     boolean isVanillaLikeMap();
 
     boolean hasBlockWizards();
+
+    /**
+     * Specifies if the {@link BlockState} changes done around this block might require a resync.
+     */
+    boolean shouldForceBlockStateSync(World world, BlockState sourceState, BlockPos sourcePos, BlockPos oppositePos, BlockState clientState, Direction direction);
 
     @Nullable PolyMcResourcePack generateResourcePack(SimpleLogger logger);
 

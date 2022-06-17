@@ -38,7 +38,7 @@ import io.github.theepicblock.polymc.impl.resource.ModdedResourceContainerImpl;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackImplementation;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.Block;
+import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
@@ -50,6 +50,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.JsonHelper;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -164,6 +167,24 @@ public class PolyMapImpl implements PolyMap {
     @Override
     public boolean hasBlockWizards() {
         return hasBlockWizards;
+    }
+
+    @Override
+    public boolean shouldForceBlockStateSync(World world, BlockState sourceState, BlockPos sourcePos, BlockPos oppositePos, BlockState clientState, Direction direction) {
+        Block block = clientState.getBlock();
+        if (block == Blocks.NOTE_BLOCK) {
+            return direction == Direction.UP;
+        } else if (block == Blocks.MYCELIUM || block == Blocks.PODZOL) {
+            return direction == Direction.DOWN;
+        } else if (block == Blocks.TRIPWIRE) {
+            if (sourceState == null) return direction.getAxis().isHorizontal();
+
+            //Checks if the connected property for the block isn't what it should be
+            //If the source block in that direction is string, it should be true. Otherwise false
+            return direction.getAxis().isHorizontal() &&
+                    clientState.get(ConnectingBlock.FACING_PROPERTIES.get(direction.getOpposite())) != (sourceState.getBlock() instanceof TripwireBlock);
+        }
+        return false;
     }
 
     @Override
