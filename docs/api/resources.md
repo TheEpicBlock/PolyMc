@@ -15,7 +15,7 @@ Be very careful with copyright issues.
 You can retrieve files, edit them, and add new files.
 
 # Retrieving vanilla assets
-!!! warn
+!!! warning
     Please use vanilla assets sparingly! 
     PolyMc only copies over very basic stuff that isn't really copyrightable, such as `item/generated` type item models.
     The only texture PolyMc copies over is the leather armour texture, which is because all armours need to be inside one file for FancyPants.
