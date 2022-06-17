@@ -34,6 +34,7 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.state.property.Property;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
@@ -172,6 +173,23 @@ public class BlockPolyGenerator {
 
         //=== FULL BLOCKS ===
         if (Block.isShapeFullCube(collisionShape)) {
+
+            if (!moddedState.isOpaque()) {
+                // Chorus flowers are full cubes & are not opaque.
+                // There are only 4 available states to reuse though
+                try {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.CHORUS_FLOWER_BLOCK_PROFILE);
+                } catch (BlockStateManager.StateLimitReachedException ignored) {}
+
+                // Each chorus plant state has a slightly different collision box.
+                // But it's roughly a full cube (it's the corners that miss a few pixels of collision)
+                try {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.CHORUS_PLANT_BLOCK_PROFILE);
+                } catch (BlockStateManager.StateLimitReachedException ignored) {}
+            }
+
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.FULL_BLOCK_PROFILE);
@@ -211,6 +229,27 @@ public class BlockPolyGenerator {
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.CACTUS_PROFILE);
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+        }
+
+        //=== BLOCKS WITH A FULL TOP FACE ===
+        if (Block.isFaceFullSquare(collisionShape, Direction.UP)) {
+
+            if (!moddedState.isOpaque()) {
+                try {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.CHORUS_FLOWER_BLOCK_PROFILE);
+                } catch (BlockStateManager.StateLimitReachedException ignored) {}
+
+                try {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.CHORUS_PLANT_BLOCK_PROFILE);
+                } catch (BlockStateManager.StateLimitReachedException ignored) {}
+            }
+
+            try {
+                isUniqueCallback.set(true);
+                return manager.requestBlockState(BlockStateProfile.FULL_BLOCK_PROFILE);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
