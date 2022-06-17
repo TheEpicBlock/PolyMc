@@ -34,6 +34,7 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.state.property.Property;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
@@ -198,6 +199,16 @@ public class BlockPolyGenerator {
                     ));
                 } catch (BlockStateManager.StateLimitReachedException ignored) {}
             }
+
+            if (outlineShape.getMax(Direction.Axis.Y) <= (1.0f / 16.0f)) {
+                try {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.PRESSURE_PLATE_PROFILE.and(
+                            state -> moddedState.getFluidState().equals(state.getFluidState())
+                    ));
+                } catch (BlockStateManager.StateLimitReachedException ignored) {}
+            }
+
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.NO_COLLISION_PROFILE.and(

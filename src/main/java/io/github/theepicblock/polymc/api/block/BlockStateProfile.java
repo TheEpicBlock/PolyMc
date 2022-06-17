@@ -80,6 +80,7 @@ public class BlockStateProfile {
     private static final Block[] SNOWY_GRASS_BLOCKS = {Blocks.MYCELIUM, Blocks.PODZOL}; // Snowy mycelium and podzol look the same as snowy grass
     private static final Block[] WATERLOGGED_SLABS = {Blocks.SMOOTH_STONE_SLAB}; // Smooth stone double slabs do not look like regular smooth stone blocks. Therefore, only the waterlogged double slab is available to us.
     private static final Block[] WALL_BLOCKS = {Blocks.COBBLESTONE_WALL, Blocks.MOSSY_COBBLESTONE_WALL, Blocks.BRICK_WALL, Blocks.PRISMARINE_WALL, Blocks.RED_SANDSTONE_WALL, Blocks.MOSSY_STONE_BRICK_WALL, Blocks.GRANITE_WALL, Blocks.STONE_BRICK_WALL, Blocks.NETHER_BRICK_WALL, Blocks.ANDESITE_WALL, Blocks.RED_NETHER_BRICK_WALL, Blocks.SANDSTONE_WALL, Blocks.END_STONE_BRICK_WALL, Blocks.DIORITE_WALL, Blocks.BLACKSTONE_WALL, Blocks.POLISHED_BLACKSTONE_BRICK_WALL, Blocks.POLISHED_BLACKSTONE_WALL, Blocks.COBBLED_DEEPSLATE_WALL, Blocks.POLISHED_DEEPSLATE_WALL, Blocks.DEEPSLATE_TILE_WALL, Blocks.DEEPSLATE_BRICK_WALL};
+    private static final Block[] PRESSURE_PLATE_BLOCKS = {Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE, Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE};
     private static final Block[] CLIMBABLE_BLOCKS = {Blocks.CAVE_VINES, Blocks.WEEPING_VINES, Blocks.TWISTING_VINES};
 
     //FILTERS
@@ -92,6 +93,7 @@ public class BlockStateProfile {
             blockState.get(WallBlock.SOUTH_SHAPE) == WallShape.NONE &&
             blockState.get(WallBlock.UP) == false;
     private static final Predicate<BlockState> TRIPWIRE_FILTER = BlockStateProfile::isStringUseable;
+    private static final Predicate<BlockState> PRESSURE_PLATE_FILTER = state -> state.get(Properties.POWER) > 1;
     private static final Predicate<BlockState> SMALL_DRIPLEAF_FILTER = state -> state.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER && state.get(SmallDripleafBlock.FACING) != Direction.NORTH;
     private static final Predicate<BlockState> CAVE_VINES_FILTER = state -> state.get(AbstractPlantStemBlock.AGE) != 0;
     private static final Predicate<BlockState> FARMLAND_FILTER = (blockState) -> {
@@ -174,6 +176,12 @@ public class BlockStateProfile {
         }
         return input;
     });
+    private static final BiConsumer<Block,PolyRegistry> PRESSURE_PLATE_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, (input) -> {
+        if (input.get(Properties.POWER) > 1) {
+            return input.with(Properties.POWER, 1);
+        }
+        return input;
+    });
     private static final BiConsumer<Block,PolyRegistry> POWERED_BLOCK_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, (input) -> input.with(Properties.POWERED, false));
     private static final BiConsumer<Block,PolyRegistry> TRIGGERED_BLOCK_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, (input) -> input.with(Properties.TRIGGERED, false));
     private static final BiConsumer<Block,PolyRegistry> SNOWY_GRASS_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, input -> {
@@ -242,13 +250,14 @@ public class BlockStateProfile {
     public static final BlockStateProfile WAXED_COPPER_SLAB_SUB_PROFILE = new BlockStateProfile("waxed copper slab", WAXED_COPPER_SLAB_BLOCKS, SLAB_FILTER, DOUBLESLAB_ON_FIRST_REGISTER); // This profile only handles top/bottom slabs. The double slabs are exposed via `DOUBLE_SLAB_SUB_PROFILE`
     public static final BlockStateProfile OPEN_FENCE_GATE_PROFILE = new BlockStateProfile("open fence gate", FENCE_GATE_BLOCKS, OPEN_FENCE_GATE_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile FENCE_GATE_PROFILE = new BlockStateProfile("fence gate", FENCE_GATE_BLOCKS, FENCE_GATE_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile PRESSURE_PLATE_PROFILE = new BlockStateProfile("pressure plate", PRESSURE_PLATE_BLOCKS, PRESSURE_PLATE_FILTER, PRESSURE_PLATE_ON_FIRST_REGISTER);
 
     //PROFILES
     public static final BlockStateProfile FULL_BLOCK_PROFILE = combine("full blocks", INFESTED_STONE_SUB_PROFILE, /*TNT_SUB_PROFILE,*/ SNOWY_GRASS_SUB_PROFILE, NOTE_BLOCK_SUB_PROFILE, DISPENSER_SUB_PROFILE, BEEHIVE_SUB_PROFILE, WAXED_COPPER_FULLBLOCK_SUB_PROFILE, JUKEBOX_SUB_PROFILE, DOUBLE_SLAB_SUB_PROFILE, TARGET_BLOCK_SUB_PROFILE, WATERLOGGED_SLAB_SUB_PROFILE);
     public static final BlockStateProfile CLIMBABLE_PROFILE = new BlockStateProfile("climbable blocks", CLIMBABLE_BLOCKS, CLIMBABLE_FILTER, CLIMBABLE_ON_FIRST_REGISTER);
     public static final BlockStateProfile LEAVES_PROFILE = getProfileWithDefaultFilter("leaves", LEAVES_BLOCKS);
     public static final BlockStateProfile NO_COLLISION_WALL_PROFILE = new BlockStateProfile("empty walls", WALL_BLOCKS, WALL_FILTER, WALL_ON_FIRST_REGISTER);
-    public static final BlockStateProfile NO_COLLISION_PROFILE = combine("blocks without collisions", KELP_SUB_PROFILE, SAPLING_SUB_PROFILE, SUGARCANE_SUB_PROFILE, /*CAVE_VINES_SUB_PROFILE,*/ TRIPWIRE_SUB_PROFILE, SMALL_DRIPLEAF_SUB_PROFILE, OPEN_FENCE_GATE_PROFILE);
+    public static final BlockStateProfile NO_COLLISION_PROFILE = combine("blocks without collisions", KELP_SUB_PROFILE, SAPLING_SUB_PROFILE, SUGARCANE_SUB_PROFILE, /*CAVE_VINES_SUB_PROFILE,*/ TRIPWIRE_SUB_PROFILE, SMALL_DRIPLEAF_SUB_PROFILE, OPEN_FENCE_GATE_PROFILE, PRESSURE_PLATE_PROFILE);
     public static final BlockStateProfile FARMLAND_PROFILE = new BlockStateProfile("farmland", Blocks.FARMLAND, FARMLAND_FILTER, FARMLAND_ON_FIRST_REGISTER);
     public static final BlockStateProfile CACTUS_PROFILE = getProfileWithDefaultFilter("cactus", Blocks.CACTUS);
     public static final BlockStateProfile DOOR_PROFILE = new BlockStateProfile("door", DOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
