@@ -8,7 +8,6 @@ import net.minecraft.util.collection.IndexedIterable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 @Mixin(PacketByteBuf.class)
@@ -22,7 +21,7 @@ public class WriteRegistryValueImplementation {
             int clientStateId = polymap.getClientStateRawId((BlockState)original, player);
 
             //noinspection unchecked
-            return (T) Block.STATE_IDS.get(clientStateId);
+            return (T)Block.STATE_IDS.get(clientStateId);
         }
         return original;
     }
