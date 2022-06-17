@@ -85,6 +85,7 @@ public class BlockStateProfile {
     //FILTERS
     private static final Predicate<BlockState> DEFAULT_FILTER = (blockState) -> blockState != blockState.getBlock().getDefaultState();
     private static final Predicate<BlockState> ALWAYS_TRUE_FILTER = (blockState) -> true;
+    private static final Predicate<BlockState> LEAVES_FILTER = (blockState) -> blockState != blockState.getBlock().getDefaultState() && blockState != blockState.getBlock().getDefaultState().with(LeavesBlock.WATERLOGGED, true);
     private static final Predicate<BlockState> WALL_FILTER = (blockState) ->
             blockState.get(WallBlock.NORTH_SHAPE) == WallShape.NONE &&
             blockState.get(WallBlock.WEST_SHAPE) == WallShape.NONE &&
@@ -132,6 +133,11 @@ public class BlockStateProfile {
 
     //ON FIRST REGISTERS
     private static final BiConsumer<Block,PolyRegistry> DEFAULT_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
+    private static final BiConsumer<Block,PolyRegistry> LEAVES_ON_FIRST_REGISTER = (block, polyRegistry) -> {
+        var regularState = block.getDefaultState();
+        var regularWaterloggedState = block.getDefaultState().with(LeavesBlock.WATERLOGGED, true);
+        polyRegistry.registerBlockPoly(block, new ConditionalSimpleBlockPoly(regularState, state -> state == regularState || state == regularWaterloggedState));
+    };
     private static final BiConsumer<Block,PolyRegistry> WALL_ON_FIRST_REGISTER = (block, polyRegistry) -> {
         polyRegistry.registerBlockPoly(block, input -> {
             if (WALL_FILTER.test(input)) {
@@ -254,7 +260,7 @@ public class BlockStateProfile {
     //PROFILES
     public static final BlockStateProfile FULL_BLOCK_PROFILE = combine("full blocks", INFESTED_STONE_SUB_PROFILE, /*TNT_SUB_PROFILE,*/ SNOWY_GRASS_SUB_PROFILE, NOTE_BLOCK_SUB_PROFILE, DISPENSER_SUB_PROFILE, BEEHIVE_SUB_PROFILE, WAXED_COPPER_FULLBLOCK_SUB_PROFILE, JUKEBOX_SUB_PROFILE, DOUBLE_SLAB_SUB_PROFILE, TARGET_BLOCK_SUB_PROFILE, WATERLOGGED_SLAB_SUB_PROFILE);
     public static final BlockStateProfile CLIMBABLE_PROFILE = new BlockStateProfile("climbable blocks", CLIMBABLE_BLOCKS, CLIMBABLE_FILTER, CLIMBABLE_ON_FIRST_REGISTER);
-    public static final BlockStateProfile LEAVES_PROFILE = getProfileWithDefaultFilter("leaves", LEAVES_BLOCKS);
+    public static final BlockStateProfile LEAVES_PROFILE = new BlockStateProfile("leaves", LEAVES_BLOCKS, LEAVES_FILTER, LEAVES_ON_FIRST_REGISTER);
     public static final BlockStateProfile NO_COLLISION_WALL_PROFILE = new BlockStateProfile("empty walls", WALL_BLOCKS, WALL_FILTER, WALL_ON_FIRST_REGISTER);
     public static final BlockStateProfile NO_COLLISION_PROFILE = combine("blocks without collisions", KELP_SUB_PROFILE, SAPLING_SUB_PROFILE, SUGARCANE_SUB_PROFILE, /*CAVE_VINES_SUB_PROFILE,*/ TRIPWIRE_SUB_PROFILE, SMALL_DRIPLEAF_SUB_PROFILE, OPEN_FENCE_GATE_PROFILE, PRESSURE_PLATE_PROFILE);
     public static final BlockStateProfile FARMLAND_PROFILE = new BlockStateProfile("farmland", Blocks.FARMLAND, FARMLAND_FILTER, FARMLAND_ON_FIRST_REGISTER);
