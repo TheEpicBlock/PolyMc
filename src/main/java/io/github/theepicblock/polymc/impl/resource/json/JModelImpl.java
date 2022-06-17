@@ -67,7 +67,7 @@ public class JModelImpl implements JModel {
     @Override
     public @NotNull Map<String,String> getTextures() {
         if (this.textures == null) {
-            this.textures = new HashMap<>();
+            this.textures = new TreeMap<>();
         }
         return this.textures;
     }
@@ -91,7 +91,7 @@ public class JModelImpl implements JModel {
     @Override
     public void setDisplay(JModelDisplayType position, JModelDisplay display) {
         if (this.display == null) {
-            this.display = new HashMap<>();
+            this.display = new TreeMap<>();
         }
         this.display.put(position, display);
     }
