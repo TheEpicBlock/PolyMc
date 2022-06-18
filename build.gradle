@@ -37,7 +37,7 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation include("nl.theepicblock:resource-locator-api:${project.resource_lookup_api_version}")
+	modImplementation include("nl.theepicblock:resource-locator-api:${project.resource_locator_api_version}")
 	modImplementation include("xyz.nucleoid:packet-tweaker:${project.packet_tweaker_version}")
 
 	// Compat

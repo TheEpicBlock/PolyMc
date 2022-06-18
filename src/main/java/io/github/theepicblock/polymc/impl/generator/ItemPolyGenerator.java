@@ -25,6 +25,7 @@ import io.github.theepicblock.polymc.impl.poly.item.ArmorColorManager;
 import io.github.theepicblock.polymc.impl.poly.item.CustomModelDataPoly;
 import io.github.theepicblock.polymc.impl.poly.item.DamageableItemPoly;
 import io.github.theepicblock.polymc.impl.poly.item.FancyPantsItemPoly;
+import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.item.*;
 
 /**
@@ -66,6 +67,9 @@ public class ItemPolyGenerator {
         }
         if (item instanceof DyeableItem) {
             return new CustomModelDataPoly(cmdManager, item, Items.LEATHER_HORSE_ARMOR);
+        }
+        if (AbstractFurnaceBlockEntity.canUseAsFuel(new ItemStack(item))) {
+            return new CustomModelDataPoly(cmdManager, item, CustomModelDataManager.FUEL_ITEMS);
         }
         if (item instanceof BlockItem) {
             return new CustomModelDataPoly(cmdManager, item, CustomModelDataManager.BLOCK_ITEMS);

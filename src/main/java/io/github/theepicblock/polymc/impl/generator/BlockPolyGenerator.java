@@ -198,6 +198,14 @@ public class BlockPolyGenerator {
 
         //=== NO COLLISION BLOCKS ===
         if (collisionShape.isEmpty() && !(moddedState.getBlock() instanceof WallBlock)) {
+
+            try {
+                if (moddedState.isIn(BlockTags.CLIMBABLE)) {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.CLIMBABLE_PROFILE);
+                }
+            } catch (BlockStateManager.StateLimitReachedException ignored) {}
+
             var outlineShape = moddedState.getOutlineShape(fakeWorld, BlockPos.ORIGIN);
 
             if (outlineShape.isEmpty()) {
@@ -208,6 +216,16 @@ public class BlockPolyGenerator {
                     ));
                 } catch (BlockStateManager.StateLimitReachedException ignored) {}
             }
+
+            if (outlineShape.getMax(Direction.Axis.Y) <= (1.0f / 16.0f)) {
+                try {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.PRESSURE_PLATE_PROFILE.and(
+                            state -> moddedState.getFluidState().equals(state.getFluidState())
+                    ));
+                } catch (BlockStateManager.StateLimitReachedException ignored) {}
+            }
+
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.NO_COLLISION_PROFILE.and(

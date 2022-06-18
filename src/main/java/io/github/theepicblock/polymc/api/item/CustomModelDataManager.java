@@ -33,17 +33,41 @@ public class CustomModelDataManager {
 
     public final static Item[] DEFAULT_ITEMS = {
             Items.STICK,
+            Items.FEATHER,
+            Items.FLINT,
+            Items.LEATHER,
+            Items.RABBIT_HIDE,
+            Items.RABBIT_FOOT,
+            Items.SCUTE,
+            Items.BRICK,
+            Items.CLAY_BALL,
+            Items.GHAST_TEAR,
+            Items.FERMENTED_SPIDER_EYE,
+            Items.MAGMA_CREAM,
             Items.GLISTERING_MELON_SLICE,
             Items.EMERALD,
+            Items.QUARTZ,
             Items.IRON_NUGGET,
+            Items.IRON_INGOT,
+            Items.COPPER_INGOT,
             Items.GOLD_NUGGET,
             Items.GOLD_INGOT,
+            Items.DIAMOND,
+            Items.NETHERITE_SCRAP,
             Items.NETHERITE_INGOT,
             Items.HEART_OF_THE_SEA,
+            Items.NAUTILUS_SHELL,
             Items.PHANTOM_MEMBRANE,
-            Items.BLAZE_POWDER,
+            Items.ECHO_SHARD,
+            Items.GUNPOWDER,
+            Items.SUGAR,
             Items.BLAZE_ROD,
-            Items.PAPER
+            Items.PAPER,
+    };
+    public final static Item[] FUEL_ITEMS = {
+            Items.COAL,
+            Items.CHARCOAL,
+            Items.BLAZE_ROD,
     };
     public final static Item[] FOOD_ITEMS = {
             Items.COOKED_BEEF,
@@ -122,7 +146,7 @@ public class CustomModelDataManager {
                 Item item = getRoundRobin(items);
                 return new Pair<>(item, requestCMD(item, amount));
             } catch (OutOfCustomModelDataValuesException ignored) {}
-        } while (roundRobin != startingRR);
+        } while (roundRobin % items.length != startingRR % items.length);
 
         throw new OutOfCustomModelDataValuesException(amount, items);
     }

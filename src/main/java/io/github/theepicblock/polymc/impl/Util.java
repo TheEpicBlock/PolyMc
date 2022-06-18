@@ -194,7 +194,7 @@ public class Util {
      */
     public static int getPolydRawIdFromState(BlockState state, ServerPlayerEntity playerEntity) {
         PolyMap map = Util.tryGetPolyMap(playerEntity);
-        return Block.STATE_IDS.getRawId(map.getClientState(state, playerEntity));
+        return map.getClientStateRawId(state, playerEntity);
     }
 
     /**

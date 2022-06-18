@@ -26,6 +26,7 @@ public class ListOfSlabs {
         SLAB2FULL.put((SlabBlock)Blocks.PETRIFIED_OAK_SLAB, Blocks.OAK_PLANKS);
         SLAB2FULL.put((SlabBlock)Blocks.WARPED_SLAB, Blocks.WARPED_PLANKS);
         SLAB2FULL.put((SlabBlock)Blocks.CRIMSON_SLAB, Blocks.CRIMSON_PLANKS);
+        SLAB2FULL.put((SlabBlock)Blocks.MANGROVE_SLAB, Blocks.MANGROVE_PLANKS);
         // Stones
         SLAB2FULL.put((SlabBlock)Blocks.STONE_SLAB, Blocks.STONE);
         SLAB2FULL.put((SlabBlock)Blocks.BLACKSTONE_SLAB, Blocks.BLACKSTONE);
@@ -50,6 +51,7 @@ public class ListOfSlabs {
         SLAB2FULL.put((SlabBlock)Blocks.RED_NETHER_BRICK_SLAB, Blocks.RED_NETHER_BRICKS);
         SLAB2FULL.put((SlabBlock)Blocks.DEEPSLATE_BRICK_SLAB, Blocks.DEEPSLATE_BRICKS);
         SLAB2FULL.put((SlabBlock)Blocks.POLISHED_BLACKSTONE_BRICK_SLAB, Blocks.POLISHED_BLACKSTONE_BRICKS);
+        SLAB2FULL.put((SlabBlock)Blocks.MUD_BRICK_SLAB, Blocks.MUD_BRICKS);
         // Sandstones
         SLAB2FULL.put((SlabBlock)Blocks.SANDSTONE_SLAB, Blocks.SANDSTONE);
         SLAB2FULL.put((SlabBlock)Blocks.SMOOTH_SANDSTONE_SLAB, Blocks.SMOOTH_SANDSTONE);

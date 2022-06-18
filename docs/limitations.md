@@ -22,13 +22,13 @@ You might encounter issues with items that use custom renders or edit their appe
 Your mileage will vary depending on the collision shape of the block. 
 It kinda has to match up with what the client thinks.
 
-PolyMc uses block states that go unused on the client side to display modded blocks. Here's an approximate, non-exhaustive, list of 
-how many unused block states each collision shape has:
+PolyMc uses block states that go unused on the client side to display modded blocks. This means there's a limit to how many blocks can be added. 
+Here's an approximate, non-exhaustive, list of how many unused block states each collision shape has:
 
-* Full blocks: 979
-* Uncollidable blocks: 119
-* Doors: 8
-* Trapdoors: 8
+* Full blocks: 971
+* Uncollidable blocks: 139 (can go up to 283)
+* Doors: 9
+* Trapdoors: 9
 * Path blocks: 5
 * Slabs: 5
 * Stairs: 4
