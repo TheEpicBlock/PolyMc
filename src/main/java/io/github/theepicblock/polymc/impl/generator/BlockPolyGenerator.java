@@ -172,7 +172,25 @@ public class BlockPolyGenerator {
         }
 
         //=== FULL BLOCKS ===
-        if (Block.isShapeFullCube(collisionShape)) {
+        // Blocks that have a full top face and at least something on the bottom are considered full blocks. This works better for some blocks
+        if (Block.isFaceFullSquare(collisionShape, Direction.UP) && collisionShape.getMin(Direction.Axis.Y) <= 0) {
+
+            if (!moddedState.isOpaque()) {
+                // Chorus flowers are full cubes & are not opaque.
+                // There are only 4 available states to reuse though
+                try {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.CHORUS_FLOWER_BLOCK_PROFILE);
+                } catch (BlockStateManager.StateLimitReachedException ignored) {}
+
+                // Each chorus plant state has a slightly different collision box.
+                // But it's roughly a full cube (it's the corners that miss a few pixels of collision)
+                try {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.CHORUS_PLANT_BLOCK_PROFILE);
+                } catch (BlockStateManager.StateLimitReachedException ignored) {}
+            }
+
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.FULL_BLOCK_PROFILE);

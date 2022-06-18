@@ -28,6 +28,7 @@ import net.minecraft.block.enums.SculkSensorPhase;
 import net.minecraft.block.enums.SlabType;
 import net.minecraft.block.enums.WallShape;
 import net.minecraft.item.HoneycombItem;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
 import org.apache.commons.lang3.ArrayUtils;
@@ -123,6 +124,31 @@ public class BlockStateProfile {
     //////////////////////////
     //  ON FIRST REGISTERS  //
     //////////////////////////
+    private static final Predicate<BlockState> CHORUS_FLOWER_FILTER = (blockState) -> {
+        int age = blockState.get(ChorusFlowerBlock.AGE);
+        return age > 0 && age < 5;
+    };
+    private static final Predicate<BlockState> CHORUS_PLANT_FILTER = (blockState) -> {
+        boolean down = hasBooleanDirection(blockState, Direction.DOWN);
+        boolean up = hasBooleanDirection(blockState, Direction.UP);
+        boolean east = hasBooleanDirection(blockState, Direction.EAST);
+        boolean north = hasBooleanDirection(blockState, Direction.NORTH);
+        boolean south = hasBooleanDirection(blockState, Direction.SOUTH);
+        boolean west = hasBooleanDirection(blockState, Direction.WEST);
+
+        int sides = (east ? 1 : 0) + (north ? 1 : 0) + (south ? 1 : 0) + (west ? 1 : 0);
+
+        if (!up && !down) {
+            if (sides == 0) {
+                return true; // This plant has no sides
+            }
+        }
+
+        // A middle-piece can not have any sides
+        return up && down && sides > 0;
+    };
+
+    //ON FIRST REGISTERS
     private static final BiConsumer<Block,PolyRegistry> DEFAULT_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
     private static final BiConsumer<Block,PolyRegistry> LEAVES_ON_FIRST_REGISTER = (block, polyRegistry) -> {
         var regularState = block.getDefaultState();
@@ -212,6 +238,8 @@ public class BlockStateProfile {
         }
         return input;
     });
+    private static final BiConsumer<Block,PolyRegistry> CHORUS_PLANT_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new ConditionalSimpleBlockPoly(Blocks.CHORUS_PLANT.getDefaultState(), CHORUS_PLANT_FILTER));
+    private static final BiConsumer<Block,PolyRegistry> CHORUS_FLOWER_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new ConditionalSimpleBlockPoly(Blocks.CHORUS_FLOWER.getDefaultState(), CHORUS_FLOWER_FILTER));
 
     ////////////////////
     //  SUB PROFILES  //
@@ -257,6 +285,8 @@ public class BlockStateProfile {
     public static final BlockStateProfile WAXED_COPPER_STAIR_PROFILE = new BlockStateProfile("waxed copper stair", WAXED_COPPER_STAIR_BLOCKS, ALWAYS_TRUE_FILTER, WAXED_COPPER_ON_FIRST_REGISTER);
     public static final BlockStateProfile SLAB_PROFILE = combine("slab", PETRIFIED_OAK_SLAB_SUB_PROFILE, WAXED_COPPER_SLAB_SUB_PROFILE);
     public static final BlockStateProfile SCULK_SENSOR_PROFILE = new BlockStateProfile("sculk sensor", Blocks.SCULK_SENSOR, SCULK_FILTER, SCULK_SENSOR_ON_FIRST_REGISTER);
+    public static final BlockStateProfile CHORUS_PLANT_BLOCK_PROFILE = new BlockStateProfile("chorus plant block", Blocks.CHORUS_PLANT, CHORUS_PLANT_FILTER, CHORUS_PLANT_ON_FIRST_REGISTER);
+    public static final BlockStateProfile CHORUS_FLOWER_BLOCK_PROFILE = new BlockStateProfile("chorus flower block", Blocks.CHORUS_FLOWER, CHORUS_FLOWER_FILTER, CHORUS_FLOWER_ON_FIRST_REGISTER);
 
     //////////////////
     //  OTHER CODE  //
@@ -302,4 +332,15 @@ public class BlockStateProfile {
     public BlockStateProfile and(Predicate<BlockState> filter) {
         return new BlockStateProfile(this.name, this.blocks, this.filter.and(filter), this.onFirstRegister);
     }
+
+    /**
+     * Check if the BlockState has the given Direction property enabled.
+     *
+     * @author   Jelle De Loecker   <jelle@elevenways.be>
+     */
+    public static boolean hasBooleanDirection(BlockState state, Direction direction) {
+        BooleanProperty booleanProperty = ConnectingBlock.FACING_PROPERTIES.get(direction);
+        return state.contains(booleanProperty) && state.get(booleanProperty);
+    }
+
 }
