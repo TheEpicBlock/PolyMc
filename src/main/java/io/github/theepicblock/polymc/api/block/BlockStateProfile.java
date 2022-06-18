@@ -124,14 +124,11 @@ public class BlockStateProfile {
     //////////////////////////
     //  ON FIRST REGISTERS  //
     //////////////////////////
-    // Chorus flowers are full blocks, and have 4 states that can be reused
     private static final Predicate<BlockState> CHORUS_FLOWER_FILTER = (blockState) -> {
-        int age = blockState.get(Properties.AGE_5);
+        int age = blockState.get(ChorusFlowerBlock.AGE);
         return age > 0 && age < 5;
     };
-    // Some chorus plant states can be used as non-opaque blocks
     private static final Predicate<BlockState> CHORUS_PLANT_FILTER = (blockState) -> {
-
         boolean down = hasBooleanDirection(blockState, Direction.DOWN);
         boolean up = hasBooleanDirection(blockState, Direction.UP);
         boolean east = hasBooleanDirection(blockState, Direction.EAST);
@@ -139,28 +136,16 @@ public class BlockStateProfile {
         boolean south = hasBooleanDirection(blockState, Direction.SOUTH);
         boolean west = hasBooleanDirection(blockState, Direction.WEST);
 
-        int east_int = east ? 1 : 0;
-        int north_int = north ? 1 : 0;
-        int south_int = south ? 1 : 0;
-        int west_int = west ? 1 : 0;
-
-        int sides = east_int + north_int + south_int + west_int;
+        int sides = (east ? 1 : 0) + (north ? 1 : 0) + (south ? 1 : 0) + (west ? 1 : 0);
 
         if (!up && !down) {
             if (sides == 0) {
-                return true;
+                return true; // This plant has no sides
             }
-
-            return sides > 2;
         }
 
         // A middle-piece can not have any sides
-        if (up && down && sides > 0) {
-            return true;
-        }
-
-        // A branch piece can only have 1 side
-        return up && sides > 1;
+        return up && down && sides > 0;
     };
 
     //ON FIRST REGISTERS
