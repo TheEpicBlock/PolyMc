@@ -35,6 +35,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 public interface PolyMap {
@@ -56,6 +57,7 @@ public interface PolyMap {
     /**
      * Get the raw id of the clientside blockstate.
      */
+    @ApiStatus.Internal
     default int getClientStateRawId(BlockState state, ServerPlayerEntity playerEntity) {
         BlockState clientState = this.getClientState(state, playerEntity);
 
