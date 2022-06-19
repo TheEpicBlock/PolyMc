@@ -59,7 +59,7 @@ public class CustomModelDataPoly implements ItemPoly {
     private static final UUID ATTACK_DAMAGE_MODIFIER_ID = EntityAttributeUuidAccessor.getATTACK_DAMAGE_MODIFIER_ID();
     private static final UUID ATTACK_SPEED_MODIFIER_ID = EntityAttributeUuidAccessor.getATTACK_SPEED_MODIFIER_ID();
 
-    protected final ItemStack cachedClientItem;
+    protected final ThreadLocal<ItemStack> cachedClientItem;
     protected final int cmdValue;
     protected final Item base;
 
@@ -85,10 +85,13 @@ public class CustomModelDataPoly implements ItemPoly {
      */
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item base, Item[] targets) {
         Pair<Item,Integer> pair = registerManager.requestCMD(targets);
-        cmdValue = pair.getRight();
-        cachedClientItem = new ItemStack(pair.getLeft());
         this.base = base;
-        addCustomTagsToItem(cachedClientItem);
+        cmdValue = pair.getRight();
+        cachedClientItem = ThreadLocal.withInitial(() -> {
+            var stack = new ItemStack(pair.getLeft());
+            addCustomTagsToItem(stack);
+            return stack;
+        });
     }
 
     /**
@@ -107,9 +110,9 @@ public class CustomModelDataPoly implements ItemPoly {
     @SuppressWarnings("ConstantConditions")
     @Override
     public ItemStack getClientItem(ItemStack input, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
-        ItemStack serverItem = cachedClientItem;
+        ItemStack serverItem = cachedClientItem.get();
         if (input.hasNbt()) {
-            serverItem = cachedClientItem.copy();
+            serverItem = cachedClientItem.get().copy();
             serverItem.setNbt(input.getNbt().copy());
 
             // Doing this removes the custom tags, so we should add that again
@@ -250,7 +253,7 @@ public class CustomModelDataPoly implements ItemPoly {
             pack.importRequirements(moddedResources, moddedItemModel, logger);
         }
 
-        var clientitemId = Registry.ITEM.getId(this.cachedClientItem.getItem());
+        var clientitemId = Registry.ITEM.getId(this.base);
 
         // Copy and retrieve the vanilla item's model
         var clientItemModel = pack.getOrDefaultVanillaItemModel(moddedResources, clientitemId.getNamespace(), clientitemId.getPath(), logger);
@@ -271,6 +274,6 @@ public class CustomModelDataPoly implements ItemPoly {
 
     @Override
     public String getDebugInfo(Item item) {
-        return "CMD: " + Util.expandTo(cmdValue, 3) + ", item:" + cachedClientItem.getTranslationKey();
+        return "CMD: " + Util.expandTo(cmdValue, 3) + ", item:" + cachedClientItem.get().getTranslationKey();
     }
 }
