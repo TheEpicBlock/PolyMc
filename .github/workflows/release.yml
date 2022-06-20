@@ -9,6 +9,17 @@ jobs:
   github-release:
     runs-on: ubuntu-latest
     steps:
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/loom-cache
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-
+
       - name: Checkout repository
         uses: actions/checkout@v2
 
