@@ -72,9 +72,9 @@ public class ListOfSlabs {
         SLAB2FULL.put((SlabBlock)Blocks.EXPOSED_CUT_COPPER_SLAB, Blocks.EXPOSED_CUT_COPPER);
         SLAB2FULL.put((SlabBlock)Blocks.WEATHERED_CUT_COPPER_SLAB, Blocks.WEATHERED_CUT_COPPER);
         SLAB2FULL.put((SlabBlock)Blocks.OXIDIZED_CUT_COPPER_SLAB, Blocks.OXIDIZED_CUT_COPPER);
-        SLAB2FULL.put((SlabBlock)Blocks.WAXED_CUT_COPPER_SLAB, Blocks.WAXED_CUT_COPPER);
-        SLAB2FULL.put((SlabBlock)Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB, Blocks.WAXED_EXPOSED_CUT_COPPER);
-        SLAB2FULL.put((SlabBlock)Blocks.WAXED_WEATHERED_CUT_COPPER_SLAB, Blocks.WAXED_WEATHERED_CUT_COPPER);
-        SLAB2FULL.put((SlabBlock)Blocks.WAXED_OXIDIZED_CUT_COPPER_SLAB, Blocks.WAXED_OXIDIZED_CUT_COPPER);
+        SLAB2FULL.put((SlabBlock)Blocks.WAXED_CUT_COPPER_SLAB, Blocks.CUT_COPPER); // We're replacing them with the regular ones instead of the waxed ones because the waxed ones are already used for other polys
+        SLAB2FULL.put((SlabBlock)Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB, Blocks.EXPOSED_CUT_COPPER);
+        SLAB2FULL.put((SlabBlock)Blocks.WAXED_WEATHERED_CUT_COPPER_SLAB, Blocks.WEATHERED_CUT_COPPER);
+        SLAB2FULL.put((SlabBlock)Blocks.WAXED_OXIDIZED_CUT_COPPER_SLAB, Blocks.OXIDIZED_CUT_COPPER);
     }
 }
