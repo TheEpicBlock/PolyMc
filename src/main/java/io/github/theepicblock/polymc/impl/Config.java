@@ -70,7 +70,7 @@ public class Config {
         }
 
         if (mixin.equals("compat.FabricRegistrySyncDisabler")) {
-            return FabricLoader.getInstance().isModLoaded("fabric-registry-sync-v0");
+            return !FabricLoader.getInstance().isModLoaded("fabric-registry-sync-v0");
         }
 
         if (mixin.startsWith("compat.immersive_portals")) {
