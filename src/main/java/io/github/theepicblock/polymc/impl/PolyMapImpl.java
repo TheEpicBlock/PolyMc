@@ -54,9 +54,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * This is the standard implementation of the PolyMap that PolyMc uses by default.
@@ -229,9 +231,7 @@ public class PolyMapImpl implements PolyMap {
         // It doesn't actually matter which namespace the language files are under. We're just going to put them all under 'polymc-lang'
         languageKeys.forEach((path, translations) -> {
             pack.setAsset("polymc-lang", path, (stream, gson) -> {
-                try (var writer = new OutputStreamWriter(stream)) {
-                    gson.toJson(translations, writer);
-                }
+                Util.writeJsonToStream(stream, gson, translations);
             });
         });
 
