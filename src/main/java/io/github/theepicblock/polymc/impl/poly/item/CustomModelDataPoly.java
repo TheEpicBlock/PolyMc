@@ -61,10 +61,11 @@ public class CustomModelDataPoly implements ItemPoly {
 
     protected final ThreadLocal<ItemStack> cachedClientItem;
     protected final int cmdValue;
-    protected final Item base;
+    protected final Item clientItem;
+    protected final Item moddedBase;
 
-    public CustomModelDataPoly(CustomModelDataManager registerManager, Item base) {
-        this(registerManager, base, CustomModelDataManager.DEFAULT_ITEMS);
+    public CustomModelDataPoly(CustomModelDataManager registerManager, Item moddedBase) {
+        this(registerManager, moddedBase, CustomModelDataManager.DEFAULT_ITEMS);
     }
 
     /**
@@ -73,8 +74,8 @@ public class CustomModelDataPoly implements ItemPoly {
      * @param registerManager manager used to generate the CMD value
      * @param target          the serverside item will be of this type
      */
-    public CustomModelDataPoly(CustomModelDataManager registerManager, Item base, Item target) {
-        this(registerManager, base, new Item[]{target});
+    public CustomModelDataPoly(CustomModelDataManager registerManager, Item moddedBase, Item target) {
+        this(registerManager, moddedBase, new Item[]{target});
     }
 
     /**
@@ -83,12 +84,13 @@ public class CustomModelDataPoly implements ItemPoly {
      * @param registerManager manager used to generate the CMD value
      * @param targets         the serverside items that can be chosen from
      */
-    public CustomModelDataPoly(CustomModelDataManager registerManager, Item base, Item[] targets) {
+    public CustomModelDataPoly(CustomModelDataManager registerManager, Item moddedBase, Item[] targets) {
         Pair<Item,Integer> pair = registerManager.requestCMD(targets);
-        this.base = base;
-        cmdValue = pair.getRight();
+        this.moddedBase = moddedBase;
+        this.clientItem = pair.getLeft();
+        this.cmdValue = pair.getRight();
         cachedClientItem = ThreadLocal.withInitial(() -> {
-            var stack = new ItemStack(pair.getLeft());
+            var stack = new ItemStack(clientItem);
             addCustomTagsToItem(stack);
             return stack;
         });
@@ -176,7 +178,7 @@ public class CustomModelDataPoly implements ItemPoly {
             try {
                 for (var slotType : EquipmentSlot.values()) {
                     // This will only include the default attributes
-                    var attributes = base.getAttributeModifiers(slotType);
+                    var attributes = moddedBase.getAttributeModifiers(slotType);
                     if (!attributes.isEmpty()) {
                         lore.add(toStr(Text.empty()));
                         lore.add(toStr(explicitlySetItalics((Text.translatable("item.modifiers." + slotType.getName())).formatted(Formatting.GRAY))));
@@ -253,7 +255,7 @@ public class CustomModelDataPoly implements ItemPoly {
             pack.importRequirements(moddedResources, moddedItemModel, logger);
         }
 
-        var clientitemId = Registry.ITEM.getId(this.base);
+        var clientitemId = Registry.ITEM.getId(this.clientItem);
 
         // Copy and retrieve the vanilla item's model
         var clientItemModel = pack.getOrDefaultVanillaItemModel(moddedResources, clientitemId.getNamespace(), clientitemId.getPath(), logger);
@@ -262,7 +264,8 @@ public class CustomModelDataPoly implements ItemPoly {
 
         // Check if the modded item model has overrides
         if (moddedItemModel != null && !moddedItemModel.getOverridesReadOnly().isEmpty()) {
-            // The modded item has overrides, we should remove them and use them as basis for the client item model instead
+            // The modded item has overrides of its own. The correct behaviour here is for PolyMc to move those overrides
+            // Into the vanilla item, adding the custom model data as an additional predicate for each override.
             for (var override : moddedItemModel.getOverridesReadOnly()) {
                 var predicates = new TreeMap<>(override.predicates());
                 predicates.put("custom_model_data", (float)cmdValue);
@@ -274,6 +277,6 @@ public class CustomModelDataPoly implements ItemPoly {
 
     @Override
     public String getDebugInfo(Item item) {
-        return "CMD: " + Util.expandTo(cmdValue, 3) + ", item:" + cachedClientItem.get().getTranslationKey();
+        return "CMD: " + Util.expandTo(cmdValue, 3) + ", item:" + clientItem.getTranslationKey();
     }
 }
