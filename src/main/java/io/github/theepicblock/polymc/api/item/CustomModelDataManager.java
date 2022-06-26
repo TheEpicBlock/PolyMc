@@ -23,6 +23,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.Pair;
+import org.jetbrains.annotations.ApiStatus;
 
 /**
  * Helper class to prevent CustomModelData values from conflicting.
@@ -92,6 +93,11 @@ public class CustomModelDataManager {
             Items.BAKED_POTATO,
             Items.BREAD
     };
+    @ApiStatus.Internal
+    public final static Item[] FULL_BLOCK_ITEMS = {
+            Items.STRUCTURE_VOID
+    };
+    @ApiStatus.Internal
     public final static Item[] BLOCK_ITEMS = {
             Items.STRUCTURE_VOID
     };
