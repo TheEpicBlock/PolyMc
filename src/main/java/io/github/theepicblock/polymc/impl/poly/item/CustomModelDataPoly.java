@@ -144,7 +144,7 @@ public class CustomModelDataPoly implements ItemPoly {
                     list.add(toStr(line));
                 }
 
-                // serveritem is always either the cached item or a copy, so it's okay to modify
+                // `serverItem` is always either the cached item or a copy, so it's okay to modify
                 NbtCompound display = serverItem.getOrCreateSubNbt("display");
                 display.put("Lore", list);
             }
@@ -255,10 +255,10 @@ public class CustomModelDataPoly implements ItemPoly {
             pack.importRequirements(moddedResources, moddedItemModel, logger);
         }
 
-        var clientitemId = Registry.ITEM.getId(this.clientItem);
+        var clientItemId = Registry.ITEM.getId(this.clientItem);
 
         // Copy and retrieve the vanilla item's model
-        var clientItemModel = pack.getOrDefaultVanillaItemModel(moddedResources, clientitemId.getNamespace(), clientitemId.getPath(), logger);
+        var clientItemModel = pack.getOrDefaultVanillaItemModel(moddedResources, clientItemId.getNamespace(), clientItemId.getPath(), logger);
         // Add an override into the vanilla item's model that references the modded one
         clientItemModel.getOverrides().add(JModelOverride.ofCMD(cmdValue, ResourceConstants.itemLocation(moddedItemId)));
 
