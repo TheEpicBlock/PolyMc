@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.jar.JarFile;
@@ -71,8 +72,14 @@ public class ClientJarResourcesImpl implements ClientJarResources {
             } catch (URISyntaxException ignored) {}
         }
 
-        // This location was copied from Polymer to prevent the client jar from being downloaded twice.
-        return loader.getGameDir().resolve("polymer_cache/client_jars/" + CLIENT_SHA1 + ".jar");
+        // We used to store our jars in this directory
+        var oldLocation = loader.getGameDir().resolve("polymer_cache/client_jars/" + CLIENT_SHA1 + ".jar");
+        if (Files.exists(oldLocation)) {
+            return oldLocation;
+        }
+
+        // We are using the same location as polymer uses, this ensures that the jar isn't downloaded twice
+        return loader.getGameDir().resolve("polymer_cache/cached_client_jars/" + CLIENT_SHA1 + ".jar");
     }
 
     @Override
