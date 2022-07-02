@@ -39,12 +39,13 @@ import java.util.List;
  */
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection", "JavadocReference"})
 public class Config {
-    public static final int LATEST_VERSION = 9;
+    public static final int LATEST_VERSION = 10;
     public MiscConfig misc;
     private int configVersion;
     private List<String> disabledMixins;
     public boolean remapVanillaBlockIds;
     public boolean enableWizardThreading;
+    public boolean forceBlockIdIntControl;
     public int maxPacketsPerSecond;
 
     public int getConfigVersion() {
@@ -78,6 +79,12 @@ public class Config {
         }
         if (mixin.equals("block.implementations.ChunkDataPlayerProvider") || mixin.equals("wizards.block.WatchProviderMixin")) {
             return FabricLoader.getInstance().isModLoaded("imm_ptl_core");
+        }
+
+        if (mixin.contains("dontforceintcontrol")) {
+            return !forceBlockIdIntControl;
+        } else if (mixin.contains("forceintcontrol")) {
+            return forceBlockIdIntControl;
         }
 
         return false;
