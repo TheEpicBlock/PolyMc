@@ -91,8 +91,9 @@ public class BlockStateProfile {
     private static final Predicate<BlockState> DEFAULT_FILTER = (blockState) -> blockState != blockState.getBlock().getDefaultState();
     private static final Predicate<BlockState> ALWAYS_TRUE_FILTER = (blockState) -> true;
     private static final Predicate<BlockState> LEAVES_FILTER = (blockState) ->
-            blockState != blockState.getBlock().getDefaultState() &&
-            blockState != blockState.getBlock().getDefaultState().with(LeavesBlock.WATERLOGGED, true);
+            // We choose the persistent states as the ones we don't mess with because that's the default placement state
+            blockState != blockState.getBlock().getDefaultState().with(LeavesBlock.PERSISTENT, true) &&
+            blockState != blockState.getBlock().getDefaultState().with(LeavesBlock.PERSISTENT, true).with(LeavesBlock.WATERLOGGED, true);
     private static final Predicate<BlockState> WALL_FILTER = (blockState) ->
             blockState.get(WallBlock.NORTH_SHAPE) == WallShape.NONE &&
             blockState.get(WallBlock.WEST_SHAPE) == WallShape.NONE &&
@@ -151,9 +152,8 @@ public class BlockStateProfile {
     //ON FIRST REGISTERS
     private static final BiConsumer<Block,PolyRegistry> DEFAULT_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
     private static final BiConsumer<Block,PolyRegistry> LEAVES_ON_FIRST_REGISTER = (block, polyRegistry) -> {
-        var regularState = block.getDefaultState();
-        var regularWaterloggedState = block.getDefaultState().with(LeavesBlock.WATERLOGGED, true);
-        polyRegistry.registerBlockPoly(block, new ConditionalSimpleBlockPoly(regularState, state -> state == regularState || state == regularWaterloggedState));
+        var defaultState = block.getDefaultState().with(LeavesBlock.PERSISTENT, true);
+        polyRegistry.registerBlockPoly(block, input -> defaultState.with(Properties.WATERLOGGED, input.get(Properties.WATERLOGGED)));
     };
     private static final BiConsumer<Block,PolyRegistry> WALL_ON_FIRST_REGISTER = (block, polyRegistry) -> {
         polyRegistry.registerBlockPoly(block, input -> {

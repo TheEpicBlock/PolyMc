@@ -106,6 +106,7 @@ public class CustomModelDataPoly implements ItemPoly {
 
         NbtCompound tag = stack.getOrCreateNbt();
         tag.putInt("CustomModelData", cmdValue);
+        tag.putString("PolyMcId", Registry.ITEM.getId(item).toString());
         stack.setNbt(tag);
     }
 
@@ -129,7 +130,7 @@ public class CustomModelDataPoly implements ItemPoly {
             } catch (Exception | NoClassDefFoundError ignored) {}
 
             if (!tooltips.isEmpty()) {
-                NbtList list = new NbtList();
+                NbtList list = serverItem.getOrCreateSubNbt("display").getList("Lore", NbtElement.LIST_TYPE);
                 for (Text line : tooltips) {
                     if (line instanceof MutableText mText) {
                         // Cancels the styling of the lore
@@ -168,7 +169,7 @@ public class CustomModelDataPoly implements ItemPoly {
             }
         }
 
-        // Add the attributes (This code has been copied from ItemStack#getTooltip)
+        // Add the attributes (This code has been mostly copied from ItemStack#getTooltip)
         if (isInventory(location) && Util.isSectionVisible(input, ItemStack.TooltipSection.MODIFIERS) && (!serverItem.hasNbt() || !serverItem.getNbt().contains("AttributeModifiers", NbtElement.LIST_TYPE))) {
             var tag = serverItem.getOrCreateNbt();
             tag.put("AttributeModifiers", new NbtList());
