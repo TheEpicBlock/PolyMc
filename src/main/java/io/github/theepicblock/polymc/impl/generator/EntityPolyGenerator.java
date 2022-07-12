@@ -2,16 +2,17 @@ package io.github.theepicblock.polymc.impl.generator;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
+import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
 import io.github.theepicblock.polymc.impl.poly.entity.DefaultedEntityPoly;
 import io.github.theepicblock.polymc.impl.poly.entity.MissingEntityPoly;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.registry.Registry;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 
 /**
  * Class to automatically generate {@link EntityPoly}s for {@link EntityType}s
@@ -21,19 +22,14 @@ public class EntityPolyGenerator {
      * Generates the most suitable {@link EntityPoly} for a given {@link EntityType}
      */
     public static <T extends Entity> EntityPoly<T> generatePoly(EntityType<T> entityType, PolyRegistry builder) {
-        var possible = new ArrayList<EntityType<?>>();
+        // Get the class of the entity
         var baseClass = InternalEntityHelpers.getEntityClass(entityType);
-        var allSubclasses = new ArrayList<Class<?>>();
 
-        Class<?> tempClass = baseClass;
-        while (tempClass != Entity.class) {
-            allSubclasses.add(tempClass);
-            tempClass = tempClass.getSuperclass();
-        }
-
-
+        // Iterate over all vanilla entities to see if any are assignable
+        var possible = new ArrayList<EntityType<?>>();
         for (var possibleType : Registry.ENTITY_TYPE) {
-            if (Registry.ENTITY_TYPE.getId(possibleType).getNamespace().equals("minecraft")) {
+            var id = Registry.ENTITY_TYPE.getId(possibleType);
+            if (Util.isVanilla(id)) {
                 Class<?> entityClass = InternalEntityHelpers.getEntityClass(possibleType);
 
                 while (entityClass != LivingEntity.class && entityClass != Entity.class) {
@@ -47,27 +43,36 @@ public class EntityPolyGenerator {
             }
         }
 
-
-        possible.sort(Comparator.comparingInt(x -> {
-            Class<?> clazz = baseClass;
-            Class<?> clazzTarget = InternalEntityHelpers.getEntityClass(x);
-
-            int a = 0;
-            while (clazz != Object.class) {
-                if (clazz.isAssignableFrom(clazzTarget)) {
-                    break;
-                }
-
-                clazz = clazz.getSuperclass();
-                a++;
+        // Sort the list of entities that match by the highest type
+        // For example, if both ChestBoatEntity and BoatEntity matched, the boat will be first in the list
+        possible.sort((a, b) -> {
+            var classA = InternalEntityHelpers.getEntityClass(a);
+            var classB = InternalEntityHelpers.getEntityClass(b);
+            if (classA == classB) return 0;
+            if (classA.isAssignableFrom(classB)) {
+                // A is a super type of B, sort it higher
+                return 1;
+            } else {
+                // B is a super type of A
+                return -1;
             }
-            return a;
-        }));
+        });
 
-        return possible.size() > 0
-                ? new DefaultedEntityPoly<>(possible.get(0))
-                : LivingEntity.class.isAssignableFrom(baseClass)
-                ? new DefaultedEntityPoly<>(EntityType.ARMOR_STAND) : new MissingEntityPoly<>();
+        if (possible.size() > 0) {
+            return new DefaultedEntityPoly<>(possible.get(0));
+        }
+
+        if (LivingEntity.class.isAssignableFrom(baseClass)) {
+            // This is a type of living entity
+            return new DefaultedEntityPoly<>(EntityType.ARMOR_STAND);
+        }
+
+        if (ProjectileEntity.class.isAssignableFrom(baseClass)) {
+            // This is some kind of projectile
+            return new DefaultedEntityPoly<>(EntityType.ARROW);
+        }
+
+        return new MissingEntityPoly<>();
     }
 
     /**

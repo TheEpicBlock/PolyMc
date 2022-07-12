@@ -170,19 +170,19 @@ public final class FakeWorld extends World {
             try {
                 world = (FakeWorld) UnsafeAccess.UNSAFE.allocateInstance(FakeWorld.class);
                 var accessor = (WorldAccessor) world;
-                accessor.polymc$setBiomeAccess(new BiomeAccess(world, 1l));
-                accessor.polymc$setBorder(new WorldBorder());
-                accessor.polymc$setDebugWorld(true);
-                accessor.polymc$setProfiler(() -> new ProfilerSystem(() -> 0l, () -> 0, false));
-                accessor.polymc$setProperties(new FakeWorldProperties());
-                accessor.polymc$setRegistryKey(RegistryKey.of(Registry.WORLD_KEY, new Identifier("polymc", "fake_world")));
-                accessor.polymc$setDimensionKey(DimensionTypes.OVERWORLD);
-                accessor.polymc$setDimensionEntry(BuiltinRegistries.DIMENSION_TYPE.entryOf(DimensionTypes.OVERWORLD));
-                accessor.polymc$setThread(Thread.currentThread());
-                accessor.polymc$setRandom(Random.create());
-                accessor.polymc$setAsyncRandom(Random.createThreadSafe());
-                accessor.polymc$setBlockEntityTickers(new ArrayList<>());
-                accessor.polymc$setPendingBlockEntityTickers(new ArrayList<>());
+                accessor.setBiomeAccess(new BiomeAccess(world, 1l));
+                accessor.setBorder(new WorldBorder());
+                accessor.setDebugWorld(true);
+                accessor.setProfiler(() -> new ProfilerSystem(() -> 0l, () -> 0, false));
+                accessor.setProperties(new FakeWorldProperties());
+                accessor.setRegistryKey(RegistryKey.of(Registry.WORLD_KEY, new Identifier("polymc", "fake_world")));
+                accessor.setDimensionKey(DimensionTypes.OVERWORLD);
+                accessor.setDimensionEntry(BuiltinRegistries.DIMENSION_TYPE.entryOf(DimensionTypes.OVERWORLD));
+                accessor.setThread(Thread.currentThread());
+                accessor.setRandom(Random.create());
+                accessor.setThreadSafeRandom(Random.createThreadSafe());
+                accessor.setBlockEntityTickers(new ArrayList<>());
+                accessor.setPendingBlockEntityTickers(new ArrayList<>());
 
             } catch (Throwable e) {
                 PolyMc.LOGGER.error("Creating fake world with unsafe failed... Time for plan B");

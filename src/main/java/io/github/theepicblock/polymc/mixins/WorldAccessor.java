@@ -20,54 +20,54 @@ import java.util.function.Supplier;
 @Mixin(World.class)
 public interface WorldAccessor {
     @Mutable
-    @Accessor("thread")
-    void polymc$setThread(Thread thread);
+    @Accessor
+    void setThread(Thread thread);
 
     @Mutable
-    @Accessor("debugWorld")
-    void polymc$setDebugWorld(boolean debugWorld);
+    @Accessor
+    void setDebugWorld(boolean debugWorld);
 
     @Mutable
-    @Accessor("properties")
-    void polymc$setProperties(MutableWorldProperties properties);
+    @Accessor
+    void setProperties(MutableWorldProperties properties);
 
     @Mutable
-    @Accessor("profiler")
-    void polymc$setProfiler(Supplier<Profiler> profiler);
+    @Accessor
+    void setProfiler(Supplier<Profiler> profiler);
 
     @Mutable
-    @Accessor("border")
-    void polymc$setBorder(WorldBorder border);
+    @Accessor
+    void setBorder(WorldBorder border);
 
     @Mutable
-    @Accessor("biomeAccess")
-    void polymc$setBiomeAccess(BiomeAccess biomeAccess);
+    @Accessor
+    void setBiomeAccess(BiomeAccess biomeAccess);
 
     @Mutable
-    @Accessor("registryKey")
-    void polymc$setRegistryKey(RegistryKey<World> registryKey);
+    @Accessor
+    void setRegistryKey(RegistryKey<World> registryKey);
 
     @Mutable
-    @Accessor("dimension")
-    void polymc$setDimensionKey(RegistryKey<DimensionType> dimension);
+    @Accessor
+    void setDimensionKey(RegistryKey<DimensionType> dimension);
 
     @Mutable
-    @Accessor("dimensionEntry")
-    void polymc$setDimensionEntry(RegistryEntry<DimensionType> dimensionEntry);
+    @Accessor
+    void setDimensionEntry(RegistryEntry<DimensionType> dimensionEntry);
 
     @Mutable
-    @Accessor("random")
-    void polymc$setRandom(Random random);
+    @Accessor
+    void setRandom(Random random);
 
     @Mutable
-    @Accessor("threadSafeRandom")
-    void polymc$setAsyncRandom(Random random);
+    @Accessor
+    void setThreadSafeRandom(Random random);
 
     @Mutable
-    @Accessor("blockEntityTickers")
-    void polymc$setBlockEntityTickers(List<BlockEntityTickInvoker> list);
+    @Accessor
+    void setBlockEntityTickers(List<BlockEntityTickInvoker> list);
 
     @Mutable
-    @Accessor("pendingBlockEntityTickers")
-    void polymc$setPendingBlockEntityTickers(List<BlockEntityTickInvoker> list);
+    @Accessor
+    void setPendingBlockEntityTickers(List<BlockEntityTickInvoker> list);
 }
