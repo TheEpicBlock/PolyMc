@@ -52,6 +52,9 @@ public abstract class BlockBreakingPatch {
     @Unique
     private int blockBreakingCooldown;
 
+    @Unique
+    private boolean hasMineFatigue = false;
+
     @Shadow
     public abstract void finishMining(BlockPos pos, int sequence, String reason);
 
@@ -95,11 +98,16 @@ public abstract class BlockBreakingPatch {
         if (CustomBlockBreakingCheck.needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
                 // This prevents the client from trying to break the block themselves.
-                player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(this.player.getId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
+                if (this.world.getBlockState(pos).calcBlockBreakingDelta(this.player, this.player.world, pos) < 1) {
+                    hasMineFatigue = true;
+                    player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(this.player.getId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
+                }
             } else if (action == PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK) {
                 removeFakeMiningFatigue();
                 player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, -1));
             }
+        } else if (hasMineFatigue) {
+            removeFakeMiningFatigue();
         }
     }
 
@@ -109,12 +117,14 @@ public abstract class BlockBreakingPatch {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
                 this.startMiningTime += blockBreakingCooldown;
             }
+        } else if (hasMineFatigue) {
+            removeFakeMiningFatigue();
         }
     }
 
     @Inject(method = "finishMining", at = @At("HEAD"))
     private void clearEffects(BlockPos pos, int sequence, String reason, CallbackInfo ci) {
-        if (CustomBlockBreakingCheck.needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
+        if (hasMineFatigue) {
             removeFakeMiningFatigue();
         }
     }
