@@ -30,6 +30,7 @@ import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -48,17 +49,17 @@ public abstract class BlockBreakingPatch {
     @Shadow @Final protected ServerPlayerEntity player;
     @Shadow private int tickCounter;
     @Shadow private int startMiningTime;
+    @Shadow protected ServerWorld world;
+    @Shadow private int blockBreakingProgress;
 
     @Unique
     private int blockBreakingCooldown;
-
     @Unique
     private boolean hasMineFatigue = false;
 
     @Shadow
     public abstract void finishMining(BlockPos pos, int sequence, String reason);
 
-    @Shadow protected ServerWorld world;
 
     /**
      * This breaks the block serverside if the client hasn't broken it already
@@ -81,16 +82,10 @@ public abstract class BlockBreakingPatch {
         }
     }
 
-    @Inject(method = "continueMining", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockBreakingInfo(ILnet/minecraft/util/math/BlockPos;I)V"))
+    @Inject(method = "continueMining", at = @At(value = "FIELD", opcode = Opcodes.GETFIELD, shift = At.Shift.AFTER, target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;blockBreakingProgress:I"))
     public void onUpdateBreakStatus(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
-        if (CustomBlockBreakingCheck.needsCustomBreaking(player, state.getBlock())) {
-            int j = tickCounter - i;
-            float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j + 1);
-            int k = (int)(f * 10.0F);
-            //TODO Replace with a local capture
-            //Send a packet that resembles the current mining progress
-            player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, k));
-        }
+        //Send a packet that resembles the current mining progress
+        player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, this.blockBreakingProgress));
     }
 
     @Inject(method = "processBlockBreakingAction", at = @At("HEAD"))
