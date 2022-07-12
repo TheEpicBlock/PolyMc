@@ -169,6 +169,7 @@ public class CustomModelDataPoly implements ItemPoly {
             }
         }
 
+        // Add the attributes (This code has been mostly copied from ItemStack#getTooltip)
         if (isInventory(location) && Util.isSectionVisible(input, ItemStack.TooltipSection.MODIFIERS) && (!serverItem.hasNbt() || !serverItem.getNbt().contains("AttributeModifiers", NbtElement.LIST_TYPE))) {
             var tag = serverItem.getOrCreateNbt();
             tag.put("AttributeModifiers", new NbtList());

@@ -18,7 +18,10 @@
 package io.github.theepicblock.polymc.api.block;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
-import io.github.theepicblock.polymc.impl.poly.block.*;
+import io.github.theepicblock.polymc.impl.poly.block.ConditionalSimpleBlockPoly;
+import io.github.theepicblock.polymc.impl.poly.block.ListOfSlabs;
+import io.github.theepicblock.polymc.impl.poly.block.PropertyRetainingReplacementPoly;
+import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
 import net.minecraft.block.*;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.block.enums.SculkSensorPhase;
@@ -88,6 +91,7 @@ public class BlockStateProfile {
     private static final Predicate<BlockState> DEFAULT_FILTER = (blockState) -> blockState != blockState.getBlock().getDefaultState();
     private static final Predicate<BlockState> ALWAYS_TRUE_FILTER = (blockState) -> true;
     private static final Predicate<BlockState> LEAVES_FILTER = (blockState) ->
+            // We choose the persistent states as the ones we don't mess with because that's the default placement state
             blockState != blockState.getBlock().getDefaultState().with(LeavesBlock.PERSISTENT, true) &&
             blockState != blockState.getBlock().getDefaultState().with(LeavesBlock.PERSISTENT, true).with(LeavesBlock.WATERLOGGED, true);
     private static final Predicate<BlockState> WALL_FILTER = (blockState) ->
@@ -148,7 +152,8 @@ public class BlockStateProfile {
     //ON FIRST REGISTERS
     private static final BiConsumer<Block,PolyRegistry> DEFAULT_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, new SimpleReplacementPoly(block.getDefaultState()));
     private static final BiConsumer<Block,PolyRegistry> LEAVES_ON_FIRST_REGISTER = (block, polyRegistry) -> {
-        polyRegistry.registerBlockPoly(block, new WaterloggedConditionalSimpleBlockPoly(block.getDefaultState().with(LeavesBlock.PERSISTENT, true), LEAVES_FILTER));
+        var defaultState = block.getDefaultState().with(LeavesBlock.PERSISTENT, true);
+        polyRegistry.registerBlockPoly(block, input -> defaultState.with(Properties.WATERLOGGED, input.get(Properties.WATERLOGGED)));
     };
     private static final BiConsumer<Block,PolyRegistry> WALL_ON_FIRST_REGISTER = (block, polyRegistry) -> {
         polyRegistry.registerBlockPoly(block, input -> {
