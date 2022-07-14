@@ -42,8 +42,8 @@ public class FancyPantsItemPoly extends DamageableItemPoly {
     }
 
     @Override
-    protected void addCustomTagsToItem(ItemStack stack) {
-        super.addCustomTagsToItem(stack);
+    protected void addCustomTagsToItem(ItemStack stack, Item moddedBase) {
+        super.addCustomTagsToItem(stack, moddedBase);
         NbtCompound nbt = stack.getOrCreateSubNbt("display");
         nbt.putInt("color", this.color);
         stack.addHideFlag(ItemStack.TooltipSection.DYE);
