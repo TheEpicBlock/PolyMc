@@ -176,7 +176,7 @@ public final class FakeWorld extends World {
                 accessor.setProfiler(() -> new ProfilerSystem(() -> 0l, () -> 0, false));
                 accessor.setProperties(new FakeWorldProperties());
                 accessor.setRegistryKey(RegistryKey.of(Registry.WORLD_KEY, new Identifier("polymc", "fake_world")));
-                accessor.setDimensionKey(DimensionTypes.OVERWORLD);
+                accessor.setDimension(DimensionTypes.OVERWORLD);
                 accessor.setDimensionEntry(BuiltinRegistries.DIMENSION_TYPE.entryOf(DimensionTypes.OVERWORLD));
                 accessor.setThread(Thread.currentThread());
                 accessor.setRandom(Random.create());

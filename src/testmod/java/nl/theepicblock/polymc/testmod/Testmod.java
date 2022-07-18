@@ -46,6 +46,7 @@ public class Testmod implements ModInitializer {
     public static final EntityType<? extends LivingEntity> TEST_ENTITY_EXTEND_GOLEM = FabricEntityTypeBuilder.create().entityFactory(TestExtendGolemEntity::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
     public static final EntityType<? extends LivingEntity> TEST_ENTITY_LIVING = FabricEntityTypeBuilder.create().entityFactory(TestLivingEntity::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
     public static final EntityType<?> TEST_ENTITY_OTHER = FabricEntityTypeBuilder.create().entityFactory(TestOtherEntity::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
+    public static final EntityType<?> TEST_FLYING_WAXED_WEATHERED_CUT_COPPER_STAIRS_ENTITY = FabricEntityTypeBuilder.create().entityFactory(TestFlyingWaxedWeatheredCutCopperStairs::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
 
     @Override
     public void onInitialize() {
@@ -79,6 +80,7 @@ public class Testmod implements ModInitializer {
         Registry.register(Registry.ENTITY_TYPE, id("test_entity_living"), TEST_ENTITY_LIVING);
         FabricDefaultAttributeRegistry.register(TEST_ENTITY_LIVING, LivingEntity.createLivingAttributes());
         Registry.register(Registry.ENTITY_TYPE, id("test_entity_other"), TEST_ENTITY_OTHER);
+        Registry.register(Registry.ENTITY_TYPE, id("test_flying_waxed_weathered_cut_copper_stairs_entity"), TEST_FLYING_WAXED_WEATHERED_CUT_COPPER_STAIRS_ENTITY);
 
         Registry.register(Registry.ENCHANTMENT, id("test_enchantment"), new TestEnchantment());
 

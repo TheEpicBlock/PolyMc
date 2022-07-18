@@ -2,47 +2,38 @@ package io.github.theepicblock.polymc.impl.poly.entity;
 
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.wizard.PacketConsumer;
-import io.github.theepicblock.polymc.api.wizard.VItem;
+import io.github.theepicblock.polymc.api.wizard.VSnowball;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.api.wizard.WizardInfo;
 import io.github.theepicblock.polymc.impl.poly.wizard.EntityUtil;
 import io.github.theepicblock.polymc.mixins.wizards.EntityAccessor;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.FlyingItemEntity;
 import net.minecraft.entity.data.DataTracker;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 
 import java.util.List;
 import java.util.Optional;
 
-public class MissingEntityPoly<T extends Entity> implements EntityPoly<T> {
+public class FlyingItemEntityPoly<T extends Entity & FlyingItemEntity> implements EntityPoly<T> {
     @Override
     public Wizard createWizard(WizardInfo info, T entity) {
-        return new MissingEntityWizard<>(info, entity);
+        return new FlyingItemEntityWizard<T>(info, entity);
     }
 
-    public static class MissingEntityWizard<T extends Entity> extends EntityWizard<T> {
-        private static final ItemStack ITEM = new ItemStack(Items.RED_STAINED_GLASS_PANE);
-        private final VItem item;
+    public static class FlyingItemEntityWizard<T extends Entity & FlyingItemEntity> extends EntityWizard<T> {
+        private final VSnowball snowball;
 
-        public MissingEntityWizard(WizardInfo info, T entity) {
+        public FlyingItemEntityWizard(WizardInfo info, T entity) {
             super(info, entity);
-            item = new VItem();
-        }
-
-        @Override
-        public void onMove(PacketConsumer players) {
-            item.move(players, this.getPosition(), (byte)0, (byte)0, true);
+            this.snowball = new VSnowball();
         }
 
         @Override
         public void addPlayer(PacketConsumer player) {
-            item.spawn(player, this.getPosition());
-            item.setNoGravity(player, true);
-            item.sendItem(player, ITEM);
-
+            snowball.spawn(player, this.getPosition());
+            snowball.sendItem(player, this.getEntity().getStack());
             player.sendPacket(EntityUtil.createDataTrackerUpdate(
-                    this.item.getId(),
+                    snowball.getId(),
                     List.of(
                             new DataTracker.Entry<>(EntityAccessor.getCustomName(), Optional.of(this.getEntity().getName())),
                             new DataTracker.Entry<>(EntityAccessor.getNameVisible(), true))
@@ -52,7 +43,7 @@ public class MissingEntityPoly<T extends Entity> implements EntityPoly<T> {
 
         @Override
         public void removePlayer(PacketConsumer player) {
-            item.remove(player);
+            snowball.remove(player);
         }
     }
 }

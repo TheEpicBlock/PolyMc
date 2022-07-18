@@ -49,7 +49,7 @@ public interface WorldAccessor {
 
     @Mutable
     @Accessor
-    void setDimensionKey(RegistryKey<DimensionType> dimension);
+    void setDimension(RegistryKey<DimensionType> dimension);
 
     @Mutable
     @Accessor
