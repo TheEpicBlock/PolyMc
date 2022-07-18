@@ -91,7 +91,7 @@ public class CustomModelDataPoly implements ItemPoly {
         this.cmdValue = pair.getRight();
         cachedClientItem = ThreadLocal.withInitial(() -> {
             var stack = new ItemStack(clientItem);
-            addCustomTagsToItem(stack);
+            addCustomTagsToItem(stack, moddedBase);
             return stack;
         });
     }
@@ -101,12 +101,12 @@ public class CustomModelDataPoly implements ItemPoly {
      * These shouldn't change depending on the stack as this method will be cached.
      * For un-cached tags, use {@link #getClientItem(ItemStack, ServerPlayerEntity, ItemLocation)}
      */
-    protected void addCustomTagsToItem(ItemStack stack) {
+    protected void addCustomTagsToItem(ItemStack stack, Item moddedBase) {
         var item = stack.getItem();
 
         NbtCompound tag = stack.getOrCreateNbt();
         tag.putInt("CustomModelData", cmdValue);
-        tag.putString("PolyMcId", Registry.ITEM.getId(item).toString());
+        tag.putString("PolyMcId", Registry.ITEM.getId(moddedBase).toString());
         stack.setNbt(tag);
     }
 
@@ -119,7 +119,7 @@ public class CustomModelDataPoly implements ItemPoly {
             serverItem.setNbt(input.getNbt().copy());
 
             // Doing this removes the custom tags, so we should add that again
-            addCustomTagsToItem(serverItem);
+            addCustomTagsToItem(serverItem, moddedBase);
         }
 
         // Add custom tooltips. Don't bother showing them if the item's not in the inventory

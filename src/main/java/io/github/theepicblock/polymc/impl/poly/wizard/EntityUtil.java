@@ -72,4 +72,15 @@ public class EntityUtil {
                 },
                 false);
     }
+
+    public static EntityTrackerUpdateS2CPacket createDataTrackerUpdate(int id, List<DataTracker.Entry<?>> customEntries) {
+        return new EntityTrackerUpdateS2CPacket(id,
+                new DataTracker(null) {
+                    @Override
+                    public List<Entry<?>> getDirtyEntries() {
+                        return customEntries;
+                    }
+                },
+                false);
+    }
 }
