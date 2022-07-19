@@ -50,8 +50,9 @@ If your gui has buttons, or more slots than a chest, you're out of luck currentl
 The system here can totally be made smarter, but I don't have the time.
 
 ## Entities
-PolyMc can't support custom entities at this time. Instead, you'll just see a nice barrier item. 
-PolyMc does have a neat api for adding support to custom entities though.
+PolyMc attempts to guess what entity looks kind of similar to the modded one. Often, this will be completely wrong.
+Unfortunately, there's not much else PolyMc can do here due to the way that entities are defined. 
+You can look at the api if you need to specify entities further.
 
 ## Breaking speeds
 PolyMc automatically switches to calculating the breaking speed of custom blocks and items on the server when needed. 
