@@ -40,6 +40,7 @@
     "compat.FabricRegistrySyncDisabler",
     "compat.immersive_portals.ChunkDataSyncManagerMixin",
     "entity.DisableCustomEntities",
+    "entity.EntityAttributesFilteringMixin",
     "entity.EntityTrackerAccessor",
     "entity.EntityTrackerEntryMixin",
     "entity.RemoveTickerOnUnloadMixin",
