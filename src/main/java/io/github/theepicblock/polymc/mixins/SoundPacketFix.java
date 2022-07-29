@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 public class SoundPacketFix {
     @Shadow public ServerPlayerEntity player;
 
-    @ModifyVariable(method = "sendPacket(Lnet/minecraft/network/Packet;Lio/netty/util/concurrent/GenericFutureListener;)V", at = @At("HEAD"), argsOnly = true)
+    @ModifyVariable(method = "sendPacket(Lnet/minecraft/network/Packet;Lnet/minecraft/class_7648;)V", at = @At("HEAD"), argsOnly = true)
     private Packet<?> replacePacket(Packet<?> input) {
         if (input instanceof PlaySoundS2CPacket soundPacket && Util.isPolyMapVanillaLike(this.player)) {
             var soundId = soundPacket.getSound().getId();
