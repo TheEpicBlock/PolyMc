@@ -29,6 +29,13 @@ public class FlyingItemEntityPoly<T extends Entity & FlyingItemEntity> implement
         }
 
         @Override
+        public void onMove(PacketConsumer players) {
+            var entity = this.getEntity();
+            snowball.move(players, this.getPosition(), entity.getYaw(), entity.getPitch(), entity.isOnGround());
+            snowball.sendVelocity(players, entity.getVelocity());
+        }
+
+        @Override
         public void removePlayer(PacketConsumer player) {
             snowball.remove(player);
         }
