@@ -68,7 +68,8 @@ public class BlockStateProfile {
     ///////////////////////
     //  LISTS OF BLOCKS  //
     ///////////////////////
-    private static final Block[] LEAVES_BLOCKS = {Blocks.ACACIA_LEAVES, Blocks.BIRCH_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.OAK_LEAVES, Blocks.SPRUCE_LEAVES, Blocks.AZALEA_LEAVES, Blocks.FLOWERING_AZALEA_LEAVES, Blocks.MANGROVE_LEAVES};
+    private static final Block[] LEAVES_BLOCKS = {Blocks.ACACIA_LEAVES, Blocks.BIRCH_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.OAK_LEAVES, Blocks.SPRUCE_LEAVES, Blocks.MANGROVE_LEAVES};
+    private static final Block[] COLORLESS_LEAVES_BLOCKS = {Blocks.AZALEA_LEAVES, Blocks.FLOWERING_AZALEA_LEAVES};
     private static final Block[] SAPLING_BLOCKS = {Blocks.ACACIA_SAPLING, Blocks.BIRCH_SAPLING, Blocks.DARK_OAK_SAPLING, Blocks.JUNGLE_SAPLING, Blocks.OAK_SAPLING, Blocks.SPRUCE_SAPLING};
     private static final Block[] DOOR_BLOCKS = {Blocks.ACACIA_DOOR, Blocks.BIRCH_DOOR, Blocks.DARK_OAK_DOOR, Blocks.JUNGLE_DOOR, Blocks.OAK_DOOR, Blocks.SPRUCE_DOOR, Blocks.CRIMSON_DOOR, Blocks.WARPED_DOOR, Blocks.MANGROVE_DOOR};
     private static final Block[] TRAPDOOR_BLOCKS = {Blocks.ACACIA_TRAPDOOR, Blocks.BIRCH_TRAPDOOR, Blocks.DARK_OAK_TRAPDOOR, Blocks.JUNGLE_TRAPDOOR, Blocks.OAK_TRAPDOOR, Blocks.SPRUCE_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR, Blocks.WARPED_TRAPDOOR, Blocks.MANGROVE_TRAPDOOR};
@@ -93,7 +94,7 @@ public class BlockStateProfile {
     private static final Predicate<BlockState> LEAVES_FILTER = (blockState) ->
             // We choose the persistent states as the ones we don't mess with because that's the default placement state
             blockState != blockState.getBlock().getDefaultState().with(LeavesBlock.PERSISTENT, true) &&
-            blockState != blockState.getBlock().getDefaultState().with(LeavesBlock.PERSISTENT, true).with(LeavesBlock.WATERLOGGED, true);
+            !blockState.get(LeavesBlock.WATERLOGGED);
     private static final Predicate<BlockState> WALL_FILTER = (blockState) ->
             blockState.get(WallBlock.NORTH_SHAPE) == WallShape.NONE &&
             blockState.get(WallBlock.WEST_SHAPE) == WallShape.NONE &&
@@ -274,6 +275,7 @@ public class BlockStateProfile {
     public static final BlockStateProfile FULL_BLOCK_PROFILE = combine("full blocks", INFESTED_STONE_SUB_PROFILE, /*TNT_SUB_PROFILE,*/ SNOWY_GRASS_SUB_PROFILE, NOTE_BLOCK_SUB_PROFILE, DISPENSER_SUB_PROFILE, BEEHIVE_SUB_PROFILE, WAXED_COPPER_FULLBLOCK_SUB_PROFILE, JUKEBOX_SUB_PROFILE, DOUBLE_SLAB_SUB_PROFILE, TARGET_BLOCK_SUB_PROFILE, WATERLOGGED_SLAB_SUB_PROFILE);
     public static final BlockStateProfile CLIMBABLE_PROFILE = combine("climbable blocks", CAVE_VINES_SUB_PROFILE, NETHER_VINES_SUB_PROFILE);
     public static final BlockStateProfile LEAVES_PROFILE = new BlockStateProfile("leaves", LEAVES_BLOCKS, LEAVES_FILTER, LEAVES_ON_FIRST_REGISTER);
+    public static final BlockStateProfile COLORLESS_LEAVES_PROFILE = new BlockStateProfile("colorless leaves", COLORLESS_LEAVES_BLOCKS, LEAVES_FILTER, LEAVES_ON_FIRST_REGISTER);
     public static final BlockStateProfile NO_COLLISION_WALL_PROFILE = new BlockStateProfile("empty walls", WALL_BLOCKS, WALL_FILTER, WALL_ON_FIRST_REGISTER);
     public static final BlockStateProfile NO_COLLISION_PROFILE = combine("blocks without collisions", KELP_SUB_PROFILE, SAPLING_SUB_PROFILE, SUGARCANE_SUB_PROFILE, TRIPWIRE_SUB_PROFILE, SMALL_DRIPLEAF_SUB_PROFILE, OPEN_FENCE_GATE_PROFILE, PRESSURE_PLATE_PROFILE);
     public static final BlockStateProfile FARMLAND_PROFILE = new BlockStateProfile("farmland", Blocks.FARMLAND, FARMLAND_FILTER, FARMLAND_ON_FIRST_REGISTER);

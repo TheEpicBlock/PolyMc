@@ -21,6 +21,8 @@ import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.SharedValuesKey;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -33,6 +35,7 @@ public class BlockStateManager {
     public static final SharedValuesKey<BlockStateManager> KEY = new SharedValuesKey<>(BlockStateManager::new, null);
 
     private final Map<Block, List<BlockState>> availableBlockStates = new HashMap<>();
+    private final Map<String, List<BlockState>> modelIds = new HashMap<>();
     private final PolyRegistry polyRegistry;
 
     public BlockStateManager(PolyRegistry polyRegistry) {
@@ -47,7 +50,27 @@ public class BlockStateManager {
         }
     }
 
+    public BlockState requestBlockState(BlockStateProfile profile, @Nullable String modelId) throws StateLimitReachedException {
+        try {
+            return requestBlockState(profile.filter, profile.blocks, profile.onFirstRegister, modelId);
+        } catch (StateLimitReachedException e) {
+            throw new StateLimitReachedException("No states found in profile: " + profile.name);
+        }
+    }
+
     public BlockState requestBlockState(Predicate<BlockState> blockStatePredicate, Block[] searchSpace, BiConsumer<Block,PolyRegistry> onFirstRegister) throws StateLimitReachedException {
+        return requestBlockState(blockStatePredicate, searchSpace, onFirstRegister, null);
+    }
+
+    public BlockState requestBlockState(Predicate<BlockState> blockStatePredicate, Block[] searchSpace, BiConsumer<Block,PolyRegistry> onFirstRegister, @Nullable String modelId) throws StateLimitReachedException {
+        if (modelId != null && modelIds.containsKey(modelId)) {
+            for (var possibleState : modelIds.get(modelId)) {
+                if (blockStatePredicate.test(possibleState)) {
+                    return possibleState;
+                }
+            }
+        }
+
         for (var block : searchSpace) {
             var availableStates = availableBlockStates.computeIfAbsent(block, (b) -> {
                 onFirstRegister.accept(b, this.polyRegistry);
@@ -60,11 +83,22 @@ public class BlockStateManager {
                 BlockState next = iterator.next();
                 if (blockStatePredicate.test(next)) {
                     iterator.remove();
+
+                    if (modelId != null) {
+                        modelIds.computeIfAbsent(modelId, (modelIdx) -> new ArrayList<>()).add(next);
+                    }
+
                     return next;
                 }
             }
         }
         throw new StateLimitReachedException("No states found in " + Arrays.toString(searchSpace));
+    }
+
+
+    @ApiStatus.Internal
+    public Map<Block, List<BlockState>> getAvailableBlockStateMap() {
+        return this.availableBlockStates;
     }
 
     public static class StateLimitReachedException extends Exception {

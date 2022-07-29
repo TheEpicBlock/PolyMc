@@ -166,6 +166,8 @@ public class PolyRegistry {
                 ImmutableMap.copyOf(blockPolys),
                 ImmutableMap.copyOf(guiPolys),
                 ImmutableMap.copyOf(entityPolys),
-                ImmutableList.copyOf(sharedValues.entrySet().stream().map((entry) -> entry.getKey().createResources(entry.getValue())).filter(Objects::nonNull).iterator()));
+                ImmutableList.copyOf(sharedValues.entrySet().stream().map((entry) -> entry.getKey().createResources(entry.getValue())).filter(Objects::nonNull).iterator()),
+                (BlockStateManager) sharedValues.get(BlockStateManager.KEY)
+        );
     }
 }

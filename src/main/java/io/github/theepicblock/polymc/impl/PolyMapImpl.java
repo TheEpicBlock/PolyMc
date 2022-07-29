@@ -27,6 +27,7 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import io.github.theepicblock.polymc.api.SharedValuesKey;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.block.BlockStateManager;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
@@ -50,6 +51,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.JsonHelper;
+import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -79,19 +81,22 @@ public class PolyMapImpl implements PolyMap {
     private final ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys;
     private final ImmutableList<SharedValuesKey.ResourceContainer> sharedValueResources;
     private final boolean hasBlockWizards;
+    private final BlockStateManager blockStateManager;
 
     public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys,
                        ItemTransformer[] globalItemPolys,
                        ImmutableMap<Block,BlockPoly> blockPolys,
                        ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys,
                        ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys,
-                       ImmutableList<SharedValuesKey.ResourceContainer> sharedValueResources) {
+                       ImmutableList<SharedValuesKey.ResourceContainer> sharedValueResources,
+                       BlockStateManager manager) {
         this.itemPolys = itemPolys;
         this.globalItemPolys = globalItemPolys;
         this.blockPolys = blockPolys;
         this.guiPolys = guiPolys;
         this.entityPolys = entityPolys;
         this.sharedValueResources = sharedValueResources;
+        this.blockStateManager = manager;
 
         this.hasBlockWizards = blockPolys.values().stream().anyMatch(BlockPoly::hasWizard);
     }
@@ -266,6 +271,7 @@ public class PolyMapImpl implements PolyMap {
                     addDebugProviderToDump(builder, item, item.getTranslationKey(), poly);
         });
         builder.append("############\n## BLOCKS ##\n############\n");
+
         this.blockPolys
                 .entrySet()
                 .stream()
@@ -275,6 +281,23 @@ public class PolyMapImpl implements PolyMap {
                     var poly = entry.getValue();
                     addDebugProviderToDump(builder, block, block.getTranslationKey(), poly);
         });
+
+        builder.append("####################\n## BLOCKS (USAGE) ##\n####################\n");
+
+        for (var entry : this.blockStateManager.getAvailableBlockStateMap().entrySet()) {
+            builder.append("- ");
+            builder.append(Registry.BLOCK.getId(entry.getKey()));
+            builder.append(" - Used: ");
+            builder.append(entry.getKey().getStateManager().getStates().size() - entry.getValue().size());
+            builder.append(", Left: ");
+            builder.append(entry.getValue().size());
+            builder.append(", Total: ");
+            builder.append(entry.getKey().getStateManager().getStates().size());
+            builder.append("\n");
+
+        }
+
+
         return builder.toString();
     }
 
