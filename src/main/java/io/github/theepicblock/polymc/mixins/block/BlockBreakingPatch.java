@@ -84,8 +84,10 @@ public abstract class BlockBreakingPatch {
 
     @Inject(method = "continueMining", at = @At(value = "FIELD", opcode = Opcodes.GETFIELD, shift = At.Shift.AFTER, target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;blockBreakingProgress:I"))
     public void onUpdateBreakStatus(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
-        //Send a packet that resembles the current mining progress
-        player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, this.blockBreakingProgress));
+        if (CustomBlockBreakingCheck.needsCustomBreaking(player, state.getBlock())) {
+            //Send a packet that resembles the current mining progress
+            player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, this.blockBreakingProgress));
+        }
     }
 
     @Inject(method = "processBlockBreakingAction", at = @At("HEAD"))
