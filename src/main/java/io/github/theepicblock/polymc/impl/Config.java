@@ -82,9 +82,9 @@ public class Config {
         }
 
         if (mixin.contains("dontforceintcontrol")) {
-            return !forceBlockIdIntControl;
-        } else if (mixin.contains("forceintcontrol")) {
             return forceBlockIdIntControl;
+        } else if (mixin.contains("forceintcontrol")) {
+            return !forceBlockIdIntControl;
         }
 
         return false;

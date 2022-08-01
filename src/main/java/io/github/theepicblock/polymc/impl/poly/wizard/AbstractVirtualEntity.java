@@ -56,6 +56,10 @@ public abstract class AbstractVirtualEntity implements VirtualEntity {
         ));
     }
 
+    public void move(PacketConsumer player, Vec3d pos, float yaw, float pitch, boolean onGround) {
+        move(player, pos.getX(), pos.getY(), pos.getZ(), (byte)((int)(yaw * 256.0F / 360.0F)), (byte)((int)(pitch * 256.0F / 360.0F)), onGround);
+    }
+
     public void move(PacketConsumer player, Vec3d pos, byte yaw, byte pitch, boolean onGround) {
         move(player, pos.getX(), pos.getY(), pos.getZ(), yaw, pitch, onGround);
     }
