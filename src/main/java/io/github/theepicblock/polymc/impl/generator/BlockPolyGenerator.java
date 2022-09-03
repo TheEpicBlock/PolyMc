@@ -66,7 +66,10 @@ public class BlockPolyGenerator {
         var fakeWorld = new FakedWorld(moddedState);
 
         var blockId = Registry.BLOCK.getId(moddedBlock);
-        var modelId = blockId + "[" + RESOUCES.getBlockState(blockId.getNamespace(), blockId.getPath()).getVariantId(moddedState) + "]";
+        var res = RESOUCES.getBlockState(blockId.getNamespace(), blockId.getPath());
+
+
+        var modelId = blockId + "[" + (res != null ? res.getVariantId(moddedState) : "UNKNOWN") + "]";
 
         //Get the state's collision shape.
         VoxelShape collisionShape;
@@ -123,7 +126,7 @@ public class BlockPolyGenerator {
                 isUniqueCallback.set(true);
 
                 var state = manager.requestBlockState(BlockStateProfile.LEAVES_PROFILE, modelId);
-                return state.with(Properties.WATERLOGGED, moddedState.get(Properties.WATERLOGGED));
+                return moddedState.contains(Properties.WATERLOGGED) ? state.with(Properties.WATERLOGGED, moddedState.get(Properties.WATERLOGGED)) : state;
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
