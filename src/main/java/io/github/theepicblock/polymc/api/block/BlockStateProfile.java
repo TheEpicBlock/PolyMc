@@ -70,7 +70,9 @@ public class BlockStateProfile {
     ///////////////////////
     //  LISTS OF BLOCKS  //
     ///////////////////////
-    private static final Block[] LEAVES_BLOCKS = {Blocks.ACACIA_LEAVES, Blocks.BIRCH_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.OAK_LEAVES, Blocks.SPRUCE_LEAVES, Blocks.AZALEA_LEAVES, Blocks.FLOWERING_AZALEA_LEAVES, Blocks.MANGROVE_LEAVES};
+    private static final Block[] NO_COLOUR_LEAVES_BLOCKS = {Blocks.AZALEA_LEAVES, Blocks.FLOWERING_AZALEA_LEAVES};
+    private static final Block[] CONSTANT_COLOUR_LEAVES_BLOCKS = {Blocks.BIRCH_LEAVES, Blocks.SPRUCE_LEAVES};
+    private static final Block[] BIOME_COLOUR_LEAVES_BLOCKS = {Blocks.ACACIA_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.OAK_LEAVES, Blocks.MANGROVE_LEAVES};
     private static final Block[] SAPLING_BLOCKS = {Blocks.ACACIA_SAPLING, Blocks.BIRCH_SAPLING, Blocks.DARK_OAK_SAPLING, Blocks.JUNGLE_SAPLING, Blocks.OAK_SAPLING, Blocks.SPRUCE_SAPLING};
     private static final Block[] DOOR_BLOCKS = {Blocks.ACACIA_DOOR, Blocks.BIRCH_DOOR, Blocks.DARK_OAK_DOOR, Blocks.JUNGLE_DOOR, Blocks.OAK_DOOR, Blocks.SPRUCE_DOOR, Blocks.CRIMSON_DOOR, Blocks.WARPED_DOOR, Blocks.MANGROVE_DOOR};
     private static final Block[] TRAPDOOR_BLOCKS = {Blocks.ACACIA_TRAPDOOR, Blocks.BIRCH_TRAPDOOR, Blocks.DARK_OAK_TRAPDOOR, Blocks.JUNGLE_TRAPDOOR, Blocks.OAK_TRAPDOOR, Blocks.SPRUCE_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR, Blocks.WARPED_TRAPDOOR, Blocks.MANGROVE_TRAPDOOR};
@@ -266,6 +268,12 @@ public class BlockStateProfile {
     public static final BlockStateProfile INFESTED_STONE_SUB_PROFILE = new BlockStateProfile("infested stone", INFESTED_BLOCKS, ALWAYS_TRUE_FILTER, INFESTED_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile PETRIFIED_OAK_SLAB_SUB_PROFILE = new BlockStateProfile("petrified oak slab", Blocks.PETRIFIED_OAK_SLAB, SLAB_FILTER, DOUBLESLAB_ON_FIRST_REGISTER); // This profile only handles top/bottom slabs. The double slabs are exposed via `DOUBLE_SLAB_SUB_PROFILE`
     public static final BlockStateProfile WAXED_COPPER_SLAB_SUB_PROFILE = new BlockStateProfile("waxed copper slab", WAXED_COPPER_SLAB_BLOCKS, SLAB_FILTER, DOUBLESLAB_ON_FIRST_REGISTER); // This profile only handles top/bottom slabs. The double slabs are exposed via `DOUBLE_SLAB_SUB_PROFILE`
+    /**
+     * Leaves that don't have any block colouring applied
+     */
+    public static final BlockStateProfile NO_COLOUR_LEAVES_SUB_PROFILE = new BlockStateProfile("no colour leaves", NO_COLOUR_LEAVES_BLOCKS, LEAVES_FILTER, LEAVES_ON_FIRST_REGISTER);
+    public static final BlockStateProfile CONSTANT_COLOUR_LEAVES_SUB_PROFILE = new BlockStateProfile("constant colour leaves", CONSTANT_COLOUR_LEAVES_BLOCKS, LEAVES_FILTER, LEAVES_ON_FIRST_REGISTER);
+    public static final BlockStateProfile BIOME_COLOUR_LEAVES_SUB_PROFILE = new BlockStateProfile("biome colour leaves", BIOME_COLOUR_LEAVES_BLOCKS, LEAVES_FILTER, LEAVES_ON_FIRST_REGISTER);
     public static final BlockStateProfile OPEN_FENCE_GATE_PROFILE = new BlockStateProfile("open fence gate", FENCE_GATE_BLOCKS, OPEN_FENCE_GATE_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile FENCE_GATE_PROFILE = new BlockStateProfile("fence gate", FENCE_GATE_BLOCKS, FENCE_GATE_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile PRESSURE_PLATE_PROFILE = new BlockStateProfile("pressure plate", PRESSURE_PLATE_BLOCKS, PRESSURE_PLATE_FILTER, PRESSURE_PLATE_ON_FIRST_REGISTER);
@@ -275,7 +283,7 @@ public class BlockStateProfile {
     ////////////////
     public static final BlockStateProfile FULL_BLOCK_PROFILE = combine("full blocks", INFESTED_STONE_SUB_PROFILE, /*TNT_SUB_PROFILE,*/ SNOWY_GRASS_SUB_PROFILE, NOTE_BLOCK_SUB_PROFILE, DISPENSER_SUB_PROFILE, BEEHIVE_SUB_PROFILE, WAXED_COPPER_FULLBLOCK_SUB_PROFILE, JUKEBOX_SUB_PROFILE, DOUBLE_SLAB_SUB_PROFILE, TARGET_BLOCK_SUB_PROFILE, WATERLOGGED_SLAB_SUB_PROFILE);
     public static final BlockStateProfile CLIMBABLE_PROFILE = combine("climbable blocks", CAVE_VINES_SUB_PROFILE, NETHER_VINES_SUB_PROFILE);
-    public static final BlockStateProfile LEAVES_PROFILE = new BlockStateProfile("leaves", LEAVES_BLOCKS, LEAVES_FILTER, LEAVES_ON_FIRST_REGISTER);
+    public static final BlockStateProfile LEAVES_PROFILE = combine("leaves", NO_COLOUR_LEAVES_SUB_PROFILE, CONSTANT_COLOUR_LEAVES_SUB_PROFILE, BIOME_COLOUR_LEAVES_SUB_PROFILE);
     public static final BlockStateProfile NO_COLLISION_WALL_PROFILE = new BlockStateProfile("empty walls", WALL_BLOCKS, WALL_FILTER, WALL_ON_FIRST_REGISTER);
     public static final BlockStateProfile NO_COLLISION_PROFILE = combine("blocks without collisions", KELP_SUB_PROFILE, SAPLING_SUB_PROFILE, SUGARCANE_SUB_PROFILE, TRIPWIRE_SUB_PROFILE, SMALL_DRIPLEAF_SUB_PROFILE, OPEN_FENCE_GATE_PROFILE, PRESSURE_PLATE_PROFILE);
     public static final BlockStateProfile FARMLAND_PROFILE = new BlockStateProfile("farmland", Blocks.FARMLAND, FARMLAND_FILTER, FARMLAND_ON_FIRST_REGISTER);
@@ -387,5 +395,4 @@ public class BlockStateProfile {
         BooleanProperty booleanProperty = ConnectingBlock.FACING_PROPERTIES.get(direction);
         return state.contains(booleanProperty) && state.get(booleanProperty);
     }
-
 }
