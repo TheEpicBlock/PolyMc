@@ -26,6 +26,7 @@ import io.github.theepicblock.polymc.impl.ConfigManager;
 import io.github.theepicblock.polymc.impl.PolyMcCommands;
 import io.github.theepicblock.polymc.impl.generator.Generator;
 import io.github.theepicblock.polymc.impl.misc.BlockIdRemapper;
+import io.github.theepicblock.polymc.impl.misc.QslRegistryCompat;
 import io.github.theepicblock.polymc.impl.misc.logging.Log4JWrapper;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.poly.wizard.PacketCountManager;
@@ -37,7 +38,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.ApiStatus;
-import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import java.util.List;
 
@@ -124,6 +124,8 @@ public class PolyMc implements ModInitializer {
 
         PacketCountManager.registerEvents();
 
-        MixinEnvironment.getCurrentEnvironment().audit();
+        if (FabricLoader.getInstance().isModLoaded("quilt_registry")) {
+            QslRegistryCompat.init();
+        }
     }
 }
