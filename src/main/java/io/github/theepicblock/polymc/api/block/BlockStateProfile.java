@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.api.block;
 
+import com.google.common.collect.Lists;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.impl.poly.block.ConditionalSimpleBlockPoly;
 import io.github.theepicblock.polymc.impl.poly.block.ListOfSlabs;
@@ -34,6 +35,7 @@ import net.minecraft.util.math.Direction;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -287,6 +289,49 @@ public class BlockStateProfile {
     public static final BlockStateProfile SCULK_SENSOR_PROFILE = new BlockStateProfile("sculk sensor", Blocks.SCULK_SENSOR, SCULK_FILTER, SCULK_SENSOR_ON_FIRST_REGISTER);
     public static final BlockStateProfile CHORUS_PLANT_BLOCK_PROFILE = new BlockStateProfile("chorus plant block", Blocks.CHORUS_PLANT, CHORUS_PLANT_FILTER, CHORUS_PLANT_ON_FIRST_REGISTER);
     public static final BlockStateProfile CHORUS_FLOWER_BLOCK_PROFILE = new BlockStateProfile("chorus flower block", Blocks.CHORUS_FLOWER, CHORUS_FLOWER_FILTER, CHORUS_FLOWER_ON_FIRST_REGISTER);
+
+    //////////////////
+    // ALL PROFILES //
+    //////////////////
+    public static final List<BlockStateProfile> ALL_PROFILES = Lists.newArrayList(
+            SAPLING_SUB_PROFILE,
+            SUGARCANE_SUB_PROFILE,
+            TRIPWIRE_SUB_PROFILE,
+            SMALL_DRIPLEAF_SUB_PROFILE,
+            CAVE_VINES_SUB_PROFILE,
+            NETHER_VINES_SUB_PROFILE,
+            KELP_SUB_PROFILE,
+            NOTE_BLOCK_SUB_PROFILE,
+            TARGET_BLOCK_SUB_PROFILE,
+            DISPENSER_SUB_PROFILE,
+            TNT_SUB_PROFILE,
+            JUKEBOX_SUB_PROFILE,
+            BEEHIVE_SUB_PROFILE,
+            SNOWY_GRASS_SUB_PROFILE,
+            DOUBLE_SLAB_SUB_PROFILE,
+            WATERLOGGED_SLAB_SUB_PROFILE,
+            WAXED_COPPER_FULLBLOCK_SUB_PROFILE,
+            INFESTED_STONE_SUB_PROFILE,
+            PETRIFIED_OAK_SLAB_SUB_PROFILE,
+            WAXED_COPPER_SLAB_SUB_PROFILE,
+            OPEN_FENCE_GATE_PROFILE,
+            FENCE_GATE_PROFILE,
+            PRESSURE_PLATE_PROFILE,
+            FULL_BLOCK_PROFILE,
+            CLIMBABLE_PROFILE,
+            LEAVES_PROFILE,
+            NO_COLLISION_PROFILE,
+            FARMLAND_PROFILE,
+            CACTUS_PROFILE,
+            DOOR_PROFILE,
+            TRAPDOOR_PROFILE,
+            METAL_DOOR_PROFILE,
+            METAL_TRAPDOOR_PROFILE,
+            WAXED_COPPER_STAIR_PROFILE,
+            CHORUS_PLANT_BLOCK_PROFILE,
+            CHORUS_FLOWER_BLOCK_PROFILE
+    );
+
 
     //////////////////
     //  OTHER CODE  //
