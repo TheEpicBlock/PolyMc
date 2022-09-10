@@ -44,7 +44,7 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation("org.quiltmc.qsl.core:registry:${project.qsl_version}") {
+	modCompileOnly("org.quiltmc.qsl.core:registry:${project.qsl_version}") {
 		transitive(false)
 	}
 
