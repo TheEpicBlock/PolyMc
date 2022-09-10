@@ -34,6 +34,8 @@ public class EntityPolyGenerator {
         // Get the class of the entity
         var baseClass = InternalEntityHelpers.getEntityClass(entityType);
 
+        if (baseClass == null) return new MissingEntityPoly<>();
+
         // Iterate over all vanilla entities to see if any are assignable
         var possible = new ArrayList<EntityType<?>>();
         for (var possibleType : Registry.ENTITY_TYPE) {

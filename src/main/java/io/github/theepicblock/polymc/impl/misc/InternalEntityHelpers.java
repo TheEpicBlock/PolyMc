@@ -7,10 +7,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.Packet;
 import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
@@ -26,16 +23,22 @@ import java.util.Map;
 @SuppressWarnings({"unused", "unchecked"})
 public class InternalEntityHelpers {
     private static final Map<EntityType<?>, @Nullable Entity> EXAMPLE_ENTITIES = new HashMap<>();
-    private static final PigEntity PIG = new PigEntity(EntityType.PIG, FakeWorld.INSTANCE);
 
+    @Nullable
     public static List<DataTracker.Entry<?>> getExampleTrackedDataOfEntityType(EntityType<?> type) {
-        return getEntity(type).getDataTracker().getAllEntries();
+        var entity = getEntity(type);
+        if (entity == null) return null;
+        return entity.getDataTracker().getAllEntries();
     }
 
+    @Nullable
     public static <T extends Entity> Class<T> getEntityClass(EntityType<T> type) {
-        return (Class<T>) getEntity(type).getClass();
+        var entity = getEntity(type);
+        if (entity == null) return null;
+        return (Class<T>)entity.getClass();
     }
 
+    @Nullable
     public static Entity getEntity(EntityType<?> type) {
         var entity = EXAMPLE_ENTITIES.get(type);
 
@@ -45,37 +48,15 @@ public class InternalEntityHelpers {
             } catch (Throwable e) {
                 var id = Registry.ENTITY_TYPE.getId(type);
                 PolyMc.LOGGER.warn(String.format(
-                        "Couldn't create template entity of %s (%s)... Defaulting to empty. %s",
+                        "Couldn't create template entity of %s (%s)... Defaulting to empty.",
                         id,
-                        type.getBaseClass().toString(),
-                        Util.isVanilla(id) ? "This might cause problems!" : "Don't worry, this shouldn't cause problems!"
+                        type.getBaseClass().toString()
                 ));
 
                 if (Util.isVanilla(id) || FabricLoader.getInstance().isDevelopmentEnvironment()) {
                     e.printStackTrace();
                 }
-                // Default for when we couldn't create the entity
-                entity = new Entity(EntityType.PIG, null) {
-                    @Override
-                    protected void initDataTracker() {
-
-                    }
-
-                    @Override
-                    protected void readCustomDataFromNbt(NbtCompound nbt) {
-
-                    }
-
-                    @Override
-                    protected void writeCustomDataToNbt(NbtCompound nbt) {
-
-                    }
-
-                    @Override
-                    public Packet<?> createSpawnPacket() {
-                        return null;
-                    }
-                };
+                return null;
             }
             EXAMPLE_ENTITIES.put(type, entity);
         }
@@ -96,7 +77,5 @@ public class InternalEntityHelpers {
                 return false;
             }
         });
-
-        EXAMPLE_ENTITIES.put(EntityType.PIG, PIG);
     }
 }
