@@ -47,6 +47,9 @@ public class EntityPolyGenerator {
             }
         }
 
+        // Players are blacklist, we shouldn't spawn any players.
+        possible.removeIf(clazz -> clazz == EntityType.PLAYER);
+
         // Sort the list of entities that match by the highest type
         // For example, if both ChestBoatEntity and BoatEntity matched, the boat will be first in the list
         possible.sort((a, b) -> {
