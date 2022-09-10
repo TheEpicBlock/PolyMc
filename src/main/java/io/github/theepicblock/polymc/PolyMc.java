@@ -37,6 +37,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.ApiStatus;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import java.util.List;
 
@@ -122,5 +123,7 @@ public class PolyMc implements ModInitializer {
         }
 
         PacketCountManager.registerEvents();
+
+        MixinEnvironment.getCurrentEnvironment().audit();
     }
 }

@@ -73,10 +73,13 @@ public class Config {
         if (mixin.equals("compat.FabricRegistrySyncDisabler")) {
             return !FabricLoader.getInstance().isModLoaded("fabric-registry-sync-v0");
         }
-
+        if (mixin.equals("compat.QuiltRegistrySyncDisabler") || mixin.equals("compat.QuiltFabricRegistrySyncDisabler")) {
+            return !FabricLoader.getInstance().isModLoaded("quilt_registry");
+        }
         if (mixin.startsWith("compat.immersive_portals")) {
             return !FabricLoader.getInstance().isModLoaded("imm_ptl_core");
         }
+
         if (mixin.equals("block.implementations.ChunkDataPlayerProvider") || mixin.equals("wizards.block.WatchProviderMixin")) {
             return FabricLoader.getInstance().isModLoaded("imm_ptl_core");
         }
