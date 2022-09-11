@@ -275,6 +275,16 @@ public class PolyMapImpl implements PolyMap {
                     var poly = entry.getValue();
                     addDebugProviderToDump(builder, block, block.getTranslationKey(), poly);
         });
+        builder.append("############\n## ENTITIES ##\n############\n");
+        this.entityPolys
+                .entrySet()
+                .stream()
+                .sorted(Comparator.comparing(block -> block.getKey().getTranslationKey()))
+                .forEach(entry -> {
+                    var entity = entry.getKey();
+                    var poly = entry.getValue();
+                    addDebugProviderToDump(builder, entity, entity.getTranslationKey(), poly);
+                });
         return builder.toString();
     }
 

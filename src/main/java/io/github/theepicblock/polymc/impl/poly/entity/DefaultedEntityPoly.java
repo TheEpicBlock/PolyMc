@@ -1,7 +1,10 @@
 package io.github.theepicblock.polymc.impl.poly.entity;
 
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
-import io.github.theepicblock.polymc.api.wizard.*;
+import io.github.theepicblock.polymc.api.wizard.PacketConsumer;
+import io.github.theepicblock.polymc.api.wizard.VirtualEntity;
+import io.github.theepicblock.polymc.api.wizard.Wizard;
+import io.github.theepicblock.polymc.api.wizard.WizardInfo;
 import io.github.theepicblock.polymc.impl.poly.wizard.AbstractVirtualEntity;
 import io.github.theepicblock.polymc.impl.poly.wizard.EntityUtil;
 import io.github.theepicblock.polymc.mixins.wizards.EntityAccessor;
@@ -22,6 +25,11 @@ public class DefaultedEntityPoly<T extends Entity> implements EntityPoly<T> {
     @Override
     public Wizard createWizard(WizardInfo info, T entity) {
         return new DefaultedEntityWizard<>(info, entity, this.displayType);
+    }
+
+    @Override
+    public String getDebugInfo(EntityType<?> obj) {
+        return displayType.getTranslationKey();
     }
 
     public static class DefaultedEntityWizard<T extends Entity> extends EntityWizard<T> {
