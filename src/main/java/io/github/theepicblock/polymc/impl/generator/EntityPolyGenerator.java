@@ -31,6 +31,10 @@ public class EntityPolyGenerator {
      * Generates the most suitable {@link EntityPoly} for a given {@link EntityType}
      */
     public static <T extends Entity> EntityPoly<T> generatePoly(EntityType<T> entityType, PolyRegistry builder) {
+        if (Registry.ENTITY_TYPE.getId(entityType).getNamespace().equals("taterzens")) {
+            return (info, entity) -> null; // Compatibility with Taterzens
+        }
+
         // Get the class of the entity
         var baseClass = InternalEntityHelpers.getEntityClass(entityType);
 
