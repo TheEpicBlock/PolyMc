@@ -26,6 +26,7 @@ import io.github.theepicblock.polymc.impl.ConfigManager;
 import io.github.theepicblock.polymc.impl.PolyMcCommands;
 import io.github.theepicblock.polymc.impl.generator.Generator;
 import io.github.theepicblock.polymc.impl.misc.BlockIdRemapper;
+import io.github.theepicblock.polymc.impl.misc.QslRegistryCompat;
 import io.github.theepicblock.polymc.impl.misc.logging.Log4JWrapper;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.poly.wizard.PacketCountManager;
@@ -122,5 +123,9 @@ public class PolyMc implements ModInitializer {
         }
 
         PacketCountManager.registerEvents();
+
+        if (FabricLoader.getInstance().isModLoaded("quilt_registry")) {
+            QslRegistryCompat.init();
+        }
     }
 }
