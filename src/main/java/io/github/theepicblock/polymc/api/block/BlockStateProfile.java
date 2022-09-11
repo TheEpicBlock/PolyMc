@@ -17,7 +17,6 @@
  */
 package io.github.theepicblock.polymc.api.block;
 
-import com.google.common.collect.Lists;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.impl.poly.block.ConditionalSimpleBlockPoly;
 import io.github.theepicblock.polymc.impl.poly.block.ListOfSlabs;
@@ -33,7 +32,9 @@ import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.ApiStatus;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -52,6 +53,10 @@ public class BlockStateProfile {
     public final BiConsumer<Block,PolyRegistry> onFirstRegister;
     public final String name;
 
+    /**
+     * @deprecated Use {@link #newProfile(String, Block[], Predicate, BiConsumer)} instead
+     */
+    @ApiStatus.Internal
     public BlockStateProfile(String name, Block[] blocks, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) {
         this.blocks = blocks;
         this.filter = filter;
@@ -59,6 +64,10 @@ public class BlockStateProfile {
         this.name = name;
     }
 
+    /**
+     * @deprecated Use {@link #newProfile(String, Block, Predicate, BiConsumer)} instead
+     */
+    @Deprecated
     public BlockStateProfile(String name, Block block, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) {
         this.blocks = new Block[]{block};
         this.filter = filter;
@@ -66,6 +75,10 @@ public class BlockStateProfile {
         this.name = name;
     }
 
+    //////////////////
+    // ALL PROFILES //
+    //////////////////
+    public static final List<BlockStateProfile> ALL_PROFILES = new ArrayList<>();
 
     ///////////////////////
     //  LISTS OF BLOCKS  //
@@ -250,33 +263,33 @@ public class BlockStateProfile {
     ////////////////////
     public static final BlockStateProfile SAPLING_SUB_PROFILE = getProfileWithDefaultFilter("sapling", SAPLING_BLOCKS);
     public static final BlockStateProfile SUGARCANE_SUB_PROFILE = getProfileWithDefaultFilter("sugarcane", Blocks.SUGAR_CANE);
-    public static final BlockStateProfile TRIPWIRE_SUB_PROFILE = new BlockStateProfile("tripwire", Blocks.TRIPWIRE, TRIPWIRE_FILTER, TRIPWIRE_ON_FIRST_REGISTER);
-    public static final BlockStateProfile SMALL_DRIPLEAF_SUB_PROFILE = new BlockStateProfile("drip leaf", Blocks.SMALL_DRIPLEAF, SMALL_DRIPLEAF_FILTER, SMALL_DRIPLEAF_ON_FIRST_REGISTER);
-    public static final BlockStateProfile CAVE_VINES_SUB_PROFILE = new BlockStateProfile("cave vines", Blocks.CAVE_VINES, CAVE_VINES_FILTER, CAVE_VINES_ON_FIRST_REGISTER);
+    public static final BlockStateProfile TRIPWIRE_SUB_PROFILE = newProfile("tripwire", Blocks.TRIPWIRE, TRIPWIRE_FILTER, TRIPWIRE_ON_FIRST_REGISTER);
+    public static final BlockStateProfile SMALL_DRIPLEAF_SUB_PROFILE = newProfile("drip leaf", Blocks.SMALL_DRIPLEAF, SMALL_DRIPLEAF_FILTER, SMALL_DRIPLEAF_ON_FIRST_REGISTER);
+    public static final BlockStateProfile CAVE_VINES_SUB_PROFILE = newProfile("cave vines", Blocks.CAVE_VINES, CAVE_VINES_FILTER, CAVE_VINES_ON_FIRST_REGISTER);
     public static final BlockStateProfile NETHER_VINES_SUB_PROFILE = getProfileWithDefaultFilter("nether vines", NETHER_VINE_BLOCKS);
     public static final BlockStateProfile KELP_SUB_PROFILE = getProfileWithDefaultFilter("kelp", Blocks.KELP);
     public static final BlockStateProfile NOTE_BLOCK_SUB_PROFILE = getProfileWithDefaultFilter("note block", Blocks.NOTE_BLOCK);
     public static final BlockStateProfile TARGET_BLOCK_SUB_PROFILE = getProfileWithDefaultFilter("target block", Blocks.TARGET);
-    public static final BlockStateProfile DISPENSER_SUB_PROFILE = new BlockStateProfile("dispenser and dropper", DISPENSER_BLOCKS, TRIGGERED_FILTER, TRIGGERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile DISPENSER_SUB_PROFILE = newProfile("dispenser and dropper", DISPENSER_BLOCKS, TRIGGERED_FILTER, TRIGGERED_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile TNT_SUB_PROFILE = getProfileWithDefaultFilter("tnt", Blocks.TNT);
     public static final BlockStateProfile JUKEBOX_SUB_PROFILE = getProfileWithDefaultFilter("jukebox", Blocks.JUKEBOX);
-    public static final BlockStateProfile BEEHIVE_SUB_PROFILE = new BlockStateProfile("beehive", BEEHIVE_BLOCKS, BEEHIVE_FILTER, BEEHIVE_ON_FIRST_REGISTER);
-    public static final BlockStateProfile SNOWY_GRASS_SUB_PROFILE = new BlockStateProfile("snowy grass", SNOWY_GRASS_BLOCKS, SNOWY_GRASS_FILTER, SNOWY_GRASS_ON_FIRST_REGISTER);
-    public static final BlockStateProfile DOUBLE_SLAB_SUB_PROFILE = new BlockStateProfile("slabs", ListOfSlabs.SLAB2FULL.keySet().toArray(Block[]::new), DOUBLE_SLAB_FILTER, DOUBLESLAB_ON_FIRST_REGISTER);
-    public static final BlockStateProfile WATERLOGGED_SLAB_SUB_PROFILE = new BlockStateProfile("waterlogged only slabs", WATERLOGGED_SLABS, WATERLOGGED_SLAB_FILTER, WATERLOGGED_SLAB_ON_FIRST_REGISTER);
-    public static final BlockStateProfile WAXED_COPPER_FULLBLOCK_SUB_PROFILE = new BlockStateProfile("waxed copper fullblocks", WAXED_COPPER_FULL_BLOCKS, ALWAYS_TRUE_FILTER, WAXED_COPPER_ON_FIRST_REGISTER);
-    public static final BlockStateProfile INFESTED_STONE_SUB_PROFILE = new BlockStateProfile("infested stone", INFESTED_BLOCKS, ALWAYS_TRUE_FILTER, INFESTED_BLOCK_ON_FIRST_REGISTER);
-    public static final BlockStateProfile PETRIFIED_OAK_SLAB_SUB_PROFILE = new BlockStateProfile("petrified oak slab", Blocks.PETRIFIED_OAK_SLAB, SLAB_FILTER, DOUBLESLAB_ON_FIRST_REGISTER); // This profile only handles top/bottom slabs. The double slabs are exposed via `DOUBLE_SLAB_SUB_PROFILE`
-    public static final BlockStateProfile WAXED_COPPER_SLAB_SUB_PROFILE = new BlockStateProfile("waxed copper slab", WAXED_COPPER_SLAB_BLOCKS, SLAB_FILTER, DOUBLESLAB_ON_FIRST_REGISTER); // This profile only handles top/bottom slabs. The double slabs are exposed via `DOUBLE_SLAB_SUB_PROFILE`
+    public static final BlockStateProfile BEEHIVE_SUB_PROFILE = newProfile("beehive", BEEHIVE_BLOCKS, BEEHIVE_FILTER, BEEHIVE_ON_FIRST_REGISTER);
+    public static final BlockStateProfile SNOWY_GRASS_SUB_PROFILE = newProfile("snowy grass", SNOWY_GRASS_BLOCKS, SNOWY_GRASS_FILTER, SNOWY_GRASS_ON_FIRST_REGISTER);
+    public static final BlockStateProfile DOUBLE_SLAB_SUB_PROFILE = newProfile("slabs", ListOfSlabs.SLAB2FULL.keySet().toArray(Block[]::new), DOUBLE_SLAB_FILTER, DOUBLESLAB_ON_FIRST_REGISTER);
+    public static final BlockStateProfile WATERLOGGED_SLAB_SUB_PROFILE = newProfile("waterlogged only slabs", WATERLOGGED_SLABS, WATERLOGGED_SLAB_FILTER, WATERLOGGED_SLAB_ON_FIRST_REGISTER);
+    public static final BlockStateProfile WAXED_COPPER_FULLBLOCK_SUB_PROFILE = newProfile("waxed copper fullblocks", WAXED_COPPER_FULL_BLOCKS, ALWAYS_TRUE_FILTER, WAXED_COPPER_ON_FIRST_REGISTER);
+    public static final BlockStateProfile INFESTED_STONE_SUB_PROFILE = newProfile("infested stone", INFESTED_BLOCKS, ALWAYS_TRUE_FILTER, INFESTED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile PETRIFIED_OAK_SLAB_SUB_PROFILE = newProfile("petrified oak slab", Blocks.PETRIFIED_OAK_SLAB, SLAB_FILTER, DOUBLESLAB_ON_FIRST_REGISTER); // This profile only handles top/bottom slabs. The double slabs are exposed via `DOUBLE_SLAB_SUB_PROFILE`
+    public static final BlockStateProfile WAXED_COPPER_SLAB_SUB_PROFILE = newProfile("waxed copper slab", WAXED_COPPER_SLAB_BLOCKS, SLAB_FILTER, DOUBLESLAB_ON_FIRST_REGISTER); // This profile only handles top/bottom slabs. The double slabs are exposed via `DOUBLE_SLAB_SUB_PROFILE`
     /**
      * Leaves that don't have any block colouring applied
      */
-    public static final BlockStateProfile NO_COLOUR_LEAVES_SUB_PROFILE = new BlockStateProfile("no colour leaves", NO_COLOUR_LEAVES_BLOCKS, LEAVES_FILTER, LEAVES_ON_FIRST_REGISTER);
-    public static final BlockStateProfile CONSTANT_COLOUR_LEAVES_SUB_PROFILE = new BlockStateProfile("constant colour leaves", CONSTANT_COLOUR_LEAVES_BLOCKS, LEAVES_FILTER, LEAVES_ON_FIRST_REGISTER);
-    public static final BlockStateProfile BIOME_COLOUR_LEAVES_SUB_PROFILE = new BlockStateProfile("biome colour leaves", BIOME_COLOUR_LEAVES_BLOCKS, LEAVES_FILTER, LEAVES_ON_FIRST_REGISTER);
-    public static final BlockStateProfile OPEN_FENCE_GATE_PROFILE = new BlockStateProfile("open fence gate", FENCE_GATE_BLOCKS, OPEN_FENCE_GATE_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
-    public static final BlockStateProfile FENCE_GATE_PROFILE = new BlockStateProfile("fence gate", FENCE_GATE_BLOCKS, FENCE_GATE_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
-    public static final BlockStateProfile PRESSURE_PLATE_PROFILE = new BlockStateProfile("pressure plate", PRESSURE_PLATE_BLOCKS, PRESSURE_PLATE_FILTER, PRESSURE_PLATE_ON_FIRST_REGISTER);
+    public static final BlockStateProfile NO_COLOUR_LEAVES_SUB_PROFILE = newProfile("no colour leaves", NO_COLOUR_LEAVES_BLOCKS, LEAVES_FILTER, LEAVES_ON_FIRST_REGISTER);
+    public static final BlockStateProfile CONSTANT_COLOUR_LEAVES_SUB_PROFILE = newProfile("constant colour leaves", CONSTANT_COLOUR_LEAVES_BLOCKS, LEAVES_FILTER, LEAVES_ON_FIRST_REGISTER);
+    public static final BlockStateProfile BIOME_COLOUR_LEAVES_SUB_PROFILE = newProfile("biome colour leaves", BIOME_COLOUR_LEAVES_BLOCKS, LEAVES_FILTER, LEAVES_ON_FIRST_REGISTER);
+    public static final BlockStateProfile OPEN_FENCE_GATE_PROFILE = newProfile("open fence gate", FENCE_GATE_BLOCKS, OPEN_FENCE_GATE_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile FENCE_GATE_PROFILE = newProfile("fence gate", FENCE_GATE_BLOCKS, FENCE_GATE_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile PRESSURE_PLATE_PROFILE = newProfile("pressure plate", PRESSURE_PLATE_BLOCKS, PRESSURE_PLATE_FILTER, PRESSURE_PLATE_ON_FIRST_REGISTER);
 
     ////////////////
     //  PROFILES  //
@@ -284,76 +297,33 @@ public class BlockStateProfile {
     public static final BlockStateProfile FULL_BLOCK_PROFILE = combine("full blocks", INFESTED_STONE_SUB_PROFILE, /*TNT_SUB_PROFILE,*/ SNOWY_GRASS_SUB_PROFILE, NOTE_BLOCK_SUB_PROFILE, DISPENSER_SUB_PROFILE, BEEHIVE_SUB_PROFILE, WAXED_COPPER_FULLBLOCK_SUB_PROFILE, JUKEBOX_SUB_PROFILE, DOUBLE_SLAB_SUB_PROFILE, TARGET_BLOCK_SUB_PROFILE, WATERLOGGED_SLAB_SUB_PROFILE);
     public static final BlockStateProfile CLIMBABLE_PROFILE = combine("climbable blocks", CAVE_VINES_SUB_PROFILE, NETHER_VINES_SUB_PROFILE);
     public static final BlockStateProfile LEAVES_PROFILE = combine("leaves", BIOME_COLOUR_LEAVES_SUB_PROFILE, CONSTANT_COLOUR_LEAVES_SUB_PROFILE, NO_COLOUR_LEAVES_SUB_PROFILE);
-    public static final BlockStateProfile NO_COLLISION_WALL_PROFILE = new BlockStateProfile("empty walls", WALL_BLOCKS, WALL_FILTER, WALL_ON_FIRST_REGISTER);
+    public static final BlockStateProfile NO_COLLISION_WALL_PROFILE = newProfile("empty walls", WALL_BLOCKS, WALL_FILTER, WALL_ON_FIRST_REGISTER);
     public static final BlockStateProfile NO_COLLISION_PROFILE = combine("blocks without collisions", KELP_SUB_PROFILE, SAPLING_SUB_PROFILE, SUGARCANE_SUB_PROFILE, TRIPWIRE_SUB_PROFILE, SMALL_DRIPLEAF_SUB_PROFILE, OPEN_FENCE_GATE_PROFILE, PRESSURE_PLATE_PROFILE);
-    public static final BlockStateProfile FARMLAND_PROFILE = new BlockStateProfile("farmland", Blocks.FARMLAND, FARMLAND_FILTER, FARMLAND_ON_FIRST_REGISTER);
+    public static final BlockStateProfile FARMLAND_PROFILE = newProfile("farmland", Blocks.FARMLAND, FARMLAND_FILTER, FARMLAND_ON_FIRST_REGISTER);
     public static final BlockStateProfile CACTUS_PROFILE = getProfileWithDefaultFilter("cactus", Blocks.CACTUS);
-    public static final BlockStateProfile DOOR_PROFILE = new BlockStateProfile("door", DOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
-    public static final BlockStateProfile TRAPDOOR_PROFILE = new BlockStateProfile("trapdoor", TRAPDOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
-    public static final BlockStateProfile METAL_DOOR_PROFILE = new BlockStateProfile("metal door", Blocks.IRON_DOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
-    public static final BlockStateProfile METAL_TRAPDOOR_PROFILE = new BlockStateProfile("metal trapdoor", Blocks.IRON_TRAPDOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
-    public static final BlockStateProfile WAXED_COPPER_STAIR_PROFILE = new BlockStateProfile("waxed copper stair", WAXED_COPPER_STAIR_BLOCKS, ALWAYS_TRUE_FILTER, WAXED_COPPER_ON_FIRST_REGISTER);
+    public static final BlockStateProfile DOOR_PROFILE = newProfile("door", DOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile TRAPDOOR_PROFILE = newProfile("trapdoor", TRAPDOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile METAL_DOOR_PROFILE = newProfile("metal door", Blocks.IRON_DOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile METAL_TRAPDOOR_PROFILE = newProfile("metal trapdoor", Blocks.IRON_TRAPDOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile WAXED_COPPER_STAIR_PROFILE = newProfile("waxed copper stair", WAXED_COPPER_STAIR_BLOCKS, ALWAYS_TRUE_FILTER, WAXED_COPPER_ON_FIRST_REGISTER);
     public static final BlockStateProfile SLAB_PROFILE = combine("slab", PETRIFIED_OAK_SLAB_SUB_PROFILE, WAXED_COPPER_SLAB_SUB_PROFILE);
-    public static final BlockStateProfile SCULK_SENSOR_PROFILE = new BlockStateProfile("sculk sensor", Blocks.SCULK_SENSOR, SCULK_FILTER, SCULK_SENSOR_ON_FIRST_REGISTER);
-    public static final BlockStateProfile CHORUS_PLANT_BLOCK_PROFILE = new BlockStateProfile("chorus plant block", Blocks.CHORUS_PLANT, CHORUS_PLANT_FILTER, CHORUS_PLANT_ON_FIRST_REGISTER);
-    public static final BlockStateProfile CHORUS_FLOWER_BLOCK_PROFILE = new BlockStateProfile("chorus flower block", Blocks.CHORUS_FLOWER, CHORUS_FLOWER_FILTER, CHORUS_FLOWER_ON_FIRST_REGISTER);
-
-    //////////////////
-    // ALL PROFILES //
-    //////////////////
-    public static final List<BlockStateProfile> ALL_PROFILES = Lists.newArrayList(
-            SAPLING_SUB_PROFILE,
-            SUGARCANE_SUB_PROFILE,
-            TRIPWIRE_SUB_PROFILE,
-            SMALL_DRIPLEAF_SUB_PROFILE,
-            CAVE_VINES_SUB_PROFILE,
-            NETHER_VINES_SUB_PROFILE,
-            KELP_SUB_PROFILE,
-            NOTE_BLOCK_SUB_PROFILE,
-            TARGET_BLOCK_SUB_PROFILE,
-            DISPENSER_SUB_PROFILE,
-            TNT_SUB_PROFILE,
-            JUKEBOX_SUB_PROFILE,
-            BEEHIVE_SUB_PROFILE,
-            SNOWY_GRASS_SUB_PROFILE,
-            DOUBLE_SLAB_SUB_PROFILE,
-            WATERLOGGED_SLAB_SUB_PROFILE,
-            WAXED_COPPER_FULLBLOCK_SUB_PROFILE,
-            INFESTED_STONE_SUB_PROFILE,
-            PETRIFIED_OAK_SLAB_SUB_PROFILE,
-            WAXED_COPPER_SLAB_SUB_PROFILE,
-            OPEN_FENCE_GATE_PROFILE,
-            FENCE_GATE_PROFILE,
-            PRESSURE_PLATE_PROFILE,
-            FULL_BLOCK_PROFILE,
-            CLIMBABLE_PROFILE,
-            LEAVES_PROFILE,
-            NO_COLLISION_PROFILE,
-            FARMLAND_PROFILE,
-            CACTUS_PROFILE,
-            DOOR_PROFILE,
-            TRAPDOOR_PROFILE,
-            METAL_DOOR_PROFILE,
-            METAL_TRAPDOOR_PROFILE,
-            WAXED_COPPER_STAIR_PROFILE,
-            CHORUS_PLANT_BLOCK_PROFILE,
-            CHORUS_FLOWER_BLOCK_PROFILE
-    );
-
+    public static final BlockStateProfile SCULK_SENSOR_PROFILE = newProfile("sculk sensor", Blocks.SCULK_SENSOR, SCULK_FILTER, SCULK_SENSOR_ON_FIRST_REGISTER);
+    public static final BlockStateProfile CHORUS_PLANT_BLOCK_PROFILE = newProfile("chorus plant block", Blocks.CHORUS_PLANT, CHORUS_PLANT_FILTER, CHORUS_PLANT_ON_FIRST_REGISTER);
+    public static final BlockStateProfile CHORUS_FLOWER_BLOCK_PROFILE = newProfile("chorus flower block", Blocks.CHORUS_FLOWER, CHORUS_FLOWER_FILTER, CHORUS_FLOWER_ON_FIRST_REGISTER);
 
     //////////////////
     //  OTHER CODE  //
     //////////////////
     public static BlockStateProfile getProfileWithDefaultFilter(String name, Block[] blocks) {
-        return new BlockStateProfile(name, blocks, DEFAULT_FILTER, DEFAULT_ON_FIRST_REGISTER);
+        return newProfile(name, blocks, DEFAULT_FILTER, DEFAULT_ON_FIRST_REGISTER);
     }
 
     public static BlockStateProfile getProfileWithDefaultFilter(String name, Block block) {
-        return new BlockStateProfile(name, block, DEFAULT_FILTER, DEFAULT_ON_FIRST_REGISTER);
+        return newProfile(name, block, DEFAULT_FILTER, DEFAULT_ON_FIRST_REGISTER);
     }
 
     public static BlockStateProfile combine(String name, BlockStateProfile... parents) {
-        return new BlockStateProfile(
+        return newProfile(
                 name,
                 // Combine blocks into one array
                 Arrays.stream(parents).flatMap((v) -> Arrays.stream(v.blocks)).toArray(Block[]::new),
@@ -375,6 +345,16 @@ public class BlockStateProfile {
                     }
                 }
         );
+    }
+
+    public static BlockStateProfile newProfile(String name, Block[] blocks, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) {
+        var profile = new BlockStateProfile(name, blocks, filter, onFirstRegister);
+        ALL_PROFILES.add(profile);
+        return profile;
+    }
+
+    public static BlockStateProfile newProfile(String name, Block block, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) {
+        return newProfile(name, new Block[]{block}, filter, onFirstRegister);
     }
 
     private static boolean isStringUseable(BlockState state) {
