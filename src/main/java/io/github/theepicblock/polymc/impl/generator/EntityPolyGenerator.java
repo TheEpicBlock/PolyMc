@@ -43,13 +43,13 @@ public class EntityPolyGenerator {
             if (Util.isVanilla(id)) {
                 Class<?> vanillaEntityClass = InternalEntityHelpers.getEntityClass(possibleType);
 
-                if (vanillaEntityClass.isAssignableFrom(baseClass)) {
+                if (vanillaEntityClass != null && vanillaEntityClass.isAssignableFrom(baseClass)) {
                     possible.add(possibleType);
                 }
             }
         }
 
-        // Players are blacklist, we shouldn't spawn any players.
+        // Players are blacklisted, we shouldn't spawn any players.
         possible.removeIf(clazz -> clazz == EntityType.PLAYER);
 
         // Sort the list of entities that match by the highest type
