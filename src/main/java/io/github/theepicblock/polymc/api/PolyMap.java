@@ -18,11 +18,14 @@
 package io.github.theepicblock.polymc.api;
 
 import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.block.WizardConstructor;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
+import io.github.theepicblock.polymc.api.wizard.Wizard;
+import io.github.theepicblock.polymc.api.wizard.WizardInfo;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.mixins.entity.EntityAttributesFilteringMixin;
@@ -40,6 +43,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface PolyMap {
@@ -51,18 +55,13 @@ public interface PolyMap {
     /**
      * Converts the serverside representation of a block into a clientside one that should be sent to the client.
      */
-    default BlockState getClientState(BlockState serverBlock, @Nullable ServerPlayerEntity player) {
-        BlockPoly poly = this.getBlockPoly(serverBlock.getBlock());
-        if (poly == null) return serverBlock;
-
-        return poly.getClientBlock(serverBlock);
-    }
+    BlockState getClientState(@NotNull BlockState serverBlock, @Nullable ServerPlayerEntity player);
 
     /**
      * Get the raw id of the clientside blockstate.
      */
     @ApiStatus.Internal
-    default int getClientStateRawId(BlockState state, ServerPlayerEntity playerEntity) {
+    default int getClientStateRawId(@NotNull BlockState state, ServerPlayerEntity playerEntity) {
         BlockState clientState = this.getClientState(state, playerEntity);
 
         if (clientState == null) {
@@ -72,6 +71,8 @@ public interface PolyMap {
         return Block.STATE_IDS.getRawId(clientState);
     }
 
+    @Nullable WizardConstructor getWizardConstructor(@NotNull BlockState state);
+
     /**
      * @return the {@link ItemPoly} that this PolyMap associates with this {@link Item}.
      */
@@ -80,7 +81,26 @@ public interface PolyMap {
     /**
      * @return the {@link BlockPoly} that this PolyMap associates with this {@link Block}.
      */
-    BlockPoly getBlockPoly(Block block);
+    @Deprecated
+    default BlockPoly getBlockPoly(@NotNull Block block) {
+        return new BlockPoly() {
+            @Override
+            public BlockState getClientBlock(BlockState input) {
+                return this.getClientBlock(input);
+            }
+
+            @Override
+            public boolean hasWizard() {
+                return PolyMap.this.hasBlockWizards();
+            }
+
+            @Override
+            public Wizard createWizard(WizardInfo info) {
+                // TODO
+                return null;
+            }
+        };
+    }
 
     /**
      * @return the {@link GuiPoly} that this PolyMap associates with this {@link ScreenHandlerType}.
@@ -105,7 +125,7 @@ public interface PolyMap {
      * This is used to disable/enable miscellaneous patches
      * @see io.github.theepicblock.polymc.mixins.CustomPacketDisabler
      * @see io.github.theepicblock.polymc.mixins.block.ResyncImplementation
-     * @see io.github.theepicblock.polymc.impl.mixin.CustomBlockBreakingCheck#needsCustomBreaking(ServerPlayerEntity, Block)
+     * @see io.github.theepicblock.polymc.impl.mixin.CustomBlockBreakingCheck#needsCustomBreaking(ServerPlayerEntity, BlockState)
      * @see GuiPolyImplementation
      * @see io.github.theepicblock.polymc.mixins.item.CustomRecipeFix
      */

@@ -34,13 +34,12 @@ public abstract class MixinPistonBlockEntity extends BlockEntity {
     private final PolyMapMap<Wizard> wizards = new PolyMapMap<>((map) -> {
         if (!(world instanceof ServerWorld)) return null;
 
-        var block = this.getPushedBlock().getBlock();
-        var poly = map.getBlockPoly(block);
-        if (poly != null && poly.hasWizard()) {
+        var wizardConstructor = map.getWizardConstructor(this.getPushedBlock());
+        if (wizardConstructor != null) {
             try {
-                return poly.createWizard(new PistonWizardInfo((PistonBlockEntity)(Object)this));
+                return wizardConstructor.construct(new PistonWizardInfo((PistonBlockEntity)(Object)this));
             } catch (Throwable t) {
-                PolyMc.LOGGER.error("Failed to create block wizard for "+block.getTranslationKey()+" | "+poly);
+                PolyMc.LOGGER.error("Failed to create block wizard for "+this.getPushedBlock().getBlock().getTranslationKey());
                 t.printStackTrace();
             }
         }

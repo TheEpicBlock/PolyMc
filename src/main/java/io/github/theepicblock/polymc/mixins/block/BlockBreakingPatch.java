@@ -66,7 +66,7 @@ public abstract class BlockBreakingPatch {
      */
     @Inject(method = "continueMining", at = @At("TAIL"))
     public void breakIfTakingTooLong(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
-        if (CustomBlockBreakingCheck.needsCustomBreaking(player, state.getBlock())) {
+        if (CustomBlockBreakingCheck.needsCustomBreaking(player, state)) {
             int j = tickCounter - i;
             float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j);
 
@@ -84,7 +84,7 @@ public abstract class BlockBreakingPatch {
 
     @Inject(method = "continueMining", at = @At(value = "FIELD", opcode = Opcodes.GETFIELD, shift = At.Shift.AFTER, target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;blockBreakingProgress:I"))
     public void onUpdateBreakStatus(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
-        if (CustomBlockBreakingCheck.needsCustomBreaking(player, state.getBlock())) {
+        if (CustomBlockBreakingCheck.needsCustomBreaking(player, state)) {
             //Send a packet that resembles the current mining progress
             player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, this.blockBreakingProgress));
         }
@@ -92,7 +92,7 @@ public abstract class BlockBreakingPatch {
 
     @Inject(method = "processBlockBreakingAction", at = @At("HEAD"))
     public void packetReceivedInject(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
-        if (CustomBlockBreakingCheck.needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
+        if (CustomBlockBreakingCheck.needsCustomBreaking(player, world.getBlockState(pos))) {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
                 // This prevents the client from trying to break the block themselves.
                 if (this.world.getBlockState(pos).calcBlockBreakingDelta(this.player, this.player.world, pos) < 1) {
@@ -110,7 +110,7 @@ public abstract class BlockBreakingPatch {
 
     @Inject(method = "processBlockBreakingAction", at = @At("TAIL"))
     public void enforceBlockBreakingCooldown(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
-        if (CustomBlockBreakingCheck.needsCustomBreaking(player, world.getBlockState(pos).getBlock())) {
+        if (CustomBlockBreakingCheck.needsCustomBreaking(player, world.getBlockState(pos))) {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
                 this.startMiningTime += blockBreakingCooldown;
             }

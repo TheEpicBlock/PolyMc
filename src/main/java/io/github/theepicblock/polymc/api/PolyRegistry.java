@@ -21,6 +21,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockStateManager;
+import io.github.theepicblock.polymc.api.block.BlockStatePoly;
+import io.github.theepicblock.polymc.api.block.WizardConstructor;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
@@ -29,6 +31,7 @@ import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.impl.PolyMapImpl;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
@@ -48,7 +51,7 @@ public class PolyRegistry {
 
     protected final Map<Item,ItemPoly> itemPolys = new HashMap<>();
     protected final List<ItemTransformer> globalItemPolys = new ArrayList<>();
-    protected final Map<Block,BlockPoly> blockPolys = new HashMap<>();
+    protected final Map<BlockState,BlockStatePoly> blockPolys = new HashMap<>();
     protected final Map<ScreenHandlerType<?>,GuiPoly> guiPolys = new HashMap<>();
     protected final Map<EntityType<?>,EntityPoly<?>> entityPolys = new HashMap<>();
 
@@ -76,8 +79,16 @@ public class PolyRegistry {
      * @param block block to associate poly with.
      * @param poly  poly to register.
      */
+    @Deprecated
     public void registerBlockPoly(Block block, BlockPoly poly) {
-        blockPolys.put(block, poly);
+        WizardConstructor wizardProvider = poly.hasWizard() ? poly::createWizard : null;
+        block.getStateManager().getStates().forEach(state -> {
+            blockPolys.put(state, new BlockStatePoly(poly.getClientBlock(state), wizardProvider));
+        });
+    }
+
+    public void registerBlockPoly(BlockState state, BlockStatePoly poly) {
+        blockPolys.put(state, poly);
     }
 
     /**
@@ -160,10 +171,26 @@ public class PolyRegistry {
      * Creates an immutable {@link PolyMap} containing all of the registered polys
      */
     public PolyMap build() {
+        var modded2vanillaStates = blockPolys
+                .entrySet()
+                .stream()
+                .collect(ImmutableMap.toImmutableMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().vanillaBlock())
+                );
+        var wizards = blockPolys
+                .entrySet()
+                .stream()
+                .collect(ImmutableMap.toImmutableMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().wizard())
+                );
+
         return new PolyMapImpl(
                 ImmutableMap.copyOf(itemPolys),
                 globalItemPolys.toArray(new ItemTransformer[0]),
-                ImmutableMap.copyOf(blockPolys),
+                modded2vanillaStates,
+                wizards,
                 ImmutableMap.copyOf(guiPolys),
                 ImmutableMap.copyOf(entityPolys),
                 ImmutableList.copyOf(sharedValues.entrySet().stream().map((entry) -> entry.getKey().createResources(entry.getValue())).filter(Objects::nonNull).iterator()));

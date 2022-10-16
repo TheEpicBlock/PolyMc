@@ -2,7 +2,7 @@ package io.github.theepicblock.polymc.mixins.wizards.block;
 
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
-import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.block.WizardConstructor;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.api.wizard.WizardView;
@@ -82,12 +82,12 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
 
         if (palette.getSize() < 256) {
             // The palette contains all block states present in the chunk
-            var idsWithPolys = new BlockPoly[palette.getSize()];
+            var idsWithWizards = new WizardConstructor[palette.getSize()];
             for (int i = 0; i < palette.getSize(); i++) {
                 var state = palette.get(i);
-                var poly = polyMap.getBlockPoly(state.getBlock());
-                if (poly != null && poly.hasWizard()) {
-                    idsWithPolys[i] = poly;
+                var wizardConstructor = polyMap.getWizardConstructor(state);
+                if (wizardConstructor != null) {
+                    idsWithWizards[i] = wizardConstructor;
                 }
             }
 
@@ -104,9 +104,9 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                 for (long l : data.getData()) {
                     for (int j = 0; j < elementsPerLong; ++j) {
                         var blockIndex = (int)(l & maxValue);
-                        var poly = idsWithPolys[blockIndex];
-                        if (poly != null) {
-                            processBlock(polyMap, poly, i, yOffset, wizardMap);
+                        var constructor = idsWithWizards[blockIndex];
+                        if (constructor != null) {
+                            processBlock(polyMap, constructor, i, yOffset, wizardMap);
                         }
 
                         l >>= elementBits;
@@ -119,9 +119,9 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
             } else {
                 for (int i = 0; i < data.getSize(); i++) {
                     var blockIndex = data.get(i);
-                    var poly = idsWithPolys[blockIndex];
-                    if (poly != null) {
-                        processBlock(polyMap, poly, i, yOffset, wizardMap);
+                    var constructor = idsWithWizards[blockIndex];
+                    if (constructor != null) {
+                        processBlock(polyMap, constructor, i, yOffset, wizardMap);
                     }
                 }
             }
@@ -140,9 +140,10 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                 for (long l : data.getData()) {
                     for (int j = 0; j < elementsPerLong; ++j) {
                         var blockIndex = (int)(l & maxValue);
-                        var poly = polyMap.getBlockPoly(palette.get(blockIndex).getBlock());
-                        if (poly != null && poly.hasWizard()) {
-                            processBlock(polyMap, poly, i, yOffset, wizardMap);
+                        var state = palette.get(blockIndex);
+                        var wizardConstructor = polyMap.getWizardConstructor(state);
+                        if (wizardConstructor != null) {
+                            processBlock(polyMap, wizardConstructor, i, yOffset, wizardMap);
                         }
 
                         l >>= elementBits;
@@ -155,9 +156,10 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
             } else {
                 for (int i = 0; i < data.getSize(); i++) {
                     var blockIndex = data.get(i);
-                    var poly = polyMap.getBlockPoly(palette.get(blockIndex).getBlock());
-                    if (poly != null && poly.hasWizard()) {
-                        processBlock(polyMap, poly, i, yOffset, wizardMap);
+                    var state = palette.get(blockIndex);
+                    var wizardConstructor = polyMap.getWizardConstructor(state);
+                    if (wizardConstructor != null) {
+                        processBlock(polyMap, wizardConstructor, i, yOffset, wizardMap);
                     }
                 }
             }
@@ -165,18 +167,18 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
     }
 
     @Unique
-    private void processBlock(@NotNull PolyMap map, @NotNull BlockPoly poly, int index, int yOffset, @NotNull Map<@NotNull BlockPos,@NotNull Wizard> wizardMap) {
+    private void processBlock(@NotNull PolyMap map, @NotNull WizardConstructor constructor, int index, int yOffset, @NotNull Map<@NotNull BlockPos,@NotNull Wizard> wizardMap) {
         BlockPos pos = Util.fromPalettedContainerIndex(index).add(this.pos.x * 16, yOffset, this.pos.z * 16);
         try {
-            var wiz = poly.createWizard(new PlacedWizardInfo(pos, (ServerWorld)this.world));
+            var wiz = constructor.construct(new PlacedWizardInfo(pos, (ServerWorld)this.world));
             if (wiz == null) {
-                PolyMc.LOGGER.warn(poly+" is creating null wizards! This is bad!");
+                PolyMc.LOGGER.warn(constructor+" is creating null wizards! This is bad!");
                 return;
             }
             ((WizardTickerDuck)this.world).polymc$addBlockTicker(map, this.getPos(), wiz);
             wizardMap.put(pos, wiz);
         } catch (Throwable t) {
-            PolyMc.LOGGER.warn("Failed to create block wizard for block at "+pos+" | "+poly);
+            PolyMc.LOGGER.warn("Failed to create block wizard for block at "+pos+" | "+constructor);
         }
     }
 
@@ -246,11 +248,11 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                 ((WizardTickerDuck)this.world).polymc$removeBlockTicker(polyMap, this.getPos(), oldWiz);
             }
 
-            BlockPoly poly = polyMap.getBlockPoly(state.getBlock());
-            if (poly != null && poly.hasWizard()) {
+            var wizardConstructor = polyMap.getWizardConstructor(state);
+            if (wizardConstructor != null) {
                 try {
                     BlockPos ipos = pos.toImmutable();
-                    Wizard wiz = poly.createWizard(new PlacedWizardInfo(ipos, (ServerWorld)this.world));
+                    Wizard wiz = wizardConstructor.construct(new PlacedWizardInfo(ipos, (ServerWorld)this.world));
                     wizardMap.put(ipos, wiz);
                     if (allPlayers == null) {
                         allPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)this.getWorld(), this.getPos());
@@ -260,7 +262,7 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
                     wiz.addPlayer(filteredView);
                     ((WizardTickerDuck)this.world).polymc$addBlockTicker(polyMap, this.getPos(), wiz);
                 } catch (Throwable t) {
-                    PolyMc.LOGGER.error("Failed to create block wizard for " + state.getBlock().getTranslationKey() + " | " + poly);
+                    PolyMc.LOGGER.error("Failed to create block wizard for " + state.getBlock().getTranslationKey());
                     t.printStackTrace();
                 }
             }

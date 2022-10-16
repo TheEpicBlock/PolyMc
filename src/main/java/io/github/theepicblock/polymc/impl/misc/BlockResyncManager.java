@@ -17,7 +17,6 @@
  */
 package io.github.theepicblock.polymc.impl.misc;
 
-import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.*;
 import net.minecraft.block.enums.DoubleBlockHalf;
@@ -59,15 +58,13 @@ public class BlockResyncManager {
             pos.set(sourcePos.getX() + direction.getOffsetX(), sourcePos.getY() + direction.getOffsetY(), sourcePos.getZ() + direction.getOffsetZ());
             if (checkedBlocks != null && checkedBlocks.contains(pos)) continue;
 
-            BlockState state = world.getBlockState(pos);
-            BlockPoly poly = Util.tryGetPolyMap(player).getBlockPoly(state.getBlock());
+            var serverState = world.getBlockState(pos);
+            var clientState = Util.tryGetPolyMap(player).getClientState(serverState, player);
 
-            if (poly != null) {
-                BlockState clientState = poly.getClientBlock(state);
-
+            if (serverState != clientState) {
                 if (BlockResyncManager.shouldForceSync(sourceState, clientState, direction)) {
                     BlockPos newPos = pos.toImmutable();
-                    player.networkHandler.sendPacket(new BlockUpdateS2CPacket(newPos, state));
+                    player.networkHandler.sendPacket(new BlockUpdateS2CPacket(newPos, serverState));
 
                     if (checkedBlocks == null) checkedBlocks = new ArrayList<>();
                     checkedBlocks.add(sourcePos);
@@ -77,7 +74,7 @@ public class BlockResyncManager {
             }
 
             // If the lower half of a door is interacted with, we should check the upper half as well
-            boolean isUpperDoor = direction == Direction.UP && state.getBlock() instanceof DoorBlock && state.get(DoorBlock.HALF) == DoubleBlockHalf.UPPER;
+            boolean isUpperDoor = direction == Direction.UP && serverState.getBlock() instanceof DoorBlock && serverState.get(DoorBlock.HALF) == DoubleBlockHalf.UPPER;
             if (isUpperDoor) {
                 if (checkedBlocks == null) checkedBlocks = new ArrayList<>();
                 checkedBlocks.add(sourcePos);

@@ -26,7 +26,7 @@ import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import io.github.theepicblock.polymc.api.SharedValuesKey;
-import io.github.theepicblock.polymc.api.block.BlockPoly;
+import io.github.theepicblock.polymc.api.block.WizardConstructor;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
@@ -38,7 +38,7 @@ import io.github.theepicblock.polymc.impl.resource.ModdedResourceContainerImpl;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackImplementation;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
@@ -50,6 +50,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.JsonHelper;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -74,26 +75,26 @@ public class PolyMapImpl implements PolyMap {
 
     private final ImmutableMap<Item,ItemPoly> itemPolys;
     private final ItemTransformer[] globalItemPolys;
-    private final ImmutableMap<Block,BlockPoly> blockPolys;
+    private final ImmutableMap<BlockState, BlockState> modded2vanillaStates;
+    private final ImmutableMap<BlockState, WizardConstructor> wizards;
     private final ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys;
     private final ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys;
     private final ImmutableList<SharedValuesKey.ResourceContainer> sharedValueResources;
-    private final boolean hasBlockWizards;
 
     public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys,
                        ItemTransformer[] globalItemPolys,
-                       ImmutableMap<Block,BlockPoly> blockPolys,
+                       ImmutableMap<BlockState, BlockState> modded2vanillaStates,
+                       ImmutableMap<BlockState, WizardConstructor> wizards,
                        ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys,
                        ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys,
                        ImmutableList<SharedValuesKey.ResourceContainer> sharedValueResources) {
         this.itemPolys = itemPolys;
         this.globalItemPolys = globalItemPolys;
-        this.blockPolys = blockPolys;
+        this.modded2vanillaStates = modded2vanillaStates;
+        this.wizards = wizards;
         this.guiPolys = guiPolys;
         this.entityPolys = entityPolys;
         this.sharedValueResources = sharedValueResources;
-
-        this.hasBlockWizards = blockPolys.values().stream().anyMatch(BlockPoly::hasWizard);
     }
 
     @Override
@@ -118,13 +119,18 @@ public class PolyMapImpl implements PolyMap {
     }
 
     @Override
-    public ItemPoly getItemPoly(Item item) {
-        return itemPolys.get(item);
+    public BlockState getClientState(@NotNull BlockState serverBlock, @Nullable ServerPlayerEntity player) {
+        return this.modded2vanillaStates.getOrDefault(serverBlock, serverBlock);
     }
 
     @Override
-    public BlockPoly getBlockPoly(Block block) {
-        return blockPolys.get(block);
+    public @Nullable WizardConstructor getWizardConstructor(@NotNull BlockState state) {
+        return this.wizards.get(state);
+    }
+
+    @Override
+    public ItemPoly getItemPoly(Item item) {
+        return itemPolys.get(item);
     }
 
     @Override
@@ -165,7 +171,7 @@ public class PolyMapImpl implements PolyMap {
 
     @Override
     public boolean hasBlockWizards() {
-        return hasBlockWizards;
+        return this.wizards.isEmpty();
     }
 
     @Override
@@ -264,14 +270,11 @@ public class PolyMapImpl implements PolyMap {
                     addDebugProviderToDump(builder, item, item.getTranslationKey(), poly);
         });
         builder.append("############\n## BLOCKS ##\n############\n");
-        this.blockPolys
-                .entrySet()
-                .stream()
-                .sorted(Comparator.comparing(block -> block.getKey().getTranslationKey()))
-                .forEach(entry -> {
-                    var block = entry.getKey();
-                    var poly = entry.getValue();
-                    addDebugProviderToDump(builder, block, block.getTranslationKey(), poly);
+        this.modded2vanillaStates.forEach((vanillaState, moddedState) -> {
+            builder.append(Util.expandTo(vanillaState, 45));
+            builder.append(" --> ");
+            builder.append(Util.expandTo(moddedState, 45));
+            builder.append("\n");
         });
         builder.append("############\n## ENTITIES ##\n############\n");
         this.entityPolys

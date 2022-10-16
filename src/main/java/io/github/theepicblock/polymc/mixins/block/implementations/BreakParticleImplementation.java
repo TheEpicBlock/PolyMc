@@ -45,7 +45,7 @@ public class BreakParticleImplementation {
 
         // Minecraft assumes the player who breaks the block knows it's breaking a block.
         // However, as PolyMc reimplements block breaking server-side, the one breaking the block needs to be notified too
-        var needsCustomBreaking = CustomBlockBreakingCheck.needsCustomBreaking(spe, stateParent.getBlock());
+        var needsCustomBreaking = CustomBlockBreakingCheck.needsCustomBreaking(spe, stateParent);
         PacketReplacementUtil.syncWorldEvent(world, needsCustomBreaking ? null : player, 2001, pos, stateParent);
     }
 }

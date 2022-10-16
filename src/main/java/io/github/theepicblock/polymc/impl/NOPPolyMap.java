@@ -16,6 +16,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class NOPPolyMap implements PolyMap {
@@ -25,7 +26,7 @@ public class NOPPolyMap implements PolyMap {
     }
 
     @Override
-    public BlockState getClientState(BlockState serverBlock, @Nullable ServerPlayerEntity player) {
+    public BlockState getClientState(@NotNull BlockState serverBlock, @Nullable ServerPlayerEntity player) {
         return serverBlock;
     }
 
@@ -40,7 +41,7 @@ public class NOPPolyMap implements PolyMap {
     }
 
     @Override
-    public BlockPoly getBlockPoly(Block block) {
+    public BlockPoly getBlockPoly(@NotNull Block block) {
         return null;
     }
 

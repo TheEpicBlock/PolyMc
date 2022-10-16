@@ -26,6 +26,7 @@ import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 
+@Deprecated
 public interface BlockPoly extends DebugInfoProvider<Block> {
     /**
      * Transforms an BlockState to it's client version
