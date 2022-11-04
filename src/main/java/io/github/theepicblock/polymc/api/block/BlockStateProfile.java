@@ -57,6 +57,7 @@ public class BlockStateProfile {
      * @deprecated Use {@link #newProfile(String, Block[], Predicate, BiConsumer)} instead
      */
     @ApiStatus.Internal
+    @Deprecated
     public BlockStateProfile(String name, Block[] blocks, Predicate<BlockState> filter, BiConsumer<Block,PolyRegistry> onFirstRegister) {
         this.blocks = blocks;
         this.filter = filter;

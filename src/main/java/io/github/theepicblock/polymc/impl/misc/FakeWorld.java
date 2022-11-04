@@ -11,6 +11,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.map.MapState;
 import net.minecraft.recipe.RecipeManager;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -57,7 +58,6 @@ import java.util.function.Supplier;
 public final class FakeWorld extends World {
     public static final World INSTANCE;
     static final Scoreboard SCOREBOARD = new Scoreboard();
-    static final DynamicRegistryManager REGISTRY_MANAGER = DynamicRegistryManager.createAndLoad();
     static final RecipeManager RECIPE_MANAGER = new RecipeManager();
     static final ChunkManager CHUNK_MANAGER = new ChunkManager() {
         private LightingProvider lightingProvider = null;
@@ -165,6 +165,7 @@ public final class FakeWorld extends World {
 
     static {
         World world;
+        var overworld = BuiltinRegistries.createWrapperLookup().getWrapperOrThrow(Registry.DIMENSION_TYPE_KEY).getOrThrow(DimensionTypes.OVERWORLD);
 
         try {
             try {
@@ -177,7 +178,7 @@ public final class FakeWorld extends World {
                 accessor.setProperties(new FakeWorldProperties());
                 accessor.setRegistryKey(RegistryKey.of(Registry.WORLD_KEY, new Identifier("polymc", "fake_world")));
                 accessor.setDimension(DimensionTypes.OVERWORLD);
-                accessor.setDimensionEntry(BuiltinRegistries.DIMENSION_TYPE.entryOf(DimensionTypes.OVERWORLD));
+                accessor.setDimensionEntry(overworld);
                 accessor.setThread(Thread.currentThread());
                 accessor.setRandom(Random.create());
                 accessor.setThreadSafeRandom(Random.createThreadSafe());
@@ -190,7 +191,7 @@ public final class FakeWorld extends World {
                 world = new FakeWorld(
                         new FakeWorldProperties(),
                         RegistryKey.of(Registry.WORLD_KEY, new Identifier("polymc","fake_world")),
-                        BuiltinRegistries.DIMENSION_TYPE.entryOf(DimensionTypes.OVERWORLD),
+                        overworld,
                         () -> new ProfilerSystem(() -> 0l, () -> 0, false),
                         false,
                         true,
@@ -207,7 +208,7 @@ public final class FakeWorld extends World {
         INSTANCE = world;
     }
 
-    protected FakeWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> dimensionType, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed) {
+    private FakeWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> dimensionType, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed) {
         super(properties, registryRef, dimensionType, profiler, isClient, debugWorld, seed, 0);
     }
 
@@ -315,7 +316,12 @@ public final class FakeWorld extends World {
 
     @Override
     public DynamicRegistryManager getRegistryManager() {
-        return REGISTRY_MANAGER;
+        return DynamicRegistryManager.EMPTY;
+    }
+
+    @Override
+    public FeatureSet getEnabledFeatures() {
+        return FeatureSet.empty();
     }
 
     @Override
@@ -330,7 +336,7 @@ public final class FakeWorld extends World {
 
     @Override
     public RegistryEntry<Biome> getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) {
-        return BuiltinRegistries.BIOME.getEntry(BiomeKeys.THE_VOID).get();
+        return BuiltinRegistries.createWrapperLookup().getWrapperOrThrow(Registry.BIOME_KEY).getOrThrow(BiomeKeys.THE_VOID);
     }
 
 
