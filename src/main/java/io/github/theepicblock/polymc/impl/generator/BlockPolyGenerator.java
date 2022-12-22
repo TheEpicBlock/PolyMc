@@ -69,7 +69,7 @@ public class BlockPolyGenerator {
         var res = RESOUCES.getBlockState(blockId.getNamespace(), blockId.getPath());
 
 
-        var modelId = blockId + "[" + (res != null ? res.getVariantId(moddedState) : "UNKNOWN") + "]";
+        var modelId = res != null ? blockId + "[" + res.getVariantId(moddedState) + "]" : null;
 
         //Get the state's collision shape.
         VoxelShape collisionShape;
