@@ -1,24 +1,24 @@
 package io.github.theepicblock.polymc.api.resource;
 
 import com.google.gson.Gson;
+import net.minecraft.resource.InputSupplier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.function.Supplier;
 
 public class TextureAsset implements PolyMcAsset {
-    private final @NotNull Supplier<InputStream> texture;
-    private final @Nullable Supplier<InputStream> mcmeta;
+    private final @NotNull InputSupplier<InputStream> texture;
+    private final @Nullable InputSupplier<InputStream> mcmeta;
 
-    public TextureAsset(@NotNull Supplier<InputStream> inner, @Nullable Supplier<InputStream> mcmeta) {
+    public TextureAsset(@NotNull InputSupplier<InputStream> inner, @Nullable InputSupplier<InputStream> mcmeta) {
         this.texture = inner;
         this.mcmeta = mcmeta;
     }
 
-    public @NotNull InputStream getTexture() {
+    public @NotNull InputStream getTexture() throws IOException {
         return texture.get();
     }
 

@@ -1,16 +1,16 @@
 package io.github.theepicblock.polymc.api.resource;
 
 import com.google.gson.Gson;
+import net.minecraft.resource.InputSupplier;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.function.Supplier;
 
 public class SoundAsset implements PolyMcAsset {
-    private final Supplier<InputStream> inner;
+    private final InputSupplier<InputStream> inner;
 
-    public SoundAsset(Supplier<InputStream> inner) {
+    public SoundAsset(InputSupplier<InputStream> inner) {
         this.inner = inner;
     }
 
