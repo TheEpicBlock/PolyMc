@@ -7,8 +7,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +36,7 @@ public class InternalEntityHelpers {
             try {
                 entity = type.create(FakeWorld.INSTANCE);
             } catch (Throwable e) {
-                var id = Registry.ENTITY_TYPE.getId(type);
+                var id = Registries.ENTITY_TYPE.getId(type);
                 PolyMc.LOGGER.warn(String.format(
                         "Couldn't create template entity of %s (%s)... Defaulting to empty.",
                         id,

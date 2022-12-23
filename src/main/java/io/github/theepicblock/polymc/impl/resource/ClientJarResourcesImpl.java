@@ -23,8 +23,8 @@ import java.util.jar.JarFile;
 public class ClientJarResourcesImpl implements ClientJarResources {
     // Retrievable by using the getClientSha1 gradle task
     // Or you can look around https://launchermeta.mojang.com/mc/game/version_manifest_v2.json
-    private final static String CLIENT_SHA1 = "90d438c3e432add8848a9f9f368ce5a52f6bc4a7";
-    private final static String CLIENT_URL = "https://launcher.mojang.com/v1/objects/" + CLIENT_SHA1 + "/client.jar";
+    private final static String CLIENT_SHA1 = "977727ec9ab8b4631e5c12839f064092f17663f8";
+    private final static String CLIENT_URL = " https://piston-data.mojang.com/v1/objects/" + CLIENT_SHA1 + "/client.jar";
 
     private final JarFile clientJar;
 
@@ -72,14 +72,8 @@ public class ClientJarResourcesImpl implements ClientJarResources {
             } catch (URISyntaxException ignored) {}
         }
 
-        // We used to store our jars in this directory
-        var oldLocation = loader.getGameDir().resolve("polymer_cache/client_jars/" + CLIENT_SHA1 + ".jar");
-        if (Files.exists(oldLocation)) {
-            return oldLocation;
-        }
-
         // We are using the same location as polymer uses, this ensures that the jar isn't downloaded twice
-        return loader.getGameDir().resolve("polymer_cache/cached_client_jars/" + CLIENT_SHA1 + ".jar");
+        return loader.getGameDir().resolve("polymer/cached_client_jars/" + CLIENT_SHA1 + ".jar");
     }
 
     @Override

@@ -87,7 +87,8 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
         super.setRemoved(reason);
     }
 
-    @Inject(method = "onStartedTrackingBy(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At("RETURN"))
+    // todo: reimplement
+    /*@Inject(method = "onStartedTrackingBy(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At("RETURN"))
     private void onStartTracking(ServerPlayerEntity player, CallbackInfo ci) {
         this.polymc$addPlayer(player);
     }
@@ -95,7 +96,7 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
     @Inject(method = "onStoppedTrackingBy(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At("RETURN"))
     private void onStopTracking(ServerPlayerEntity player, CallbackInfo ci) {
         this.polymc$removePlayer(player);
-    }
+    }*/
 
     @Override
     public void polymc$addPlayer(ServerPlayerEntity playerEntity) {
@@ -117,7 +118,8 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
         }));
     }
 
-    @Inject(method = "setRemoved(Lnet/minecraft/entity/Entity$RemovalReason;)V", at = @At("RETURN"))
+    // todo: reimplement
+    /*@Inject(method = "setRemoved(Lnet/minecraft/entity/Entity$RemovalReason;)V", at = @At("RETURN"))
     private void onRemove(CallbackInfo ci) {
         var allNearbyPlayers = PolyMapFilteredPlayerView.getAll((ServerWorld)this.getWorld(), this.getChunkPos());
         wizards.forEach(((polyMap, wizard) -> {
@@ -125,7 +127,7 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
             if (wizard != null) wizard.onRemove(filteredView);
             filteredView.sendBatched();
         }));
-    }
+    }*/
 
     @Override
     public void polymc$removeAllPlayers() {

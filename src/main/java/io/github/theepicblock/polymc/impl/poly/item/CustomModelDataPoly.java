@@ -40,12 +40,12 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
-import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -106,7 +106,7 @@ public class CustomModelDataPoly implements ItemPoly {
 
         NbtCompound tag = stack.getOrCreateNbt();
         tag.putInt("CustomModelData", cmdValue);
-        tag.putString("PolyMcId", Registry.ITEM.getId(moddedBase).toString());
+        tag.putString("PolyMcId", Registries.ITEM.getId(moddedBase).toString());
         stack.setNbt(tag);
     }
 
@@ -126,7 +126,7 @@ public class CustomModelDataPoly implements ItemPoly {
         if (Util.isSectionVisible(input, ItemStack.TooltipSection.ADDITIONAL) && isInventory(location)) {
             var tooltips = new ArrayList<Text>(0);
             try {
-                input.getItem().appendTooltip(input, player == null ? null : player.world, tooltips, TooltipContext.Default.NORMAL);
+                input.getItem().appendTooltip(input, player == null ? null : player.world, tooltips, TooltipContext.Default.BASIC);
             } catch (Exception | NoClassDefFoundError ignored) {}
 
             if (!tooltips.isEmpty()) {
@@ -245,18 +245,18 @@ public class CustomModelDataPoly implements ItemPoly {
     public void addToResourcePack(Item item, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
         // We need to copy over the modded item model into the pack (including all of the textures it references)
         // Then we need to include an override into a vanilla item model that links to that modded item model
-        var moddedItemId = Registry.ITEM.getId(item);
+        var moddedItemId = Registries.ITEM.getId(item);
         var moddedItemModel = moddedResources.getItemModel(moddedItemId.getNamespace(), moddedItemId.getPath());
         if (moddedItemModel == null) {
             logger.error("Can't find item model for "+moddedItemId+", can't generate resources for it");
             // Set the override to have the barrier model to signify it's missing
-            moddedItemId = Registry.ITEM.getId(Items.BARRIER);
+            moddedItemId = Registries.ITEM.getId(Items.BARRIER);
         } else {
             pack.setItemModel(moddedItemId.getNamespace(), moddedItemId.getPath(), moddedItemModel);
             pack.importRequirements(moddedResources, moddedItemModel, logger);
         }
 
-        var clientItemId = Registry.ITEM.getId(this.clientItem);
+        var clientItemId = Registries.ITEM.getId(this.clientItem);
 
         // Copy and retrieve the vanilla item's model
         var clientItemModel = pack.getOrDefaultVanillaItemModel(moddedResources, clientItemId.getNamespace(), clientItemId.getPath(), logger);
