@@ -20,7 +20,7 @@ package io.github.theepicblock.polymc.mixins.item;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.Recipe;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -46,7 +46,7 @@ public class CustomRecipeFix {
         }
 
         return input.stream() // Remove non-vanilla serializers using streams. TODO can be done more efficiently, maybe with a custom iterator
-                .filter(recipe -> Util.isVanilla(Registry.RECIPE_SERIALIZER.getId(recipe.getSerializer())))
+                .filter(recipe -> Util.isVanilla(Registries.RECIPE_SERIALIZER.getId(recipe.getSerializer())))
                 .collect(Collectors.toList());
     }
 }

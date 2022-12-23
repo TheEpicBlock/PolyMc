@@ -11,10 +11,10 @@ import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ClientJarResourcesImpl;
 import net.minecraft.block.BlockState;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.state.property.Properties;
-import net.minecraft.util.registry.Registry;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,8 +37,8 @@ public class TestCommands {
             ClientJarResources clientJar = new ClientJarResourcesImpl(commandSource);
 
             var statesPerVariant = new HashMap<JBlockStateVariant,List<BlockState>>();
-            for (var block : Registry.BLOCK) {
-                var id = Registry.BLOCK.getId(block);
+            for (var block : Registries.BLOCK) {
+                var id = Registries.BLOCK.getId(block);
                 var blockStateDefinitions = clientJar.getBlockState(id.getNamespace(), id.getPath());
 
                 if (blockStateDefinitions == null) continue;

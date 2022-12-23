@@ -10,6 +10,7 @@
     "CustomPacketDisabler",
     "DisableCustomParticles",
     "ItemStackAccessor",
+    "ReferenceAccessor",
     "RefreshPolyMapOnCopy",
     "ServerStartMixin",
     "SoundPacketFix",
