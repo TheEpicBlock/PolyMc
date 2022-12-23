@@ -20,6 +20,11 @@
     "main": [
       "nl.theepicblock.polymc.testmod.Testmod"
     ],
+    "fabric-gametest": [
+      "nl.theepicblock.polymc.testmod.automated.ItemTests",
+      "nl.theepicblock.polymc.testmod.automated.BlockTests",
+      "nl.theepicblock.polymc.testmod.automated.WizardTests"
+    ],
     "polymc": [
       "nl.theepicblock.polymc.testmod.EntrypointListener"
     ]
