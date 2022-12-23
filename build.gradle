@@ -88,6 +88,14 @@ loom {
 			name = "Test Mod Server"
 			source sourceSets.testmod
 		}
+		gametest {
+			server()
+			name "Game Test"
+			vmArg "-Dfabric-api.gametest"
+			vmArg "-Dfabric-api.gametest.report-file=${project.buildDir}/junit.xml"
+			runDir "build/gametest"
+			source sourceSets.testmod
+		}
 		datagen {
 			server()
 			ideConfigGenerated false
