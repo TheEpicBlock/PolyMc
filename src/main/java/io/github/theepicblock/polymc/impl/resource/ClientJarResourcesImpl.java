@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.jar.JarFile;
@@ -24,7 +23,7 @@ public class ClientJarResourcesImpl implements ClientJarResources {
     // Retrievable by using the getClientSha1 gradle task
     // Or you can look around https://launchermeta.mojang.com/mc/game/version_manifest_v2.json
     private final static String CLIENT_SHA1 = "977727ec9ab8b4631e5c12839f064092f17663f8";
-    private final static String CLIENT_URL = " https://piston-data.mojang.com/v1/objects/" + CLIENT_SHA1 + "/client.jar";
+    private final static String CLIENT_URL = "https://piston-data.mojang.com/v1/objects/" + CLIENT_SHA1 + "/client.jar";
 
     private final JarFile clientJar;
 
