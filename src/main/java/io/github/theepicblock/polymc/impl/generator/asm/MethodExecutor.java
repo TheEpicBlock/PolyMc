@@ -13,8 +13,10 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InvokeDynamicInsnNode;
+import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.LineNumberNode;
 import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
@@ -28,9 +30,13 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 public class MethodExecutor {
     private Stack<StackEntry> stack = new ObjectArrayList<>();
     private VirtualMachine parent;
+    private StackEntry[] localVariables;
+    private String methodName;
 
-    public MethodExecutor(VirtualMachine parent) {
+    public MethodExecutor(VirtualMachine parent, StackEntry[] localVariables, String methodName) {
         this.parent = parent;
+        this.localVariables = localVariables;
+        this.methodName = methodName;
     }
     
     public StackEntry run(InsnList bytecode) throws VmException {
@@ -45,7 +51,7 @@ public class MethodExecutor {
                 var ret = this.execute(inst);
                 if (ret != null) return ret;
             } catch (Exception e) {
-                throw new VmException("Error executing code on line "+lineNumber, e);
+                throw new VmException("Error executing code on line "+lineNumber+" of "+methodName, e);
             }
         }
         return new KnownVoid();
@@ -64,18 +70,39 @@ public class MethodExecutor {
                 var inst = (FieldInsnNode)instruction;
                 stack.push(parent.getConfig().loadStaticField(ctx(), inst));
             }
+            case Opcodes.PUTSTATIC -> {
+                var inst = (FieldInsnNode)instruction;
+                parent.getConfig().putStaticField(ctx(), inst, stack.pop());
+            }
             case Opcodes.INVOKESTATIC -> {
                 var inst = (MethodInsnNode)instruction;
                 var descriptor = Type.getType(inst.desc);
-                var arguments = new ArrayList<Pair<Type, StackEntry>>();
+                int i = descriptor.getArgumentTypes().length;
+                var arguments = new Pair[i];
                 for (Type argumentType : descriptor.getArgumentTypes()) {
-                    arguments.add(Pair.of(argumentType, stack.pop())); // pop all the arguments
+                    i--;
+                    arguments[i] = Pair.of(argumentType, stack.pop()); // pop all the arguments
                 }
                 stack.push(parent.getConfig().invokeStatic(ctx(), inst, arguments)); // push the result
             }
             case Opcodes.INVOKEDYNAMIC -> {
                 var inst = (InvokeDynamicInsnNode)instruction;
                 stack.push(new Lambda((Handle)inst.bsmArgs[1]));
+            }
+            case Opcodes.ALOAD, Opcodes.DLOAD, Opcodes.FLOAD, Opcodes.ILOAD, Opcodes.LLOAD -> {
+                var variable = localVariables[((VarInsnNode)instruction).var];
+                if (variable == null) variable = new UnknownValue();
+                stack.push(variable);
+            }
+            case Opcodes.ASTORE, Opcodes.DSTORE, Opcodes.FSTORE, Opcodes.ISTORE, Opcodes.LSTORE -> {
+                localVariables[((VarInsnNode)instruction).var] = stack.pop();
+            }
+            case Opcodes.ARETURN, Opcodes.DRETURN, Opcodes.FRETURN, Opcodes.IRETURN, Opcodes.LRETURN -> {
+                return stack.pop();
+            }
+            case Opcodes.LDC -> {
+                var inst = (LdcInsnNode)instruction;
+                stack.push(StackEntry.knownStackValue(inst.cst));
             }
             case -1 -> {} // This is a virtual opcodes defined by asm, can be safely ignored
             default -> {

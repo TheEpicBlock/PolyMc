@@ -17,6 +17,8 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.StaticFieldValue;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class ClientModInitializer {    
@@ -34,11 +36,25 @@ public class ClientModInitializer {
 
         var vm = new VirtualMachine(classLoader, (VmConfig) new VmConfig() {
             @Override
-            public StackEntry invokeStatic(Context ctx, MethodInsnNode inst, List<Pair<Type, StackEntry>> arguments) throws VmException {
+            public StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
+                return new StaticFieldValue(inst.name, inst.owner); // Evaluate static fields lazily
+            }
+            @Override
+            public StackEntry invokeStatic(Context ctx, MethodInsnNode inst, Pair<Type, StackEntry>[] arguments) throws VmException {
                 if (inst.owner.equals("net/fabricmc/fabric/api/client/rendering/v1/EntityRendererRegistry")) {
-                    PolyMc.LOGGER.info("EntityRendererRegistry: "+arguments);
+                    PolyMc.LOGGER.info("EntityRendererRegistry: "+arguments[0].getRight()+", "+arguments[1].getRight());
+                    return new UnknownValue();
                 }
-                return VmConfig.super.invokeStatic(ctx, inst, arguments);
+                if (inst.owner.equals("net/fabricmc/fabric/api/client/rendering/v1/EntityModelLayerRegistry")) {
+                    PolyMc.LOGGER.info("EntityModelLayerRegistry: "+arguments[0].getRight()+", "+arguments[1].getRight());
+                    return new UnknownValue();
+                }
+                // if (inst.owner.equals("net/fabricmc/fabric/impl/screenhandler/client/ClientNetworking") ||
+                //     inst.owner.equals("net/fabricmc/fabric/impl/event/interaction/InteractionEventsRouterClient")) {
+                //     // We do not care
+                // }
+                return new UnknownValue(); // Don't bother executing further
+                // return VmConfig.super.invokeStatic(ctx, inst, arguments);
             }
         });
 

@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.objectweb.asm.ClassReader;
@@ -35,13 +37,25 @@ public class VirtualMachine {
 
     public StackEntry runMethod(String clazz, String method, String desc) throws VmException {
         var clazzNode = getClass(clazz);
-        return runMethod(clazzNode, method, desc);
+        return runMethod(clazzNode, method, desc, null);
     }
 
-    public StackEntry runMethod(Clazz clazz, String method, String desc) throws VmException {
-        var executor = new MethodExecutor(this);
+    public StackEntry runMethod(Clazz clazz, String method, String desc, @Nullable Pair<Type, StackEntry>[] arguments) throws VmException {
+        var meth = AsmUtils.getMethod(clazz.node, method, desc);
+        var localVariables = new StackEntry[meth.maxLocals];
+        
+        // Fill in arguments
+        if (arguments != null) {
+            int i = 0;
+            for (var pair : arguments) {
+                localVariables[i] = pair.getRight();
+                i++;
+            }
+        }
+        
+        var executor = new MethodExecutor(this, localVariables, clazz.node.name+"#"+method);
         stack.push(executor);
-        var ret = executor.run(AsmUtils.getMethod(clazz.node, method, desc).instructions);
+        var ret = executor.run(meth.instructions);
         stack.pop();
         return ret;
     }
@@ -73,7 +87,8 @@ public class VirtualMachine {
     public void ensureClinit(Clazz node) throws VmException {
         // This isn't spec-compliant
         if (!node.hasInitted) {
-            runMethod(node, "<clinit>", "()V");
+            node.hasInitted = true;
+            runMethod(node, "<clinit>", "()V", null);
         }
     }
 
@@ -83,14 +98,20 @@ public class VirtualMachine {
             ctx.machine.ensureClinit(clazz);
             return clazz.getStatic(inst.name);
         }
+
+        default void putStaticField(Context ctx, FieldInsnNode inst, StackEntry value) throws VmException {
+            var clazz = ctx.machine.getClass(inst.owner);
+            ctx.machine.ensureClinit(clazz);
+            clazz.setStatic(inst.name, value);
+        }
     
-        default StackEntry invokeStatic(Context ctx, MethodInsnNode inst, List<Pair<Type, StackEntry>> arguments) throws VmException {
+        default StackEntry invokeStatic(Context ctx, MethodInsnNode inst, Pair<Type, StackEntry>[] arguments) throws VmException {
             if (inst.owner.equals(Type.getInternalName(LoggerFactory.class))) {
                 return new UnknownValue();
             }
             var clazz = ctx.machine.getClass(inst.owner);
             // I'm pretty sure we're supposed to run clinit at this point, but let's delay it as much as possible
-            return ctx.machine.runMethod(clazz, inst.name, inst.desc);
+            return ctx.machine.runMethod(clazz, inst.name, inst.desc, arguments);
         }
 
         default void handleUnknownInstruction(Context ctx, AbstractInsnNode instruction, int lineNumber) throws VmException {
@@ -110,8 +131,12 @@ public class VirtualMachine {
             this.node = node;
         }
 
-        public StackEntry getStatic(String v) {
-            return staticFields.getOrDefault(v, new UnknownValue());
+        public StackEntry getStatic(String name) {
+            return staticFields.getOrDefault(name, new UnknownValue());
+        }
+
+        public void setStatic(String name, StackEntry v) {
+            staticFields.put(name, v);
         }
     }
 }
