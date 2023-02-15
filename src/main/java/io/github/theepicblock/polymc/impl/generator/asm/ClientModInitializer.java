@@ -78,7 +78,13 @@ public class ClientModInitializer {
     public static void runAnalysis(String className, VirtualMachine vm) {
         try {
             PolyMc.LOGGER.info("OWKFoQP "+className);
-            vm.runMethod(className, "onInitializeClient", "()V");
+            var methodName = "onInitializeClient";
+            if (className.contains("::")) {
+                var s = className.split("::");
+                className = s[0];
+                methodName = s[1];
+            }
+            vm.runMethod(className, methodName, "()V");
         } catch (VmException e) {
             e.printStackTrace();
         }
