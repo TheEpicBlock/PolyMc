@@ -16,9 +16,11 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.TypeInsnNode;
 import org.slf4j.LoggerFactory;
 
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import it.unimi.dsi.fastutil.Stack;
@@ -116,6 +118,11 @@ public class VirtualMachine {
     
         default StackEntry invokeVirtual(Context ctx, MethodInsnNode inst, StackEntry objectRef, Pair<Type, StackEntry>[] arguments) throws VmException {
             return new UnknownValue();
+        }
+
+        default StackEntry newObject(Context ctx, TypeInsnNode inst) throws VmException {
+            var clazz = ctx.machine.getClass(inst.desc);
+            return new KnownVmObject(clazz, new HashMap<>());
         }
 
         default void handleUnknownInstruction(Context ctx, AbstractInsnNode instruction, int lineNumber) throws VmException {

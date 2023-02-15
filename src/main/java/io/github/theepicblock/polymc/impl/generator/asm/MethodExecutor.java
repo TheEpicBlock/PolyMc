@@ -16,10 +16,13 @@ import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.LineNumberNode;
 import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownFloat;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVoid;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.Lambda;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
@@ -66,6 +69,9 @@ public class MethodExecutor {
             case Opcodes.ICONST_4 -> stack.push(new KnownInteger(4));
             case Opcodes.ICONST_5 -> stack.push(new KnownInteger(5));
             case Opcodes.ICONST_M1 -> stack.push(new KnownInteger(-1));
+            case Opcodes.FCONST_0 -> stack.push(new KnownFloat(0));
+            case Opcodes.FCONST_1 -> stack.push(new KnownFloat(1));
+            case Opcodes.FCONST_2 -> stack.push(new KnownFloat(2));
             case Opcodes.GETSTATIC -> {
                 var inst = (FieldInsnNode)instruction;
                 stack.push(parent.getConfig().loadStaticField(ctx(), inst));
@@ -97,9 +103,33 @@ public class MethodExecutor {
                 }
                 stack.push(parent.getConfig().invokeVirtual(ctx(), inst, objectRef, arguments)); // push the result
             }
+            case Opcodes.INVOKESPECIAL -> {
+                var inst = (MethodInsnNode)instruction;
+                var objectRef = stack.pop();
+                var descriptor = Type.getType(inst.desc);
+                int i = descriptor.getArgumentTypes().length;
+                var arguments = new Pair[i];
+                for (Type argumentType : descriptor.getArgumentTypes()) {
+                    i--;
+                    arguments[i] = Pair.of(argumentType, stack.pop()); // pop all the arguments
+                }
+                stack.push(parent.getConfig().invokeVirtual(ctx(), inst, objectRef, arguments)); // push the result
+            }
             case Opcodes.INVOKEDYNAMIC -> {
                 var inst = (InvokeDynamicInsnNode)instruction;
                 stack.push(new Lambda((Handle)inst.bsmArgs[1]));
+            }
+            case Opcodes.NEW -> {
+                var inst = (TypeInsnNode)instruction;
+                stack.push(parent.getConfig().newObject(ctx(), inst));
+            }
+            case Opcodes.PUTFIELD -> {
+                var inst = (FieldInsnNode)instruction;
+                stack.pop().setField(inst.name, stack.pop());
+            }
+            case Opcodes.GETFIELD -> {
+                var inst = (FieldInsnNode)instruction;
+                stack.push(stack.pop().getField(inst.name));
             }
             case Opcodes.ALOAD, Opcodes.DLOAD, Opcodes.FLOAD, Opcodes.ILOAD, Opcodes.LLOAD -> {
                 var variable = localVariables[((VarInsnNode)instruction).var];
@@ -116,6 +146,23 @@ public class MethodExecutor {
             case Opcodes.LDC -> {
                 var inst = (LdcInsnNode)instruction;
                 stack.push(StackEntry.knownStackValue(inst.cst));
+            }
+            case Opcodes.CHECKCAST -> {
+                var inst = (TypeInsnNode)instruction;
+                var obj = stack.pop();
+                if (obj instanceof KnownVmObject o) {
+                    // Set obj to new type (doesn't do much)
+                    obj = new KnownVmObject(parent.getClass(inst.desc), o.fields());
+                }
+                stack.push(obj);
+            }
+            case Opcodes.NOP -> {}
+            case Opcodes.DUP -> stack.push(stack.top());
+            case Opcodes.DUP2 -> {
+                var a = stack.peek(1);
+                var b = stack.peek(0);
+                stack.push(a);
+                stack.push(b);
             }
             case Opcodes.POP -> stack.pop();
             case Opcodes.POP2 -> { stack.pop(); stack.pop(); }

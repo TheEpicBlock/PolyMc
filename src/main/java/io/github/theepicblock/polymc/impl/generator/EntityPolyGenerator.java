@@ -4,7 +4,7 @@ import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.ClientClassLoader;
-import io.github.theepicblock.polymc.impl.generator.asm.ClientModInitializer;
+import io.github.theepicblock.polymc.impl.generator.asm.ClientInitializerAnalyzer;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
 import io.github.theepicblock.polymc.impl.poly.entity.DefaultedEntityPoly;
 import io.github.theepicblock.polymc.impl.poly.entity.FlyingItemEntityPoly;
@@ -39,14 +39,7 @@ public class EntityPolyGenerator {
             return (info, entity) -> null; // Compatibility with Taterzens
         }
 
-        var classLoader = new ClientClassLoader();
-        try {
-            ClientModInitializer.runAnalysis(classLoader);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
-                | NoSuchMethodException | InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        builder.getSharedValues(ClientInitializerAnalyzer.KEY);
 
         // Get the class of the entity
         var baseClass = InternalEntityHelpers.getEntityClass(entityType);
