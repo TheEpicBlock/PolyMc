@@ -3,8 +3,6 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import io.github.theepicblock.polymc.PolyMc;
-
 public class AsmUtils {
     public static MethodNode getMethod(ClassNode node, String name, String desc) {
         return node.methods.stream().filter(m -> m.name.equals(name) && m.desc.equals(desc)).findFirst().orElse(null);

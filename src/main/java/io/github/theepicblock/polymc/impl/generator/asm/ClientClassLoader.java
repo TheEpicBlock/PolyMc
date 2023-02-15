@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.Streams;
 
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.resource.ClientJarResourcesImpl;
 import net.fabricmc.loader.api.FabricLoader;
 

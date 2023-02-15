@@ -16,13 +16,24 @@ import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.LineNumberNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
+import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVoid;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.Lambda;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class MethodExecutor {
     private Stack<StackEntry> stack = new ObjectArrayList<>();
+    private VirtualMachine parent;
+
+    public MethodExecutor(VirtualMachine parent) {
+        this.parent = parent;
+    }
     
-    public void run(InsnList bytecode) throws VmException {
+    public StackEntry run(InsnList bytecode) throws VmException {
         var lineNumber = -1;
         for (var inst : bytecode) {
             if (inst instanceof LineNumberNode lineNumberNode) {
@@ -31,14 +42,16 @@ public class MethodExecutor {
             }
 
             try {
-                this.execute(inst);
+                var ret = this.execute(inst);
+                if (ret != null) return ret;
             } catch (Exception e) {
                 throw new VmException("Error executing code on line "+lineNumber, e);
             }
         }
+        return new KnownVoid();
     }
 
-    public void execute(AbstractInsnNode instruction) {
+    public @Nullable StackEntry execute(AbstractInsnNode instruction) throws VmException {
         switch (instruction.getOpcode()) {
             case Opcodes.ICONST_0 -> stack.push(new KnownInteger(0));
             case Opcodes.ICONST_1 -> stack.push(new KnownInteger(1));
@@ -49,7 +62,7 @@ public class MethodExecutor {
             case Opcodes.ICONST_M1 -> stack.push(new KnownInteger(-1));
             case Opcodes.GETSTATIC -> {
                 var inst = (FieldInsnNode)instruction;
-                stack.push(loadStaticField(inst));
+                stack.push(parent.getConfig().loadStaticField(ctx(), inst));
             }
             case Opcodes.INVOKESTATIC -> {
                 var inst = (MethodInsnNode)instruction;
@@ -58,74 +71,28 @@ public class MethodExecutor {
                 for (Type argumentType : descriptor.getArgumentTypes()) {
                     arguments.add(Pair.of(argumentType, stack.pop())); // pop all the arguments
                 }
-                stack.push(invokeStatic(inst, arguments)); // push the result
+                stack.push(parent.getConfig().invokeStatic(ctx(), inst, arguments)); // push the result
             }
             case Opcodes.INVOKEDYNAMIC -> {
                 var inst = (InvokeDynamicInsnNode)instruction;
                 stack.push(new Lambda((Handle)inst.bsmArgs[1]));
             }
-            case AbstractInsnNode.LINE -> {}
+            case -1 -> {} // This is a virtual opcodes defined by asm, can be safely ignored
             default -> {
-
+                parent.getConfig().handleUnknownInstruction(ctx(), instruction, 0); // TODO
             }
         }
+        return null;
     }
 
-    public StackEntry loadStaticField(FieldInsnNode inst) {
-        return new UnknownValue();
-    }
-
-    public StackEntry invokeStatic(MethodInsnNode inst, List<Pair<Type, StackEntry>> arguments) {
-        // We don't know what this method returns
-        return new UnknownValue();
-    }
-
-    public void handleUnknownInstruction(AbstractInsnNode instruction, int lineNumber) {
-        throw new NotImplementedException("Unimplemented instruction "+instruction.getOpcode());
+    private VirtualMachine.Context ctx() {
+        return new VirtualMachine.Context(parent);
     }
 
 
     ///
 
-    
-
-    public interface StackEntry {
-
-    }
-
-    public static StackEntry knownStackValue(Object o) {
-        if (o instanceof Integer i) {
-            return new KnownInteger(i);
-        }
-        return new KnownObject(o);
-    }
-
-    public record KnownInteger(int i) implements StackEntry {
-
-    }
-
-    public record KnownObject(Object i) implements StackEntry {
-    }
-
-    public record Lambda(Handle method) implements StackEntry {
-    }
-
-    public record KnownVoid() implements StackEntry {
-        public String toString() {
-            return "void";
-        }
-
-    }
-
-    public record UnknownValue() implements StackEntry {
-        public String toString() {
-            return "unknown";
-        }
-    }
-
-    ///
-
-    public class VmException extends Exception {
+    public static class VmException extends Exception {
         public VmException(String message, Throwable cause) {
             super(message, cause);
         }
