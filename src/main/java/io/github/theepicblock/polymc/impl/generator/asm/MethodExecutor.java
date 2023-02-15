@@ -85,6 +85,18 @@ public class MethodExecutor {
                 }
                 stack.push(parent.getConfig().invokeStatic(ctx(), inst, arguments)); // push the result
             }
+            case Opcodes.INVOKEVIRTUAL -> {
+                var inst = (MethodInsnNode)instruction;
+                var objectRef = stack.pop();
+                var descriptor = Type.getType(inst.desc);
+                int i = descriptor.getArgumentTypes().length;
+                var arguments = new Pair[i];
+                for (Type argumentType : descriptor.getArgumentTypes()) {
+                    i--;
+                    arguments[i] = Pair.of(argumentType, stack.pop()); // pop all the arguments
+                }
+                stack.push(parent.getConfig().invokeVirtual(ctx(), inst, objectRef, arguments)); // push the result
+            }
             case Opcodes.INVOKEDYNAMIC -> {
                 var inst = (InvokeDynamicInsnNode)instruction;
                 stack.push(new Lambda((Handle)inst.bsmArgs[1]));
@@ -100,10 +112,13 @@ public class MethodExecutor {
             case Opcodes.ARETURN, Opcodes.DRETURN, Opcodes.FRETURN, Opcodes.IRETURN, Opcodes.LRETURN -> {
                 return stack.pop();
             }
+            case Opcodes.RETURN -> { return new KnownVoid(); }
             case Opcodes.LDC -> {
                 var inst = (LdcInsnNode)instruction;
                 stack.push(StackEntry.knownStackValue(inst.cst));
             }
+            case Opcodes.POP -> stack.pop();
+            case Opcodes.POP2 -> { stack.pop(); stack.pop(); }
             case -1 -> {} // This is a virtual opcodes defined by asm, can be safely ignored
             default -> {
                 parent.getConfig().handleUnknownInstruction(ctx(), instruction, 0); // TODO

@@ -70,7 +70,7 @@ public class VirtualMachine {
             try {
                 new ClassReader(stream).accept(node, 0);
             } catch (IOException e) {
-                throw new VmException("Error loading" + name, e);
+                throw new VmException("Error loading " + name, e);
             }
             clazz = new Clazz(node);
             this.classes.put(name, clazz);
@@ -112,6 +112,10 @@ public class VirtualMachine {
             var clazz = ctx.machine.getClass(inst.owner);
             // I'm pretty sure we're supposed to run clinit at this point, but let's delay it as much as possible
             return ctx.machine.runMethod(clazz, inst.name, inst.desc, arguments);
+        }
+    
+        default StackEntry invokeVirtual(Context ctx, MethodInsnNode inst, StackEntry objectRef, Pair<Type, StackEntry>[] arguments) throws VmException {
+            return new UnknownValue();
         }
 
         default void handleUnknownInstruction(Context ctx, AbstractInsnNode instruction, int lineNumber) throws VmException {
