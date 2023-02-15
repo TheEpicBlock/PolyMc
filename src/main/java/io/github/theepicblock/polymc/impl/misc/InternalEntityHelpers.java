@@ -29,8 +29,8 @@ public class InternalEntityHelpers {
     }
 
     @Nullable
-    public static Entity getEntity(EntityType<?> type) {
-        var entity = EXAMPLE_ENTITIES.get(type);
+    public static <T extends Entity> T getEntity(EntityType<T> type) {
+        var entity = (T)EXAMPLE_ENTITIES.get(type);
 
         if (entity == null) {
             try {

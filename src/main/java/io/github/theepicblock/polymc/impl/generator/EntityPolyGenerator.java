@@ -3,6 +3,8 @@ package io.github.theepicblock.polymc.impl.generator;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.generator.asm.ClientClassLoader;
+import io.github.theepicblock.polymc.impl.generator.asm.ClientModInitializer;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
 import io.github.theepicblock.polymc.impl.poly.entity.DefaultedEntityPoly;
 import io.github.theepicblock.polymc.impl.poly.entity.FlyingItemEntityPoly;
@@ -20,6 +22,8 @@ import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.registry.Registries;
 
+import java.lang.reflect.InvocationTargetException;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -33,6 +37,15 @@ public class EntityPolyGenerator {
     public static <T extends Entity> EntityPoly<T> generatePoly(EntityType<T> entityType, PolyRegistry builder) {
         if (Registries.ENTITY_TYPE.getId(entityType).getNamespace().equals("taterzens")) {
             return (info, entity) -> null; // Compatibility with Taterzens
+        }
+
+        var classLoader = new ClientClassLoader();
+        try {
+            ClientModInitializer.runAnalysis(classLoader);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
+                | NoSuchMethodException | InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
         // Get the class of the entity
