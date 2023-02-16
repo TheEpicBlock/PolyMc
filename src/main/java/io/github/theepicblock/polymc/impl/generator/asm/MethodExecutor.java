@@ -91,41 +91,18 @@ public class MethodExecutor {
                 }
                 stack.push(parent.getConfig().invokeStatic(ctx(), inst, arguments)); // push the result
             }
-            case Opcodes.INVOKEVIRTUAL -> {
+            case Opcodes.INVOKEVIRTUAL, Opcodes.INVOKEINTERFACE, Opcodes.INVOKESPECIAL -> {
                 var inst = (MethodInsnNode)instruction;
-                var objectRef = stack.pop();
                 var descriptor = Type.getType(inst.desc);
-                int i = descriptor.getArgumentTypes().length;
+                int i = descriptor.getArgumentTypes().length+1;
                 var arguments = new Pair[i];
                 for (Type argumentType : descriptor.getArgumentTypes()) {
                     i--;
                     arguments[i] = Pair.of(argumentType, stack.pop()); // pop all the arguments
                 }
-                stack.push(parent.getConfig().invokeVirtual(ctx(), inst, objectRef, arguments)); // push the result
-            }
-            case Opcodes.INVOKEINTERFACE -> {
-                var inst = (MethodInsnNode)instruction;
                 var objectRef = stack.pop();
-                var descriptor = Type.getType(inst.desc);
-                int i = descriptor.getArgumentTypes().length;
-                var arguments = new Pair[i];
-                for (Type argumentType : descriptor.getArgumentTypes()) {
-                    i--;
-                    arguments[i] = Pair.of(argumentType, stack.pop()); // pop all the arguments
-                }
-                stack.push(parent.getConfig().invokeVirtual(ctx(), inst, objectRef, arguments)); // push the result
-            }
-            case Opcodes.INVOKESPECIAL -> {
-                var inst = (MethodInsnNode)instruction;
-                var objectRef = stack.pop();
-                var descriptor = Type.getType(inst.desc);
-                int i = descriptor.getArgumentTypes().length;
-                var arguments = new Pair[i];
-                for (Type argumentType : descriptor.getArgumentTypes()) {
-                    i--;
-                    arguments[i] = Pair.of(argumentType, stack.pop()); // pop all the arguments
-                }
-                stack.push(parent.getConfig().invokeVirtual(ctx(), inst, objectRef, arguments)); // push the result
+                arguments[0] = Pair.of(null, objectRef);
+                stack.push(parent.getConfig().invokeVirtual(ctx(), inst, arguments)); // push the result
             }
             case Opcodes.INVOKEDYNAMIC -> {
                 var inst = (InvokeDynamicInsnNode)instruction;
@@ -137,7 +114,9 @@ public class MethodExecutor {
             }
             case Opcodes.PUTFIELD -> {
                 var inst = (FieldInsnNode)instruction;
-                stack.pop().setField(inst.name, stack.pop());
+                var value = stack.pop();
+                var objectRef = stack.pop();
+                objectRef.setField(inst.name, value);
             }
             case Opcodes.GETFIELD -> {
                 var inst = (FieldInsnNode)instruction;

@@ -44,7 +44,8 @@ public class VirtualMachine {
 
     public StackEntry runMethod(Clazz clazz, String method, String desc, @Nullable Pair<Type, StackEntry>[] arguments) throws VmException {
         var meth = AsmUtils.getMethod(clazz.node, method, desc);
-        var localVariables = new StackEntry[meth.maxLocals];
+        var a = arguments == null ? -1 : arguments.length;
+        var localVariables = new StackEntry[Math.max(meth.maxLocals, a)];
         
         // Fill in arguments
         if (arguments != null) {
@@ -120,8 +121,12 @@ public class VirtualMachine {
             return ctx.machine.runMethod(clazz, inst.name, inst.desc, arguments);
         }
     
-        default StackEntry invokeVirtual(Context ctx, MethodInsnNode inst, StackEntry objectRef, Pair<Type, StackEntry>[] arguments) throws VmException {
-            return new UnknownValue("Can't invoke virtual methods yet ("+inst.name+" on "+objectRef+")");
+        /**
+         * @param arguments the first element will represent the object this was called on.
+         */
+        default StackEntry invokeVirtual(Context ctx, MethodInsnNode inst, Pair<Type, StackEntry>[] arguments) throws VmException {
+            var clazz = ctx.machine.getClass(inst.owner);
+            return ctx.machine.runMethod(clazz, inst.name, inst.desc, arguments);
         }
 
         default StackEntry newObject(Context ctx, TypeInsnNode inst) throws VmException {

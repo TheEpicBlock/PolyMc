@@ -11,10 +11,6 @@ public record UnknownValue(@Nullable Object reason) implements StackEntry {
         this(null);
     }
 
-    public String toString() {
-        return "unknown";
-    }
-
     @Override
     public JsonElement toJson() {
         throw new NotImplementedException();
