@@ -102,6 +102,7 @@ public class ClientInitializerAnalyzer {
                 try {
                     return VmConfig.super.invokeStatic(ctx, inst, arguments);
                 } catch (VmException e) {
+                    PolyMc.LOGGER.error("Couldn't run "+inst.owner+"#"+inst.name+": "+e);
                     return new UnknownValue(e);
                 }
             }

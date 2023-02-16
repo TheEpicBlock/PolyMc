@@ -22,6 +22,7 @@ import org.objectweb.asm.tree.VarInsnNode;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownFloat;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVoid;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.Lambda;
@@ -72,6 +73,7 @@ public class MethodExecutor {
             case Opcodes.FCONST_0 -> stack.push(new KnownFloat(0));
             case Opcodes.FCONST_1 -> stack.push(new KnownFloat(1));
             case Opcodes.FCONST_2 -> stack.push(new KnownFloat(2));
+            case Opcodes.ACONST_NULL -> stack.push(new KnownObject(null));
             case Opcodes.GETSTATIC -> {
                 var inst = (FieldInsnNode)instruction;
                 stack.push(parent.getConfig().loadStaticField(ctx(), inst));

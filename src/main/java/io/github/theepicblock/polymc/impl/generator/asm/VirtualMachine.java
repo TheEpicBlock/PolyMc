@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -25,6 +26,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.util.Identifier;
 
 public class VirtualMachine {
     private final HashMap<String, Clazz> classes = new HashMap<>();
@@ -115,6 +117,14 @@ public class VirtualMachine {
         default StackEntry invokeStatic(Context ctx, MethodInsnNode inst, Pair<Type, StackEntry>[] arguments) throws VmException {
             if (inst.owner.equals(Type.getInternalName(LoggerFactory.class))) {
                 return new UnknownValue("Refusing to invoke LoggerFactory for optimization reasons");
+            }
+            // Tmp hacks until the virtual machine is advanced enough to handle this function
+            if (inst.owner.equals(Type.getInternalName(Identifier.class)) && 
+                (inst.name.equals("validateNamespace") || inst.name.equals("validatePath"))) {
+                return inst.name.equals("validateNamespace") ? arguments[0].getRight() : arguments[1].getRight();
+            }
+            if (inst.owner.equals(Type.getInternalName(Objects.class)) && inst.name.equals("requireNonNull")) {
+                return arguments[0].getRight();
             }
             var clazz = ctx.machine.getClass(inst.owner);
             // I'm pretty sure we're supposed to run clinit at this point, but let's delay it as much as possible
