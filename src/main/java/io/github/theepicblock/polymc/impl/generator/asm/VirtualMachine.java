@@ -28,11 +28,11 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class VirtualMachine {
     private final HashMap<String, Clazz> classes = new HashMap<>();
-    private final ClassLoader classResolver;
+    private final ClientClassLoader classResolver;
     private final VmConfig config;
     private final Stack<MethodExecutor> stack = new ObjectArrayList();
 
-    public VirtualMachine(ClassLoader classResolver, VmConfig config) {
+    public VirtualMachine(ClientClassLoader classResolver, VmConfig config) {
         this.classResolver = classResolver;
         this.config = config;
     }
@@ -86,6 +86,10 @@ public class VirtualMachine {
         return config;
     }
 
+    public ClientClassLoader getClassResolver() {
+        return classResolver;
+    }
+
     public void ensureClinit(Clazz node) throws VmException {
         // This isn't spec-compliant
         if (!node.hasInitted) {
@@ -109,7 +113,7 @@ public class VirtualMachine {
     
         default StackEntry invokeStatic(Context ctx, MethodInsnNode inst, Pair<Type, StackEntry>[] arguments) throws VmException {
             if (inst.owner.equals(Type.getInternalName(LoggerFactory.class))) {
-                return new UnknownValue();
+                return new UnknownValue("Refusing to invoke LoggerFactory for optimization reasons");
             }
             var clazz = ctx.machine.getClass(inst.owner);
             // I'm pretty sure we're supposed to run clinit at this point, but let's delay it as much as possible
@@ -117,7 +121,7 @@ public class VirtualMachine {
         }
     
         default StackEntry invokeVirtual(Context ctx, MethodInsnNode inst, StackEntry objectRef, Pair<Type, StackEntry>[] arguments) throws VmException {
-            return new UnknownValue();
+            return new UnknownValue("Can't invoke virtual methods yet ("+inst.name+" on "+objectRef+")");
         }
 
         default StackEntry newObject(Context ctx, TypeInsnNode inst) throws VmException {
@@ -143,7 +147,7 @@ public class VirtualMachine {
         }
 
         public StackEntry getStatic(String name) {
-            return staticFields.getOrDefault(name, new UnknownValue());
+            return staticFields.getOrDefault(name, new UnknownValue("Unknown static value"));
         }
 
         public void setStatic(String name, StackEntry v) {

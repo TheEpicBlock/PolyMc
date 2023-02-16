@@ -2,6 +2,7 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,13 +29,16 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.StaticFieldValue;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.entity.EntityType;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 
 public class ClientInitializerAnalyzer {
     public static final SharedValuesKey<ClientInitializerAnalyzer> KEY = new SharedValuesKey<ClientInitializerAnalyzer>(ClientInitializerAnalyzer::new, null);
 
-    private Map<Identifier, Lambda> entityRendererRegistry = new HashMap<>();
-    private Map<Identifier, Lambda> entityModelLayerRegistry = new HashMap<>();
+    private Map<EntityType<?>, Lambda> entityRendererRegistry = new HashMap<>();
+    private Map<EntityModelLayer, Lambda> entityModelLayerRegistry = new HashMap<>();
 
     public ClientInitializerAnalyzer(PolyRegistry registry) {
         this();
@@ -63,23 +67,31 @@ public class ClientInitializerAnalyzer {
         var entrypoints = (List<Object>)getMethod.invoke(entrypointStorage, "client");
 
         // Create vm
-
-        Map<StackEntry, StackEntry> tmpEntityRendererRegistry = new HashMap<>();
-        Map<StackEntry, StackEntry> tmpEntityModelLayerRegistry = new HashMap<>();
-
         var vm = new VirtualMachine(classLoader, (VmConfig) new VmConfig() {
             @Override
             public StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
+                var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, inst);
+                if (fromEnvironment != null) return fromEnvironment; // Return the known value if the class is already loaded in the *actual* jvm
                 return new StaticFieldValue(inst.owner, inst.name); // Evaluate static fields lazily
             }
             @Override
             public StackEntry invokeStatic(Context ctx, MethodInsnNode inst, Pair<Type, StackEntry>[] arguments) throws VmException {
-                if (inst.owner.equals("net/fabricmc/fabric/api/client/rendering/v1/EntityRendererRegistry")) {
-                    tmpEntityRendererRegistry.put(arguments[0].getRight(), arguments[1].getRight());
-                    return new UnknownValue();
-                }
-                if (inst.owner.equals("net/fabricmc/fabric/api/client/rendering/v1/EntityModelLayerRegistry")) {
-                    tmpEntityModelLayerRegistry.put(arguments[0].getRight(), arguments[1].getRight());
+                try {
+                    if (inst.owner.equals("net/fabricmc/fabric/api/client/rendering/v1/EntityRendererRegistry")) {
+                        var identifier = arguments[0].getRight().resolve(ctx.machine()).cast(EntityType.class);
+                        var lambda = arguments[1].getRight().resolve(ctx.machine()).cast(Lambda.class);
+                        entityRendererRegistry.put(identifier, lambda);
+                        return new UnknownValue();
+                    }
+                    if (inst.owner.equals("net/fabricmc/fabric/api/client/rendering/v1/EntityModelLayerRegistry")) {
+                        var modelLayer = arguments[0].getRight().resolve(ctx.machine()).cast(EntityModelLayer.class);
+                        var lambda = arguments[1].getRight().resolve(ctx.machine()).cast(Lambda.class);
+                        entityModelLayerRegistry.put(modelLayer, lambda);
+                        return new UnknownValue();
+                    }
+                } catch(Throwable e) {
+                    PolyMc.LOGGER.error("Failed to resolve arguments for call to "+inst.owner+": "+Arrays.toString(arguments));
+                    e.printStackTrace();
                     return new UnknownValue();
                 }
                 if (inst.owner.equals("net/fabricmc/fabric/impl/screenhandler/client/ClientNetworking") ||
@@ -87,11 +99,10 @@ public class ClientInitializerAnalyzer {
                     // We do not care
                     return new UnknownValue();
                 }
-                // return new UnknownValue(); // Don't bother executing further
                 try {
                     return VmConfig.super.invokeStatic(ctx, inst, arguments);
                 } catch (VmException e) {
-                    return new UnknownValue();
+                    return new UnknownValue(e);
                 }
             }
         });
@@ -112,13 +123,12 @@ public class ClientInitializerAnalyzer {
             .forEach(entrypoint -> {
                 runAnalysis(entrypoint, vm);
             });
-        
-        // Resolve the tmp values
-        tmpEntityModelLayerRegistry.entrySet().forEach(entry -> {
-            resolveTmpMap(entry, vm, entityModelLayerRegistry);
+
+        entityRendererRegistry.forEach((a,b) -> {
+            PolyMc.LOGGER.info("entity renderer "+Registries.ENTITY_TYPE.getId(a)+" -> "+b.method());
         });
-        tmpEntityRendererRegistry.entrySet().forEach(entry -> {
-            resolveTmpMap(entry, vm, entityRendererRegistry);
+        entityModelLayerRegistry.forEach((a,b) -> {
+            PolyMc.LOGGER.info("entity model layer "+a+" -> "+b.method());
         });
     }
 
@@ -137,31 +147,7 @@ public class ClientInitializerAnalyzer {
         }
     }
 
-    public void resolveTmpMap(Map.Entry<StackEntry, StackEntry> entry, VirtualMachine vm, Map<Identifier, Lambda> output) {
-        var key = entry.getKey();
-        if (key instanceof StaticFieldValue staticField) {
-            // Resolve the static field
-            try {
-                var clazz = vm.getClass(staticField.owner());
-                vm.ensureClinit(clazz);
-                key = clazz.getStatic(staticField.field());
-            } catch (VmException e) {
-                PolyMc.LOGGER.error("Couldn't resolve static field");
-                e.printStackTrace();
-                return;
-            }
-        }
-        Identifier identifier = null;
-        if (key instanceof KnownObject o && o.i() instanceof Identifier i) {
-            identifier = i;
-        } else {
-            PolyMc.LOGGER.error("Static field is weird "+key);
-        }
+    public static record EntityModelLayer(Identifier id, String name) {
 
-        if (!(entry.getValue() instanceof Lambda l)) {
-            PolyMc.LOGGER.error("Invalid param associated with "+identifier+": "+entry.getValue());
-            return;
-        }
-        output.put(identifier, l);
     }
 }

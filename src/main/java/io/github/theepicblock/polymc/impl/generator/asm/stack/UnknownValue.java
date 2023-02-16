@@ -1,7 +1,22 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
-public record UnknownValue() implements StackEntry {
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.NotImplementedException;
+
+import com.google.gson.JsonElement;
+
+public record UnknownValue(@Nullable Object reason) implements StackEntry {
+    public UnknownValue() {
+        this(null);
+    }
+
     public String toString() {
         return "unknown";
+    }
+
+    @Override
+    public JsonElement toJson() {
+        throw new NotImplementedException();
     }
 }

@@ -103,6 +103,18 @@ public class MethodExecutor {
                 }
                 stack.push(parent.getConfig().invokeVirtual(ctx(), inst, objectRef, arguments)); // push the result
             }
+            case Opcodes.INVOKEINTERFACE -> {
+                var inst = (MethodInsnNode)instruction;
+                var objectRef = stack.pop();
+                var descriptor = Type.getType(inst.desc);
+                int i = descriptor.getArgumentTypes().length;
+                var arguments = new Pair[i];
+                for (Type argumentType : descriptor.getArgumentTypes()) {
+                    i--;
+                    arguments[i] = Pair.of(argumentType, stack.pop()); // pop all the arguments
+                }
+                stack.push(parent.getConfig().invokeVirtual(ctx(), inst, objectRef, arguments)); // push the result
+            }
             case Opcodes.INVOKESPECIAL -> {
                 var inst = (MethodInsnNode)instruction;
                 var objectRef = stack.pop();
@@ -133,7 +145,7 @@ public class MethodExecutor {
             }
             case Opcodes.ALOAD, Opcodes.DLOAD, Opcodes.FLOAD, Opcodes.ILOAD, Opcodes.LLOAD -> {
                 var variable = localVariables[((VarInsnNode)instruction).var];
-                if (variable == null) variable = new UnknownValue();
+                if (variable == null) variable = new UnknownValue("Unintialized local variable");
                 stack.push(variable);
             }
             case Opcodes.ASTORE, Opcodes.DSTORE, Opcodes.FSTORE, Opcodes.ISTORE, Opcodes.LSTORE -> {
