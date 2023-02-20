@@ -48,14 +48,19 @@ public class ClientInitializerAnalyzer {
         try {
             this.runAnalysis(new ClientClassLoader());
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
-                | NoSuchMethodException | InvocationTargetException e) {
+                | NoSuchMethodException | InvocationTargetException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void runAnalysis(ClientClassLoader classLoader) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void runAnalysis(ClientClassLoader classLoader) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, ClassNotFoundException {
         // Get entrypoints
-        var loader = FabricLoader.getInstance();
+        Object loader;
+        if (FabricLoader.getInstance().isModLoaded("quilt_loader")) {
+            loader = Class.forName("org.quiltmc.loader.impl.QuiltLoaderImpl").getField("INSTANCE").get(null);
+        } else {
+            loader = FabricLoader.getInstance();
+        }
         var lClass = loader.getClass();
         var storage = lClass.getDeclaredField("entrypointStorage");
         storage.setAccessible(true);
