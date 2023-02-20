@@ -45,6 +45,9 @@ public class VirtualMachine {
 
     public StackEntry runMethod(Clazz clazz, String method, String desc, @Nullable Pair<Type, StackEntry>[] arguments) throws VmException {
         var meth = AsmUtils.getMethod(clazz.node, method, desc);
+        if (meth == null) {
+            throw new VmException("Couldn't find method `"+method+"` with desc `"+desc+"` in class `"+clazz.node.name+"`", null);
+        }
         var a = arguments == null ? -1 : arguments.length;
         var localVariables = new StackEntry[Math.max(meth.maxLocals, a)];
         

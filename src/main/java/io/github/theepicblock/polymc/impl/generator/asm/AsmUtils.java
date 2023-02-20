@@ -1,9 +1,6 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
-import java.lang.reflect.InvocationTargetException;
-
-import javax.annotation.Nullable;
-
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -13,7 +10,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 
 public class AsmUtils {
-    public static MethodNode getMethod(ClassNode node, String name, String desc) {
+    public static @Nullable MethodNode getMethod(ClassNode node, String name, String desc) {
         return node.methods.stream().filter(m -> m.name.equals(name) && m.desc.equals(desc)).findFirst().orElse(null);
     }
 
