@@ -2,16 +2,18 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import java.util.Map;
 
+import org.jetbrains.annotations.NotNull;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 
 public record KnownVmObject(Clazz type, Map<String, StackEntry> fields) implements StackEntry {
     @Override
-    public StackEntry getField(String name) {
+    public @NotNull StackEntry getField(String name) {
         return this.fields().getOrDefault(name, new UnknownValue("Don't know value of field"));
     }
 

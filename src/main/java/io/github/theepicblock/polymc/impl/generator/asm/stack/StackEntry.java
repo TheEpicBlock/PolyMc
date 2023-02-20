@@ -1,19 +1,18 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
-import javax.annotation.Nonnull;
-
 import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
-import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 
 public interface StackEntry {
     static final Gson GSON = new Gson();
 
-    static @Nonnull StackEntry knownStackValue(Object o) {
+    static @NotNull StackEntry knownStackValue(Object o) {
         if (o instanceof Integer i) {
             return new KnownInteger(i);
         }
@@ -27,7 +26,7 @@ public interface StackEntry {
         throw new NotImplementedException("Can't set field "+name+" on "+this);
     }
 
-    default @Nonnull StackEntry getField(String name) throws VmException {
+    default @NotNull StackEntry getField(String name) throws VmException {
         throw new NotImplementedException("Can't get field "+name+" from "+this);
     }
 
