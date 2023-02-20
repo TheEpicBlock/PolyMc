@@ -3,8 +3,8 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
@@ -19,12 +19,10 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
-import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownFloat;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVoid;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.Lambda;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
@@ -32,7 +30,7 @@ import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class MethodExecutor {
-    private Stack<StackEntry> stack = new ObjectArrayList<>();
+    private Stack<@NotNull StackEntry> stack = new ObjectArrayList<>();
     private VirtualMachine parent;
     private StackEntry[] localVariables;
     private String methodName;
@@ -43,7 +41,7 @@ public class MethodExecutor {
         this.methodName = methodName;
     }
     
-    public StackEntry run(InsnList bytecode) throws VmException {
+    public @NotNull StackEntry run(InsnList bytecode) throws VmException {
         var lineNumber = -1;
         for (var inst : bytecode) {
             if (inst instanceof LineNumberNode lineNumberNode) {
@@ -54,14 +52,16 @@ public class MethodExecutor {
             try {
                 var ret = this.execute(inst);
                 if (ret != null) return ret;
+            } catch (ReturnEarly e) {
+                return null;
             } catch (Exception e) {
                 throw new VmException("Error executing code on line "+lineNumber+" of "+methodName, e);
             }
         }
-        return new KnownVoid();
+        return null;
     }
 
-    public @Nullable StackEntry execute(AbstractInsnNode instruction) throws VmException {
+    public @Nullable StackEntry execute(AbstractInsnNode instruction) throws VmException, ReturnEarly {
         switch (instruction.getOpcode()) {
             case Opcodes.ICONST_0 -> stack.push(new KnownInteger(0));
             case Opcodes.ICONST_1 -> stack.push(new KnownInteger(1));
@@ -91,7 +91,7 @@ public class MethodExecutor {
                     i--;
                     arguments[i] = Pair.of(argumentType, stack.pop()); // pop all the arguments
                 }
-                stack.push(parent.getConfig().invokeStatic(ctx(), inst, arguments)); // push the result
+                pushIfNotNull(parent.getConfig().invokeStatic(ctx(), inst, arguments)); // push the result
             }
             case Opcodes.INVOKEVIRTUAL, Opcodes.INVOKEINTERFACE, Opcodes.INVOKESPECIAL -> {
                 var inst = (MethodInsnNode)instruction;
@@ -104,7 +104,7 @@ public class MethodExecutor {
                 }
                 var objectRef = stack.pop();
                 arguments[0] = Pair.of(null, objectRef);
-                stack.push(parent.getConfig().invokeVirtual(ctx(), inst, arguments)); // push the result
+                pushIfNotNull(parent.getConfig().invokeVirtual(ctx(), inst, arguments)); // push the result
             }
             case Opcodes.INVOKEDYNAMIC -> {
                 var inst = (InvokeDynamicInsnNode)instruction;
@@ -135,7 +135,7 @@ public class MethodExecutor {
             case Opcodes.ARETURN, Opcodes.DRETURN, Opcodes.FRETURN, Opcodes.IRETURN, Opcodes.LRETURN -> {
                 return stack.pop();
             }
-            case Opcodes.RETURN -> { return new KnownVoid(); }
+            case Opcodes.RETURN -> { throw new ReturnEarly(); }
             case Opcodes.LDC -> {
                 var inst = (LdcInsnNode)instruction;
                 stack.push(StackEntry.knownStackValue(inst.cst));
@@ -167,6 +167,12 @@ public class MethodExecutor {
         return null;
     }
 
+    private void pushIfNotNull(@Nullable StackEntry e) {
+        if (e != null) {
+            this.stack.push(e);
+        }
+    }
+
     private VirtualMachine.Context ctx() {
         return new VirtualMachine.Context(parent);
     }
@@ -174,9 +180,35 @@ public class MethodExecutor {
 
     ///
 
+    public static class ReturnEarly extends Exception {
+
+    }
+
     public static class VmException extends Exception {
         public VmException(String message, Throwable cause) {
             super(message, cause);
+        }
+
+        public String createFancyErrorMessage() {
+            var err = new StringBuilder();
+            err.append("[");
+            err.append(this.getMessage());
+            err.append("]");
+
+            var cause = this.getCause();
+            while (cause.getCause() != null) {
+                err.append(" caused by ");
+                err.append("[");
+                if (cause instanceof VmException) {
+                    err.append(this.getMessage());
+                } else {
+                    err.append(cause.toString());
+                }
+                err.append("]");
+                cause = cause.getCause();
+            }
+
+            return err.toString();
         }
     }
 }

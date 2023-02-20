@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 import java.util.Map;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
@@ -21,7 +22,11 @@ public record KnownVmObject(Clazz type, Map<String, StackEntry> fields) implemen
 
     @Override
     public JsonElement toJson() {
-        return StackEntry.GSON.toJsonTree(fields);
+        var element = new JsonObject();
+        for (var f : this.fields.entrySet()) {
+            element.add(f.getKey(), f.getValue().toJson());
+        }
+        return element;
     }
 
     @Override

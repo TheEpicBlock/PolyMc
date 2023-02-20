@@ -2,14 +2,13 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -32,7 +31,7 @@ public class VirtualMachine {
     private final HashMap<String, Clazz> classes = new HashMap<>();
     private final ClientClassLoader classResolver;
     private final VmConfig config;
-    private final Stack<MethodExecutor> stack = new ObjectArrayList();
+    private final Stack<@NotNull MethodExecutor> stack = new ObjectArrayList();
 
     public VirtualMachine(ClientClassLoader classResolver, VmConfig config) {
         this.classResolver = classResolver;
@@ -102,7 +101,7 @@ public class VirtualMachine {
     }
 
     public interface VmConfig {
-        default StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
+        default @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
             var clazz = ctx.machine.getClass(inst.owner);
             ctx.machine.ensureClinit(clazz);
             return clazz.getStatic(inst.name);
@@ -114,7 +113,7 @@ public class VirtualMachine {
             clazz.setStatic(inst.name, value);
         }
     
-        default StackEntry invokeStatic(Context ctx, MethodInsnNode inst, Pair<Type, StackEntry>[] arguments) throws VmException {
+        default @Nullable StackEntry invokeStatic(Context ctx, MethodInsnNode inst, Pair<Type, StackEntry>[] arguments) throws VmException {
             if (inst.owner.equals(Type.getInternalName(LoggerFactory.class))) {
                 return new UnknownValue("Refusing to invoke LoggerFactory for optimization reasons");
             }
@@ -134,12 +133,12 @@ public class VirtualMachine {
         /**
          * @param arguments the first element will represent the object this was called on.
          */
-        default StackEntry invokeVirtual(Context ctx, MethodInsnNode inst, Pair<Type, StackEntry>[] arguments) throws VmException {
+        default @Nullable StackEntry invokeVirtual(Context ctx, MethodInsnNode inst, Pair<Type, StackEntry>[] arguments) throws VmException {
             var clazz = ctx.machine.getClass(inst.owner);
             return ctx.machine.runMethod(clazz, inst.name, inst.desc, arguments);
         }
 
-        default StackEntry newObject(Context ctx, TypeInsnNode inst) throws VmException {
+        default @NotNull StackEntry newObject(Context ctx, TypeInsnNode inst) throws VmException {
             var clazz = ctx.machine.getClass(inst.desc);
             return new KnownVmObject(clazz, new HashMap<>());
         }
@@ -155,17 +154,17 @@ public class VirtualMachine {
     public class Clazz {
         private ClassNode node;
         private boolean hasInitted;
-        private Map<String, StackEntry> staticFields = new HashMap<>();
+        private Map<String, @NotNull StackEntry> staticFields = new HashMap<>();
 
         public Clazz(ClassNode node) {
             this.node = node;
         }
 
-        public StackEntry getStatic(String name) {
+        public @NotNull StackEntry getStatic(String name) {
             return staticFields.getOrDefault(name, new UnknownValue("Unknown static value"));
         }
 
-        public void setStatic(String name, StackEntry v) {
+        public void setStatic(String name, @NotNull StackEntry v) {
             staticFields.put(name, v);
         }
     }
