@@ -176,8 +176,8 @@ public class MethodExecutor {
             while (cause != null) {
                 err.append(" caused by ");
                 err.append("[");
-                if (cause instanceof VmException) {
-                    err.append(this.getMessage());
+                if (cause instanceof VmException e) {
+                    err.append(e.getMessage());
                 } else {
                     err.append(cause.toString());
                 }
