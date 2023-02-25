@@ -1,30 +1,14 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
-import org.apache.commons.lang3.tuple.Pair;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
+import it.unimi.dsi.fastutil.Stack;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.InvokeDynamicInsnNode;
-import org.objectweb.asm.tree.LdcInsnNode;
-import org.objectweb.asm.tree.LineNumberNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.TypeInsnNode;
-import org.objectweb.asm.tree.VarInsnNode;
-
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownFloat;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.Lambda;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
-import it.unimi.dsi.fastutil.Stack;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.objectweb.asm.tree.*;
 
 public class MethodExecutor {
     private Stack<@NotNull StackEntry> stack = new ObjectArrayList<>();
@@ -79,29 +63,25 @@ public class MethodExecutor {
                 var inst = (FieldInsnNode)instruction;
                 parent.getConfig().putStaticField(ctx(), inst, stack.pop());
             }
-            case Opcodes.INVOKESTATIC -> {
+            case Opcodes.INVOKESTATIC, Opcodes.INVOKEVIRTUAL, Opcodes.INVOKEINTERFACE, Opcodes.INVOKESPECIAL -> {
                 var inst = (MethodInsnNode)instruction;
                 var descriptor = Type.getType(inst.desc);
+
                 int i = descriptor.getArgumentTypes().length;
-                var arguments = new Pair[i];
+                if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
+                    i += 1;
+                }
+                
+                var arguments = new StackEntry[i];
                 for (Type argumentType : descriptor.getArgumentTypes()) {
                     i--;
-                    arguments[i] = Pair.of(argumentType, stack.pop()); // pop all the arguments
+                    arguments[i] = stack.pop(); // pop all the arguments
                 }
-                pushIfNotNull(parent.getConfig().invokeStatic(ctx(), inst, arguments)); // push the result
-            }
-            case Opcodes.INVOKEVIRTUAL, Opcodes.INVOKEINTERFACE, Opcodes.INVOKESPECIAL -> {
-                var inst = (MethodInsnNode)instruction;
-                var descriptor = Type.getType(inst.desc);
-                int i = descriptor.getArgumentTypes().length+1;
-                var arguments = new Pair[i];
-                for (Type argumentType : descriptor.getArgumentTypes()) {
-                    i--;
-                    arguments[i] = Pair.of(argumentType, stack.pop()); // pop all the arguments
+                
+                if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
+                    arguments[0] = stack.pop(); // objectref
                 }
-                var objectRef = stack.pop();
-                arguments[0] = Pair.of(null, objectRef);
-                pushIfNotNull(parent.getConfig().invokeVirtual(ctx(), inst, arguments)); // push the result
+                pushIfNotNull(parent.getConfig().invoke(ctx(), inst, arguments)); // push the result
             }
             case Opcodes.INVOKEDYNAMIC -> {
                 var inst = (InvokeDynamicInsnNode)instruction;

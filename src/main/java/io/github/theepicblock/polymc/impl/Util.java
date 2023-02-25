@@ -232,4 +232,9 @@ public class Util {
             gson.toJson(json, writer);
         }
     }
+
+    public static<T> @Nullable T first(T[] arr) {
+        if (arr.length == 0) return null;
+        return arr[0];
+    }
 }

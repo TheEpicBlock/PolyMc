@@ -1,13 +1,12 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
+import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodNode;
-
-import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 
 public class AsmUtils {
     public static @Nullable MethodNode getMethod(ClassNode node, String name, String desc) {
@@ -23,7 +22,7 @@ public class AsmUtils {
     }
 
     /**
-     * Checks the *actual* jvm to see if the static field referenced by {@link inst} is already loaded
+     * Checks the *actual* jvm to see if the static field referenced by {@code inst} is already loaded
      */
     public static @Nullable StackEntry tryGetStaticFieldFromEnvironment(Context ctx, FieldInsnNode inst) {
         try {
@@ -42,5 +41,9 @@ public class AsmUtils {
             return new KnownObject(Class.forName(inst.owner.replace("/", ".")).getField(inst.name).get(null));
         } catch (Throwable e) {}
         return null;
+    }
+
+    public static boolean hasFlag(int bitfield, int flag) {
+        return (bitfield & flag) == flag;
     }
 }

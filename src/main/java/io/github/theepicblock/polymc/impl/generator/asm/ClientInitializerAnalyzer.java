@@ -1,16 +1,5 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.SharedValuesKey;
@@ -25,6 +14,15 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ClientInitializerAnalyzer {
     public static final SharedValuesKey<ClientInitializerAnalyzer> KEY = new SharedValuesKey<ClientInitializerAnalyzer>(ClientInitializerAnalyzer::new, null);
@@ -66,23 +64,23 @@ public class ClientInitializerAnalyzer {
         // Create vm
         var vm = new VirtualMachine(classLoader, (VmConfig) new VmConfig() {
             @Override
-            public StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
+            public @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
                 var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, inst);
                 if (fromEnvironment != null) return fromEnvironment; // Return the known value if the class is already loaded in the *actual* jvm
                 return new StaticFieldValue(inst.owner, inst.name); // Evaluate static fields lazily
             }
             @Override
-            public StackEntry invokeStatic(Context ctx, MethodInsnNode inst, Pair<Type, StackEntry>[] arguments) throws VmException {
+            public StackEntry invoke(Context ctx, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
                 try {
                     if (inst.owner.equals("net/fabricmc/fabric/api/client/rendering/v1/EntityRendererRegistry")) {
-                        var identifier = arguments[0].getRight().resolve(ctx.machine()).cast(EntityType.class);
-                        var lambda = arguments[1].getRight().resolve(ctx.machine()).cast(Lambda.class);
+                        var identifier = arguments[0].resolve(ctx.machine()).cast(EntityType.class);
+                        var lambda = arguments[1].resolve(ctx.machine()).cast(Lambda.class);
                         entityRendererRegistry.put(identifier, lambda);
                         return new UnknownValue();
                     }
                     if (inst.owner.equals("net/fabricmc/fabric/api/client/rendering/v1/EntityModelLayerRegistry")) {
-                        var modelLayer = arguments[0].getRight().resolve(ctx.machine()).cast(EntityModelLayer.class);
-                        var lambda = arguments[1].getRight().resolve(ctx.machine()).cast(Lambda.class);
+                        var modelLayer = arguments[0].resolve(ctx.machine()).cast(EntityModelLayer.class);
+                        var lambda = arguments[1].resolve(ctx.machine()).cast(Lambda.class);
                         entityModelLayerRegistry.put(modelLayer, lambda);
                         return new UnknownValue();
                     }
@@ -97,7 +95,7 @@ public class ClientInitializerAnalyzer {
                     return new UnknownValue();
                 }
                 try {
-                    return VmConfig.super.invokeStatic(ctx, inst, arguments);
+                    return VmConfig.super.invoke(ctx, inst, arguments);
                 } catch (VmException e) {
                     PolyMc.LOGGER.error("Couldn't run "+inst.owner+"#"+inst.name+": "+e.createFancyErrorMessage());
                     return new UnknownValue(e);
