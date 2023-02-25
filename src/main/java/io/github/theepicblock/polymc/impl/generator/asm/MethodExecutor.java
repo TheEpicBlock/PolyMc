@@ -173,7 +173,7 @@ public class MethodExecutor {
             err.append("]");
 
             var cause = this.getCause();
-            while (cause.getCause() != null) {
+            while (cause != null) {
                 err.append(" caused by ");
                 err.append("[");
                 if (cause instanceof VmException) {
