@@ -124,7 +124,7 @@ public class VirtualMachine {
                     case Opcodes.INVOKESPECIAL -> {
                         // See https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-6.html#jvms-6.5.invokespecial
                         var clazz = this.getClass(inst.owner);
-                        if (!inst.name.equals("<init>()V") &&
+                        if (!inst.name.startsWith("<init>") &&
                                 !AsmUtils.hasFlag(clazz.node.access, Opcodes.ACC_INTERFACE) &&
                                 AsmUtils.hasFlag(clazz.node.access, Opcodes.ACC_SUPER)) {
                             clazz = this.getClass(clazz.node.superName);
