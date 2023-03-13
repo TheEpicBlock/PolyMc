@@ -61,15 +61,17 @@ public class EntityUtil {
     }
 
     public static <T> EntityTrackerUpdateS2CPacket createDataTrackerUpdate(int id, TrackedData<T> tracker, T value) {
-        return new EntityTrackerUpdateS2CPacket(id,
-                new DataTracker(null) {
-                    @Override
-                    public List<Entry<?>> getDirtyEntries() {
-                        List<Entry<?>> list = new ArrayList<>(1);
-                        list.add(new Entry<>(tracker, value));
-                        return list;
-                    }
-                },
-                false);
+        List<DataTracker.SerializedEntry<?>> list = new ArrayList<>(1);
+        list.add(DataTracker.SerializedEntry.of(tracker, value));
+
+        return new EntityTrackerUpdateS2CPacket(id, list);
+    }
+
+    public static EntityTrackerUpdateS2CPacket createDataTrackerUpdate(int id, List<DataTracker.Entry<?>> customEntries) {
+        List<DataTracker.SerializedEntry<?>> list = new ArrayList<>(customEntries.size());
+        for (var entry : customEntries) {
+            list.add(entry.toSerialized());
+        }
+        return new EntityTrackerUpdateS2CPacket(id, list);
     }
 }

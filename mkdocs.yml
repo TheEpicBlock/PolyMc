@@ -16,6 +16,7 @@ nav:
     - api/blocks.md
     - api/items.md
     - api/entities.md
+    - api/guis.md
     - api/resources.md
     - api/wizards.md
     - api/misc.md

@@ -11,8 +11,10 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.*;
 
 public class JModelImpl implements JModel {
@@ -127,8 +129,6 @@ public class JModelImpl implements JModel {
     @Override
     public void writeToStream(OutputStream stream, Gson gson) throws IOException {
         this.sortOverrides();
-        try (var writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
-            gson.toJson(this, writer);
-        }
+        Util.writeJsonToStream(stream, gson, this);
     }
 }

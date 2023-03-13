@@ -29,7 +29,7 @@ import io.github.theepicblock.polymc.impl.misc.BooleanContainer;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,7 +95,7 @@ public class FunctionBlockStatePoly implements BlockPoly {
 
     @Override
     public void addToResourcePack(Block block, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
-        var moddedBlockId = Registry.BLOCK.getId(block);
+        var moddedBlockId = Registries.BLOCK.getId(block);
         // Read the modded block state file. This tells us which model is used for which block state
         var moddedBlockState = moddedResources.getBlockState(moddedBlockId.getNamespace(), moddedBlockId.getPath());
         if (moddedBlockState == null) {
@@ -109,7 +109,7 @@ public class FunctionBlockStatePoly implements BlockPoly {
             if (clientStatesDone.contains(clientState)) return;
             if (!uniqueClientBlocks.contains(clientState)) return;
 
-            var clientBlockId = Registry.BLOCK.getId(clientState.getBlock());
+            var clientBlockId = Registries.BLOCK.getId(clientState.getBlock());
             var clientBlockStates = pack.getOrDefaultBlockState(clientBlockId.getNamespace(), clientBlockId.getPath());
             var clientStateString = Util.getPropertiesFromBlockState(clientState);
 

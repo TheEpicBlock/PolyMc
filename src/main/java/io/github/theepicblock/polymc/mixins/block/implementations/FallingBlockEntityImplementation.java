@@ -16,12 +16,12 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 @Mixin(EntitySpawnS2CPacket.class)
 public class FallingBlockEntityImplementation {
-    @Shadow @Final private EntityType<?> entityTypeId;
+    @Shadow @Final private EntityType<?> entityType;
     @Mutable @Shadow @Final private int entityData;
 
     @Inject(method = "write(Lnet/minecraft/network/PacketByteBuf;)V", at = @At("HEAD"))
     private void redirectEntityData(PacketByteBuf buf, CallbackInfo ci) {
-        if (this.entityTypeId == EntityType.FALLING_BLOCK) {
+        if (this.entityType == EntityType.FALLING_BLOCK) {
             var block = Block.getStateFromRawId(this.entityData);
             this.entityData = Util.getPolydRawIdFromState(block, PacketContext.get().getTarget());
         }

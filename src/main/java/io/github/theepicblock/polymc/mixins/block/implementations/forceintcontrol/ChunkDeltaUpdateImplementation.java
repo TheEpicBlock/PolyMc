@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; If not, see <https://www.gnu.org/licenses>.
  */
-package io.github.theepicblock.polymc.mixins.block.implementations;
+package io.github.theepicblock.polymc.mixins.block.implementations.forceintcontrol;
 
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.BlockState;

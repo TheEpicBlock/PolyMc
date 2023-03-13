@@ -7,10 +7,11 @@ import io.github.theepicblock.polymc.impl.resource.ResourceConstants;
 import io.github.theepicblock.polymc.impl.resource.json.JBlockStateImpl;
 import io.github.theepicblock.polymc.impl.resource.json.JModelImpl;
 import io.github.theepicblock.polymc.impl.resource.json.JSoundEventRegistryImpl;
+import net.minecraft.resource.InputSupplier;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.function.Supplier;
 
 public interface ResourceContainer {
     default @Nullable TextureAsset getTexture(String namespace, String texture) {
@@ -50,15 +51,20 @@ public interface ResourceContainer {
         return stream == null ? null : JModelImpl.of(stream, namespace+":"+path);
     }
 
-    default @Nullable Supplier<InputStream> getInputStreamSupplier(String namespace, String path) {
-        if (this.containsAsset(namespace, path)) {
-            return () -> getInputStream(namespace, path);
-        } else {
+    @Nullable InputSupplier<InputStream> getInputStreamSupplier(String namespace, String path);
+
+    default InputStream getInputStream(String namespace, String path) {
+        var supplier = getInputStreamSupplier(namespace, path);
+        if (supplier == null) {
             return null;
+        } else {
+            try {
+                return supplier.get();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
-
-    @Nullable InputStream getInputStream(String namespace, String path);
 
     boolean containsAsset(String namespace, String path);
 }

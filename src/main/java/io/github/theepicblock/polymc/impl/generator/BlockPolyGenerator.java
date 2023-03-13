@@ -31,8 +31,8 @@ import io.github.theepicblock.polymc.mixins.block.SlabBlockAccessor;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.FluidState;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.state.property.Property;
-import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
@@ -172,7 +172,25 @@ public class BlockPolyGenerator {
         }
 
         //=== FULL BLOCKS ===
-        if (Block.isShapeFullCube(collisionShape)) {
+        // Blocks that have a full top face and at least something on the bottom are considered full blocks. This works better for some blocks
+        if (Block.isFaceFullSquare(collisionShape, Direction.UP) && collisionShape.getMin(Direction.Axis.Y) <= 0) {
+
+            if (!moddedState.isOpaque()) {
+                // Chorus flowers are full cubes & are not opaque.
+                // There are only 4 available states to reuse though
+                try {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.CHORUS_FLOWER_BLOCK_PROFILE);
+                } catch (BlockStateManager.StateLimitReachedException ignored) {}
+
+                // Each chorus plant state has a slightly different collision box.
+                // But it's roughly a full cube (it's the corners that miss a few pixels of collision)
+                try {
+                    isUniqueCallback.set(true);
+                    return manager.requestBlockState(BlockStateProfile.CHORUS_PLANT_BLOCK_PROFILE);
+                } catch (BlockStateManager.StateLimitReachedException ignored) {}
+            }
+
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.FULL_BLOCK_PROFILE);

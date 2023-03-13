@@ -25,7 +25,12 @@ import io.github.theepicblock.polymc.impl.poly.item.ArmorColorManager;
 import io.github.theepicblock.polymc.impl.poly.item.CustomModelDataPoly;
 import io.github.theepicblock.polymc.impl.poly.item.DamageableItemPoly;
 import io.github.theepicblock.polymc.impl.poly.item.FancyPantsItemPoly;
+import net.minecraft.block.Block;
+import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.item.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 
 /**
  * Class to automatically generate {@link ItemPoly}s for {@link Item}s
@@ -67,10 +72,38 @@ public class ItemPolyGenerator {
         if (item instanceof DyeableItem) {
             return new CustomModelDataPoly(cmdManager, item, Items.LEATHER_HORSE_ARMOR);
         }
-        if (item instanceof BlockItem) {
-            return new CustomModelDataPoly(cmdManager, item, CustomModelDataManager.BLOCK_ITEMS);
+        if (AbstractFurnaceBlockEntity.canUseAsFuel(new ItemStack(item))) {
+            return new CustomModelDataPoly(cmdManager, item, CustomModelDataManager.FUEL_ITEMS);
+        }
+        if (item instanceof BlockItem blockItem) {
+            return new CustomModelDataPoly(cmdManager, item, getBestVanillaItemsForBlockItem(blockItem));
         }
         return new CustomModelDataPoly(cmdManager, item);
+    }
+
+    /**
+     * Attempts to create the best possible {@link ItemPoly} for a {@link BlockItem}.
+     * Amongst other factors, this decision might be influenced by the placement logic and the placement sound of the source {@link BlockItem} and the {@link net.minecraft.block.Block} that's attached to it.
+     */
+    private static Item[] getBestVanillaItemsForBlockItem(BlockItem item) {
+        var block = item.getBlock();
+        var fakeWorld = new BlockPolyGenerator.FakedWorld(block.getDefaultState());
+
+        //Get the state's collision shape.
+        VoxelShape collisionShape;
+        try {
+            collisionShape = block.getDefaultState().getCollisionShape(fakeWorld, BlockPos.ORIGIN);
+        } catch (Exception e) {
+            PolyMc.LOGGER.warn("Failed to get collision shape for " + block.getDefaultState().toString());
+            e.printStackTrace();
+            collisionShape = VoxelShapes.UNBOUNDED;
+        }
+        if (Block.isShapeFullCube(collisionShape)) {
+            return CustomModelDataManager.FULL_BLOCK_ITEMS;
+        } else {
+            return CustomModelDataManager.BLOCK_ITEMS;
+        }
+
     }
 
     /**

@@ -28,6 +28,13 @@ repositories {
 			includeGroup("xyz.nucleoid")
 		}
 	}
+	maven {
+		name 'Quilt'
+		url 'https://maven.quiltmc.org/repository/release'
+		content {
+			includeGroupByRegex("org\\.quiltmc.*")
+		}
+	}
 }
 
 dependencies {
@@ -37,7 +44,11 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation include("nl.theepicblock:resource-locator-api:${project.resource_lookup_api_version}")
+	modCompileOnly("org.quiltmc.qsl.core:registry:${project.qsl_version}") {
+		transitive(false)
+	}
+
+	modImplementation include("nl.theepicblock:resource-locator-api:${project.resource_locator_api_version}")
 	modImplementation include("xyz.nucleoid:packet-tweaker:${project.packet_tweaker_version}")
 
 	// Compat
@@ -75,6 +86,14 @@ loom {
 			server()
 			ideConfigGenerated project.rootProject == project
 			name = "Test Mod Server"
+			source sourceSets.testmod
+		}
+		gametest {
+			server()
+			name "Game Test"
+			vmArg "-Dfabric-api.gametest"
+			vmArg "-Dfabric-api.gametest.report-file=${project.buildDir}/junit.xml"
+			runDir "build/gametest"
 			source sourceSets.testmod
 		}
 		datagen {

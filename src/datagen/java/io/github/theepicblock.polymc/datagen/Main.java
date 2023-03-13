@@ -4,9 +4,9 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.block.Block;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.registry.Registries;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,7 +30,7 @@ public class Main implements ModInitializer {
             LOGGER.info("Output: "+outputFile.toPath().toAbsolutePath());
 
             var properties = new HashSet<Property<?>>();
-            for (var block : Registry.BLOCK) {
+            for (var block : Registries.BLOCK) {
                 properties.addAll(block.getDefaultState().getProperties());
             }
 
@@ -39,8 +39,8 @@ public class Main implements ModInitializer {
             propertyTable.write(outBuf);
 
             outBuf.writeVarInt(Block.STATE_IDS.size());
-            outBuf.writeVarInt(Registry.BLOCK.size());
-            for (var block : Registry.BLOCK) {
+            outBuf.writeVarInt(Registries.BLOCK.size());
+            for (var block : Registries.BLOCK) {
                 writeBlock(block, propertyTable, outBuf);
             }
 
@@ -54,7 +54,7 @@ public class Main implements ModInitializer {
     }
 
     private static void writeBlock(Block block, PropertyLookupTable table, PacketByteBuf buf) {
-        Identifier id = Registry.BLOCK.getId(block);
+        Identifier id = Registries.BLOCK.getId(block);
         assert id.getNamespace().equals("minecraft"); // This is supposed to be a list with vanilla ids, no modded allowed
 
         // Write block id

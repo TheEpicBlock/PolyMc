@@ -89,11 +89,11 @@ public class NaiveStackListingChestPoly implements GuiPoly {
         }
 
         @Override
-        public ItemStack transferSlot(PlayerEntity player, int index) {
+        public ItemStack quickMove(PlayerEntity player, int index) {
             if (index > totalSlots) {
                 index -= fakedSlots;
             }
-            return base.transferSlot(player, index);
+            return base.quickMove(player, index);
         }
     }
 }

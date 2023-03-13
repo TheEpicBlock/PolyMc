@@ -40,15 +40,17 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
-import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.TreeMap;
+import java.util.UUID;
 
 /**
  * The most standard ItemPoly implementation
@@ -57,12 +59,13 @@ public class CustomModelDataPoly implements ItemPoly {
     private static final UUID ATTACK_DAMAGE_MODIFIER_ID = EntityAttributeUuidAccessor.getATTACK_DAMAGE_MODIFIER_ID();
     private static final UUID ATTACK_SPEED_MODIFIER_ID = EntityAttributeUuidAccessor.getATTACK_SPEED_MODIFIER_ID();
 
-    protected final ItemStack cachedClientItem;
+    protected final ThreadLocal<ItemStack> cachedClientItem;
     protected final int cmdValue;
-    protected final Item base;
+    protected final Item clientItem;
+    protected final Item moddedBase;
 
-    public CustomModelDataPoly(CustomModelDataManager registerManager, Item base) {
-        this(registerManager, base, CustomModelDataManager.DEFAULT_ITEMS);
+    public CustomModelDataPoly(CustomModelDataManager registerManager, Item moddedBase) {
+        this(registerManager, moddedBase, CustomModelDataManager.DEFAULT_ITEMS);
     }
 
     /**
@@ -71,8 +74,8 @@ public class CustomModelDataPoly implements ItemPoly {
      * @param registerManager manager used to generate the CMD value
      * @param target          the serverside item will be of this type
      */
-    public CustomModelDataPoly(CustomModelDataManager registerManager, Item base, Item target) {
-        this(registerManager, base, new Item[]{target});
+    public CustomModelDataPoly(CustomModelDataManager registerManager, Item moddedBase, Item target) {
+        this(registerManager, moddedBase, new Item[]{target});
     }
 
     /**
@@ -81,12 +84,16 @@ public class CustomModelDataPoly implements ItemPoly {
      * @param registerManager manager used to generate the CMD value
      * @param targets         the serverside items that can be chosen from
      */
-    public CustomModelDataPoly(CustomModelDataManager registerManager, Item base, Item[] targets) {
+    public CustomModelDataPoly(CustomModelDataManager registerManager, Item moddedBase, Item[] targets) {
         Pair<Item,Integer> pair = registerManager.requestCMD(targets);
-        cmdValue = pair.getRight();
-        cachedClientItem = new ItemStack(pair.getLeft());
-        this.base = base;
-        addCustomTagsToItem(cachedClientItem);
+        this.moddedBase = moddedBase;
+        this.clientItem = pair.getLeft();
+        this.cmdValue = pair.getRight();
+        cachedClientItem = ThreadLocal.withInitial(() -> {
+            var stack = new ItemStack(clientItem);
+            addCustomTagsToItem(stack, moddedBase);
+            return stack;
+        });
     }
 
     /**
@@ -94,35 +101,36 @@ public class CustomModelDataPoly implements ItemPoly {
      * These shouldn't change depending on the stack as this method will be cached.
      * For un-cached tags, use {@link #getClientItem(ItemStack, ServerPlayerEntity, ItemLocation)}
      */
-    protected void addCustomTagsToItem(ItemStack stack) {
+    protected void addCustomTagsToItem(ItemStack stack, Item moddedBase) {
         var item = stack.getItem();
 
         NbtCompound tag = stack.getOrCreateNbt();
         tag.putInt("CustomModelData", cmdValue);
+        tag.putString("PolyMcId", Registries.ITEM.getId(moddedBase).toString());
         stack.setNbt(tag);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Override
     public ItemStack getClientItem(ItemStack input, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
-        ItemStack serverItem = cachedClientItem;
+        ItemStack serverItem = cachedClientItem.get();
         if (input.hasNbt()) {
-            serverItem = cachedClientItem.copy();
+            serverItem = cachedClientItem.get().copy();
             serverItem.setNbt(input.getNbt().copy());
 
             // Doing this removes the custom tags, so we should add that again
-            addCustomTagsToItem(serverItem);
+            addCustomTagsToItem(serverItem, moddedBase);
         }
 
         // Add custom tooltips. Don't bother showing them if the item's not in the inventory
         if (Util.isSectionVisible(input, ItemStack.TooltipSection.ADDITIONAL) && isInventory(location)) {
             var tooltips = new ArrayList<Text>(0);
             try {
-                input.getItem().appendTooltip(input, player == null ? null : player.world, tooltips, TooltipContext.Default.NORMAL);
+                input.getItem().appendTooltip(input, player == null ? null : player.world, tooltips, TooltipContext.Default.BASIC);
             } catch (Exception | NoClassDefFoundError ignored) {}
 
             if (!tooltips.isEmpty()) {
-                NbtList list = new NbtList();
+                NbtList list = serverItem.getOrCreateSubNbt("display").getList("Lore", NbtElement.LIST_TYPE);
                 for (Text line : tooltips) {
                     if (line instanceof MutableText mText) {
                         // Cancels the styling of the lore
@@ -137,7 +145,7 @@ public class CustomModelDataPoly implements ItemPoly {
                     list.add(toStr(line));
                 }
 
-                // serveritem is always either the cached item or a copy, so it's okay to modify
+                // `serverItem` is always either the cached item or a copy, so it's okay to modify
                 NbtCompound display = serverItem.getOrCreateSubNbt("display");
                 display.put("Lore", list);
             }
@@ -161,7 +169,7 @@ public class CustomModelDataPoly implements ItemPoly {
             }
         }
 
-        // Add the attributes (This code has been copied from ItemStack#getTooltip)
+        // Add the attributes (This code has been mostly copied from ItemStack#getTooltip)
         if (isInventory(location) && Util.isSectionVisible(input, ItemStack.TooltipSection.MODIFIERS) && (!serverItem.hasNbt() || !serverItem.getNbt().contains("AttributeModifiers", NbtElement.LIST_TYPE))) {
             var tag = serverItem.getOrCreateNbt();
             tag.put("AttributeModifiers", new NbtList());
@@ -171,7 +179,7 @@ public class CustomModelDataPoly implements ItemPoly {
             try {
                 for (var slotType : EquipmentSlot.values()) {
                     // This will only include the default attributes
-                    var attributes = base.getAttributeModifiers(slotType);
+                    var attributes = moddedBase.getAttributeModifiers(slotType);
                     if (!attributes.isEmpty()) {
                         lore.add(toStr(Text.empty()));
                         lore.add(toStr(explicitlySetItalics((Text.translatable("item.modifiers." + slotType.getName())).formatted(Formatting.GRAY))));
@@ -237,27 +245,28 @@ public class CustomModelDataPoly implements ItemPoly {
     public void addToResourcePack(Item item, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
         // We need to copy over the modded item model into the pack (including all of the textures it references)
         // Then we need to include an override into a vanilla item model that links to that modded item model
-        var moddedItemId = Registry.ITEM.getId(item);
+        var moddedItemId = Registries.ITEM.getId(item);
         var moddedItemModel = moddedResources.getItemModel(moddedItemId.getNamespace(), moddedItemId.getPath());
         if (moddedItemModel == null) {
             logger.error("Can't find item model for "+moddedItemId+", can't generate resources for it");
             // Set the override to have the barrier model to signify it's missing
-            moddedItemId = Registry.ITEM.getId(Items.BARRIER);
+            moddedItemId = Registries.ITEM.getId(Items.BARRIER);
         } else {
             pack.setItemModel(moddedItemId.getNamespace(), moddedItemId.getPath(), moddedItemModel);
             pack.importRequirements(moddedResources, moddedItemModel, logger);
         }
 
-        var clientitemId = Registry.ITEM.getId(this.cachedClientItem.getItem());
+        var clientItemId = Registries.ITEM.getId(this.clientItem);
 
-        // Get the json for the vanilla item, so we can inject an override into it
-        var clientItemModel = pack.getOrDefaultVanillaItemModel(clientitemId.getNamespace(), clientitemId.getPath());
-        // Add the override
+        // Copy and retrieve the vanilla item's model
+        var clientItemModel = pack.getOrDefaultVanillaItemModel(moddedResources, clientItemId.getNamespace(), clientItemId.getPath(), logger);
+        // Add an override into the vanilla item's model that references the modded one
         clientItemModel.getOverrides().add(JModelOverride.ofCMD(cmdValue, ResourceConstants.itemLocation(moddedItemId)));
 
         // Check if the modded item model has overrides
         if (moddedItemModel != null && !moddedItemModel.getOverridesReadOnly().isEmpty()) {
-            // The modded item has overrides, we should remove them and use them as basis for the client item model instead
+            // The modded item has overrides of its own. The correct behaviour here is for PolyMc to move those overrides
+            // Into the vanilla item, adding the custom model data as an additional predicate for each override.
             for (var override : moddedItemModel.getOverridesReadOnly()) {
                 var predicates = new TreeMap<>(override.predicates());
                 predicates.put("custom_model_data", (float)cmdValue);
@@ -269,6 +278,6 @@ public class CustomModelDataPoly implements ItemPoly {
 
     @Override
     public String getDebugInfo(Item item) {
-        return "CMD: " + Util.expandTo(cmdValue, 3) + ", item:" + cachedClientItem.getTranslationKey();
+        return "CMD: " + Util.expandTo(cmdValue, 3) + ", item:" + clientItem.getTranslationKey();
     }
 }

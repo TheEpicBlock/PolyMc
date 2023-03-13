@@ -22,13 +22,13 @@ You might encounter issues with items that use custom renders or edit their appe
 Your mileage will vary depending on the collision shape of the block. 
 It kinda has to match up with what the client thinks.
 
-PolyMc uses block states that go unused on the client side to display modded blocks. Here's an approximate, non-exhaustive, list of 
-how many unused block states each collision shape has:
+PolyMc uses block states that go unused on the client side to display modded blocks. This means there's a limit to how many blocks can be added. 
+Here's an approximate, non-exhaustive, list of how many unused block states each collision shape has:
 
-* Full blocks: 979
-* Uncollidable blocks: 119
-* Doors: 8
-* Trapdoors: 8
+* Full blocks: 971
+* Uncollidable blocks: 139 (can go up to 283)
+* Doors: 9
+* Trapdoors: 9
 * Path blocks: 5
 * Slabs: 5
 * Stairs: 4
@@ -50,8 +50,9 @@ If your gui has buttons, or more slots than a chest, you're out of luck currentl
 The system here can totally be made smarter, but I don't have the time.
 
 ## Entities
-PolyMc can't support custom entities at this time. Instead, you'll just see a nice barrier item. 
-PolyMc does have a neat api for adding support to custom entities though.
+PolyMc attempts to guess what entity looks kind of similar to the modded one. Often, this will be completely wrong.
+Unfortunately, there's not much else PolyMc can do here due to the way that entities are defined. 
+You can look at the api if you need to specify entities further.
 
 ## Breaking speeds
 PolyMc automatically switches to calculating the breaking speed of custom blocks and items on the server when needed. 

@@ -46,5 +46,10 @@
     "add": {
       "maxPacketsPerSecond": 600
     }
+  },
+  "10": {
+    "add": {
+      "forceBlockIdIntControl": false
+    }
   }
 }

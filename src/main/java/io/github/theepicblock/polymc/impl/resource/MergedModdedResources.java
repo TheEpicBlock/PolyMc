@@ -3,7 +3,9 @@ package io.github.theepicblock.polymc.impl.resource;
 import io.github.theepicblock.polymc.api.resource.ClientJarResources;
 import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import net.minecraft.resource.InputSupplier;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,10 +25,10 @@ public class MergedModdedResources implements ModdedResources {
     }
 
     @Override
-    public @NotNull List<InputStream> getInputStreams(String namespace, String path) {
+    public @NotNull List<InputSupplier<InputStream>> getInputStreams(String namespace, String path) {
         if (client.containsAsset(namespace, path)) {
             var list = new ArrayList<>(base.getInputStreams(namespace, path));
-            list.add(client.getInputStream(namespace, path));
+            list.add(client.getInputStreamSupplier(namespace, path));
             return list;
         }
         return base.getInputStreams(namespace, path);
@@ -40,7 +42,7 @@ public class MergedModdedResources implements ModdedResources {
     }
 
     @Override
-    public @NotNull Set<Identifier> locateLanguageFiles() {
+    public @NotNull Set<Pair<Identifier,InputSupplier<InputStream>>> locateLanguageFiles() {
         var set = new HashSet<>(base.locateLanguageFiles());
         set.addAll(client.locateLanguageFiles());
         return set;
@@ -57,10 +59,10 @@ public class MergedModdedResources implements ModdedResources {
     }
 
     @Override
-    public @Nullable InputStream getInputStream(String namespace, String path) {
-        var ret = base.getInputStream(namespace, path);
+    public @Nullable InputSupplier<InputStream> getInputStreamSupplier(String namespace, String path) {
+        var ret = base.getInputStreamSupplier(namespace, path);
         if (ret == null) {
-            return client.getInputStream(namespace, path);
+            return client.getInputStreamSupplier(namespace, path);
         } else {
             return ret;
         }

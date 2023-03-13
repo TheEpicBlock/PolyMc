@@ -10,8 +10,10 @@ import io.github.theepicblock.polymc.impl.resource.ResourceGenerationException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -82,8 +84,6 @@ public class JBlockStateImpl implements JBlockState {
 
     @Override
     public void writeToStream(OutputStream stream, Gson gson) throws IOException {
-        try (var writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
-            gson.toJson(this, writer);
-        }
+        Util.writeJsonToStream(stream, gson, this);
     }
 }

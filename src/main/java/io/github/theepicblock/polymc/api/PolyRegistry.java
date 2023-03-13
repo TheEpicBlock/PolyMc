@@ -44,13 +44,13 @@ import java.util.*;
  * This eventually gets transformed to an {@link PolyMap}.
  */
 public class PolyRegistry {
-    private final Map<SharedValuesKey<Object>, Object> sharedValues = new HashMap<>();
+    protected final Map<SharedValuesKey<Object>, Object> sharedValues = new HashMap<>();
 
-    private final Map<Item,ItemPoly> itemPolys = new HashMap<>();
-    private final List<ItemTransformer> globalItemPolys = new ArrayList<>();
-    private final Map<Block,BlockPoly> blockPolys = new HashMap<>();
-    private final Map<ScreenHandlerType<?>,GuiPoly> guiPolys = new HashMap<>();
-    private final Map<EntityType<?>,EntityPoly<?>> entityPolys = new HashMap<>();
+    protected final Map<Item,ItemPoly> itemPolys = new HashMap<>();
+    protected final List<ItemTransformer> globalItemPolys = new ArrayList<>();
+    protected final Map<Block,BlockPoly> blockPolys = new HashMap<>();
+    protected final Map<ScreenHandlerType<?>,GuiPoly> guiPolys = new HashMap<>();
+    protected final Map<EntityType<?>,EntityPoly<?>> entityPolys = new HashMap<>();
 
     /**
      * Register a poly for an item.

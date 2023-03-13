@@ -6,9 +6,10 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.registry.Registries;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registry;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class BlockIdRemapper {
     private static void readBlock(PacketByteBuf buf, PropertyLookupTable table, BlockState[] outputList) {
         var path = buf.readString();
         var id = new Identifier(path);
-        Block block = Registry.BLOCK.get(id);
+        Block block = Registries.BLOCK.get(id);
 
         var baseState = block.getDefaultState();
 
