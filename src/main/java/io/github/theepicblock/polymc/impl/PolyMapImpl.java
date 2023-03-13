@@ -172,7 +172,7 @@ public class PolyMapImpl implements PolyMap {
     }
 
     @Override
-    public boolean shouldForceBlockStateSync(World world, BlockState sourceState, BlockPos sourcePos, BlockPos oppositePos, BlockState clientState, Direction direction) {
+    public boolean shouldForceBlockStateSync(BlockState sourceState, BlockState clientState, Direction direction) {
         Block block = clientState.getBlock();
         if (block == Blocks.NOTE_BLOCK) {
             return direction == Direction.UP;

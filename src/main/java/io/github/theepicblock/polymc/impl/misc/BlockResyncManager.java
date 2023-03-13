@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.impl.misc;
 
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.impl.Util;
@@ -51,7 +52,16 @@ public class BlockResyncManager {
             if (poly != null) {
                 BlockState clientState = poly.getClientBlock(state);
 
-                if (map.shouldForceBlockStateSync(world, sourceState, sourcePos, pos, clientState, direction)) {
+                if (sourceState == null) {
+                    sourceState = world.getBlockState(sourcePos);
+                    BlockState sourceClientState = poly.getClientBlock(sourceState);
+
+                    if (sourceClientState != null) {
+                        sourceState = sourceClientState;
+                    }
+                }
+
+                if (map.shouldForceBlockStateSync(sourceState, clientState, direction)) {
                     BlockPos newPos = pos.toImmutable();
                     player.networkHandler.sendPacket(new BlockUpdateS2CPacket(newPos, state));
 

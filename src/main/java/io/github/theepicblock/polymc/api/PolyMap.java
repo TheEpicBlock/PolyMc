@@ -119,7 +119,7 @@ public interface PolyMap {
     /**
      * Specifies if the {@link BlockState} changes done around this block might require a resync.
      */
-    boolean shouldForceBlockStateSync(World world, BlockState sourceState, BlockPos sourcePos, BlockPos oppositePos, BlockState clientState, Direction direction);
+    boolean shouldForceBlockStateSync(BlockState sourceState, BlockState clientState, Direction direction);
 
     @Nullable PolyMcResourcePack generateResourcePack(SimpleLogger logger);
 
