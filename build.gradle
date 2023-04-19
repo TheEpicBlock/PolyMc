@@ -107,14 +107,12 @@ loom {
 }
 
 task testmodJar(type: Jar) {
-	classifier "testmod-dev"
-
+	archiveClassifier = "testmod-dev"
 	from sourceSets.testmod.output
 }
 
 task remapTestmodJar(type: net.fabricmc.loom.task.RemapJarTask, dependsOn: testmodJar) {
-	classifier "testmod"
-
+	archiveClassifier = "testmod"
 	input = testmodJar.archiveFile.get().asFile
 	addNestedDependencies = false
 }
