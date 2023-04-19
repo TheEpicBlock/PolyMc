@@ -71,11 +71,11 @@ public class VirtualMachine {
     public Clazz getClass(String name) throws VmException {
         var clazz = this.classes.get(name);
         if (clazz == null) {
-            var stream = classResolver.getResourceAsStream(name.replace(".", "/") + ".class");
 
             // Load class using ASM
             var node = new ClassNode(Opcodes.ASM9);
             try {
+                var stream = classResolver.getClass(name);
                 new ClassReader(stream).accept(node, 0);
             } catch (IOException e) {
                 throw new VmException("Error loading " + name, e);
