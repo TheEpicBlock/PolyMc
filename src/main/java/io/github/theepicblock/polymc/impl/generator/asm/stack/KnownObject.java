@@ -23,7 +23,10 @@ public record KnownObject(Object i) implements StackEntry {
     @Override
     public StackEntry getField(String name) throws VmException {
         try {
-            return new KnownObject(i.getClass().getField(name).get(i));
+            var clazz = i.getClass();
+            var field = clazz.getDeclaredField(name);
+            field.setAccessible(true);
+            return new KnownObject(field.get(i));
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             throw new VmException("Couldn't get field "+name, e);
         }
