@@ -36,10 +36,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * This Mixin makes sure that the blocks are polyd before they get sent to the client.
  */
 @Mixin(value = {ArrayPalette.class, BiMapPalette.class, SingularPalette.class, LithiumHashPalette.class})
-public abstract class PaletteBlockPolyImplementation<T> {
+public abstract class PaletteBlockPolyImplementation {
     
     @Redirect(method = {"writePacket", "getPacketSize"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IndexedIterable;getRawId(Ljava/lang/Object;)I"))
-    public int GetIdRedirect(IndexedIterable instance, T object) {
+    public <T> int GetIdRedirect(IndexedIterable<T> instance, T object) {
         if (object instanceof BlockState) {
             var player = ChunkPacketStaticHack.player.get();
 
