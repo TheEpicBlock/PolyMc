@@ -85,7 +85,14 @@ public class MethodExecutor {
             }
             case Opcodes.INVOKEDYNAMIC -> {
                 var inst = (InvokeDynamicInsnNode)instruction;
-                stack.push(new Lambda((Handle)inst.bsmArgs[1]));
+                var descriptor = Type.getType(inst.desc);
+                int i = descriptor.getArgumentTypes().length;
+                var args = new StackEntry[i];
+                for (Type argumentType : descriptor.getArgumentTypes()) {
+                    i--;
+                    args[i] = stack.pop(); // pop all the arguments
+                }
+                stack.push(new Lambda((Handle)inst.bsmArgs[1], args));
             }
             case Opcodes.NEW -> {
                 var inst = (TypeInsnNode)instruction;
@@ -103,7 +110,7 @@ public class MethodExecutor {
             }
             case Opcodes.ALOAD, Opcodes.DLOAD, Opcodes.FLOAD, Opcodes.ILOAD, Opcodes.LLOAD -> {
                 var variable = localVariables[((VarInsnNode)instruction).var];
-                if (variable == null) variable = new UnknownValue("Unintialized local variable");
+                if (variable == null) variable = new UnknownValue("Uninitialized local variable");
                 stack.push(variable);
             }
             case Opcodes.ASTORE, Opcodes.DSTORE, Opcodes.FSTORE, Opcodes.ISTORE, Opcodes.LSTORE -> {

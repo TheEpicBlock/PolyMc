@@ -2,6 +2,7 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
+import org.objectweb.asm.Type;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -18,6 +19,9 @@ public interface StackEntry {
         }
         if (o instanceof Float f) {
             return new KnownFloat(f);
+        }
+        if (o instanceof Type t) {
+            return new KnownClass(t);
         }
         return new KnownObject(o);
     }

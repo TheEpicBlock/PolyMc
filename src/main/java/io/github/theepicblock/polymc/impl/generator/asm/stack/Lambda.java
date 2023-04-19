@@ -4,7 +4,7 @@ import org.objectweb.asm.Handle;
 
 import com.google.gson.JsonElement;
 
-public record Lambda(Handle method) implements StackEntry {
+public record Lambda(Handle method, StackEntry[] extraArguments) implements StackEntry {
     @Override
     public JsonElement toJson() {
         return StackEntry.GSON.toJsonTree(this);
