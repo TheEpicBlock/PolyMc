@@ -55,10 +55,10 @@ dependencies {
 	modCompileOnly("com.github.CaffeineMC.lithium-fabric:lithium:${project.lithium_version}") {
 		transitive(false)
 	}
-	modCompileOnly("com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:${project.immersive_portals_version}") {
+	modCompileOnly("com.github.iPortalTeam.ImmersivePortalsMod:imm_ptl_core:${project.immersive_portals_version}") {
 		transitive(false)
 	}
-	modCompileOnly("com.github.qouteall.ImmersivePortalsMod:q_misc_util:${project.immersive_portals_version}") {
+	modCompileOnly("com.github.iPortalTeam.ImmersivePortalsMod:q_misc_util:${project.immersive_portals_version}") {
 		transitive(false)
 	}
 }
