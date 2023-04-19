@@ -136,7 +136,7 @@ public class VirtualMachine {
                             objectRef = objectRef.resolve(this);
                         }
                         if (objectRef instanceof KnownObject o) {
-                            yield this.getClass(o.getClass().getCanonicalName());
+                            yield this.getClass(o.i().getClass().getCanonicalName());
                         } else if (objectRef instanceof KnownVmObject o) {
                             yield o.type();
                         } else {
