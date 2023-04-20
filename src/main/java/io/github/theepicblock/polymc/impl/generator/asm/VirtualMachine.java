@@ -28,10 +28,15 @@ public class VirtualMachine {
     private final ClientClassLoader classResolver;
     private final VmConfig config;
     private final Stack<@NotNull MethodExecutor> stack = new ObjectArrayList<>();
+    /**
+     * This is here to map from intermediary back to obfuscated, which is needed to resolve methods in the client jar. 
+     */
+    private final Mapping mappings;
 
     public VirtualMachine(ClientClassLoader classResolver, VmConfig config) {
         this.classResolver = classResolver;
         this.config = config;
+        this.mappings = Mapping.intermediaryToObfFromClasspath();
     }
 
     public StackEntry runMethod(String clazz, String method, String desc) throws VmException {
@@ -40,7 +45,7 @@ public class VirtualMachine {
     }
 
     public StackEntry runMethod(Clazz clazz, String method, String desc, @Nullable StackEntry[] arguments) throws VmException {
-        var meth = AsmUtils.getMethod(clazz.node, method, desc);
+        var meth = AsmUtils.getMethod(clazz.node, method, desc, mappings);
         if (meth == null) {
             throw new VmException("Couldn't find method `"+method+"` with desc `"+desc+"` in class `"+clazz.node.name+"`", null);
         }
@@ -111,7 +116,7 @@ public class VirtualMachine {
         switch (inst.getOpcode()) {
             case Opcodes.INVOKESTATIC -> {
                 var clazz = this.getClass(inst.owner);
-                var method = AsmUtils.getMethod(clazz.node, inst.name, inst.desc);
+                var method = AsmUtils.getMethod(clazz.node, inst.name, inst.desc, mappings);
                 // This is a hard-error. Static methods shouldn't be hard to find and something's wrong here. So no returning null in this case
                 if (method == null) throw new VmException("Couldn't find static method "+inst.name+inst.desc+" in "+inst.owner, null);
                 return new MethodRef(clazz, method);
@@ -150,7 +155,7 @@ public class VirtualMachine {
 
                 var clazz = rootClass;
                 while (true) {
-                    var method = AsmUtils.getMethod(clazz.node, inst.name, inst.desc);
+                    var method = AsmUtils.getMethod(clazz.node, inst.name, inst.desc, mappings);
                     if (method != null) {
                         return new MethodRef(clazz, method);
                     } else {

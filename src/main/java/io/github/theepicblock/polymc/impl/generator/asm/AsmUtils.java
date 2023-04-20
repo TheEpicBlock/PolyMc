@@ -3,13 +3,18 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
+import net.fabricmc.loader.api.FabricLoader;
+
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 public class AsmUtils {
-    public static @Nullable MethodNode getMethod(ClassNode node, String name, String desc) {
+    public static @Nullable MethodNode getMethod(ClassNode node, String name, String desc, Mapping mapper) {
+        // This might be a client-only class, in which case it'll be in client jar, which is obfuscated
+        // So we check both obfuscated and non-obfuscated names
+        // TODO
         return node.methods.stream().filter(m -> m.name.equals(name) && m.desc.equals(desc)).findFirst().orElse(null);
     }
 
