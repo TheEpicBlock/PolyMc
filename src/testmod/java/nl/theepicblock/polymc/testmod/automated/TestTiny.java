@@ -50,10 +50,14 @@ public class TestTiny implements FabricGameTest {
         var obfClass = fapiResolver.unmapClassName("official", runtimeClass);
 
         assertEqual(ctx,
-            mapping.getClassname(runtimeClass.replace(".", "/")),
+            mapping.getClassname(runtimeClass),
             obfClass,
             "Failed to map the identifier class from runtime to obfuscated");
 
+        assertEqual(ctx, 
+            mapping.getClassByInputName(runtimeClass.replace(".", "/")),
+            mapping.getClassByOutputName(obfClass.replace(".", "/")),
+            "getClassByInputName and getClassByOutputName should give same results if the names match");
         ctx.complete();
     }
 

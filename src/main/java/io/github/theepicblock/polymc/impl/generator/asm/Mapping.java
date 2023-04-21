@@ -31,7 +31,7 @@ public class Mapping {
     public Mapping(BufferedReader reader, String inputNamespace, String outputNamespace) throws IOException {
         var tree = TinyMappingFactory.loadWithDetection(reader, true);
         for (var clazz : tree.getClasses()) {
-            classI2O.put(clazz.getName(inputNamespace), clazz.getName(outputNamespace));
+            classI2O.put(clazz.getName(inputNamespace).replace("/", "."), clazz.getName(outputNamespace).replace("/", "."));
             var fieldNames = new HashMap<String, String>();
             clazz.getFields().forEach(field -> fieldNames.put(field.getName(inputNamespace), field.getName(outputNamespace)));
             var methodNames = new HashMap<String, MethodDef>();
@@ -39,7 +39,7 @@ public class Mapping {
 
             var def = new ClassDef(fieldNames, methodNames);
             classInfoByI.put(clazz.getName(inputNamespace), def);
-            classInfoByI.put(clazz.getName(outputNamespace), def);
+            classInfoByO.put(clazz.getName(outputNamespace), def);
         }
     }
     
@@ -54,19 +54,24 @@ public class Mapping {
     }
 
     /**
-     * This operates on classnames where the package is seperated by slashes, aka java/lang/String
+     * This operates on binary classnames where the package is seperated by dots, aka java.lang.String
      */
     @NotNull
     public String getClassname(String input) {
         return classI2O.getOrDefault(input, input);
     }
 
+    /**
+     * This operates on classnames where the package is seperated by slashes, aka java/lang/String
+     */
     @NotNull
     public ClassDef getClassByInputName(String classname) {
         return classInfoByI.getOrDefault(classname, EMPTY_CLASS);
     }
 
-
+    /**
+     * This operates on classnames where the package is seperated by slashes, aka java/lang/String
+     */
     @NotNull
     public ClassDef getClassByOutputName(String classname) {
         return classInfoByO.getOrDefault(classname, EMPTY_CLASS);
