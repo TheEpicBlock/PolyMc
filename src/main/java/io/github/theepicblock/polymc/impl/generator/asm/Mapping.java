@@ -7,40 +7,82 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.jetbrains.annotations.NotNull;
+
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
 import net.fabricmc.mapping.tree.TinyMappingFactory;
 
 public class Mapping {
-    private HashMap<String, String> classNames = new HashMap<>();
-    private HashMap<String, ClassDef> classInfos = new HashMap<>();
+    public static ClassDef EMPTY_CLASS = new ClassDef(new HashMap<>(), new HashMap<>());
+    /** 
+     *  A map from classname in the input namespace, to classname in the output namespace
+     */
+    private HashMap<String, String> classI2O = new HashMap<>();
+    /** 
+     *  A map of {@link ClassDef}s by their name in the input namespace
+     */
+    private HashMap<String, ClassDef> classInfoByI = new HashMap<>();
+    /** 
+     *  A map of {@link ClassDef}s by their name in the output namespace
+     */
+    private HashMap<String, ClassDef> classInfoByO = new HashMap<>();
 
     public Mapping(BufferedReader reader, String inputNamespace, String outputNamespace) throws IOException {
         var tree = TinyMappingFactory.loadWithDetection(reader, true);
         for (var clazz : tree.getClasses()) {
-            classNames.put(clazz.getName(inputNamespace), clazz.getName(outputNamespace));
+            classI2O.put(clazz.getName(inputNamespace), clazz.getName(outputNamespace));
             var fieldNames = new HashMap<String, String>();
             clazz.getFields().forEach(field -> fieldNames.put(field.getName(inputNamespace), field.getName(outputNamespace)));
-            var methodNames = new HashMap<String, String>();
-            clazz.getMethods().forEach(method -> methodNames.put(method.getName(inputNamespace), method.getName(outputNamespace)));
+            var methodNames = new HashMap<String, MethodDef>();
+            clazz.getMethods().forEach(method -> methodNames.put(method.getName(inputNamespace)+method.getDescriptor(inputNamespace), new MethodDef(method.getName(outputNamespace), method.getDescriptor(outputNamespace))));
 
-            classInfos.put(clazz.getName(inputNamespace), new ClassDef(fieldNames, methodNames));
+            var def = new ClassDef(fieldNames, methodNames);
+            classInfoByI.put(clazz.getName(inputNamespace), def);
+            classInfoByI.put(clazz.getName(outputNamespace), def);
         }
     }
     
-    public static Mapping intermediaryToObfFromClasspath() {
+    public static Mapping runtimeToObfFromClasspath() {
         var url = MappingResolver.class.getClassLoader().getResource("mappings/mappings.tiny");
         try (var tiny = new BufferedReader(new InputStreamReader(url.openStream()))) {
-            return new Mapping(tiny, "intermediary", "official");
+            var runtime = FabricLoader.getInstance().getMappingResolver().getCurrentRuntimeNamespace();
+            return new Mapping(tiny, runtime, "official");
         } catch (IOException e) {
-            // TODO better solution plsinput
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * This operates on classnames where the package is seperated by slashes, aka java/lang/String
+     */
+    @NotNull
     public String getClassname(String input) {
-        return classNames.getOrDefault(input, input);
+        return classI2O.getOrDefault(input, input);
     }
 
-    record ClassDef(HashMap<String, String> fieldNames, HashMap<String, String> methodNames) {
+    @NotNull
+    public ClassDef getClassByInputName(String classname) {
+        return classInfoByI.getOrDefault(classname, EMPTY_CLASS);
+    }
+
+
+    @NotNull
+    public ClassDef getClassByOutputName(String classname) {
+        return classInfoByO.getOrDefault(classname, EMPTY_CLASS);
+    }
+
+    public record ClassDef(HashMap<String, String> fieldNames, HashMap<String, MethodDef> methodNames) {
+        public String getFieldName(String input) {
+            return fieldNames.getOrDefault(input, input);
+        }
+
+        public MethodDef getMethodName(String name, String desc) {
+            return methodNames.getOrDefault(name+desc, new MethodDef(name, desc));
+        }
+    }
+
+    public record MethodDef(String name, String desc) {
+
     }
 }

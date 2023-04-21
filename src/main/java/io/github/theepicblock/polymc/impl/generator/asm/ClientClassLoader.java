@@ -61,7 +61,7 @@ public class ClientClassLoader extends URLClassLoader {
         }
     }
 
-    public InputStream getClass(String clazz) throws IOException {
+    public InputStream getClass(String clazz, Mapping runtimeToObf) throws IOException {
         clazz = clazz.replace("/", ".");
         // Remap from intermediary into runtime mappings (also intermediary).
         // This will break with hashed intermediary
@@ -74,7 +74,7 @@ public class ClientClassLoader extends URLClassLoader {
         // This might be a client-only class, in which case it'll be in client jar
         // The client jar is attached, but it's still using obfuscated mapping
         // So we try to see if the obfuscated name returns anything
-        var obf = FabricLoader.getInstance().getMappingResolver().unmapClassName("official", clazz);
+        var obf = runtimeToObf.getClassname(clazz);
 
         resource = this.getResourceAsStream(obf.replace(".", "/") + ".class");
         if (resource != null) return resource;

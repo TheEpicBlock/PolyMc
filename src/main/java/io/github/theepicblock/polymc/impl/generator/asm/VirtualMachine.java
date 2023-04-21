@@ -29,14 +29,14 @@ public class VirtualMachine {
     private final VmConfig config;
     private final Stack<@NotNull MethodExecutor> stack = new ObjectArrayList<>();
     /**
-     * This is here to map from intermediary back to obfuscated, which is needed to resolve methods in the client jar. 
+     * This is here to map from runtime names back to obfuscated, which is needed to resolve methods in the client jar.
      */
     private final Mapping mappings;
 
     public VirtualMachine(ClientClassLoader classResolver, VmConfig config) {
         this.classResolver = classResolver;
         this.config = config;
-        this.mappings = Mapping.intermediaryToObfFromClasspath();
+        this.mappings = Mapping.runtimeToObfFromClasspath();
     }
 
     public StackEntry runMethod(String clazz, String method, String desc) throws VmException {
@@ -80,7 +80,7 @@ public class VirtualMachine {
             // Load class using ASM
             var node = new ClassNode(Opcodes.ASM9);
             try {
-                var stream = classResolver.getClass(name);
+                var stream = classResolver.getClass(name, this.mappings);
                 new ClassReader(stream).accept(node, 0);
             } catch (IOException e) {
                 throw new VmException("Error loading " + name, e);
