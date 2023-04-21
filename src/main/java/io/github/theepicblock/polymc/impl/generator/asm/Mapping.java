@@ -61,6 +61,33 @@ public class Mapping {
         return classI2O.getOrDefault(input, input);
     }
 
+    @NotNull
+    public String remapDescriptor(String desc) {
+        var output = new StringBuilder();
+
+        int startJavaClass = -1;
+        for (int i = 0; i < desc.length(); i++) {
+            char c = desc.charAt(i);
+            switch (c) {
+                case 'L' -> {
+                    startJavaClass = i;
+                }
+                case ';' -> {
+                    var clazz = desc.substring(startJavaClass+1, i);
+                    output.append("L");
+                    output.append(getClassname(clazz.replace("/", ".")).replace(".", "/"));
+                    output.append(";");
+                    startJavaClass = -1;
+                }
+                default -> {
+                    if (startJavaClass == -1) output.append(c);
+                }
+            }
+        }
+
+        return output.toString();
+    }
+
     /**
      * This operates on classnames where the package is seperated by slashes, aka java/lang/String
      */

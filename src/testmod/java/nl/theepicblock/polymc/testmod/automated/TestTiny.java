@@ -119,6 +119,24 @@ public class TestTiny implements FabricGameTest {
         ctx.complete();
     }
 
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void testDesc(TestContext ctx) {
+        var mapping = Mapping.runtimeToObfFromClasspath();
+
+        var fapiResolver = FabricLoader.getInstance().getMappingResolver();
+        var intermClass = "net.minecraft.class_2960";
+        var runtimeClass = fapiResolver.mapClassName("intermediary", intermClass);
+        var obfClass = fapiResolver.unmapClassName("official", runtimeClass);
+
+        var desc = "(IIL<class>;BZ)L<class>;";
+        var runtimeDesc = desc.replace("<class>", runtimeClass.replace(".", "/"));
+        var obfDesc = desc.replace("<class>", obfClass.replace(".", "/"));
+
+        assertEqual(ctx, mapping.remapDescriptor(runtimeDesc), obfDesc, "Failed to remap descriptor");
+
+        ctx.complete();
+    }
+
     private static void assertEqual(TestContext ctx, Object a, Object b, String message) {
         ctx.assertTrue(Objects.equals(a, b), message+": `"+a+"` != `"+b+"`");
     }

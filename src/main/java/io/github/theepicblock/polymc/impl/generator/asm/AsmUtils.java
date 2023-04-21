@@ -14,11 +14,12 @@ public class AsmUtils {
         // This might be a client-only class, in which case it'll be in client jar, which is obfuscated
         // So we check both obfuscated and non-obfuscated names
         var obfuscated = mapper.getClassByOutputName(node.name).getMethodName(name, desc);
+        var obfuscatedDesc = mapper.remapDescriptor(desc); // We can't rely on the remapped descriptor attached on the mappings because the mappings don't include all functions. (namely it's missing <init> functions)
         return node.methods
             .stream()
             .filter(m -> 
                 (m.name.equals(name) && m.desc.equals(desc)) ||
-                (m.name.equals(obfuscated.name()) && m.desc.equals(obfuscated.desc()))
+                (m.name.equals(obfuscated.name()) && m.desc.equals(obfuscatedDesc))
             )
             .findFirst()
             .orElse(null);
