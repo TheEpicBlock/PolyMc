@@ -153,7 +153,12 @@ public class PolyRegistry {
     }
 
     public <T> T getSharedValues(SharedValuesKey<T> key) {
-        return (T)sharedValues.computeIfAbsent((SharedValuesKey<Object>)key, (key0) -> key0.createNew(this));
+        var value = (T)sharedValues.get(key);
+        if (value == null) {
+            value = key.createNew(this);
+            sharedValues.put((SharedValuesKey<Object>)key, (Object)value);
+        }
+        return value;
     }
 
     /**
