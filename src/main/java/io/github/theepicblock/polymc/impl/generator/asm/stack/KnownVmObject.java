@@ -11,7 +11,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 
-public record KnownVmObject(Clazz type, Map<String, StackEntry> fields) implements StackEntry {
+public record KnownVmObject(@NotNull Clazz type, @NotNull Map<String, StackEntry> fields) implements StackEntry {
     @Override
     public @NotNull StackEntry getField(String name) {
         return this.fields().getOrDefault(name, new UnknownValue("Don't know value of field"));

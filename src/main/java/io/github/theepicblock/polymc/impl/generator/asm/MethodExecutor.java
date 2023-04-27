@@ -98,6 +98,14 @@ public class MethodExecutor {
                 var inst = (TypeInsnNode)instruction;
                 stack.push(parent.getConfig().newObject(ctx(), inst));
             }
+            case Opcodes.ANEWARRAY, Opcodes.NEWARRAY -> {
+                var count = stack.pop();
+                if (count instanceof KnownInteger i) {
+                    stack.push(KnownArray.withLength(i.i()));
+                } else {
+                    throw new VmException("Tried to construct array of length "+count, null);
+                }
+            }
             case Opcodes.PUTFIELD -> {
                 var inst = (FieldInsnNode)instruction;
                 var value = stack.pop();
@@ -107,6 +115,25 @@ public class MethodExecutor {
             case Opcodes.GETFIELD -> {
                 var inst = (FieldInsnNode)instruction;
                 stack.push(stack.pop().getField(inst.name));
+            }
+            case Opcodes.AALOAD -> {
+                var index = stack.pop();
+                var array = stack.pop();
+                if (index instanceof KnownInteger i) {
+                    stack.push(array.arrayAccess(i.i()));
+                } else {
+                    throw new VmException("Tried to acces array index of "+index, null);
+                }
+            }
+            case Opcodes.AASTORE -> {
+                var value = stack.pop();
+                var index = stack.pop();
+                var array = stack.pop();
+                if (index instanceof KnownInteger i) {
+                    array.arraySet(i.i(), value);
+                } else {
+                    throw new VmException("Tried to acces array index of "+index, null);
+                }
             }
             case Opcodes.ALOAD, Opcodes.DLOAD, Opcodes.FLOAD, Opcodes.ILOAD, Opcodes.LLOAD -> {
                 var variable = localVariables[((VarInsnNode)instruction).var];

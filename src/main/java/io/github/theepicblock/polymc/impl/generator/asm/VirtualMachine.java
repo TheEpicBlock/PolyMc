@@ -4,6 +4,7 @@ import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.Lambda;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import it.unimi.dsi.fastutil.Stack;
@@ -18,7 +19,10 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Streams;
+
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -37,6 +41,20 @@ public class VirtualMachine {
         this.classResolver = classResolver;
         this.config = config;
         this.mappings = Mapping.runtimeToObfFromClasspath();
+    }
+
+    public StackEntry runMethod(Lambda lambda, StackEntry[] arguments) throws VmException {
+        var method = lambda.method();
+        var clazz = getClass(method.getOwner());
+        if (method.getTag() == 8) {
+            var newO = new StackEntry[] { new KnownVmObject(clazz, new HashMap<>()) };
+            StackEntry[] args = Streams.concat(Arrays.stream(newO), Arrays.stream(arguments), Arrays.stream(lambda.extraArguments())).toArray(StackEntry[]::new);
+            runMethod(clazz, method.getName(), method.getDesc(), args);
+            return newO[0];
+        } else {
+            StackEntry[] args = Streams.concat(Arrays.stream(arguments), Arrays.stream(lambda.extraArguments())).toArray(StackEntry[]::new);
+            return runMethod(clazz, method.getName(), method.getDesc(), args);
+        }
     }
 
     public StackEntry runMethod(String clazz, String method, String desc) throws VmException {
@@ -236,6 +254,11 @@ public class VirtualMachine {
 
         public void setStatic(String name, @NotNull StackEntry v) {
             staticFields.put(name, v);
+        }
+
+        @Override
+        public String toString() {
+            return node.name;
         }
     }
 }

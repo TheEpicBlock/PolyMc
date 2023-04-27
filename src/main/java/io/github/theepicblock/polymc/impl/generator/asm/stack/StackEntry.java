@@ -34,6 +34,14 @@ public interface StackEntry {
         throw new NotImplementedException("Can't get field "+name+" from "+this);
     }
 
+    default @NotNull StackEntry arrayAccess(int index) throws VmException {
+        throw new NotImplementedException("Can't load an array index ("+index+") from "+this);
+    }
+
+    default void arraySet(int index, @NotNull StackEntry entry) throws VmException {
+        throw new NotImplementedException("Can't load an array index ("+index+") from "+this);
+    }
+
     /**
      * For stack entries that represent delayed instructions, such as {@link StaticFieldValue}
      */

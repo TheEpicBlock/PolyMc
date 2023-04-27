@@ -5,6 +5,8 @@ import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.ClientClassLoader;
 import io.github.theepicblock.polymc.impl.generator.asm.ClientInitializerAnalyzer;
+import io.github.theepicblock.polymc.impl.generator.asm.EntityRendererAnalyzer;
+import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
 import io.github.theepicblock.polymc.impl.poly.entity.DefaultedEntityPoly;
 import io.github.theepicblock.polymc.impl.poly.entity.FlyingItemEntityPoly;
@@ -39,8 +41,13 @@ public class EntityPolyGenerator {
             return (info, entity) -> null; // Compatibility with Taterzens
         }
 
-        builder.getSharedValues(ClientInitializerAnalyzer.KEY);
-
+        var rendererAnalysis = builder.getSharedValues(EntityRendererAnalyzer.KEY);
+        try {
+            rendererAnalysis.analyze(entityType);
+        } catch (VmException e) {
+            System.out.println(e);
+        }
+        
         // Get the class of the entity
         var baseClass = InternalEntityHelpers.getEntityClass(entityType);
 

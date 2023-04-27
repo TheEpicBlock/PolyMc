@@ -1,10 +1,8 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import org.jetbrains.annotations.NotNull;
