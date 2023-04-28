@@ -147,6 +147,10 @@ public class ClientInitializerAnalyzer {
         return entityRendererRegistry.get(type);
     }
 
+    public Lambda getEntityModelLayer(EntityModelLayer layer) {
+        return entityModelLayerRegistry.get(layer);
+    }
+
     public static record EntityModelLayer(Identifier id, String name) {
 
     }

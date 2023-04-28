@@ -35,7 +35,7 @@ public class VirtualMachine {
     /**
      * This is here to map from runtime names back to obfuscated, which is needed to resolve methods in the client jar.
      */
-    private final Mapping mappings;
+    public final Mapping mappings;
 
     public VirtualMachine(ClientClassLoader classResolver, VmConfig config) {
         this.classResolver = classResolver;
