@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 
 public interface StackEntry {
@@ -16,6 +17,9 @@ public interface StackEntry {
     static @NotNull StackEntry knownStackValue(Object o) {
         if (o instanceof Integer i) {
             return new KnownInteger(i);
+        }
+        if (o instanceof Long l) {
+            return new KnownLong(l);
         }
         if (o instanceof Float f) {
             return new KnownFloat(f);

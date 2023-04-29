@@ -2,6 +2,9 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownArray;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownClass;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.Lambda;
@@ -130,7 +133,7 @@ public class VirtualMachine {
     /**
      * @return null if the {@code objectRef} is of an unknown type, and the method can't be resolved due to that.
      */
-    public @Nullable MethodRef resolveMethod(MethodInsnNode inst, @Nullable StackEntry objectRef, boolean tryResolve) throws VmException {
+    public @Nullable MethodRef resolveMethod(MethodInsnNode inst, @Nullable StackEntry objectRef) throws VmException {
         switch (inst.getOpcode()) {
             case Opcodes.INVOKESTATIC -> {
                 var clazz = this.getClass(inst.owner);
@@ -155,9 +158,6 @@ public class VirtualMachine {
                         yield clazz;
                     }
                     case Opcodes.INVOKEINTERFACE, Opcodes.INVOKEVIRTUAL -> {
-                        if (tryResolve) {
-                            objectRef = objectRef.resolve(this);
-                        }
                         if (objectRef instanceof KnownObject o) {
                             yield this.getClass(o.i().getClass().getCanonicalName());
                         } else if (objectRef instanceof KnownVmObject o) {
@@ -215,8 +215,19 @@ public class VirtualMachine {
             if (inst.owner.equals(Type.getInternalName(Objects.class)) && inst.name.equals("requireNonNull")) {
                 return arguments[0];
             }
+            if (inst.owner.equals(Type.getInternalName(Arrays.class)) && inst.name.equals("copyOf") && inst.desc.equals("([Ljava/lang/Object;I)[Ljava/lang/Object;") && arguments[0] instanceof KnownArray a) {
+                return new KnownArray(Arrays.copyOf(a.data(), arguments[1].cast(Integer.class)));
+            }
+            if (inst.name.equals("hashCode") && inst.desc.equals("()I") && Util.first(arguments) instanceof KnownObject obj) {
+                return new KnownInteger(obj.i().hashCode()); // It's no problem to do this in the outer vm
+            }
+
+            if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
+                arguments[0] = arguments[0].resolve(ctx.machine());
+            }
+
             // I'm pretty sure we're supposed to run clinit at this point, but let's delay it as much as possible
-            var method = ctx.machine().resolveMethod(inst, Util.first(arguments), true);
+            var method = ctx.machine().resolveMethod(inst, Util.first(arguments));
             if (method == null) {
                 // Can't be resolved, return an unknown value
                 return Type.getReturnType(inst.desc) == Type.VOID_TYPE ? null : new UnknownValue("Can't resolve method "+inst.owner+"#"+inst.name+inst.desc);
@@ -259,6 +270,10 @@ public class VirtualMachine {
         @Override
         public String toString() {
             return node.name;
+        }
+
+        public ClassNode getNode() {
+            return node;
         }
     }
 }

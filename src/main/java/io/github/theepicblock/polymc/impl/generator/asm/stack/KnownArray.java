@@ -28,4 +28,14 @@ public record KnownArray(StackEntry[] data) implements StackEntry {
     public void arraySet(int index, @NotNull StackEntry entry) throws VmException {
         data[index] = entry;
     }
+
+    @Override
+    public <T> T cast(Class<T> type) {
+        if (type == Object[].class) {
+            return (T)data;
+        }
+        return StackEntry.super.cast(type);
+    }
+
+    
 }
