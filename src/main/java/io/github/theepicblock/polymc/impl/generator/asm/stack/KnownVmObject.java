@@ -1,6 +1,5 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
-import java.util.HashSet;
 import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;

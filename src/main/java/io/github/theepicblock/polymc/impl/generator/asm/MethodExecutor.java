@@ -1,7 +1,5 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
-import java.util.function.Function;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Handle;

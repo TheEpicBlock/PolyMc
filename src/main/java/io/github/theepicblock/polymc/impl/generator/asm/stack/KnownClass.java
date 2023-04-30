@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Type;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
 
 public record KnownClass(@NotNull Type type) implements StackEntry {
     @Override

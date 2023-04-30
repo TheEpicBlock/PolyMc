@@ -1,26 +1,16 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.HashMap;
-import java.util.Objects;
 import java.util.stream.Stream;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
-
 import com.google.common.collect.Streams;
 
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.resource.ClientJarResourcesImpl;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.mapping.tree.ClassDef;
-import net.fabricmc.mapping.tree.TinyMappingFactory;
-import net.fabricmc.mapping.tree.TinyTree;
 
 public class ClientClassLoader extends URLClassLoader {
     public ClientClassLoader() {
