@@ -4,6 +4,7 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.SharedValuesKey;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.Lambda;
@@ -70,7 +71,7 @@ public class ClientInitializerAnalyzer {
                 return new StaticFieldValue(inst.owner, inst.name); // Evaluate static fields lazily
             }
             @Override
-            public StackEntry invoke(Context ctx, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
+            public StackEntry invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
                 try {
                     if (inst.owner.equals("net/fabricmc/fabric/api/client/rendering/v1/EntityRendererRegistry")) {
                         var identifier = arguments[0].resolve(ctx.machine()).cast(EntityType.class);
@@ -95,7 +96,7 @@ public class ClientInitializerAnalyzer {
                     return new UnknownValue();
                 }
                 try {
-                    return VmConfig.super.invoke(ctx, inst, arguments);
+                    return VmConfig.super.invoke(ctx, currentClass, inst, arguments);
                 } catch (VmException e) {
                     PolyMc.LOGGER.error("Couldn't run "+inst.owner+"#"+inst.name+": "+e.createFancyErrorMessage());
                     return new UnknownValue(e);

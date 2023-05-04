@@ -7,6 +7,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.MappingResolver;
 
 import java.util.HashMap;
 
@@ -65,6 +66,16 @@ public class AsmUtils {
         return (bitfield & flag) == flag;
     }
 
+    public static MapAll mapAll(MappingResolver resolver, String className, String methodName, String descriptor) {
+        var newClassname = resolver.mapClassName("intermediary", className);
+        var newMethodName = resolver.mapMethodName("intermediary", className, methodName, descriptor);
+        var newDesc = Mapping.remapDescriptor(s -> resolver.mapClassName("intermediary", s), descriptor);
+        return new MapAll(newClassname, newMethodName, newDesc);
+    }
+
+    public record MapAll(String clazz, String method, String desc) {
+    }
+
     /**
      * Convenience method to create a vm object for a class.
      * This is useful when {@link KnownObject}'s can't be used (such as when the object is client-only)
@@ -74,6 +85,11 @@ public class AsmUtils {
     public static VmObjectBuilder constructVmObject(VirtualMachine vm, String className) throws VmException {
         var runtimeName = FabricLoader.getInstance().getMappingResolver().mapClassName("intermediary", className);
         var clazz = vm.getClass(runtimeName.replace(".", "/"));
+
+        return new VmObjectBuilder(clazz);
+    }
+    public static VmObjectBuilder constructVmObject(VirtualMachine vm, Class<?> clazzName) throws VmException {
+        var clazz = vm.getClass(clazzName.getName().replace(".", "/"));
 
         return new VmObjectBuilder(clazz);
     }

@@ -6,6 +6,7 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.IincInsnNode;
 import org.objectweb.asm.tree.InsnList;
@@ -19,6 +20,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
+import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownArray;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownFloat;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
@@ -40,6 +42,7 @@ public class MethodExecutor {
     private String methodName;
     private AbstractInsnNode nextInstruction;
     private InsnList method;
+    private Clazz owner;
 
     public MethodExecutor(VirtualMachine parent, StackEntry[] localVariables, String methodName) {
         this.parent = parent;
@@ -47,7 +50,8 @@ public class MethodExecutor {
         this.methodName = methodName;
     }
     
-    public @NotNull StackEntry run(InsnList bytecode) throws VmException {
+    public @NotNull StackEntry run(InsnList bytecode, Clazz owner) throws VmException {
+        this.owner = owner;
         this.nextInstruction = bytecode.getFirst();
         while (true) {
             if (nextInstruction == null) {
@@ -115,7 +119,7 @@ public class MethodExecutor {
                 if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
                     arguments[0] = stack.pop(); // objectref
                 }
-                pushIfNotNull(parent.getConfig().invoke(ctx(), inst, arguments)); // push the result
+                pushIfNotNull(parent.getConfig().invoke(ctx(), this.owner, inst, arguments)); // push the result
             }
             case Opcodes.INVOKEDYNAMIC -> {
                 var inst = (InvokeDynamicInsnNode)instruction;

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.function.Function;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -61,6 +62,10 @@ public class Mapping {
 
     @NotNull
     public String remapDescriptor(String desc) {
+        return remapDescriptor(this::getClassname, desc);
+    }
+
+    public static String remapDescriptor(Function<String, String> mapper, String desc) {
         var output = new StringBuilder();
 
         int startJavaClass = -1;
@@ -73,7 +78,7 @@ public class Mapping {
                 case ';' -> {
                     var clazz = desc.substring(startJavaClass+1, i);
                     output.append("L");
-                    output.append(getClassname(clazz.replace("/", ".")).replace(".", "/"));
+                    output.append(mapper.apply(clazz.replace("/", ".")).replace(".", "/"));
                     output.append(";");
                     startJavaClass = -1;
                 }
