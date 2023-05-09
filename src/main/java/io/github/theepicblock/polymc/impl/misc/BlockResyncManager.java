@@ -40,40 +40,56 @@ import java.util.List;
 public class BlockResyncManager {
 
     public static void onBlockUpdate(BlockState sourceState, BlockPos sourcePos, World world, ServerPlayerEntity player, List<BlockPos> checkedBlocks) {
+
         BlockPos.Mutable pos = new BlockPos.Mutable();
+
+        // Check all the adjacent blocks
         for (Direction direction : Direction.values()) {
+
             pos.set(sourcePos.getX() + direction.getOffsetX(), sourcePos.getY() + direction.getOffsetY(), sourcePos.getZ() + direction.getOffsetZ());
-            if (checkedBlocks != null && checkedBlocks.contains(pos)) continue;
 
-            BlockState state = world.getBlockState(pos);
+            // Make sure no blocks get checked twice
+            if (checkedBlocks != null && checkedBlocks.contains(pos)) {
+                continue;
+            }
+
             PolyMap map = Util.tryGetPolyMap(player);
-            BlockPoly poly = map.getBlockPoly(state.getBlock());
+            BlockState adjacentState = world.getBlockState(pos);
+            BlockPoly adjacentPoly = map.getBlockPoly(adjacentState.getBlock());
 
-            if (poly != null) {
-                BlockState clientState = poly.getClientBlock(state);
+            if (adjacentPoly != null) {
+                BlockState adjacentClientState = adjacentPoly.getClientBlock(adjacentState);
 
                 if (sourceState == null) {
-                    sourceState = world.getBlockState(sourcePos);
-                    BlockState sourceClientState = poly.getClientBlock(sourceState);
 
-                    if (sourceClientState != null) {
-                        sourceState = sourceClientState;
+                    // The source state was not given, so look it up now
+                    sourceState = world.getBlockState(sourcePos);
+
+                    // See if the source state has a poly
+                    BlockPoly sourcePoly = map.getBlockPoly(sourceState.getBlock());
+
+                    if (sourcePoly != null) {
+                        BlockState sourceClientState = sourcePoly.getClientBlock(sourceState);
+
+                        if (sourceClientState != null) {
+                            sourceState = sourceClientState;
+                        }
                     }
                 }
 
-                if (map.shouldForceBlockStateSync(sourceState, clientState, direction)) {
+                if (map.shouldForceBlockStateSync(sourceState, adjacentClientState, direction)) {
                     BlockPos newPos = pos.toImmutable();
-                    player.networkHandler.sendPacket(new BlockUpdateS2CPacket(newPos, state));
+                    player.networkHandler.sendPacket(new BlockUpdateS2CPacket(newPos, adjacentState));
 
                     if (checkedBlocks == null) checkedBlocks = new ArrayList<>();
                     checkedBlocks.add(sourcePos);
 
-                    onBlockUpdate(clientState, newPos, world, player, checkedBlocks);
+                    onBlockUpdate(adjacentClientState, newPos, world, player, checkedBlocks);
                 }
             }
 
             // If the lower half of a door is interacted with, we should check the upper half as well
-            boolean isUpperDoor = direction == Direction.UP && state.getBlock() instanceof DoorBlock && state.get(DoorBlock.HALF) == DoubleBlockHalf.UPPER;
+            boolean isUpperDoor = direction == Direction.UP && adjacentState.getBlock() instanceof DoorBlock && adjacentState.get(DoorBlock.HALF) == DoubleBlockHalf.UPPER;
             if (isUpperDoor) {
                 if (checkedBlocks == null) checkedBlocks = new ArrayList<>();
                 checkedBlocks.add(sourcePos);
