@@ -2,7 +2,7 @@ package io.github.theepicblock.polymc.mixins.block;
 
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.mixins.TACSAccessor;
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.util.math.ChunkPos;
 import org.spongepowered.asm.mixin.Final;
@@ -27,7 +27,7 @@ public abstract class FixLighting {
      *
      * @see net.minecraft.server.world.ThreadedAnvilChunkStorage#getPlayersWatchingChunk(ChunkPos, boolean)
      */
-    @Redirect(method = "flushUpdates(Lnet/minecraft/world/chunk/WorldChunk;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkHolder;sendPacketToPlayersWatching(Lnet/minecraft/network/Packet;Z)V"))
+    @Redirect(method = "flushUpdates(Lnet/minecraft/world/chunk/WorldChunk;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkHolder;sendPacketToPlayersWatching(Lnet/minecraft/network/packet/Packet;Z)V"))
     private void onSendLightUpdates(ChunkHolder chunkHolder, Packet<?> packet, boolean onlyOnWatchDistanceEdge) {
         if (onlyOnWatchDistanceEdge == false) {
             // This will be sent to everyone regardless. Just use the normal method

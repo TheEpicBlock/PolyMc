@@ -206,6 +206,7 @@ public final class FakeWorld extends World {
             worldDefault = new FakeWorld(
                     new FakeWorldProperties(),
                     RegistryKey.of(RegistryKeys.WORLD, new Identifier("polymer", "fake_world")),
+                    null,
                     dimType,
                     () -> new ProfilerSystem(() -> 0l, () -> 0, false),
                     false,
@@ -225,8 +226,8 @@ public final class FakeWorld extends World {
         INSTANCE = worldUnsafe != null ? worldUnsafe : worldDefault;
     }
 
-    protected FakeWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> dimensionType, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed) {
-        super(properties, registryRef, dimensionType, profiler, isClient, debugWorld, seed, 0);
+    protected FakeWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, DynamicRegistryManager registryManager, RegistryEntry<DimensionType> dimensionType, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed) {
+        super(properties, registryRef, registryManager, dimensionType, profiler, isClient, debugWorld, seed, 0);
     }
 
     @Override

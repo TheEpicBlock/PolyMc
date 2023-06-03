@@ -1,6 +1,6 @@
 package io.github.theepicblock.polymc.api.wizard;
 
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import org.jetbrains.annotations.ApiStatus;
 
 public interface PacketConsumer {
