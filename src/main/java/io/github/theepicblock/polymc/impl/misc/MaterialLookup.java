@@ -1,6 +1,5 @@
 package io.github.theepicblock.polymc.impl.misc;
 
-import io.github.theepicblock.polymc.api.block.BlockPoly;
 import net.minecraft.block.*;
 import net.minecraft.sound.BlockSoundGroup;
 
