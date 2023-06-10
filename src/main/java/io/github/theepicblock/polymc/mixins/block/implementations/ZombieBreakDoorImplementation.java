@@ -18,6 +18,6 @@ public abstract class ZombieBreakDoorImplementation extends DoorInteractGoal {
 
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;syncWorldEvent(ILnet/minecraft/util/math/BlockPos;I)V", ordinal = 1))
     private void redirectWorldEvent(World world, int eventId, BlockPos pos, int data) {
-        PacketReplacementUtil.syncWorldEvent(world, null, eventId, pos, this.mob.world.getBlockState(this.doorPos));
+        PacketReplacementUtil.syncWorldEvent(world, null, eventId, pos, this.mob.getWorld().getBlockState(this.doorPos));
     }
 }
