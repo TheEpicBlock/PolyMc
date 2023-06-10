@@ -42,6 +42,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkManager;
 import net.minecraft.world.chunk.ChunkProvider;
 import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.chunk.light.LightSourceView;
 import net.minecraft.world.chunk.light.LightingProvider;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.dimension.DimensionTypes;
@@ -99,7 +100,7 @@ public final class FakeWorld extends World {
                 this.lightingProvider = new LightingProvider(new ChunkProvider() {
                     @Nullable
                     @Override
-                    public BlockView getChunk(int chunkX, int chunkZ) {
+                    public LightSourceView getChunk(int chunkX, int chunkZ) {
                         return null;
                     }
 

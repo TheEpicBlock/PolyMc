@@ -20,7 +20,6 @@
     "block.FixLighting",
     "block.FixNoteblockParticles",
     "block.IdListAccessor",
-    "block.MaterialAccessor",
     "block.ProcessSyncedBlockEventServerSideImplementation",
     "block.ResyncImplementation",
     "block.ResyncTargetBlock",

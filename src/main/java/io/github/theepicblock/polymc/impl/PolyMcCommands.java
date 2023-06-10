@@ -65,7 +65,7 @@ public class PolyMcCommands {
                                         var polydItem = PolyMapProvider.getPolyMap(player).getClientItem(heldItem, player, null);
                                         var heldItemTag = polydItem.writeNbt(new NbtCompound());
                                         var nbtText = NbtHelper.toPrettyPrintedText(heldItemTag);
-                                        context.getSource().sendFeedback(nbtText, false);
+                                        context.getSource().sendFeedback(() -> nbtText, false);
                                         return Command.SINGLE_SUCCESS;
                                     }))
                             .then(literal("replaceInventoryWithDebug")
@@ -153,19 +153,19 @@ public class PolyMcCommands {
         var source = context.getSource();
 
         var headerColour = ConfigManager.getConfig().enableWizardThreading ? Formatting.GOLD : Formatting.AQUA;
-        source.sendFeedback(Text.literal("=== Packet restriction info for ").formatted(headerColour)
+        source.sendFeedback(() -> Text.literal("=== Packet restriction info for ").formatted(headerColour)
                 .append(player.getDisplayName())
                 .append(Text.literal(" ===").formatted(headerColour)), false);
 
         var hoverTxt = Text.literal("Target packet count: ").append(Text.literal(PacketCountManager.MIN_PACKETS+"-"+PacketCountManager.MAX_PACKETS+" packets per tick").formatted(Formatting.AQUA));
-        source.sendFeedback(Text.literal("Average packet count per tick: ")
+        source.sendFeedback(() -> Text.literal("Average packet count per tick: ")
                 .styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverTxt)))
                 .append(packetCount2Text(trackerInfo.calculateAveragePacketCount())), false);
         var packetHistory = Text.literal("History: [");
         for (int i = 0; ; i++) {
             packetHistory.append(packetCount2Text(trackerInfo.getPacketHistory()[i]));
             if (i == trackerInfo.getPacketHistory().length-1) {
-                source.sendFeedback(packetHistory.append("]"), false);
+                source.sendFeedback(() -> packetHistory.append("]"), false);
                 break;
             }
             packetHistory.append(", ");
@@ -181,9 +181,9 @@ public class PolyMcCommands {
         } else {
             restrictionLevelTxt.formatted(Formatting.DARK_GREEN);
         }
-        source.sendFeedback(Text.literal("Restriction level: ").append(restrictionLevelTxt), false);
+        source.sendFeedback(() -> Text.literal("Restriction level: ").append(restrictionLevelTxt), false);
         var watchDistance = ((TACSAccessor)context.getSource().getWorld().getChunkManager().threadedAnvilChunkStorage).getWatchDistance();
-        source.sendFeedback(Text.literal("Watch distance/radius: ").append(Text.literal(watchDistance+"/"+PacketCountManager.getWatchRadiusFromDistance(watchDistance)).formatted(Formatting.AQUA)), false);
+        source.sendFeedback(() -> Text.literal("Watch distance/radius: ").append(Text.literal(watchDistance+"/"+PacketCountManager.getWatchRadiusFromDistance(watchDistance)).formatted(Formatting.AQUA)), false);
         return Command.SINGLE_SUCCESS;
     }
 

@@ -41,7 +41,7 @@ public class PacketReplacementUtil {
     public static void sendToAround(PlayerManager manager, PlayerEntity exception, double x, double y, double z, double distance, RegistryKey<World> worldKey, Consumer<ServerPlayerEntity> consumer) {
         for (int i = 0; i < manager.getPlayerList().size(); ++i) {
             ServerPlayerEntity serverPlayerEntity = manager.getPlayerList().get(i);
-            if (serverPlayerEntity != exception && serverPlayerEntity.world.getRegistryKey() == worldKey) {
+            if (serverPlayerEntity != exception && serverPlayerEntity.getWorld().getRegistryKey() == worldKey) {
                 double d = x - serverPlayerEntity.getX();
                 double e = y - serverPlayerEntity.getY();
                 double f = z - serverPlayerEntity.getZ();

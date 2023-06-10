@@ -24,9 +24,9 @@ import io.github.theepicblock.polymc.api.block.BlockStateManager;
 import io.github.theepicblock.polymc.api.block.BlockStateProfile;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.BooleanContainer;
+import io.github.theepicblock.polymc.impl.misc.MaterialLookup;
 import io.github.theepicblock.polymc.impl.poly.block.FunctionBlockStatePoly;
 import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
-import io.github.theepicblock.polymc.mixins.block.MaterialAccessor;
 import io.github.theepicblock.polymc.mixins.block.SlabBlockAccessor;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -126,7 +126,7 @@ public class BlockPolyGenerator {
         }
 
         //=== (TRAP)DOORS ===
-        boolean isMetal = ((MaterialAccessor)moddedBlock).getMaterial() == Material.METAL;
+        boolean isMetal = MaterialLookup.getMaterial(moddedBlock) == MaterialLookup.Type.METAL;
         if (moddedBlock instanceof DoorBlock) {
             try {
                 isUniqueCallback.set(true);
