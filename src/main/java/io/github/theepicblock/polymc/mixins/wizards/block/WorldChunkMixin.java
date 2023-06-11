@@ -63,19 +63,21 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
         if (!map.hasBlockWizards())
             return ret;
 
-        int y_offset = (this.world.getBottomY() >> 4) - 1;
+        // Get the lowest Y level of the world
+        int sectionBottomY = this.world.getBottomY();
 
         for (ChunkSection section : this.sectionArray) {
-            y_offset++;
 
-            if (section == null) continue;
+            if (section != null) {
+                PalettedContainer<BlockState> container = section.getBlockStateContainer();
 
-            PalettedContainer<BlockState> container = section.getBlockStateContainer();
+                var data = ((PalettedContainerAccessor<BlockState>)container).getData();
+                var palette = data.palette();
+                var paletteData = data.storage();
+                processWizards(map, palette, paletteData, sectionBottomY, ret);
+            }
 
-            var data = ((PalettedContainerAccessor<BlockState>)container).getData();
-            var palette = data.palette();
-            var paletteData = data.storage();
-            processWizards(map, palette, paletteData, y_offset, ret);
+            sectionBottomY += 16;
         }
 
         return ret;
