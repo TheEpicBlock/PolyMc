@@ -24,6 +24,7 @@
     "block.ResyncImplementation",
     "block.ResyncTargetBlock",
     "block.SlabBlockAccessor",
+    "block.TrapdoorBlockAccessor",
     "block.implementations.BedBlockImplementation",
     "block.implementations.BreakParticleImplementation",
     "block.implementations.ChunkDataPlayerProvider",
