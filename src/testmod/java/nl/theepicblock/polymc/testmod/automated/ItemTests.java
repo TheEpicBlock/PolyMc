@@ -16,6 +16,7 @@ import nl.theepicblock.polymc.testmod.Testmod;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class ItemTests implements FabricGameTest {
     @CustomTestProvider
@@ -61,7 +62,7 @@ public class ItemTests implements FabricGameTest {
                                 }
                                 ctx.assertTrue(newStack.getCount() == 5, "PolyMc shouldn't affect itemcount");
                                 ctx.assertTrue(ItemStack.areItemsEqual(originalStack, copyOfOriginal), "PolyMc shouldn't affect the original item");
-                                ctx.assertTrue(ItemStack.areNbtEqual(originalStack, copyOfOriginal), "PolyMc shouldn't affect the original item's nbt");
+                                ctx.assertTrue(Objects.equals(originalStack.getNbt(), copyOfOriginal.getNbt()), "PolyMc shouldn't affect the original item's nbt");
 
                                 packetCtx.close();
                                 ctx.complete();
