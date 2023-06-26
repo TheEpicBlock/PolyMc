@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.mixins;
 
+import net.minecraft.entity.damage.DamageSources;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.random.Random;
@@ -70,4 +71,9 @@ public interface WorldAccessor {
     @Mutable
     @Accessor("pendingBlockEntityTickers")
     void polymc$setPendingBlockEntityTickers(List<BlockEntityTickInvoker> list);
+
+
+    @Mutable
+    @Accessor("damageSources")
+    void polymc$setDamageSources(DamageSources damageSources);
 }
