@@ -17,6 +17,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 public class NOPPolyMap implements PolyMap {
@@ -62,6 +65,11 @@ public class NOPPolyMap implements PolyMap {
 
     @Override
     public boolean hasBlockWizards() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldForceBlockStateSync(BlockState sourceState, BlockState clientState, Direction direction) {
         return false;
     }
 

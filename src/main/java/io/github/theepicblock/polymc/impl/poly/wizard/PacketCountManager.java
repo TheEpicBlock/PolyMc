@@ -7,7 +7,7 @@ import io.github.theepicblock.polymc.impl.ConfigManager;
 import io.github.theepicblock.polymc.mixins.TACSAccessor;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.EntityTrackingListener;
@@ -40,7 +40,7 @@ public class PacketCountManager {
     private int cursor;
     private int watchDistance = 0;
     private int watchRadius = 0;
-    private final TrackingPacketConsumer reusableConsumer = new TrackingPacketConsumer();
+    private final ThreadLocal<TrackingPacketConsumer> reusableConsumer = ThreadLocal.withInitial(TrackingPacketConsumer::new);
 
     public static void registerEvents() {
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
@@ -90,7 +90,8 @@ public class PacketCountManager {
     }
 
     public PacketConsumer getView(Set<EntityTrackingListener> listeners, PolyMap map, Vec3d pos, int tick, int seed) {
-        this.reusableConsumer.reset(this.cursor);
+        var reusableConsumer = this.reusableConsumer.get();
+        reusableConsumer.reset(this.cursor);
 
         int pSeed = 0;
         for (var listener : listeners) {
@@ -107,7 +108,8 @@ public class PacketCountManager {
     }
 
     public PacketConsumer getView(ServerWorld world, ChunkPos pos, PolyMap map, int tick, int seed) {
-        this.reusableConsumer.reset(this.cursor);
+        var reusableConsumer = this.reusableConsumer.get();
+        reusableConsumer.reset(this.cursor);
         var chunkPos = new Vec3d(pos.getCenterX(), 0, pos.getCenterZ());
 
         int pSeed = 0;

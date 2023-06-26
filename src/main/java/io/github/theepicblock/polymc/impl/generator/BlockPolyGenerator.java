@@ -26,8 +26,8 @@ import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.BooleanContainer;
 import io.github.theepicblock.polymc.impl.poly.block.FunctionBlockStatePoly;
 import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
-import io.github.theepicblock.polymc.mixins.block.MaterialAccessor;
 import io.github.theepicblock.polymc.mixins.block.SlabBlockAccessor;
+import io.github.theepicblock.polymc.mixins.block.TrapdoorBlockAccessor;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.FluidState;
@@ -126,18 +126,19 @@ public class BlockPolyGenerator {
         }
 
         //=== (TRAP)DOORS ===
-        boolean isMetal = ((MaterialAccessor)moddedBlock).getMaterial() == Material.METAL;
-        if (moddedBlock instanceof DoorBlock) {
+        if (moddedBlock instanceof DoorBlock doorBlock) {
+            boolean isIronLike = !doorBlock.getBlockSetType().canOpenByHand();
             try {
                 isUniqueCallback.set(true);
-                return manager.requestBlockState((isMetal ? BlockStateProfile.METAL_DOOR_PROFILE : BlockStateProfile.DOOR_PROFILE)
+                return manager.requestBlockState((isIronLike ? BlockStateProfile.METAL_DOOR_PROFILE : BlockStateProfile.DOOR_PROFILE)
                         .and((state) -> propertyMatches(state, moddedState, DoorBlock.OPEN, DoorBlock.FACING, DoorBlock.HINGE, DoorBlock.HALF)));
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
-        if (moddedBlock instanceof TrapdoorBlock) {
+        if (moddedBlock instanceof TrapdoorBlock trapdoorBlock) {
+            boolean isIronLike = !((TrapdoorBlockAccessor)trapdoorBlock).getBlockSetType().canOpenByHand();
             try {
                 isUniqueCallback.set(true);
-                return manager.requestBlockState((isMetal ? BlockStateProfile.METAL_TRAPDOOR_PROFILE : BlockStateProfile.TRAPDOOR_PROFILE)
+                return manager.requestBlockState((isIronLike ? BlockStateProfile.METAL_TRAPDOOR_PROFILE : BlockStateProfile.TRAPDOOR_PROFILE)
                         .and((state) -> propertyMatches(state, moddedState, TrapdoorBlock.OPEN, TrapdoorBlock.FACING, TrapdoorBlock.HALF, TrapdoorBlock.WATERLOGGED)));
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }

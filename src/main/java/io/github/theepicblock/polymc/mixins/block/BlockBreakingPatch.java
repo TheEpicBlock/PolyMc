@@ -68,7 +68,7 @@ public abstract class BlockBreakingPatch {
     public void breakIfTakingTooLong(BlockState state, BlockPos pos, int i, CallbackInfoReturnable<Float> cir) {
         if (CustomBlockBreakingCheck.needsCustomBreaking(player, state)) {
             int j = tickCounter - i;
-            float f = state.calcBlockBreakingDelta(this.player, this.player.world, pos) * (float)(j);
+            float f = state.calcBlockBreakingDelta(this.player, this.player.getWorld(), pos) * (float)(j);
 
             if (blockBreakingCooldown > 0) {
                 --blockBreakingCooldown;
@@ -95,7 +95,7 @@ public abstract class BlockBreakingPatch {
         if (CustomBlockBreakingCheck.needsCustomBreaking(player, world.getBlockState(pos))) {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
                 // This prevents the client from trying to break the block themselves.
-                if (this.world.getBlockState(pos).calcBlockBreakingDelta(this.player, this.player.world, pos) < 1) {
+                if (this.world.getBlockState(pos).calcBlockBreakingDelta(this.player, this.player.getWorld(), pos) < 1) {
                     hasMineFatigue = true;
                     player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(this.player.getId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
                 }

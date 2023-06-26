@@ -18,16 +18,16 @@ public class CommandSourceLogger implements SimpleLogger {
 
     @Override
     public void error(String string) {
-        commandSource.sendFeedback(Text.literal(string).formatted(Formatting.RED), sendToOps);
+        commandSource.sendFeedback(() -> Text.literal(string).formatted(Formatting.RED), sendToOps);
     }
 
     @Override
     public void warn(String string) {
-        commandSource.sendFeedback(Text.literal(string).formatted(Formatting.YELLOW), sendToOps);
+        commandSource.sendFeedback(() -> Text.literal(string).formatted(Formatting.YELLOW), sendToOps);
     }
 
     @Override
     public void info(String string) {
-        commandSource.sendFeedback(Text.literal(string), sendToOps);
+        commandSource.sendFeedback(() -> Text.literal(string), sendToOps);
     }
 }

@@ -31,6 +31,9 @@ public abstract class FallingBlockEntityMixin extends Entity implements WatchLis
 
     @Unique
     private final PolyMapMap<Wizard> wizards = new PolyMapMap<>((map) -> {
+
+        World world = this.getWorld();
+
         if (!(world instanceof ServerWorld)) return null;
 
         var wizardConstructor = map.getWizardConstructor(block);
