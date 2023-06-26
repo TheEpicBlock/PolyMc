@@ -3,7 +3,6 @@ package nl.theepicblock.polymc.testmod.automated;
 import io.github.theepicblock.polymc.impl.NOPPolyMap;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
@@ -25,27 +24,24 @@ public class ItemTests implements FabricGameTest {
         // Different ways in which we can test itemstacks being transformed by PolyMc
         var reserializationMethods = new HashMap<String, ReserializationMethod>();
         reserializationMethods.put("reencode", this::reencodeMethod);
-        // Packet capture doesn't seem stable enough
-        //reserializationMethods.put("item entity", this::itemEntityMethod);
+        reserializationMethods.put("item entity", this::itemEntityMethod);
 
-        for (var item : new Item[]{Items.STICK, Testmod.TEST_ITEM}) {
-            var shouldItemBePolyd = item == Testmod.TEST_ITEM; // Sticks shouldn't be polyd
-            for (var nopMap : new Boolean[]{false, true}) {
-                if (nopMap) shouldItemBePolyd = false; // If the map is NOP, don't poly regardless
-
+        var i = 0;
+        for (var isItemVanilla : new boolean[]{true, false}) {
+            for (var useNopMap : new Boolean[]{false, true}) {
                 for (var method : reserializationMethods.entrySet()) {
-                    boolean finalShouldItemBePolyd = shouldItemBePolyd;
+                    var item = isItemVanilla ? Items.STICK : Testmod.TEST_ITEM;
                     list.add(new TestFunction(
-                            "defaultBatch",
-                            String.format("itemtests (%s, %s, %s)", item.getTranslationKey(), nopMap, method.getKey()),
+                            "itembatch_"+i++,
+                            String.format("itemtests (%s, %s, %s)", item.getTranslationKey(), useNopMap, method.getKey()),
                             EMPTY_STRUCTURE,
-                            1,
-                            1,
+                            100,
+                            0,
                             true,
                             (ctx) -> {
                                 // The actual test function
                                 var packetCtx = new PacketTester(ctx);
-                                if (nopMap) {
+                                if (useNopMap) {
                                     packetCtx.setMap(new NOPPolyMap());
                                 }
 
@@ -55,10 +51,10 @@ public class ItemTests implements FabricGameTest {
 
                                 var newStack = method.getValue().reserialize(originalStack, packetCtx);
 
-                                if (finalShouldItemBePolyd) {
-                                    ctx.assertTrue(newStack.getItem() != originalStack.getItem(), "Item should've been transformed by PolyMc. Result: "+newStack);
-                                } else {
+                                if (isItemVanilla || useNopMap) {
                                     ctx.assertTrue(newStack.getItem() == originalStack.getItem(), "Item shouldn't have been transformed by PolyMc. Result: "+newStack);
+                                } else {
+                                    ctx.assertTrue(newStack.getItem() != originalStack.getItem(), "Item should've been transformed by PolyMc. Result: "+newStack);
                                 }
                                 ctx.assertTrue(newStack.getCount() == 5, "PolyMc shouldn't affect itemcount");
                                 ctx.assertTrue(ItemStack.areItemsEqual(originalStack, copyOfOriginal), "PolyMc shouldn't affect the original item");

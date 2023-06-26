@@ -30,11 +30,11 @@ public class BlockTests implements FabricGameTest {
                 for (var method : reserializationMethods.entrySet()) {
                     var block = isBlockVanilla ? Blocks.DIRT : Testmod.TEST_BLOCK;
                     list.add(new TestFunction(
-                            "block_test_"+i++,
+                            "blockbatch_"+i++,
                             String.format("blocktests (%s, %s, %s)", isBlockVanilla, useNopMap, method.getKey()),
                             EMPTY_STRUCTURE,
-                            1,
-                            1,
+                            100,
+                            0,
                             true,
                             (ctx) -> {
                                 // The actual test function
@@ -72,11 +72,13 @@ public class BlockTests implements FabricGameTest {
     public void placeBlockMethod(BlockState state, PacketTester ctx, Consumer<BlockState> newStateConsumer) {
         // This test actually places a block and ensures the packet comes out right on the other end
         // Might be a bit flaky though…
-        ctx.clearPackets();
-        ctx.getTestContext().setBlockState(BlockPos.ORIGIN, state);
         ctx.getTestContext().waitAndRun(1, () -> {
-            var packet = ctx.getFirstOfType(BlockUpdateS2CPacket.class);
-            newStateConsumer.accept(packet.getState());
+            ctx.clearPackets();
+            ctx.getTestContext().setBlockState(BlockPos.ORIGIN, state);
+            ctx.getTestContext().waitAndRun(1, () -> {
+                var packet = ctx.getFirstOfType(BlockUpdateS2CPacket.class);
+                newStateConsumer.accept(packet.getState());
+            });
         });
     }
 
