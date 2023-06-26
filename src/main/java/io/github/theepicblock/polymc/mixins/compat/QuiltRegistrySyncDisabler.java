@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerRegistrySync.class)
 public class QuiltRegistrySyncDisabler {
-    /*
     @SuppressWarnings("MixinAnnotationTarget")
     @Inject(method = "sendSyncPackets(Lnet/minecraft/network/ClientConnection;Lnet/minecraft/server/network/ServerPlayerEntity;I)V", at = @At("HEAD"), cancellable = true)
     private static void sendPacketInject(ClientConnection connection, ServerPlayerEntity player, int syncVersion, CallbackInfo ci) {
@@ -21,5 +20,4 @@ public class QuiltRegistrySyncDisabler {
             ci.cancel();
         }
     }
-    */
 }
