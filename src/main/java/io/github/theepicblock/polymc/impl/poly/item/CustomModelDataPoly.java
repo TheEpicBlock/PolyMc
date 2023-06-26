@@ -126,7 +126,7 @@ public class CustomModelDataPoly implements ItemPoly {
         if (Util.isSectionVisible(input, ItemStack.TooltipSection.ADDITIONAL) && isInventory(location)) {
             var tooltips = new ArrayList<Text>(0);
             try {
-                input.getItem().appendTooltip(input, player == null ? null : player.world, tooltips, TooltipContext.Default.BASIC);
+                input.getItem().appendTooltip(input, player == null ? null : player.getWorld(), tooltips, TooltipContext.Default.BASIC);
             } catch (Exception | NoClassDefFoundError ignored) {}
 
             if (!tooltips.isEmpty()) {

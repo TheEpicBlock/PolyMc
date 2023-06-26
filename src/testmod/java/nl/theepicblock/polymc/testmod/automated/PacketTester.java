@@ -4,9 +4,10 @@ import com.mojang.authlib.GameProfile;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.test.TestContext;
+import net.minecraft.util.math.Vec3d;
 
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -23,6 +24,8 @@ public class PacketTester implements Closeable {
         this.playerEntity = new ServerPlayerEntity(world.getServer(), world, new GameProfile(UUID.randomUUID(), "Fake packet receiver"));
         this.fakeNetworkHandler = new FakeNetworkHandler(world.getServer(), this.playerEntity);
         this.context = context;
+
+        this.playerEntity.setPosition(context.getAbsolute(Vec3d.ZERO));
 
         world.spawnEntity(playerEntity);
     }

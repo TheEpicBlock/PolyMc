@@ -2,7 +2,7 @@ package io.github.theepicblock.polymc.mixins.wizards.block;
 
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
 import net.minecraft.server.world.ChunkHolder;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.world.ChunkLevels;
 import net.minecraft.world.chunk.WorldChunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -16,7 +16,8 @@ public abstract class ChunkHolderMixin {
 
     @Inject(method = "setLevel", at = @At("HEAD"))
     private void onLevelSet(int level, CallbackInfo ci) {
-        if (level > ThreadedAnvilChunkStorage.MAX_LEVEL) {
+
+        if (!ChunkLevels.isAccessible(level)) {
             WorldChunk chunk = this.getWorldChunk();
             if (chunk != null) ((WatchListener)chunk).polymc$removeAllPlayers();
         }

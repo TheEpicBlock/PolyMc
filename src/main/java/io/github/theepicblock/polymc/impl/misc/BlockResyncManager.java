@@ -17,6 +17,8 @@
  */
 package io.github.theepicblock.polymc.impl.misc;
 
+import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.*;
@@ -36,48 +38,58 @@ import java.util.List;
  * These methods are called by {@link io.github.theepicblock.polymc.mixins.block.ResyncImplementation} to resync the blocks with the server's state.
  */
 public class BlockResyncManager {
-    public static boolean shouldForceSync(BlockState sourceState, BlockState clientState, Direction direction) {
-        Block block = clientState.getBlock();
-        if (block == Blocks.NOTE_BLOCK) {
-            return direction == Direction.UP;
-        } else if (block == Blocks.MYCELIUM || block == Blocks.PODZOL) {
-            return direction == Direction.DOWN;
-        } else if (block == Blocks.TRIPWIRE) {
-            if (sourceState == null) return direction.getAxis().isHorizontal();
-
-            //Checks if the connected property for the block isn't what it should be
-            //If the source block in that direction is string, it should be true. Otherwise false
-            return direction.getAxis().isHorizontal() &&
-                    clientState.get(ConnectingBlock.FACING_PROPERTIES.get(direction.getOpposite())) != (sourceState.getBlock() instanceof TripwireBlock);
-        }
-        return false;
-    }
 
     public static void onBlockUpdate(BlockState sourceState, BlockPos sourcePos, World world, ServerPlayerEntity player, List<BlockPos> checkedBlocks) {
+
         BlockPos.Mutable pos = new BlockPos.Mutable();
+
+        // Check all the adjacent blocks
         for (Direction direction : Direction.values()) {
+
             pos.set(sourcePos.getX() + direction.getOffsetX(), sourcePos.getY() + direction.getOffsetY(), sourcePos.getZ() + direction.getOffsetZ());
-            if (checkedBlocks != null && checkedBlocks.contains(pos)) continue;
 
-            BlockState state = world.getBlockState(pos);
-            BlockPoly poly = Util.tryGetPolyMap(player).getBlockPoly(state.getBlock());
+            // Make sure no blocks get checked twice
+            if (checkedBlocks != null && checkedBlocks.contains(pos)) {
+                continue;
+            }
 
-            if (poly != null) {
-                BlockState clientState = poly.getClientBlock(state);
+            PolyMap map = Util.tryGetPolyMap(player);
+            BlockState adjacentState = world.getBlockState(pos);
+            BlockPoly adjacentPoly = map.getBlockPoly(adjacentState.getBlock());
 
-                if (BlockResyncManager.shouldForceSync(sourceState, clientState, direction)) {
+            if (adjacentPoly != null) {
+                BlockState adjacentClientState = adjacentPoly.getClientBlock(adjacentState);
+
+                if (sourceState == null) {
+
+                    // The source state was not given, so look it up now
+                    sourceState = world.getBlockState(sourcePos);
+
+                    // See if the source state has a poly
+                    BlockPoly sourcePoly = map.getBlockPoly(sourceState.getBlock());
+
+                    if (sourcePoly != null) {
+                        BlockState sourceClientState = sourcePoly.getClientBlock(sourceState);
+
+                        if (sourceClientState != null) {
+                            sourceState = sourceClientState;
+                        }
+                    }
+                }
+
+                if (map.shouldForceBlockStateSync(sourceState, adjacentClientState, direction)) {
                     BlockPos newPos = pos.toImmutable();
-                    player.networkHandler.sendPacket(new BlockUpdateS2CPacket(newPos, state));
+                    player.networkHandler.sendPacket(new BlockUpdateS2CPacket(newPos, adjacentState));
 
                     if (checkedBlocks == null) checkedBlocks = new ArrayList<>();
                     checkedBlocks.add(sourcePos);
 
-                    onBlockUpdate(clientState, newPos, world, player, checkedBlocks);
+                    onBlockUpdate(adjacentClientState, newPos, world, player, checkedBlocks);
                 }
             }
 
             // If the lower half of a door is interacted with, we should check the upper half as well
-            boolean isUpperDoor = direction == Direction.UP && state.getBlock() instanceof DoorBlock && state.get(DoorBlock.HALF) == DoubleBlockHalf.UPPER;
+            boolean isUpperDoor = direction == Direction.UP && adjacentState.getBlock() instanceof DoorBlock && adjacentState.get(DoorBlock.HALF) == DoubleBlockHalf.UPPER;
             if (isUpperDoor) {
                 if (checkedBlocks == null) checkedBlocks = new ArrayList<>();
                 checkedBlocks.add(sourcePos);

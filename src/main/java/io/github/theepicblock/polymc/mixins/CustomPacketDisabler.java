@@ -18,7 +18,7 @@
 package io.github.theepicblock.polymc.mixins;
 
 import io.github.theepicblock.polymc.impl.Util;
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -34,7 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class CustomPacketDisabler {
     @Shadow public ServerPlayerEntity player;
 
-    @Inject(method = "sendPacket(Lnet/minecraft/network/Packet;Lnet/minecraft/network/PacketCallbacks;)V", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "sendPacket(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V", at = @At("HEAD"), cancellable = true)
     public void sendPacketInject(Packet<?> packet, PacketCallbacks callbacks, CallbackInfo ci) {
         if (packet instanceof CustomPayloadS2CPacket && Util.isPolyMapVanillaLike(this.player)) {
             Identifier channel = ((CustomPacketAccessor)packet).getChannel();

@@ -22,6 +22,7 @@
     ],
     "fabric-gametest": [
       "nl.theepicblock.polymc.testmod.automated.ItemTests",
+      "nl.theepicblock.polymc.testmod.automated.BlockPolyGeneratorTests",
       "nl.theepicblock.polymc.testmod.automated.BlockTests",
       "nl.theepicblock.polymc.testmod.automated.WizardTests",
       "nl.theepicblock.polymc.testmod.automated.TestVmException",

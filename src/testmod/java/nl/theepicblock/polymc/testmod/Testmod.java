@@ -4,12 +4,12 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.fabricmc.fabric.api.object.builder.v1.block.type.BlockSetTypeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.block.*;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -17,6 +17,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
@@ -25,21 +27,42 @@ import org.jetbrains.annotations.Nullable;
 public class Testmod implements ModInitializer {
     private static final String MODID = "polymc-testmod";
 
+    public static final BlockSetType TEST_IRON_BLOCKSET = BlockSetTypeRegistry.register(
+            id("test_iron"),
+            false,
+            BlockSoundGroup.BONE,
+            SoundEvents.ENTITY_CAMEL_DASH, SoundEvents.ENTITY_CAMEL_DASH,
+            SoundEvents.ENTITY_CAMEL_DASH, SoundEvents.ENTITY_CAMEL_DASH,
+            SoundEvents.ENTITY_CAMEL_DASH, SoundEvents.ENTITY_CAMEL_DASH,
+            SoundEvents.ENTITY_CAMEL_DASH, SoundEvents.ENTITY_CAMEL_DASH
+    );
+    public static final BlockSetType TEST_WOOD_BLOCKSET = BlockSetTypeRegistry.register(
+            id("test_wood"),
+            true,
+            BlockSoundGroup.WOOL,
+            SoundEvents.BLOCK_ROOTED_DIRT_BREAK, SoundEvents.BLOCK_ROOTED_DIRT_BREAK,
+            SoundEvents.BLOCK_ROOTED_DIRT_BREAK, SoundEvents.BLOCK_ROOTED_DIRT_BREAK,
+            SoundEvents.BLOCK_ROOTED_DIRT_BREAK, SoundEvents.BLOCK_ROOTED_DIRT_BREAK,
+            SoundEvents.BLOCK_ROOTED_DIRT_BREAK, SoundEvents.BLOCK_ROOTED_DIRT_BREAK
+    );
+
     public static final Item TEST_ITEM = new TestItem(new FabricItemSettings().maxCount(6).rarity(Rarity.EPIC));
     public static final Item TEST_FOOD = new Item(new FabricItemSettings().food(FoodComponents.COOKED_CHICKEN));
     public static final ArmorMaterial TEST_MATERIAL = new TestArmorMaterial();
-    public static final Item TELMET = new ArmorItem(TEST_MATERIAL, EquipmentSlot.HEAD, new Item.Settings());
-    public static final Item TESTPLATE = new ArmorItem(TEST_MATERIAL, EquipmentSlot.CHEST, new Item.Settings());
-    public static final Item TEGGINGS = new ArmorItem(TEST_MATERIAL, EquipmentSlot.LEGS, new Item.Settings());
-    public static final Item TOOTS = new ArmorItem(TEST_MATERIAL, EquipmentSlot.FEET, new Item.Settings());
+    public static final Item TELMET = new ArmorItem(TEST_MATERIAL, ArmorItem.Type.HELMET, new Item.Settings());
+    public static final Item TESTPLATE = new ArmorItem(TEST_MATERIAL, ArmorItem.Type.CHESTPLATE, new Item.Settings());
+    public static final Item TEGGINGS = new ArmorItem(TEST_MATERIAL, ArmorItem.Type.LEGGINGS, new Item.Settings());
+    public static final Item TOOTS = new ArmorItem(TEST_MATERIAL, ArmorItem.Type.BOOTS, new Item.Settings());
 
-    public static final Block TEST_BLOCK = new TestBlock(FabricBlockSettings.of(Material.SOIL, MapColor.BLUE));
-    public static final Block TEST_STAIRS = new TestStairsBlock(TEST_BLOCK.getDefaultState(), FabricBlockSettings.of(Material.SOIL, MapColor.BLUE));
-    public static final Block TEST_SLAB = new TestSlabBlock(FabricBlockSettings.of(Material.SOIL, MapColor.BLUE));
-    public static final Block TEST_DOOR = new TestDoorBlock(FabricBlockSettings.copyOf(Blocks.OAK_DOOR));
-    public static final Block TEST_TRAP_DOOR = new TestTrapdoorBlock(FabricBlockSettings.copyOf(Blocks.OAK_TRAPDOOR));
-    public static final Block TEST_BLOCK_GLOWING = new Block(FabricBlockSettings.of(Material.AMETHYST, MapColor.RAW_IRON_PINK).luminance(9));
-    public static final Block TEST_BLOCK_WIZARD = new FallingBlock(FabricBlockSettings.of(Material.GLASS, MapColor.CYAN));
+    public static final Block TEST_BLOCK = new TestBlock(FabricBlockSettings.create());
+    public static final Block TEST_STAIRS = new TestStairsBlock(TEST_BLOCK.getDefaultState(), FabricBlockSettings.create());
+    public static final Block TEST_SLAB = new TestSlabBlock(FabricBlockSettings.create());
+    public static final Block TEST_DOOR = new DoorBlock(FabricBlockSettings.copyOf(Blocks.OAK_DOOR), TEST_WOOD_BLOCKSET);
+    public static final Block TEST_IRON_DOOR = new DoorBlock(FabricBlockSettings.copyOf(Blocks.OAK_DOOR), TEST_IRON_BLOCKSET);
+    public static final Block TEST_TRAP_DOOR = new TrapdoorBlock(FabricBlockSettings.copyOf(Blocks.OAK_TRAPDOOR), TEST_WOOD_BLOCKSET);
+    public static final Block TEST_IRON_TRAP_DOOR = new TrapdoorBlock(FabricBlockSettings.copyOf(Blocks.OAK_TRAPDOOR), TEST_IRON_BLOCKSET);
+    public static final Block TEST_BLOCK_GLOWING = new Block(FabricBlockSettings.create().luminance(9));
+    public static final Block TEST_BLOCK_WIZARD = new FallingBlock(FabricBlockSettings.create());
 
     public static final EntityType<? extends LivingEntity> TEST_ENTITY_DIRECT = FabricEntityTypeBuilder.create().entityFactory(CreeperEntity::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
     public static final EntityType<? extends LivingEntity> TEST_ENTITY_EXTEND_DIRECT = FabricEntityTypeBuilder.create().entityFactory(TestExtendDirectEntity::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
@@ -63,7 +86,9 @@ public class Testmod implements ModInitializer {
         registerBlock(id("test_stairs"), TEST_STAIRS);
         registerBlock(id("test_slab"), TEST_SLAB);
         registerBlock(id("test_door"), TEST_DOOR);
+        registerBlock(id("test_iron_door"), TEST_IRON_DOOR);
         registerBlock(id("test_trapdoor"), TEST_TRAP_DOOR);
+        registerBlock(id("test_iron_trapdoor"), TEST_IRON_TRAP_DOOR);
         registerBlock(id("test_block_glowing"), TEST_BLOCK_GLOWING);
         registerBlock(id("test_block_wizard"), TEST_BLOCK_WIZARD);
 
