@@ -1,11 +1,5 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.SharedValuesKey;
@@ -14,16 +8,17 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownFloat;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
 
 public class EntityRendererAnalyzer {
     public static final SharedValuesKey<EntityRendererAnalyzer> KEY = new SharedValuesKey<EntityRendererAnalyzer>(EntityRendererAnalyzer::new, null);
@@ -43,9 +38,12 @@ public class EntityRendererAnalyzer {
         public @Nullable StackEntry invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
             // net.minecraft.client.render.entity.model.EntityModelLoader#getModelPart
             if (cmpFunc(inst, "net.minecraft.class_5599", "method_32072", "(Lnet/minecraft/class_5601;)Lnet/minecraft/class_630;")) {
+                var fmappings = FabricLoader.getInstance().getMappingResolver();
                 var modelLayer = arguments[1].resolve(ctx.machine()).cast(EntityModelLayer.class);
                 var texturedModelDataProvider = initializerInfo.getEntityModelLayer(modelLayer);
-                return factoryVm.runMethod(texturedModelDataProvider, new StackEntry[0]);
+                var texturedModelData = factoryVm.runMethod(texturedModelDataProvider, new StackEntry[0]);
+                var texturedModelData$createModel = AsmUtils.mapAll(fmappings, "net.minecraft.class_5607", "method_32109", "()Lnet/minecraft/class_3879;");
+                return factoryVm.runMethod(factoryVm.resolveMethod(null, new MethodInsnNode(Opcodes.INVOKEVIRTUAL, texturedModelData$createModel.clazz(), texturedModelData$createModel.method(), texturedModelData$createModel.desc(), false), texturedModelData), new StackEntry[]{ texturedModelData });
             }
 
             try {
@@ -94,13 +92,13 @@ public class EntityRendererAnalyzer {
 
         // EntityRendererFactory.Context
         var ctx = AsmUtils.constructVmObject(factoryVm, "net.minecraft.class_5617$class_5618")
-            .f("renderDispatcher", null)
-            .f("itemRenderer", null)
-            .f("blockRenderManager", null)
-            .f("heldItemRenderer", null)
-            .f("resourceManager", null)
-            .f("modelLoader", null)
-            .f("textRenderer", null)
+            .mockField("renderDispatcher")
+            .mockField("itemRenderer")
+            .mockField("blockRenderManager")
+            .mockField("heldItemRenderer")
+            .mockField("resourceManager")
+            .mockField("modelLoader")
+            .mockField("textRenderer")
             .build();
 
         var renderer = factoryVm.runMethod(rendererFactory, new StackEntry[]{ ctx });

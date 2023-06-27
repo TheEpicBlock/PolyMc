@@ -6,15 +6,15 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
-
-import java.util.HashMap;
-
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+
+import java.util.HashMap;
 
 public class AsmUtils {
     public static @Nullable MethodNode getMethod(ClassNode node, String name, String desc, Mapping mapper) {
@@ -100,6 +100,11 @@ public class AsmUtils {
 
         public VmObjectBuilder(Clazz clazz) {
             this.clazz = clazz;
+        }
+
+        public VmObjectBuilder mockField(String name) {
+            this.fields.put(name, new UnknownValue("Field is mocked"));
+            return this;
         }
 
         public VmObjectBuilder f(String name, Object object) {
