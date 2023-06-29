@@ -1,15 +1,13 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
-import java.util.Map;
-
-import org.jetbrains.annotations.NotNull;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Map;
 
 public record KnownVmObject(@NotNull Clazz type, @NotNull Map<String, StackEntry> fields) implements StackEntry {
     @Override
@@ -49,10 +47,15 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull Map<String, StackEntry
     }
 
     @Override
-    public StackEntry resolve(VirtualMachine vm) throws VmException {
+    public StackEntry simplify(VirtualMachine vm) throws VmException {
         for (var entry : fields.entrySet()) {
-            fields.put(entry.getKey(), entry.getValue().resolve(vm));
+            fields.put(entry.getKey(), entry.getValue().simplify(vm));
         }
         return this;
+    }
+
+    @Override
+    public boolean isConcrete() {
+        return true;
     }
 }

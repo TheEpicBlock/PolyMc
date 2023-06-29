@@ -74,14 +74,14 @@ public class ClientInitializerAnalyzer {
             public StackEntry invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
                 try {
                     if (inst.owner.equals("net/fabricmc/fabric/api/client/rendering/v1/EntityRendererRegistry")) {
-                        var identifier = arguments[0].resolve(ctx.machine()).cast(EntityType.class);
-                        var lambda = arguments[1].resolve(ctx.machine()).cast(Lambda.class);
+                        var identifier = arguments[0].simplify(ctx.machine()).extractAs(EntityType.class);
+                        var lambda = arguments[1].simplify(ctx.machine()).extractAs(Lambda.class);
                         entityRendererRegistry.put(identifier, lambda);
                         return new UnknownValue();
                     }
                     if (inst.owner.equals("net/fabricmc/fabric/api/client/rendering/v1/EntityModelLayerRegistry")) {
-                        var modelLayer = arguments[0].resolve(ctx.machine()).cast(EntityModelLayer.class);
-                        var lambda = arguments[1].resolve(ctx.machine()).cast(Lambda.class);
+                        var modelLayer = arguments[0].simplify(ctx.machine()).extractAs(EntityModelLayer.class);
+                        var lambda = arguments[1].simplify(ctx.machine()).extractAs(Lambda.class);
                         entityModelLayerRegistry.put(modelLayer, lambda);
                         return new UnknownValue();
                     }

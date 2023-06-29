@@ -1,10 +1,8 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
-import org.jetbrains.annotations.NotNull;
-
 import com.google.gson.JsonElement;
-
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import org.jetbrains.annotations.NotNull;
 
 public record KnownArray(StackEntry[] data) implements StackEntry {
     @Override
@@ -30,12 +28,15 @@ public record KnownArray(StackEntry[] data) implements StackEntry {
     }
 
     @Override
-    public <T> T cast(Class<T> type) {
+    public <T> T extractAs(Class<T> type) {
         if (type == Object[].class) {
             return (T)data;
         }
-        return StackEntry.super.cast(type);
+        return StackEntry.super.extractAs(type);
     }
 
-    
+    @Override
+    public boolean isConcrete() {
+        return true;
+    }
 }

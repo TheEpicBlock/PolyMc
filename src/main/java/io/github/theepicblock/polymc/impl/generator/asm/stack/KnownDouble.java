@@ -3,16 +3,16 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
-public record KnownInteger(int i) implements StackEntry {
+public record KnownDouble(double d) implements StackEntry {
     @Override
     public JsonElement toJson() {
-        return new JsonPrimitive(i);
+        return new JsonPrimitive(d);
     }
 
     @Override
     public <T> T extractAs(Class<T> type) {
-        if (type == Integer.class) {
-            return (T)(Integer)i;
+        if (type == Double.class) {
+            return (T)(Double)d;
         }
         return StackEntry.super.extractAs(type);
     }

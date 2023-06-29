@@ -18,7 +18,7 @@ public record UnknownValue(@Nullable Object reason) implements StackEntry {
     }
 
     @Override
-    public <T> T cast(Class<T> type) {
+    public <T> T extractAs(Class<T> type) {
         var reasonStr = reason instanceof MethodExecutor.VmException e ? e.createFancyErrorMessage() : Objects.toString(reason);
         throw new NotImplementedException("Can't cast an unknown value ("+reasonStr+")");
     }

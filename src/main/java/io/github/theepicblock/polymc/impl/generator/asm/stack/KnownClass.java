@@ -1,10 +1,9 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
+import com.google.gson.JsonElement;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Type;
-
-import com.google.gson.JsonElement;
 
 public record KnownClass(@NotNull Type type) implements StackEntry {
     @Override
@@ -13,7 +12,12 @@ public record KnownClass(@NotNull Type type) implements StackEntry {
     }
 
     @Override
-    public <T> T cast(Class<T> type) {
+    public <T> T extractAs(Class<T> type) {
         throw new NotImplementedException();
+    }
+
+    @Override
+    public boolean isConcrete() {
+        return true;
     }
 }

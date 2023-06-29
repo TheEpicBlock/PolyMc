@@ -10,10 +10,15 @@ public record KnownFloat(float i) implements StackEntry {
     }
 
     @Override
-    public <T> T cast(Class<T> type) {
+    public <T> T extractAs(Class<T> type) {
         if (type == Float.TYPE) {
             return (T)(Float)i;
         }
-        return StackEntry.super.cast(type);
+        return StackEntry.super.extractAs(type);
+    }
+
+    @Override
+    public boolean isConcrete() {
+        return true;
     }
 }

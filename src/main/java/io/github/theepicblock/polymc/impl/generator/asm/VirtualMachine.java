@@ -1,14 +1,9 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
+import com.google.common.collect.Streams;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownArray;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.Lambda;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.util.Identifier;
@@ -20,8 +15,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Streams;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -241,7 +234,7 @@ public class VirtualMachine {
             if (inst.owner.equals(Type.getInternalName(Arrays.class)) && inst.name.equals("copyOf")
                     && inst.desc.equals("([Ljava/lang/Object;I)[Ljava/lang/Object;")
                     && arguments[0] instanceof KnownArray a) {
-                return new KnownArray(Arrays.copyOf(a.data(), arguments[1].cast(Integer.class)));
+                return new KnownArray(Arrays.copyOf(a.data(), arguments[1].extractAs(Integer.class)));
             }
             if (inst.name.equals("hashCode") && inst.desc.equals("()I")
                     && Util.first(arguments) instanceof KnownObject obj) {
@@ -249,7 +242,7 @@ public class VirtualMachine {
             }
 
             if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
-                arguments[0] = arguments[0].resolve(ctx.machine());
+                arguments[0] = arguments[0].simplify(ctx.machine());
             }
 
             // I'm pretty sure we're supposed to run clinit at this point, but let's delay

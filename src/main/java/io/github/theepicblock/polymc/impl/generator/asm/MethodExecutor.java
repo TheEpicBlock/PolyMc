@@ -1,39 +1,18 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
+import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.Cast;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.InstanceOf;
+import it.unimi.dsi.fastutil.Stack;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.IincInsnNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.IntInsnNode;
-import org.objectweb.asm.tree.InvokeDynamicInsnNode;
-import org.objectweb.asm.tree.JumpInsnNode;
-import org.objectweb.asm.tree.LdcInsnNode;
-import org.objectweb.asm.tree.LineNumberNode;
-import org.objectweb.asm.tree.LookupSwitchInsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.TypeInsnNode;
-import org.objectweb.asm.tree.VarInsnNode;
-
-import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownArray;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownFloat;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownLong;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.Lambda;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.Cast;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.InstanceOf;
-import it.unimi.dsi.fastutil.Stack;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.objectweb.asm.tree.*;
 
 public class MethodExecutor {
     private Stack<@NotNull StackEntry> stack = new ObjectArrayList<>();
@@ -147,7 +126,7 @@ public class MethodExecutor {
             case Opcodes.ARRAYLENGTH -> {
                 var arrayref = stack.pop();
                 try {
-                    var length = arrayref.cast(Object[].class).length;
+                    var length = arrayref.extractAs(Object[].class).length;
                     stack.push(new KnownInteger(length));
                 } catch (Exception e) {
                     stack.push(new UnknownValue("Can't calculate length "+e));
@@ -213,7 +192,7 @@ public class MethodExecutor {
                 if (key instanceof UnknownValue) throw new VmException("Jump(IFNULL) based on unknown variable ("+key+")", null);
                 
                 var inst = (LookupSwitchInsnNode)instruction;
-                var keyValue = key.cast(Integer.class);
+                var keyValue = key.extractAs(Integer.class);
                 var labelIndex = inst.keys.indexOf(keyValue);
                 if (labelIndex == -1) {
                     this.nextInstruction = inst.dflt;
@@ -266,38 +245,43 @@ public class MethodExecutor {
             case Opcodes.IFLE -> { return icmp0(instruction, (a,b) -> a <= b); }
             case Opcodes.IFGT -> { return icmp0(instruction, (a,b) -> a > b); }
             case Opcodes.IFGE -> { return icmp0(instruction, (a,b) -> a >= b); }
-            case Opcodes.IADD  -> intOp((a,b) -> a+b);
-            case Opcodes.ISUB  -> intOp((a,b) -> a-b);
-            case Opcodes.IMUL  -> intOp((a,b) -> a*b);
-            case Opcodes.IDIV  -> intOp((a,b) -> a/b);
-            case Opcodes.IAND  -> intOp((a,b) -> a&b);
-            case Opcodes.IOR   -> intOp((a,b) -> a|b);
-            case Opcodes.IXOR  -> intOp((a,b) -> a^b);
-            case Opcodes.IREM  -> intOp((a,b) -> a%b);
-            case Opcodes.IUSHR -> intOp((a,b) -> a>>>b);
-            case Opcodes.ISHR  -> intOp((a,b) -> a>>b);
-            case Opcodes.ISHL  -> intOp((a,b) -> a<<b);
-            case Opcodes.LADD  -> longOp((a,b) -> a+b);
-            case Opcodes.LSUB  -> longOp((a,b) -> a-b);
-            case Opcodes.LMUL  -> longOp((a,b) -> a*b);
-            case Opcodes.LDIV  -> longOp((a,b) -> a/b);
-            case Opcodes.LAND  -> longOp((a,b) -> a&b);
-            case Opcodes.LOR   -> longOp((a,b) -> a|b);
-            case Opcodes.LXOR  -> longOp((a,b) -> a^b);
-            case Opcodes.LREM  -> longOp((a,b) -> a%b);
-            case Opcodes.LUSHR -> longOp((a,b) -> a>>>b);
-            case Opcodes.LSHR  -> longOp((a,b) -> a>>b);
-            case Opcodes.LSHL  -> longOp((a,b) -> a<<b);
-            case Opcodes.FADD  -> floatOp((a,b) -> a+b);
-            case Opcodes.FSUB  -> floatOp((a,b) -> a-b);
-            case Opcodes.FMUL  -> floatOp((a,b) -> a*b);
-            case Opcodes.FDIV  -> floatOp((a,b) -> a/b);
-            case Opcodes.FREM  -> floatOp((a,b) -> a%b);
+            case Opcodes.IADD  -> binOp(BinaryOp.Type.INT, BinaryOp.Op.ADD);
+            case Opcodes.ISUB  -> binOp(BinaryOp.Type.INT, BinaryOp.Op.SUB);
+            case Opcodes.IMUL  -> binOp(BinaryOp.Type.INT, BinaryOp.Op.MUL);
+            case Opcodes.IDIV  -> binOp(BinaryOp.Type.INT, BinaryOp.Op.DIV);
+            case Opcodes.IAND  -> binOp(BinaryOp.Type.INT, BinaryOp.Op.AND);
+            case Opcodes.IOR   -> binOp(BinaryOp.Type.INT, BinaryOp.Op.OR);
+            case Opcodes.IXOR  -> binOp(BinaryOp.Type.INT, BinaryOp.Op.XOR);
+            case Opcodes.IREM  -> binOp(BinaryOp.Type.INT, BinaryOp.Op.REM);
+            case Opcodes.IUSHR -> binOp(BinaryOp.Type.INT, BinaryOp.Op.USHR);
+            case Opcodes.ISHR  -> binOp(BinaryOp.Type.INT, BinaryOp.Op.SHR);
+            case Opcodes.ISHL  -> binOp(BinaryOp.Type.INT, BinaryOp.Op.SHL);
+            case Opcodes.LADD  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.ADD);
+            case Opcodes.LSUB  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.SUB);
+            case Opcodes.LMUL  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.MUL);
+            case Opcodes.LDIV  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.DIV);
+            case Opcodes.LAND  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.AND);
+            case Opcodes.LOR   -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.OR);
+            case Opcodes.LXOR  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.XOR);
+            case Opcodes.LREM  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.REM);
+            case Opcodes.LUSHR -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.USHR);
+            case Opcodes.LSHR  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.SHR);
+            case Opcodes.LSHL  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.SHL);
+            case Opcodes.FADD  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.ADD);
+            case Opcodes.FSUB  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.SUB);
+            case Opcodes.FMUL  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.MUL);
+            case Opcodes.FDIV  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.DIV);
+            case Opcodes.FREM  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.REM);
+            case Opcodes.DADD  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.ADD);
+            case Opcodes.DSUB  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.SUB);
+            case Opcodes.DMUL  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.MUL);
+            case Opcodes.DDIV  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.DIV);
+            case Opcodes.DREM  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.REM);
             case Opcodes.IINC -> {
                 var inst = (IincInsnNode)instruction;
                 var localVar = this.localVariables[inst.var];
                 try {
-                    var i = localVar.cast(Integer.class);
+                    var i = localVar.extractAs(Integer.class);
                     this.localVariables[inst.var] = new KnownInteger(i + inst.incr);
                 } catch (Exception e) {
                     this.localVariables[inst.var] = new UnknownValue("Can't increment "+localVar+" because of "+e);
@@ -359,42 +343,20 @@ public class MethodExecutor {
         return null;
     }
 
-    private void castOp(Cast.Type in, Cast.Type out) {
-        var c = new Cast(stack.pop(), in, out).tryResolveOnce();
-        if (c instanceof Cast) {
-            c = new UnknownValue(c);
-        }
+    private void castOp(Cast.Type in, Cast.Type out) throws VmException {
+        var c = new Cast(stack.pop(), in, out);
+        if (c.canBeSimplified()) c.simplify(this.parent);
+
         stack.push(c);
     }
 
-    private void floatOp(BiFloatToFloat function) {
+    private void binOp(BinaryOp.Type type, BinaryOp.Op op) throws VmException {
         var value2 = stack.pop();
         var value1 = stack.pop();
-        if (value1 instanceof UnknownValue || value2 instanceof UnknownValue) stack.push(new UnknownValue("integer op unknown variables ("+value1+","+value2+")"));
+        StackEntry binOp = new BinaryOp(value1, value2, op, type);
+        if (binOp.canBeSimplified()) binOp = binOp.simplify(this.parent);
 
-        var int1 = value1.cast(Float.class);
-        var int2 = value2.cast(Float.class);
-        stack.push(new KnownFloat(function.compute(int1, int2)));
-    }
-
-    private void longOp(BiLongToLong function) {
-        var value2 = stack.pop();
-        var value1 = stack.pop();
-        if (value1 instanceof UnknownValue || value2 instanceof UnknownValue) stack.push(new UnknownValue("integer op unknown variables ("+value1+","+value2+")"));
-
-        var int1 = value1.cast(Long.class);
-        var int2 = value2.cast(Long.class);
-        stack.push(new KnownLong(function.compute(int1, int2)));
-    }
-
-    private void intOp(BiIntToInt function) {
-        var value2 = stack.pop();
-        var value1 = stack.pop();
-        if (value1 instanceof UnknownValue || value2 instanceof UnknownValue) stack.push(new UnknownValue("integer op unknown variables ("+value1+","+value2+")"));
-
-        var int1 = value1.cast(Integer.class);
-        var int2 = value2.cast(Integer.class);
-        stack.push(new KnownInteger(function.compute(int1, int2)));
+        stack.push(binOp);
     }
 
     private StackEntry icmp0(AbstractInsnNode inst, BiIntPredicate predicate) throws VmException {
@@ -411,8 +373,8 @@ public class MethodExecutor {
     private StackEntry icmp(AbstractInsnNode inst, StackEntry value1, StackEntry value2, BiIntPredicate predicate) throws VmException {
         if (value1 instanceof UnknownValue || value2 instanceof UnknownValue) throw new VmException("Int jump based on unknown variables ("+value1+","+value2+")", null);
         
-        var int1 = value1.cast(Integer.class);
-        var int2 = value2.cast(Integer.class);
+        var int1 = value1.extractAs(Integer.class);
+        var int2 = value2.extractAs(Integer.class);
 
         if (predicate.compute(int1, int2)) {
             this.nextInstruction = ((JumpInsnNode)inst).label;
@@ -475,20 +437,5 @@ public class MethodExecutor {
     @FunctionalInterface
     private static interface BiIntPredicate {
         boolean compute(int value1, int value2);
-    }
-
-    @FunctionalInterface
-    private static interface BiIntToInt {
-        int compute(int value1, int value2);
-    }
-
-    @FunctionalInterface
-    private static interface BiLongToLong {
-        long compute(long value1, long value2);
-    }
-
-    @FunctionalInterface
-    private static interface BiFloatToFloat {
-        float compute(float value1, float value2);
     }
 }

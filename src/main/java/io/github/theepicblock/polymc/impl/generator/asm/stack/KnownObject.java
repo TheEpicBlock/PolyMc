@@ -1,11 +1,9 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
+import com.google.gson.JsonElement;
+import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
-
-import com.google.gson.JsonElement;
-
-import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 
 /**
  * Represents and object that exists outside of the vm
@@ -19,11 +17,11 @@ public record KnownObject(Object i) implements StackEntry {
     }
 
     @Override
-    public <T> T cast(Class<T> type) {
+    public <T> T extractAs(Class<T> type) {
         if (type.isAssignableFrom(i.getClass())) {
             return (T)i;
         }
-        return StackEntry.super.cast(type);
+        return StackEntry.super.extractAs(type);
     }
 
     @Override
@@ -62,5 +60,10 @@ public record KnownObject(Object i) implements StackEntry {
         // We do *not* want to set this index on the actual array object, because we don't know where the array object originated from
         // and we don't want the virtual machine to have any side effect on the actual jvm
         throw new NotImplementedException("Can't set fields of jvm objects");
+    }
+
+    @Override
+    public boolean isConcrete() {
+        return true;
     }
 }

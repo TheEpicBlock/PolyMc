@@ -1,15 +1,13 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.google.gson.JsonElement;
-
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
+import org.apache.commons.lang3.NotImplementedException;
 
 public record InstanceOf(StackEntry entry, String toCheck) implements StackEntry {
     @Override
@@ -19,7 +17,7 @@ public record InstanceOf(StackEntry entry, String toCheck) implements StackEntry
     }
 
     @Override
-    public <T> T cast(Class<T> type) {
+    public <T> T extractAs(Class<T> type) {
         if (type == Integer.class) {
             try {
                 return (T)(Integer)this.toInt();
@@ -27,12 +25,12 @@ public record InstanceOf(StackEntry entry, String toCheck) implements StackEntry
                 throw new NotImplementedException(e);
             }
         }
-        return StackEntry.super.cast(type);
+        return StackEntry.super.extractAs(type);
     }
 
     @Override
-    public StackEntry resolve(VirtualMachine vm) throws VmException {
-        return new KnownInteger(toInt(entry.resolve(vm), toCheck));
+    public StackEntry simplify(VirtualMachine vm) throws VmException {
+        return new KnownInteger(toInt(entry.simplify(vm), toCheck));
     }
 
     public int toInt() throws VmException {

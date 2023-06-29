@@ -39,7 +39,7 @@ public class EntityRendererAnalyzer {
             // net.minecraft.client.render.entity.model.EntityModelLoader#getModelPart
             if (cmpFunc(inst, "net.minecraft.class_5599", "method_32072", "(Lnet/minecraft/class_5601;)Lnet/minecraft/class_630;")) {
                 var fmappings = FabricLoader.getInstance().getMappingResolver();
-                var modelLayer = arguments[1].resolve(ctx.machine()).cast(EntityModelLayer.class);
+                var modelLayer = arguments[1].simplify(ctx.machine()).extractAs(EntityModelLayer.class);
                 var texturedModelDataProvider = initializerInfo.getEntityModelLayer(modelLayer);
                 var texturedModelData = factoryVm.runMethod(texturedModelDataProvider, new StackEntry[0]);
                 var texturedModelData$createModel = AsmUtils.mapAll(fmappings, "net.minecraft.class_5607", "method_32109", "()Lnet/minecraft/class_3879;");
@@ -64,7 +64,7 @@ public class EntityRendererAnalyzer {
         @Override
         public @Nullable StackEntry invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
             if (cmpFunc(inst, "net.minecraft.class_630.class_628", "method_32089", "(Lnet/minecraft/class_4587$class_4665;Lnet/minecraft/class_4588;IIFFFF)V")) {
-                var cuboid = arguments[0].cast(Cuboid.class);
+                var cuboid = arguments[0].extractAs(Cuboid.class);
                 System.out.println("Rendering a cute lil cuboid: "+cuboid);
                 return new UnknownValue();
             }

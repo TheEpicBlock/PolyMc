@@ -1,8 +1,7 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
-import org.objectweb.asm.Handle;
-
 import com.google.gson.JsonElement;
+import org.objectweb.asm.Handle;
 
 public record Lambda(Handle method, StackEntry[] extraArguments) implements StackEntry {
     @Override
@@ -11,10 +10,14 @@ public record Lambda(Handle method, StackEntry[] extraArguments) implements Stac
     }
 
     @Override
-    public <T> T cast(Class<T> type) {
+    public <T> T extractAs(Class<T> type) {
         if (type == this.getClass()) {
             return (T)this;
         }
         throw new ClassCastException("Can't cast "+type+" to Lambda");
+    }
+    @Override
+    public boolean isConcrete() {
+        return true;
     }
 }

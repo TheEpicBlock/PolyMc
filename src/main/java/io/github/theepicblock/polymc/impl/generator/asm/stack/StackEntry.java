@@ -1,15 +1,13 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Type;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-
-import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
-import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 
 public interface StackEntry {
     static final Gson GSON = new Gson();
@@ -46,19 +44,30 @@ public interface StackEntry {
         throw new NotImplementedException("Can't load an array index ("+index+") from "+this);
     }
 
+    default boolean canBeSimplified() {
+        return false;
+    }
+
     /**
      * For stack entries that represent delayed instructions, such as {@link StaticFieldValue}
      */
-    default StackEntry resolve(VirtualMachine vm) throws VmException {
+    default StackEntry simplify(VirtualMachine vm) throws VmException {
         return this;
     }
 
     JsonElement toJson();
 
     /**
+     * @return Whether this stack value represents a concrete value that's ready to be extracted
+     */
+    default boolean isConcrete() {
+        return false;
+    }
+
+    /**
      * Extracts the value of this entry into a POJO
      */
-    default <T> T cast(Class<T> type) {
+    default <T> T extractAs(Class<T> type) {
         return GSON.fromJson(this.toJson(), type);
     }
 }

@@ -10,10 +10,15 @@ public record KnownLong(long i) implements StackEntry {
     }
 
     @Override
-    public <T> T cast(Class<T> type) {
+    public <T> T extractAs(Class<T> type) {
         if (type == Long.TYPE) {
             return (T)(Long)i;
         }
-        return StackEntry.super.cast(type);
+        return StackEntry.super.extractAs(type);
+    }
+
+    @Override
+    public boolean isConcrete() {
+        return true;
     }
 }
