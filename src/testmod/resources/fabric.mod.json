@@ -20,6 +20,9 @@
     "main": [
       "nl.theepicblock.polymc.testmod.Testmod"
     ],
+    "client": [
+      "nl.theepicblock.polymc.testmod.TestmodClient"
+    ],
     "fabric-gametest": [
       "nl.theepicblock.polymc.testmod.automated.ItemTests",
       "nl.theepicblock.polymc.testmod.automated.BlockPolyGeneratorTests",

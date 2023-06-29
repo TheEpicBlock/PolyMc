@@ -70,6 +70,7 @@ public class Testmod implements ModInitializer {
     public static final EntityType<? extends LivingEntity> TEST_ENTITY_EXTEND_GOLEM = FabricEntityTypeBuilder.create().entityFactory(TestExtendGolemEntity::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
     public static final EntityType<? extends LivingEntity> TEST_ENTITY_LIVING = FabricEntityTypeBuilder.create().entityFactory(TestLivingEntity::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
     public static final EntityType<?> TEST_ENTITY_OTHER = FabricEntityTypeBuilder.create().entityFactory(TestOtherEntity::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
+    public static final EntityType<TestAsmEntity> TEST_ENTITY_ASM = FabricEntityTypeBuilder.create().entityFactory(TestAsmEntity::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
     public static final EntityType<?> TEST_FLYING_WAXED_WEATHERED_CUT_COPPER_STAIRS_ENTITY = FabricEntityTypeBuilder.create().entityFactory(TestFlyingWaxedWeatheredCutCopperStairs::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
 
     @Override
@@ -105,7 +106,12 @@ public class Testmod implements ModInitializer {
 
         Registry.register(Registries.ENTITY_TYPE, id("test_entity_living"), TEST_ENTITY_LIVING);
         FabricDefaultAttributeRegistry.register(TEST_ENTITY_LIVING, LivingEntity.createLivingAttributes());
+
+        Registry.register(Registries.ENTITY_TYPE, id("test_entity_asm"), TEST_ENTITY_ASM);
+        FabricDefaultAttributeRegistry.register(TEST_ENTITY_ASM, MobEntity.createMobAttributes());
+
         Registry.register(Registries.ENTITY_TYPE, id("test_entity_other"), TEST_ENTITY_OTHER);
+
         Registry.register(Registries.ENTITY_TYPE, id("test_flying_waxed_weathered_cut_copper_stairs_entity"), TEST_FLYING_WAXED_WEATHERED_CUT_COPPER_STAIRS_ENTITY);
 
         Registry.register(Registries.ENCHANTMENT, id("test_enchantment"), new TestEnchantment());
@@ -122,7 +128,7 @@ public class Testmod implements ModInitializer {
         Registry.register(Registries.ITEM, id, new BlockItem(block, new FabricItemSettings()));
     }
 
-    private static Identifier id(String path) {
+    public static Identifier id(String path) {
         return new Identifier(MODID, path);
     }
 }
