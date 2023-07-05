@@ -2,6 +2,7 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.ArrayLength;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.Cast;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.InstanceOf;
@@ -124,13 +125,10 @@ public class MethodExecutor {
                 }
             }
             case Opcodes.ARRAYLENGTH -> {
-                var arrayref = stack.pop();
-                try {
-                    var length = arrayref.extractAs(Object[].class).length;
-                    stack.push(new KnownInteger(length));
-                } catch (Exception e) {
-                    stack.push(new UnknownValue("Can't calculate length "+e));
-                }
+                StackEntry length = new ArrayLength(stack.pop());
+                if (length.canBeSimplified()) length = length.simplify(this.parent);
+
+                stack.push(length);
             }
             case Opcodes.PUTFIELD -> {
                 var inst = (FieldInsnNode)instruction;
