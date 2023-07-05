@@ -6,7 +6,6 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -151,7 +150,7 @@ public class VirtualMachine {
             case Opcodes.INVOKEINTERFACE, Opcodes.INVOKEVIRTUAL, Opcodes.INVOKESPECIAL -> {
                 if (objectRef == null)
                     throw new IllegalArgumentException(
-                            "objectRef can't be null for method invokation (" + inst.getOpcode() + ")");
+                            "objectRef can't be null for method invocation (" + inst.getOpcode() + ")");
 
                 // Find the root class from which to start looking for the method
                 Clazz rootClass = switch (inst.getOpcode()) {
@@ -185,6 +184,10 @@ public class VirtualMachine {
                 while (true) {
                     var method = AsmUtils.getMethod(clazz.node, inst.name, inst.desc, mappings);
                     if (method != null) {
+                        if ((method.access & Opcodes.ACC_ABSTRACT) != 0) {
+                            throw new VmException("Method " + inst.name + inst.desc + " in "
+                                    + rootClass.node.name + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to an abstract method", null);
+                        }
                         return new MethodRef(clazz, method);
                     } else {
                         // Check super class
@@ -222,11 +225,29 @@ public class VirtualMachine {
             if (inst.owner.equals(Type.getInternalName(LoggerFactory.class))) {
                 return new UnknownValue("Refusing to invoke LoggerFactory for optimization reasons");
             }
-            // Tmp hacks until the virtual machine is advanced enough to handle this
-            // function
-            if (inst.owner.equals(Type.getInternalName(Identifier.class)) &&
-                    (inst.name.equals("validateNamespace") || inst.name.equals("validatePath"))) {
-                return inst.name.equals("validateNamespace") ? arguments[0] : arguments[1];
+            // Hardcoded functions
+            if (inst.owner.equals(Type.getInternalName(String.class)) && arguments[0] instanceof KnownObject o && o.i() instanceof String str) {
+                // String is quite strict with its fields, we can't reflect into them
+                // This causes the jvm to be unable to execute many methods inside String
+                if (inst.name.equals("isEmpty")) {
+                    return new KnownInteger(str.isEmpty());
+                }
+                if (inst.name.equals("length")) {
+                    return new KnownInteger(str.length());
+                }
+                if (inst.name.equals("charAt")) {
+                    if (arguments[1].canBeSimplified()) arguments[1].simplify(ctx.machine());
+                    if (arguments[1].isConcrete()) {
+                        return new KnownInteger(str.charAt(arguments[1].extractAs(Integer.class)));
+                    }
+                }
+                if (inst.name.equals("indexOf") && inst.desc.equals("(II)v")) {
+                    if (arguments[1].canBeSimplified()) arguments[1].simplify(ctx.machine());
+                    if (arguments[2].canBeSimplified()) arguments[2].simplify(ctx.machine());
+                    if (arguments[1].isConcrete() && arguments[2].isConcrete()) {
+                        return new KnownInteger(str.indexOf(arguments[1].extractAs(Integer.class), arguments[2].extractAs(Integer.class)));
+                    }
+                }
             }
             if (inst.owner.equals(Type.getInternalName(Objects.class)) && inst.name.equals("requireNonNull")) {
                 return arguments[0];
@@ -236,19 +257,22 @@ public class VirtualMachine {
                     && arguments[0] instanceof KnownArray a) {
                 return new KnownArray(Arrays.copyOf(a.data(), arguments[1].extractAs(Integer.class)));
             }
-            if (inst.name.equals("hashCode") && inst.desc.equals("()I")
-                    && Util.first(arguments) instanceof KnownObject obj) {
-                return new KnownInteger(obj.i().hashCode()); // It's no problem to do this in the outer vm
-            }
 
             if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
-                arguments[0] = arguments[0].simplify(ctx.machine());
+                // TODO figure out what to do with this
+                if (arguments[0].canBeSimplified()) arguments[0] = arguments[0].simplify(ctx.machine());
             }
 
             // I'm pretty sure we're supposed to run clinit at this point, but let's delay
             // it as much as possible
             var method = ctx.machine().resolveMethod(currentClass, inst, Util.first(arguments));
             if (method == null) {
+                // This method is part of Object and wouldn't be found otherwise
+                if (inst.name.equals("hashCode") && inst.desc.equals("()I")
+                        && Util.first(arguments) instanceof KnownObject obj) {
+                    return new KnownInteger(obj.i().hashCode()); // It's no problem to do this in the outer vm
+                }
+
                 // Can't be resolved, return an unknown value
                 return Type.getReturnType(inst.desc) == Type.VOID_TYPE ? null
                         : new UnknownValue("Can't resolve method " + inst.owner + "#" + inst.name + inst.desc);

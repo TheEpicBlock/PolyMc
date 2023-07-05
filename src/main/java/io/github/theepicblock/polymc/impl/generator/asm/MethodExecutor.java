@@ -29,7 +29,7 @@ public class MethodExecutor {
         this.methodName = methodName;
     }
     
-    public @NotNull StackEntry run(InsnList bytecode, Clazz owner) throws VmException {
+    public StackEntry run(InsnList bytecode, Clazz owner) throws VmException {
         this.owner = owner;
         this.nextInstruction = bytecode.getFirst();
         while (true) {

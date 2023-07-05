@@ -4,6 +4,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
 public record KnownInteger(int i) implements StackEntry {
+    public KnownInteger(boolean b) {
+        this(b ? 1 : 0);
+    }
+
+    public KnownInteger(char c) {
+        this((int)c);
+    }
+
     @Override
     public JsonElement toJson() {
         return new JsonPrimitive(i);
