@@ -5,8 +5,8 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.MockedField;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
 import org.jetbrains.annotations.Nullable;
@@ -97,13 +97,16 @@ public class AsmUtils {
     public static class VmObjectBuilder {
         private final Clazz clazz;
         private final HashMap<String, StackEntry> fields = new HashMap<>();
+        private final KnownVmObject object;
 
         public VmObjectBuilder(Clazz clazz) {
             this.clazz = clazz;
+            this.object = new KnownVmObject(clazz, fields);
         }
 
         public VmObjectBuilder mockField(String name) {
-            this.fields.put(name, new UnknownValue("Field is mocked"));
+            // TODO this bad, please create a `MockedObject` instead, k thx
+            this.fields.put(name, new MockedField(this.object, name));
             return this;
         }
 

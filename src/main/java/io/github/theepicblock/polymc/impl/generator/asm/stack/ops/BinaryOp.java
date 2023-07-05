@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
+import org.apache.commons.lang3.NotImplementedException;
 
 public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements StackEntry {
     public boolean canBeSimplified() {
@@ -95,7 +96,7 @@ public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements 
 
     @Override
     public JsonElement toJson() {
-        return null;
+        throw new NotImplementedException();
     }
 
     public enum Op {
