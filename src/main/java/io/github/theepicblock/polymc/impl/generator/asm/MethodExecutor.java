@@ -344,8 +344,8 @@ public class MethodExecutor {
     }
 
     private void castOp(Cast.Type in, Cast.Type out) throws VmException {
-        var c = new Cast(stack.pop(), in, out);
-        if (c.canBeSimplified()) c.simplify(this.parent);
+        StackEntry c = new Cast(stack.pop(), in, out);
+        if (c.canBeSimplified()) c = c.simplify(this.parent);
 
         stack.push(c);
     }
