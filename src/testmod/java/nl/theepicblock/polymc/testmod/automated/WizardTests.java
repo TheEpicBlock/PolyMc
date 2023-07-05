@@ -21,7 +21,7 @@ public class WizardTests implements FabricGameTest {
         var packet = packetCtx.capture(EntitySpawnS2CPacket.class, () -> {
             ctx.setBlockState(0,0,0, Testmod.TEST_BLOCK_WIZARD);
         });
-        ctx.assertTrue(packet.getEntityType() == EntityType.ITEM, "Test wizard should spawn an entity, not a "+packet.getEntityType());
+        ctx.assertTrue(packet.getEntityType() == EntityType.ITEM, "Test wizard should spawn an item, not a "+packet.getEntityType());
 
         packetCtx.close();
         ctx.complete();
