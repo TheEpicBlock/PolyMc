@@ -168,8 +168,8 @@ public class EntityRendererAnalyzer {
             // ModelPart.Cuboid.renderCuboid
             if (cmpFunc(inst, "net.minecraft.class_630.class_628", "method_32089", "(Lnet/minecraft/class_4587$class_4665;Lnet/minecraft/class_4588;IIFFFF)V")) {
                 var cuboid = arguments[0];
-                var stack = arguments[1].getField("positionMatrix"); // TODO mappings
-                // TODO
+                var matrix = arguments[1].getField("positionMatrix"); // TODO mappings
+                node.addCall(new ExecutionGraphNode.RenderCall(cuboid, matrix));
                 ret(ctx, null); // Function is void
                 return;
             }
