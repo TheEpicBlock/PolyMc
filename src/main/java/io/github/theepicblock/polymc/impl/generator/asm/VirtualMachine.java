@@ -80,20 +80,25 @@ public class VirtualMachine {
         }
     }
 
-    public void addMethodToStack(Lambda lambda, StackEntry[] arguments) throws VmException {
+    /**
+     * Adds a lambda method to the stack and then runs the vm to completion
+     */
+    public StackEntry runLambda(Lambda lambda, StackEntry[] arguments) throws VmException {
         var method = lambda.method();
         var clazz = getClass(method.getOwner());
-        if (method.getTag() == 8) {
+        if (method.getTag() == Opcodes.H_NEWINVOKESPECIAL) {
             var newO = new StackEntry[] { new KnownVmObject(clazz, new HashMap<>()) };
             StackEntry[] args = Streams
                     .concat(Arrays.stream(newO), Arrays.stream(arguments), Arrays.stream(lambda.extraArguments()))
                     .toArray(StackEntry[]::new);
             addMethodToStack(clazz, method.getName(), method.getDesc(), args);
-            onMethodReturn(newO[0]);
+            this.runToCompletion();
+            return newO[0];
         } else {
             StackEntry[] args = Streams.concat(Arrays.stream(arguments), Arrays.stream(lambda.extraArguments()))
                     .toArray(StackEntry[]::new);
             addMethodToStack(clazz, method.getName(), method.getDesc(), args);
+            return this.runToCompletion();
         }
     }
 
@@ -135,11 +140,17 @@ public class VirtualMachine {
 
     public StackEntry runToCompletion() throws VmException {
         while (!this.stack.isEmpty()) {
+            var top = this.stack.top();
             try {
-                this.stack.top().startExecution();
+                top.startExecution();
             } catch (VmException e) {
-                var handledVal = this.config.onVmError(this.stack.top().getName(), this.stack.top().getName().endsWith("v"), e);
-                this.onMethodReturn(handledVal);
+                if (stack.isEmpty()) {
+                    var newException = new VmException("Exception with empty stack (likely due to stack switch)", e);
+                    this.config.onVmError(top.getName(), top.getName().endsWith("v"), newException);
+                } else {
+                    var handledVal = this.config.onVmError(top.getName(), top.getName().endsWith("v"), e);
+                    this.onMethodReturn(handledVal);
+                }
             }
         }
         return this.lastReturnedValue;

@@ -50,8 +50,7 @@ public class EntityRendererAnalyzer {
 
                 // Create a new state to run these in
                 var state = factoryVm.switchStack(null);
-                factoryVm.addMethodToStack(texturedModelDataProvider, new StackEntry[0]);
-                var texturedModelData = factoryVm.runToCompletion();
+                var texturedModelData = factoryVm.runLambda(texturedModelDataProvider, new StackEntry[0]);
                 var texturedModelData$createModel = AsmUtils.mapAll(fmappings, "net.minecraft.class_5607", "method_32109", "()Lnet/minecraft/class_3879;");
                 var createModelFunc = factoryVm.resolveMethod(null, new MethodInsnNode(Opcodes.INVOKEVIRTUAL, texturedModelData$createModel.clazz(), texturedModelData$createModel.method(), texturedModelData$createModel.desc(), false), texturedModelData);
                 if (createModelFunc == null) throw new RuntimeException("PolyMc: Couldn't find model creation function");
@@ -97,8 +96,7 @@ public class EntityRendererAnalyzer {
             .mockField("textRenderer")
             .build();
 
-        factoryVm.addMethodToStack(rendererFactory, new StackEntry[]{ ctx });
-        var renderer = factoryVm.runToCompletion();
+        var renderer = factoryVm.runLambda(rendererFactory, new StackEntry[]{ ctx });
 
         System.out.println("Renderer for "+entity.getTranslationKey()+": "+renderer);
 
