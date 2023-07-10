@@ -16,14 +16,12 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ClientInitializerAnalyzer {
     public static final SharedValuesKey<ClientInitializerAnalyzer> KEY = new SharedValuesKey<ClientInitializerAnalyzer>(ClientInitializerAnalyzer::new, null);
@@ -63,7 +61,7 @@ public class ClientInitializerAnalyzer {
         var entrypoints = (List<Object>)getMethod.invoke(entrypointStorage, "client");
 
         // Create vm
-        var vm = new VirtualMachine(classLoader, (VmConfig) new VmConfig() {
+        var vm = new VirtualMachine(classLoader, new VmConfig() {
             @Override
             public @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
                 var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, inst);
@@ -71,36 +69,48 @@ public class ClientInitializerAnalyzer {
                 return new StaticFieldValue(inst.owner, inst.name); // Evaluate static fields lazily
             }
             @Override
-            public StackEntry invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
+            public void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
                 try {
                     if (inst.owner.equals("net/fabricmc/fabric/api/client/rendering/v1/EntityRendererRegistry")) {
                         var identifier = arguments[0].simplify(ctx.machine()).extractAs(EntityType.class);
                         var lambda = arguments[1].simplify(ctx.machine()).extractAs(Lambda.class);
                         entityRendererRegistry.put(identifier, lambda);
-                        return new UnknownValue();
+                        ret(ctx, null);
+                        return;
                     }
                     if (inst.owner.equals("net/fabricmc/fabric/api/client/rendering/v1/EntityModelLayerRegistry")) {
                         var modelLayer = arguments[0].simplify(ctx.machine()).extractAs(EntityModelLayer.class);
                         var lambda = arguments[1].simplify(ctx.machine()).extractAs(Lambda.class);
                         entityModelLayerRegistry.put(modelLayer, lambda);
-                        return new UnknownValue();
+                        ret(ctx, null);
+                        return;
                     }
                 } catch(Throwable e) {
                     PolyMc.LOGGER.error("Failed to resolve arguments for call to "+inst.owner+": "+Arrays.toString(arguments));
                     e.printStackTrace();
-                    return new UnknownValue();
+                    ret(ctx, new UnknownValue());
+                    return;
                 }
                 if (inst.owner.equals("net/fabricmc/fabric/impl/screenhandler/client/ClientNetworking") ||
                     inst.owner.equals("net/fabricmc/fabric/impl/event/interaction/InteractionEventsRouterClient")) {
                     // We do not care
-                    return new UnknownValue();
+                    ret(ctx, new UnknownValue());
+                    return;
                 }
                 try {
-                    return VmConfig.super.invoke(ctx, currentClass, inst, arguments);
+                    VmConfig.super.invoke(ctx, currentClass, inst, arguments);
                 } catch (VmException e) {
                     PolyMc.LOGGER.error("Couldn't run "+inst.owner+"#"+inst.name+": "+e.createFancyErrorMessage());
-                    return new UnknownValue(e);
+                    ret(ctx, new UnknownValue(e));
                 }
+            }
+
+            @Override
+            public StackEntry onVmError(String method, boolean returnsVoid, VmException e) throws VmException {
+                if (returnsVoid) {
+                    return null;
+                }
+                return new UnknownValue("Error executing "+method+": "+e.createFancyErrorMessage());
             }
         });
 
@@ -116,7 +126,7 @@ public class ClientInitializerAnalyzer {
                     return null;
                 }
             })
-            .filter(e -> e != null)
+            .filter(Objects::nonNull)
             .forEach(entrypoint -> {
                 runAnalysis(entrypoint, vm);
             });
@@ -138,21 +148,22 @@ public class ClientInitializerAnalyzer {
                 className = s[0];
                 methodName = s[1];
             }
-            vm.runMethod(className, methodName, "()V");
+            vm.addMethodToStack(className, methodName, "()V");
+            vm.runToCompletion();
         } catch (VmException e) {
             e.printStackTrace();
         }
     }
 
-    public Lambda getEntityRenderer(EntityType<?> type) {
+    public @Nullable Lambda getEntityRenderer(EntityType<?> type) {
         return entityRendererRegistry.get(type);
     }
 
-    public Lambda getEntityModelLayer(EntityModelLayer layer) {
+    public @Nullable Lambda getEntityModelLayer(EntityModelLayer layer) {
         return entityModelLayerRegistry.get(layer);
     }
 
-    public static record EntityModelLayer(Identifier id, String name) {
+    public record EntityModelLayer(Identifier id, String name) {
 
     }
 }

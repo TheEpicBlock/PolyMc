@@ -7,6 +7,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public record KnownVmObject(@NotNull Clazz type, @NotNull Map<String, StackEntry> fields) implements StackEntry {
@@ -57,5 +58,14 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull Map<String, StackEntry
     @Override
     public boolean isConcrete() {
         return true;
+    }
+
+    @Override
+    public StackEntry copy() {
+        var newMap = new HashMap<String, StackEntry>();
+        this.fields.forEach((key, val) -> {
+            newMap.put(key, val.copy());
+        });
+        return new KnownVmObject(this.type, newMap);
     }
 }

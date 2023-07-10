@@ -17,16 +17,19 @@ public class EntityAsmTests implements FabricGameTest {
         var initAnalyzer = registry.getSharedValues(ClientInitializerAnalyzer.KEY);
 
         var renderer = initAnalyzer.getEntityRenderer(Testmod.TEST_ENTITY_ASM);
+        TestUtil.assertNonNull(renderer, "Couldn't find renderer");
         TestUtil.assertEq(renderer.method().getOwner(), "nl/theepicblock/polymc/testmod/TestAsmEntityRenderer");
 
         // Should equal TestmodClient#MAIN_MODEL_LAYER
         var modelLayerId = new ClientInitializerAnalyzer.EntityModelLayer(Testmod.id("test_entity_asm"), "main");
         var modelLayer = initAnalyzer.getEntityModelLayer(modelLayerId);
+
+        TestUtil.assertNonNull(modelLayer, "Couldn't find model layer");
         TestUtil.assertEq(modelLayer.method().getOwner(), "nl/theepicblock/polymc/testmod/TestAsmEntityModel");
 
         // rendering analyzer
         var analysisResults = registry.getSharedValues(EntityRendererAnalyzer.KEY).analyze(Testmod.TEST_ENTITY_ASM);
-        TestUtil.assertEq(analysisResults.calls().size(), 1, "There should be one cuboid render call because the test entity only contains one cube");
+        TestUtil.assertEq(analysisResults.getUniqueCalls().size(), 1, "There should only be one cuboid render call because the test entity only contains one cube");
 
         ctx.complete();
     }

@@ -39,4 +39,15 @@ public record KnownArray(StackEntry[] data) implements StackEntry {
     public boolean isConcrete() {
         return true;
     }
+
+    @Override
+    public StackEntry copy() {
+        var newArr = new StackEntry[this.data.length];
+        int i = 0;
+        for (var v : this.data) {
+            newArr[i] = v.copy();
+            i++;
+        }
+        return new KnownArray(newArr);
+    }
 }

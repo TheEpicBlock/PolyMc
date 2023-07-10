@@ -45,6 +45,12 @@ public record MockedField(StackEntry origin, String field, HashMap<String, Stack
     }
 
     @Override
+    public StackEntry copy() {
+        // TODO
+        return StackEntry.super.copy();
+    }
+
+    @Override
     public String toString() {
         return "MockedField{" +
                 "field='" + field + '\'' +

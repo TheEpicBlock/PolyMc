@@ -8,6 +8,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.Cast;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.InstanceOf;
 import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Handle;
@@ -29,19 +30,39 @@ public class MethodExecutor {
         this.localVariables = localVariables;
         this.methodName = methodName;
     }
+
+    public MethodExecutor copy() {
+        var n = new MethodExecutor(this.parent, new StackEntry[this.localVariables.length], this.methodName);
+        n.owner = this.owner;
+        n.method = this.method;
+        n.nextInstruction = this.nextInstruction;
+        int i = 0;
+        for (var var : this.localVariables) {
+            n.localVariables[i] = var.copy();
+            i++;
+        }
+        return n;
+    }
+
+    public String getName() {
+        return methodName;
+    }
     
-    public StackEntry run(InsnList bytecode, Clazz owner) throws VmException {
+    public void setMethod(InsnList bytecode, Clazz owner) {
         this.owner = owner;
         this.nextInstruction = bytecode.getFirst();
+    }
+
+    public void startExecution() throws VmException {
         while (true) {
             if (nextInstruction == null) {
-                return null; // We've reached the last instruction
+                // We've reached the last instruction, return void
+                this.parent.onMethodReturn(null);
+                return;
             }
             try {
-                var ret = this.execute(this.nextInstruction);
-                if (ret != null) return ret;
-            } catch (ReturnEarly e) {
-                return null;
+                var continueExecution = this.execute(this.nextInstruction);
+                if (!continueExecution) return;
             } catch (Exception e) {
                 throw new VmException("Error executing code on line "+this.getLineNumber()+" of "+methodName, e);
             }
@@ -59,7 +80,14 @@ public class MethodExecutor {
         return -1;
     }
 
-    public @Nullable StackEntry execute(AbstractInsnNode instruction) throws VmException, ReturnEarly {
+    /**
+     * The vm calls this after we've started another methodCall, and that method call has returned
+     */
+    protected void receiveReturnValue(@Nullable StackEntry returnValue) {
+        pushIfNotNull(returnValue);
+    }
+
+    public boolean execute(AbstractInsnNode instruction) throws VmException, ReturnEarly {
         switch (instruction.getOpcode()) {
             case Opcodes.ICONST_0 -> stack.push(new KnownInteger(0));
             case Opcodes.ICONST_1 -> stack.push(new KnownInteger(1));
@@ -99,7 +127,12 @@ public class MethodExecutor {
                 if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
                     arguments[0] = stack.pop(); // objectref
                 }
-                pushIfNotNull(parent.getConfig().invoke(ctx(), this.owner, inst, arguments)); // push the result
+                // We're going to return control back to the vm.
+                // The vm will then call receiveReturnValue with the correct return value,
+                // and then it'll call startExecution again
+                parent.getConfig().invoke(ctx(), this.owner, inst, arguments);
+                this.nextInstruction = instruction.getNext();
+                return false;
             }
             case Opcodes.INVOKEDYNAMIC -> {
                 var inst = (InvokeDynamicInsnNode)instruction;
@@ -168,9 +201,13 @@ public class MethodExecutor {
                 localVariables[((VarInsnNode)instruction).var] = stack.pop();
             }
             case Opcodes.ARETURN, Opcodes.DRETURN, Opcodes.FRETURN, Opcodes.IRETURN, Opcodes.LRETURN -> {
-                return stack.pop();
+                this.parent.onMethodReturn(stack.pop());
+                return false;
             }
-            case Opcodes.RETURN -> { throw new ReturnEarly(); }
+            case Opcodes.RETURN -> {
+                this.parent.onMethodReturn(null);
+                return false;
+            }
             case Opcodes.RET -> {
                 var inst = (VarInsnNode)instruction;
                 var lvt = this.localVariables[inst.var];
@@ -183,19 +220,20 @@ public class MethodExecutor {
             }
             case Opcodes.GOTO -> {
                 this.nextInstruction = ((JumpInsnNode)instruction).label;
-                return null;
+                return true;
             }
             case Opcodes.LOOKUPSWITCH -> {
                 var key = stack.pop();
-                if (key instanceof UnknownValue) throw new VmException("Jump(IFNULL) based on unknown variable ("+key+")", null);
+                if (key instanceof UnknownValue) throw new VmException("Jump(LOOKUPSWITCH) based on unknown variable ("+key+")", null);
                 
                 var inst = (LookupSwitchInsnNode)instruction;
                 var keyValue = key.extractAs(Integer.class);
                 var labelIndex = inst.keys.indexOf(keyValue);
                 if (labelIndex == -1) {
                     this.nextInstruction = inst.dflt;
+                } else {
+                    this.nextInstruction = inst.labels.get(labelIndex);
                 }
-                this.nextInstruction = inst.labels.get(labelIndex);
             }
             case Opcodes.IF_ACMPEQ -> {
                 var a = stack.pop();
@@ -203,7 +241,7 @@ public class MethodExecutor {
                 if (a instanceof UnknownValue || b instanceof UnknownValue) throw new VmException("Jump(IF_ACMPEQ) based on unknown variables ("+a+","+b+")", null);
                 if (a == b) {
                     this.nextInstruction = ((JumpInsnNode)instruction).label;
-                    return null;
+                    return true;
                 }
             }
             case Opcodes.IF_ACMPNE -> {
@@ -212,23 +250,33 @@ public class MethodExecutor {
                 if (a instanceof UnknownValue || b instanceof UnknownValue) throw new VmException("Jump(IF_ACMPNE) based on unknown variables ("+a+","+b+")", null);
                 if (a != b) {
                     this.nextInstruction = ((JumpInsnNode)instruction).label;
-                    return null;
+                    return true;
                 }
             }
             case Opcodes.IFNULL -> {
                 var a = stack.pop();
-                if (a instanceof UnknownValue) throw new VmException("Jump(IFNULL) based on unknown variable ("+a+")", null);
+                if (a.canBeSimplified()) a = a.simplify(this.parent);
+                if (!a.isConcrete()) {
+                    this.parent.getConfig().handleUnknownJump(ctx(), a, null, Opcodes.IFNULL, ((JumpInsnNode)instruction).label);
+                    return true;
+                }
+
                 if (a instanceof KnownObject o && o.i() == null) {
                     this.nextInstruction = ((JumpInsnNode)instruction).label;
-                    return null;
+                    return true;
                 }
             }
             case Opcodes.IFNONNULL -> {
                 var a = stack.pop();
-                if (a instanceof UnknownValue) throw new VmException("Jump(IFNULL) based on unknown variable ("+a+")", null);
+                if (a.canBeSimplified()) a = a.simplify(this.parent);
+                if (!a.isConcrete()) {
+                    this.parent.getConfig().handleUnknownJump(ctx(), a, null, Opcodes.IFNONNULL, ((JumpInsnNode)instruction).label);
+                    return true;
+                }
+
                 if (!(a instanceof KnownObject o && o.i() == null)) {
                     this.nextInstruction = ((JumpInsnNode)instruction).label;
-                    return null;
+                    return true;
                 }
             }
             case Opcodes.IF_ICMPEQ -> { return icmp(instruction, (a,b) -> a == b); }
@@ -342,7 +390,7 @@ public class MethodExecutor {
         }
 
         this.nextInstruction = instruction.getNext();
-        return null;
+        return true;
     }
 
     private void castOp(Cast.Type in, Cast.Type out) throws VmException {
@@ -361,18 +409,18 @@ public class MethodExecutor {
         stack.push(binOp);
     }
 
-    private StackEntry icmp0(AbstractInsnNode inst, BiIntPredicate predicate) throws VmException {
+    private boolean icmp0(AbstractInsnNode inst, BiIntPredicate predicate) throws VmException {
         var value1 = stack.pop();
         return icmp(inst, value1, new KnownInteger(0), predicate);
     }
 
-    private StackEntry icmp(AbstractInsnNode inst, BiIntPredicate predicate) throws VmException {
+    private boolean icmp(AbstractInsnNode inst, BiIntPredicate predicate) throws VmException {
         var value2 = stack.pop();
         var value1 = stack.pop();
         return icmp(inst, value1, value2, predicate);
     }
 
-    private StackEntry icmp(AbstractInsnNode inst, StackEntry value1, StackEntry value2, BiIntPredicate predicate) throws VmException {
+    private boolean icmp(AbstractInsnNode inst, StackEntry value1, StackEntry value2, BiIntPredicate predicate) throws VmException {
         if (value1 instanceof UnknownValue || value2 instanceof UnknownValue) throw new VmException("Int jump based on unknown variables ("+value1+","+value2+")", null);
         
         var int1 = value1.extractAs(Integer.class);
@@ -383,7 +431,7 @@ public class MethodExecutor {
         } else {
             this.nextInstruction = inst.getNext();
         }
-        return null;
+        return true;
     }
 
     private void pushIfNotNull(@Nullable StackEntry e) {
@@ -437,7 +485,17 @@ public class MethodExecutor {
     }
 
     @FunctionalInterface
-    private static interface BiIntPredicate {
+    public interface BiIntPredicate {
         boolean compute(int value1, int value2);
+    }
+
+    @ApiStatus.Internal
+    public AbstractInsnNode inspectCurrentInsn() {
+        return this.nextInstruction;
+    }
+
+    @ApiStatus.Internal
+    public void overrideNextInsn(AbstractInsnNode target) {
+        this.nextInstruction = target;
     }
 }

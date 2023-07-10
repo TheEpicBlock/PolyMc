@@ -4,9 +4,10 @@ import com.google.common.collect.Streams;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
-import it.unimi.dsi.fastutil.Stack;
+import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassReader;
@@ -24,13 +25,14 @@ import java.util.Objects;
 public class VirtualMachine {
     private final HashMap<String, Clazz> classes = new HashMap<>();
     private final ClientClassLoader classResolver;
-    private final VmConfig config;
-    private final Stack<@NotNull MethodExecutor> stack = new ObjectArrayList<>();
+    private VmConfig config;
+    private AbstractObjectList<@NotNull MethodExecutor> stack = new ObjectArrayList<>();
     /**
      * This is here to map from runtime names back to obfuscated, which is needed to
      * resolve methods in the client jar.
      */
     public final Mapping mappings;
+    private StackEntry lastReturnedValue;
 
     public VirtualMachine(ClientClassLoader classResolver, VmConfig config) {
         this.classResolver = classResolver;
@@ -38,7 +40,47 @@ public class VirtualMachine {
         this.mappings = Mapping.runtimeToObfFromClasspath();
     }
 
-    public StackEntry runMethod(Lambda lambda, StackEntry[] arguments) throws VmException {
+    public void changeConfig(VmConfig config) {
+        this.config = config;
+    }
+
+    public VirtualMachine copy() {
+        var n = new VirtualMachine(this.classResolver, config);
+        n.lastReturnedValue = this.lastReturnedValue;
+        for (var meth : this.stack) {
+            n.stack.add(meth.copy());
+        }
+        return n;
+    }
+
+    public AbstractObjectList<@NotNull MethodExecutor> switchStack(@Nullable AbstractObjectList<@NotNull MethodExecutor> newStack) {
+        if (newStack == null) {
+            newStack = new ObjectArrayList<>();
+        }
+        var oldStack = this.stack;
+        this.stack = newStack;
+        return oldStack;
+    }
+
+    @ApiStatus.Internal
+    public MethodExecutor inspectRunningMethod() {
+        return this.stack.top();
+    }
+
+    /**
+     * Should be called by the {@link MethodExecutor} that's currently on top of the stack
+     */
+    @ApiStatus.Internal
+    protected void onMethodReturn(@Nullable StackEntry returnValue) {
+        this.lastReturnedValue = returnValue;
+        stack.pop(); // The top method returned a value now, so it shall be yeeted
+
+        if (!stack.isEmpty()) {
+            stack.top().receiveReturnValue(returnValue);
+        }
+    }
+
+    public void addMethodToStack(Lambda lambda, StackEntry[] arguments) throws VmException {
         var method = lambda.method();
         var clazz = getClass(method.getOwner());
         if (method.getTag() == 8) {
@@ -46,21 +88,21 @@ public class VirtualMachine {
             StackEntry[] args = Streams
                     .concat(Arrays.stream(newO), Arrays.stream(arguments), Arrays.stream(lambda.extraArguments()))
                     .toArray(StackEntry[]::new);
-            runMethod(clazz, method.getName(), method.getDesc(), args);
-            return newO[0];
+            addMethodToStack(clazz, method.getName(), method.getDesc(), args);
+            onMethodReturn(newO[0]);
         } else {
             StackEntry[] args = Streams.concat(Arrays.stream(arguments), Arrays.stream(lambda.extraArguments()))
                     .toArray(StackEntry[]::new);
-            return runMethod(clazz, method.getName(), method.getDesc(), args);
+            addMethodToStack(clazz, method.getName(), method.getDesc(), args);
         }
     }
 
-    public StackEntry runMethod(String clazz, String method, String desc) throws VmException {
+    public void addMethodToStack(String clazz, String method, String desc) throws VmException {
         var clazzNode = getClass(clazz);
-        return runMethod(clazzNode, method, desc, null);
+        addMethodToStack(clazzNode, method, desc, null);
     }
 
-    public StackEntry runMethod(Clazz clazz, String method, String desc, @Nullable StackEntry[] arguments)
+    public void addMethodToStack(Clazz clazz, String method, String desc, @Nullable StackEntry[] arguments)
             throws VmException {
         var meth = AsmUtils.getMethod(clazz.node, method, desc, mappings);
         if (meth == null) {
@@ -68,10 +110,10 @@ public class VirtualMachine {
                     "Couldn't find method `" + method + "` with desc `" + desc + "` in class `" + clazz.node.name + "`",
                     null);
         }
-        return runMethod(new MethodRef(clazz, meth), arguments);
+        addMethodToStack(new MethodRef(clazz, meth), arguments);
     }
 
-    public StackEntry runMethod(MethodRef methRef, @Nullable StackEntry[] arguments) throws VmException {
+    public void addMethodToStack(MethodRef methRef, @Nullable StackEntry[] arguments) throws VmException {
         var meth = methRef.meth();
         var a = arguments == null ? -1 : arguments.length;
         var localVariables = new StackEntry[Math.max(meth.maxLocals, a)];
@@ -88,9 +130,19 @@ public class VirtualMachine {
         var executor = new MethodExecutor(this, localVariables,
                 methRef.clazz().node.name + "#" + meth.name + meth.desc);
         stack.push(executor);
-        var ret = executor.run(meth.instructions, methRef.clazz());
-        stack.pop();
-        return ret;
+        executor.setMethod(meth.instructions, methRef.clazz());
+    }
+
+    public StackEntry runToCompletion() throws VmException {
+        while (!this.stack.isEmpty()) {
+            try {
+                this.stack.top().startExecution();
+            } catch (VmException e) {
+                var handledVal = this.config.onVmError(this.stack.top().getName(), this.stack.top().getName().endsWith("v"), e);
+                this.onMethodReturn(handledVal);
+            }
+        }
+        return this.lastReturnedValue;
     }
 
     public Clazz getClass(String name) throws VmException {
@@ -107,10 +159,8 @@ public class VirtualMachine {
             }
             clazz = new Clazz(node);
             this.classes.put(name, clazz);
-            return clazz;
-        } else {
-            return clazz;
         }
+        return clazz;
     }
 
     public VmConfig getConfig() {
@@ -125,7 +175,10 @@ public class VirtualMachine {
         // This isn't spec-compliant
         if (!node.hasInitted) {
             node.hasInitted = true;
-            runMethod(node, "<clinit>", "()V", null);
+            var stack = this.switchStack(null); // Run this in a new, fresh state
+            addMethodToStack(node, "<clinit>", "()V", null);
+            runToCompletion();
+            this.switchStack(stack); // Restore old state
         }
     }
 
@@ -209,6 +262,10 @@ public class VirtualMachine {
             return clazz.getStatic(inst.name);
         }
 
+        default StackEntry onVmError(String method, boolean returnsVoid, VmException e) throws VmException {
+            throw e;
+        }
+
         default void putStaticField(Context ctx, FieldInsnNode inst, StackEntry value) throws VmException {
             var clazz = ctx.machine.getClass(inst.owner);
             ctx.machine.ensureClinit(clazz);
@@ -217,45 +274,52 @@ public class VirtualMachine {
 
         /**
          * @param currentClass Class the invocation is coming from
-         * @param arguments If this instruction is not invokeStatic, the first element
-         *                  will represent the object this was called on.
+         * @param arguments    If this instruction is not invokeStatic, the first element
+         *                     will represent the object this was called on.
          */
-        default @Nullable StackEntry invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments)
+        default void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments)
                 throws VmException {
             if (inst.owner.equals(Type.getInternalName(LoggerFactory.class))) {
-                return new UnknownValue("Refusing to invoke LoggerFactory for optimization reasons");
+                ret(ctx, new UnknownValue("Refusing to invoke LoggerFactory for optimization reasons"));
+                return;
             }
             // Hardcoded functions
             if (inst.owner.equals(Type.getInternalName(String.class)) && arguments[0] instanceof KnownObject o && o.i() instanceof String str) {
                 // String is quite strict with its fields, we can't reflect into them
                 // This causes the jvm to be unable to execute many methods inside String
                 if (inst.name.equals("isEmpty")) {
-                    return new KnownInteger(str.isEmpty());
+                    ret(ctx, new KnownInteger(str.isEmpty()));
+                    return;
                 }
                 if (inst.name.equals("length")) {
-                    return new KnownInteger(str.length());
+                    ret(ctx, new KnownInteger(str.length()));
+                    return;
                 }
                 if (inst.name.equals("charAt")) {
                     if (arguments[1].canBeSimplified()) arguments[1].simplify(ctx.machine());
                     if (arguments[1].isConcrete()) {
-                        return new KnownInteger(str.charAt(arguments[1].extractAs(Integer.class)));
+                        ret(ctx, new KnownInteger(str.charAt(arguments[1].extractAs(Integer.class))));
+                        return;
                     }
                 }
                 if (inst.name.equals("indexOf") && inst.desc.equals("(II)v")) {
                     if (arguments[1].canBeSimplified()) arguments[1].simplify(ctx.machine());
                     if (arguments[2].canBeSimplified()) arguments[2].simplify(ctx.machine());
                     if (arguments[1].isConcrete() && arguments[2].isConcrete()) {
-                        return new KnownInteger(str.indexOf(arguments[1].extractAs(Integer.class), arguments[2].extractAs(Integer.class)));
+                        ret(ctx, new KnownInteger(str.indexOf(arguments[1].extractAs(Integer.class), arguments[2].extractAs(Integer.class))));
+                        return;
                     }
                 }
             }
             if (inst.owner.equals(Type.getInternalName(Objects.class)) && inst.name.equals("requireNonNull")) {
-                return arguments[0];
+                ret(ctx, arguments[0]);
+                return;
             }
             if (inst.owner.equals(Type.getInternalName(Arrays.class)) && inst.name.equals("copyOf")
                     && inst.desc.equals("([Ljava/lang/Object;I)[Ljava/lang/Object;")
                     && arguments[0] instanceof KnownArray a) {
-                return new KnownArray(Arrays.copyOf(a.data(), arguments[1].extractAs(Integer.class)));
+                ret(ctx, new KnownArray(Arrays.copyOf(a.data(), arguments[1].extractAs(Integer.class))));
+                return;
             }
 
             if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
@@ -270,14 +334,16 @@ public class VirtualMachine {
                 // This method is part of Object and wouldn't be found otherwise
                 if (inst.name.equals("hashCode") && inst.desc.equals("()I")
                         && Util.first(arguments) instanceof KnownObject obj) {
-                    return new KnownInteger(obj.i().hashCode()); // It's no problem to do this in the outer vm
+                    ret(ctx, new KnownInteger(obj.i().hashCode())); // It's no problem to do this in the outer vm
+                    return;
                 }
 
                 // Can't be resolved, return an unknown value
-                return Type.getReturnType(inst.desc) == Type.VOID_TYPE ? null
-                        : new UnknownValue("Can't resolve method " + inst.owner + "#" + inst.name + inst.desc);
+                ret(ctx, Type.getReturnType(inst.desc) == Type.VOID_TYPE ? null
+                        : new UnknownValue("Can't resolve method " + inst.owner + "#" + inst.name + inst.desc));
+                return;
             }
-            return ctx.machine.runMethod(method, arguments);
+            ctx.machine.addMethodToStack(method, arguments);
         }
 
         default @NotNull StackEntry newObject(Context ctx, TypeInsnNode inst) throws VmException {
@@ -289,12 +355,25 @@ public class VirtualMachine {
                 throws VmException {
             throw new NotImplementedException("Unimplemented instruction " + instruction.getOpcode());
         }
+
+        default void handleUnknownJump(Context ctx, StackEntry compA, @Nullable StackEntry compB, int opcode, LabelNode target) throws VmException {
+            throw new VmException("Jump on unknown value(s)", null);
+        }
+
+        /**
+         * Just a convenience method. Probably shouldn't override this one since it doesn't receive all returns
+         */
+        default void ret(Context ctx, StackEntry e) {
+            // We're going to create a "method" and act like that one returned the value
+            ctx.machine.stack.push(new MethodExecutor(ctx.machine(), new StackEntry[0], "Fake method"));
+            ctx.machine.onMethodReturn(e);
+        }
     }
 
     public record Context(VirtualMachine machine) {
     }
 
-    public record MethodRef(Clazz clazz, MethodNode meth) {
+    public record MethodRef(@NotNull Clazz clazz, @NotNull MethodNode meth) {
     };
 
     public static class Clazz {

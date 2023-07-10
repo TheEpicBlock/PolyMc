@@ -70,4 +70,8 @@ public interface StackEntry {
     default <T> T extractAs(Class<T> type) {
         return GSON.fromJson(this.toJson(), type);
     }
+
+    default StackEntry copy() {
+        return this;
+    }
 }

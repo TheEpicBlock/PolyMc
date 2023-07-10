@@ -1,8 +1,11 @@
 package nl.theepicblock.polymc.testmod.automated;
 
+import io.github.theepicblock.polymc.impl.generator.asm.ClientClassLoader;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
+import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownDouble;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownFloat;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.test.GameTest;
@@ -89,5 +92,60 @@ public class TestVm implements FabricGameTest {
         } catch (MethodExecutor.VmException e) {
             throw new GameTestException(e.createFancyErrorMessage());
         }
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void createOne(TestContext ctx) throws MethodExecutor.VmException {
+        // A function that just returns 1
+        assertReturns("createOneFunc", 1);
+        ctx.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void invoke(TestContext ctx) throws MethodExecutor.VmException {
+        // Function that invokes another function
+        assertReturns("invokeFunc", 9);
+        ctx.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void ifStatement(TestContext ctx) throws MethodExecutor.VmException {
+        // Function with an if statement
+        assertReturns("ifStatementFunc", 9);
+        ctx.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void stringLength(TestContext ctx) throws MethodExecutor.VmException {
+        assertReturns("stringLengthFunc", 6);
+        ctx.complete();
+    }
+    public static void assertReturns(String func, int expected) throws MethodExecutor.VmException {
+        var vm = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {});
+        vm.addMethodToStack(TestVm.class.getName(), func, "()I"); // All test functions have a descriptor of ()I
+        var result = vm.runToCompletion();
+        TestUtil.assertEq(result, new KnownInteger(expected));
+
+    }
+
+    public static int ifStatementFunc() {
+        int integer = 634;
+        if (integer + 1 == 635) {
+            return 9;
+        } else {
+            return 3;
+        }
+    }
+
+    public static int invokeFunc() {
+        return createOneFunc() + 8;
+    }
+
+    public static int createOneFunc() {
+        return 1;
+    }
+
+    public static int stringLengthFunc() {
+        return "abcdef".length();
     }
 }
