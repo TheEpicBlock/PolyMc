@@ -270,11 +270,15 @@ public class MethodExecutor {
             case Opcodes.FMUL  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.MUL);
             case Opcodes.FDIV  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.DIV);
             case Opcodes.FREM  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.REM);
+            case Opcodes.FCMPL -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.CMPL);
+            case Opcodes.FCMPG -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.CMPG);
             case Opcodes.DADD  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.ADD);
             case Opcodes.DSUB  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.SUB);
             case Opcodes.DMUL  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.MUL);
             case Opcodes.DDIV  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.DIV);
             case Opcodes.DREM  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.REM);
+            case Opcodes.DCMPL -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.CMPL);
+            case Opcodes.DCMPG -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.CMPG);
             case Opcodes.IINC -> {
                 var inst = (IincInsnNode)instruction;
                 var localVar = this.localVariables[inst.var];
