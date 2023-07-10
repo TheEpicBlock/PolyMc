@@ -359,12 +359,7 @@ public class MethodExecutor {
             }
             case Opcodes.CHECKCAST -> {
                 var inst = (TypeInsnNode)instruction;
-                var obj = stack.pop();
-                if (obj instanceof KnownVmObject o) {
-                    // Set obj to new type (doesn't do much)
-                    obj = new KnownVmObject(parent.getClass(inst.desc), o.fields());
-                }
-                stack.push(obj);
+                // We assume that it can always be cast (exceptions aren't implemented yet)
             }
             case Opcodes.NOP -> {}
             case Opcodes.DUP -> stack.push(stack.top());
