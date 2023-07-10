@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public record KnownVmObject(@NotNull Clazz type, @NotNull Map<String, StackEntry> fields) implements StackEntry {
+public record KnownVmObject(@NotNull Clazz type, @NotNull Map<@NotNull String, @NotNull StackEntry> fields) implements StackEntry {
     @Override
     public @NotNull StackEntry getField(String name) {
         var value = this.fields().get(name);

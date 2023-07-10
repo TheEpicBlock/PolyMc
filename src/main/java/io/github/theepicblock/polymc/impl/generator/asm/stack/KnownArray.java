@@ -3,8 +3,9 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 import com.google.gson.JsonElement;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public record KnownArray(StackEntry[] data) implements StackEntry {
+public record KnownArray(@Nullable StackEntry[] data) implements StackEntry {
     @Override
     public JsonElement toJson() {
         return StackEntry.GSON.toJsonTree(data);
@@ -45,7 +46,7 @@ public record KnownArray(StackEntry[] data) implements StackEntry {
         var newArr = new StackEntry[this.data.length];
         int i = 0;
         for (var v : this.data) {
-            newArr[i] = v.copy();
+            if (v != null) newArr[i] = v.copy();
             i++;
         }
         return new KnownArray(newArr);
