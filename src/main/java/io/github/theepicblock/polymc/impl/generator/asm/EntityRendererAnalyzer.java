@@ -67,6 +67,7 @@ public class EntityRendererAnalyzer {
 
         @Override
         public StackEntry onVmError(String method, boolean returnsVoid, VmException e) throws VmException {
+            PolyMc.LOGGER.error("Couldn't run "+method+": "+e.createFancyErrorMessage());
             if (returnsVoid) {
                 return null;
             }
@@ -201,6 +202,7 @@ public class EntityRendererAnalyzer {
 
         @Override
         public StackEntry onVmError(String method, boolean returnsVoid, VmException e) throws VmException {
+            PolyMc.LOGGER.error("Couldn't run "+method+": "+e.createFancyErrorMessage());
             if (returnsVoid) {
                 return null;
             }

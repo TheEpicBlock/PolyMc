@@ -97,16 +97,12 @@ public class ClientInitializerAnalyzer {
                     ret(ctx, new UnknownValue());
                     return;
                 }
-                try {
-                    VmConfig.super.invoke(ctx, currentClass, inst, arguments);
-                } catch (VmException e) {
-                    PolyMc.LOGGER.error("Couldn't run "+inst.owner+"#"+inst.name+": "+e.createFancyErrorMessage());
-                    ret(ctx, new UnknownValue(e));
-                }
+                VmConfig.super.invoke(ctx, currentClass, inst, arguments);
             }
 
             @Override
             public StackEntry onVmError(String method, boolean returnsVoid, VmException e) throws VmException {
+                PolyMc.LOGGER.error("Couldn't run "+method+": "+e.createFancyErrorMessage());
                 if (returnsVoid) {
                     return null;
                 }
