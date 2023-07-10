@@ -20,10 +20,18 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EntityRendererAnalyzer {
     public static final SharedValuesKey<EntityRendererAnalyzer> KEY = new SharedValuesKey<EntityRendererAnalyzer>(EntityRendererAnalyzer::new, null);
 
     private final ClientInitializerAnalyzer initializerInfo;
+
+    /**
+     * The result that's currently being worked on
+     */
+    private AnalysisResult currentResult = null;
 
     /**
      * Vm for invoking the factory
@@ -63,10 +71,13 @@ public class EntityRendererAnalyzer {
 
         @Override
         public @Nullable StackEntry invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
+
+            // ModelPart.Cuboid.renderCuboid
             if (cmpFunc(inst, "net.minecraft.class_630.class_628", "method_32089", "(Lnet/minecraft/class_4587$class_4665;Lnet/minecraft/class_4588;IIFFFF)V")) {
-                var cuboid = arguments[0].extractAs(Cuboid.class);
-                System.out.println("Rendering a cute lil cuboid: "+cuboid);
-                return new UnknownValue();
+                var cuboid = arguments[0];
+                var stack = arguments[1].getField("positionMatrix"); // TODO mappings
+                currentResult.calls.add(new RenderCall(cuboid, stack));
+                return null; // Function is void
             }
 
             try {
@@ -82,13 +93,12 @@ public class EntityRendererAnalyzer {
         this.initializerInfo = registry.getSharedValues(ClientInitializerAnalyzer.KEY);
     }
 
-    public void analyze(EntityType<?> entity) throws VmException {
+    public AnalysisResult analyze(EntityType<?> entity) throws VmException {
+        this.currentResult = new AnalysisResult(new ArrayList<>());
         var fmappings = FabricLoader.getInstance().getMappingResolver();
         var rendererFactory = initializerInfo.getEntityRenderer(entity);
 
-        if (rendererFactory == null) {
-            return;
-        }
+        if (rendererFactory == null) { return null; }
 
         // EntityRendererFactory.Context
         var ctx = AsmUtils.constructVmObject(factoryVm, "net.minecraft.class_5617$class_5618")
@@ -118,6 +128,9 @@ public class EntityRendererAnalyzer {
 
         // TODO all of these variables should be dynamic/symbolic
         rendererVm.runMethod(resolvedEntityRenderer$render, new StackEntry[] { renderer, fakeEntity, new KnownFloat(0.0f), new KnownFloat(0.0f), matrixStack, KnownObject.NULL, new KnownInteger(0) });
+        var c = this.currentResult;
+        this.currentResult = null;
+        return c;
     }
 
     public StackEntry createMatrixStack() throws VmException {
@@ -147,6 +160,7 @@ public class EntityRendererAnalyzer {
         return instMethodName.equals(meadaefafqwuuvgy);
     }
 
-    public static record Cuboid(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
-    }
+    public record RenderCall(StackEntry cuboid, StackEntry matrix) { }
+
+    public record AnalysisResult(List<RenderCall> calls) {}
 }
