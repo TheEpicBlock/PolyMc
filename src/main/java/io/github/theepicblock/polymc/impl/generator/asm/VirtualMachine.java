@@ -265,6 +265,11 @@ public class VirtualMachine {
         return null;
     }
 
+    private static final @InternalName String LoggerFactory = Type.getInternalName(LoggerFactory.class);
+    private static final @InternalName String String = Type.getInternalName(String.class);
+    private static final @InternalName String Objects = Type.getInternalName(Objects.class);
+    private static final @InternalName String _Arrays = Type.getInternalName(Arrays.class);
+
     public interface VmConfig {
         default @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
             var clazz = ctx.machine.getClass(inst.owner);
@@ -289,12 +294,12 @@ public class VirtualMachine {
          */
         default void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments)
                 throws VmException {
-            if (inst.owner.equals(Type.getInternalName(LoggerFactory.class))) {
+            if (inst.owner.equals(LoggerFactory)) {
                 ret(ctx, new UnknownValue("Refusing to invoke LoggerFactory for optimization reasons"));
                 return;
             }
             // Hardcoded functions
-            if (inst.owner.equals(Type.getInternalName(String.class)) && arguments[0] instanceof KnownObject o && o.i() instanceof String str) {
+            if (inst.owner.equals(String) && arguments[0] instanceof KnownObject o && o.i() instanceof String str) {
                 // String is quite strict with its fields, we can't reflect into them
                 // This causes the jvm to be unable to execute many methods inside String
                 if (inst.name.equals("isEmpty")) {
@@ -321,11 +326,11 @@ public class VirtualMachine {
                     }
                 }
             }
-            if (inst.owner.equals(Type.getInternalName(Objects.class)) && inst.name.equals("requireNonNull")) {
+            if (inst.owner.equals(Objects) && inst.name.equals("requireNonNull")) {
                 ret(ctx, arguments[0]);
                 return;
             }
-            if (inst.owner.equals(Type.getInternalName(Arrays.class)) && inst.name.equals("copyOf")
+            if (inst.owner.equals(_Arrays) && inst.name.equals("copyOf")
                     && inst.desc.equals("([Ljava/lang/Object;I)[Ljava/lang/Object;")
                     && arguments[0] instanceof KnownArray a) {
                 ret(ctx, new KnownArray(Arrays.copyOf(a.data(), arguments[1].extractAs(Integer.class))));
