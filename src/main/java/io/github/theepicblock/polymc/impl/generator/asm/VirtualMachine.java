@@ -10,7 +10,6 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
@@ -23,21 +22,15 @@ import java.util.Map;
 import java.util.Objects;
 
 public class VirtualMachine {
-    private final HashMap<String, Clazz> classes = new HashMap<>();
+    private final HashMap<@InternalName String, Clazz> classes = new HashMap<>();
     private final ClientClassLoader classResolver;
     private VmConfig config;
     private AbstractObjectList<@NotNull MethodExecutor> stack = new ObjectArrayList<>();
-    /**
-     * This is here to map from runtime names back to obfuscated, which is needed to
-     * resolve methods in the client jar.
-     */
-    public final Mapping mappings;
     private StackEntry lastReturnedValue;
 
     public VirtualMachine(ClientClassLoader classResolver, VmConfig config) {
         this.classResolver = classResolver;
         this.config = config;
-        this.mappings = Mapping.runtimeToObfFromClasspath();
     }
 
     public void changeConfig(VmConfig config) {
@@ -102,14 +95,14 @@ public class VirtualMachine {
         }
     }
 
-    public void addMethodToStack(String clazz, String method, String desc) throws VmException {
+    public void addMethodToStack(@InternalName String clazz, String method, String desc) throws VmException {
         var clazzNode = getClass(clazz);
         addMethodToStack(clazzNode, method, desc, null);
     }
 
     public void addMethodToStack(Clazz clazz, String method, String desc, @Nullable StackEntry[] arguments)
             throws VmException {
-        var meth = AsmUtils.getMethod(clazz.node, method, desc, mappings);
+        var meth = AsmUtils.getMethod(clazz.node, method, desc);
         if (meth == null) {
             throw new VmException(
                     "Couldn't find method `" + method + "` with desc `" + desc + "` in class `" + clazz.node.name + "`",
@@ -156,20 +149,18 @@ public class VirtualMachine {
         return this.lastReturnedValue;
     }
 
-    public Clazz getClass(String name) throws VmException {
+    public Clazz getClass(@InternalName String name) throws VmException {
         var clazz = this.classes.get(name);
         if (clazz == null) {
 
             // Load class using ASM
-            var node = new ClassNode(Opcodes.ASM9);
             try {
-                var stream = classResolver.getClass(name, this.mappings);
-                new ClassReader(stream).accept(node, 0);
+                var node = classResolver.getClass(name);
+                clazz = new Clazz(node);
+                this.classes.put(name, clazz);
             } catch (IOException e) {
                 throw new VmException("Error loading " + name, e);
             }
-            clazz = new Clazz(node);
-            this.classes.put(name, clazz);
         }
         return clazz;
     }
@@ -203,7 +194,7 @@ public class VirtualMachine {
         switch (inst.getOpcode()) {
             case Opcodes.INVOKESTATIC -> {
                 var clazz = this.getClass(inst.owner);
-                var method = AsmUtils.getMethod(clazz.node, inst.name, inst.desc, mappings);
+                var method = AsmUtils.getMethod(clazz.node, inst.name, inst.desc);
                 // This is a hard-error. Static methods shouldn't be hard to find and
                 // something's wrong here. So no returning null in this case
                 if (method == null)
@@ -219,7 +210,7 @@ public class VirtualMachine {
                 if (objectRef instanceof Lambda lambda && inst.getOpcode() != Opcodes.INVOKESPECIAL) {
                     var method = lambda.method();
                     var clazz = getClass(method.getOwner());
-                    var methNode = AsmUtils.getMethod(clazz.node, method.getName(), method.getDesc(), mappings);
+                    var methNode = AsmUtils.getMethod(clazz.node, method.getName(), method.getDesc());
                     if (methNode == null) return null;
                     return new MethodRef(clazz, methNode);
                 }
@@ -239,7 +230,7 @@ public class VirtualMachine {
                     }
                     case Opcodes.INVOKEINTERFACE, Opcodes.INVOKEVIRTUAL -> {
                         if (objectRef instanceof KnownObject o) {
-                            yield this.getClass(o.i().getClass().getCanonicalName());
+                            yield this.getClass(o.i().getClass().getCanonicalName().replace(".", "/"));
                         } else if (objectRef instanceof KnownVmObject o) {
                             yield o.type();
                         } else {
@@ -254,7 +245,7 @@ public class VirtualMachine {
 
                 var clazz = rootClass;
                 while (true) {
-                    var method = AsmUtils.getMethod(clazz.node, inst.name, inst.desc, mappings);
+                    var method = AsmUtils.getMethod(clazz.node, inst.name, inst.desc);
                     if (method != null) {
                         if ((method.access & Opcodes.ACC_ABSTRACT) != 0) {
                             throw new VmException("Method " + inst.name + inst.desc + " in "

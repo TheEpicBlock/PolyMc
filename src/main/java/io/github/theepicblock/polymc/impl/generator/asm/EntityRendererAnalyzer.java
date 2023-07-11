@@ -26,6 +26,9 @@ public class EntityRendererAnalyzer {
 
     private final ClientInitializerAnalyzer initializerInfo;
 
+    private final static AsmUtils.MappedFunction EntityModelLoader$getModelPart = AsmUtils.map("net.minecraft.class_5599", "method_32072", "(Lnet/minecraft/class_5601;)Lnet/minecraft/class_630;");
+    private final static AsmUtils.MappedFunction ModelPart$Cuboid$renderCuboid = AsmUtils.map("net.minecraft.class_630.class_628", "method_32089", "(Lnet/minecraft/class_4587$class_4665;Lnet/minecraft/class_4588;IIFFFF)V");
+
     /**
      * Vm for invoking the factory
      */
@@ -37,8 +40,7 @@ public class EntityRendererAnalyzer {
 
         @Override
         public void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
-            // net.minecraft.client.render.entity.model.EntityModelLoader#getModelPart
-            if (cmpFunc(inst, "net.minecraft.class_5599", "method_32072", "(Lnet/minecraft/class_5601;)Lnet/minecraft/class_630;")) {
+            if (cmpFunc(inst, EntityModelLoader$getModelPart)) {
                 var fmappings = FabricLoader.getInstance().getMappingResolver();
                 var modelLayer = arguments[1].simplify(ctx.machine()).extractAs(EntityModelLayer.class);
                 var texturedModelDataProvider = initializerInfo.getEntityModelLayer(modelLayer);
@@ -51,7 +53,7 @@ public class EntityRendererAnalyzer {
                 // Create a new state to run these in
                 var state = factoryVm.switchStack(null);
                 var texturedModelData = factoryVm.runLambda(texturedModelDataProvider, new StackEntry[0]);
-                var texturedModelData$createModel = AsmUtils.mapAll(fmappings, "net.minecraft.class_5607", "method_32109", "()Lnet/minecraft/class_3879;");
+                var texturedModelData$createModel = AsmUtils.map(fmappings, "net.minecraft.class_5607", "method_32109", "()Lnet/minecraft/class_3879;");
                 var createModelFunc = factoryVm.resolveMethod(null, new MethodInsnNode(Opcodes.INVOKEVIRTUAL, texturedModelData$createModel.clazz(), texturedModelData$createModel.method(), texturedModelData$createModel.desc(), false), texturedModelData);
                 if (createModelFunc == null) throw new RuntimeException("PolyMc: Couldn't find model creation function");
                 factoryVm.addMethodToStack(createModelFunc, new StackEntry[]{ texturedModelData });
@@ -101,7 +103,7 @@ public class EntityRendererAnalyzer {
         System.out.println("Renderer for "+entity.getTranslationKey()+": "+renderer);
 
         // We need to create a fake instruction that's calling the render method so we can resolve it
-        var entityRenderer$render = AsmUtils.mapAll(fmappings, "net.minecraft.class_897", "method_3936", "(Lnet/minecraft/class_1297;FFLnet/minecraft/class_4587;Lnet/minecraft/class_4597;I)V");
+        var entityRenderer$render = AsmUtils.map(fmappings, "net.minecraft.class_897", "method_3936", "(Lnet/minecraft/class_1297;FFLnet/minecraft/class_4587;Lnet/minecraft/class_4597;I)V");
         var inst = new MethodInsnNode(Opcodes.INVOKEINTERFACE, entityRenderer$render.clazz(), entityRenderer$render.method(), entityRenderer$render.desc(), false);
         var resolvedEntityRenderer$render = factoryVm.resolveMethod(null, inst, renderer);
         if (resolvedEntityRenderer$render == null) {
@@ -136,21 +138,10 @@ public class EntityRendererAnalyzer {
         return matrixStack;
     }
 
-    /**
-     * converts intermediary to obfuscated
-     */
-    public static boolean cmpFunc(MethodInsnNode inst, String intermediaryClassname, String methodName, String methodDesc) {
-        var fmapper = FabricLoader.getInstance().getMappingResolver();
-        
-        var instClass = fmapper.mapClassName("official", inst.owner.replace("/", "."));
-        var clazz = fmapper.mapClassName("intermediary", intermediaryClassname);
-
-        if (!instClass.equals(clazz)) return false;
-
-        var instMethodName = fmapper.mapMethodName("official", inst.owner.replace("/", "."), inst.name, inst.desc);
-        var meadaefafqwuuvgy = fmapper.mapMethodName("intermediary", intermediaryClassname, methodName, methodDesc); // I was tired whilst I wrote this
-
-        return instMethodName.equals(meadaefafqwuuvgy);
+    public static boolean cmpFunc(MethodInsnNode inst, AsmUtils.MappedFunction func) {
+        return (inst.owner.equals(func.clazz()) &&
+                inst.name.equals(func.method()) &&
+                inst.desc.equals(func.desc()));
     }
 
     public record RendererAnalyzerVmConfig(ExecutionGraphNode node) implements VmConfig {
@@ -162,9 +153,7 @@ public class EntityRendererAnalyzer {
 
         @Override
         public void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
-
-            // ModelPart.Cuboid.renderCuboid
-            if (cmpFunc(inst, "net.minecraft.class_630.class_628", "method_32089", "(Lnet/minecraft/class_4587$class_4665;Lnet/minecraft/class_4588;IIFFFF)V")) {
+            if (cmpFunc(inst, ModelPart$Cuboid$renderCuboid)) {
                 var cuboid = arguments[0];
                 var matrix = arguments[1].getField("positionMatrix"); // TODO mappings
                 node.addCall(new ExecutionGraphNode.RenderCall(cuboid, matrix));

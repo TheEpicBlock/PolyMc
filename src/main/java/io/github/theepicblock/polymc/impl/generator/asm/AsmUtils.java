@@ -17,17 +17,10 @@ import org.objectweb.asm.tree.MethodNode;
 import java.util.HashMap;
 
 public class AsmUtils {
-    public static @Nullable MethodNode getMethod(ClassNode node, String name, String desc, Mapping mapper) {
-        // This might be a client-only class, in which case it'll be in client jar, which is obfuscated
-        // So we check both obfuscated and non-obfuscated names
-        var obfuscated = mapper.getClassByOutputName(node.name).getMethodName(name, desc);
-        var obfuscatedDesc = mapper.remapDescriptor(desc); // We can't rely on the remapped descriptor attached on the mappings because the mappings don't include all functions. (namely it's missing <init> functions)
+    public static @Nullable MethodNode getMethod(ClassNode node, String name, String desc) {
         return node.methods
             .stream()
-            .filter(m -> 
-                (m.name.equals(name) && m.desc.equals(desc)) ||
-                (m.name.equals(obfuscated.name()) && m.desc.equals(obfuscatedDesc))
-            )
+            .filter(m -> (m.name.equals(name) && m.desc.equals(desc)))
             .findFirst()
             .orElse(null);
     }
@@ -66,14 +59,18 @@ public class AsmUtils {
         return (bitfield & flag) == flag;
     }
 
-    public static MapAll mapAll(MappingResolver resolver, String className, String methodName, String descriptor) {
+    public static MappedFunction map(String className, String methodName, String descriptor) {
+        return map(FabricLoader.getInstance().getMappingResolver(), className, methodName, descriptor);
+    }
+
+    public static MappedFunction map(MappingResolver resolver, String className, String methodName, String descriptor) {
         var newClassname = resolver.mapClassName("intermediary", className);
         var newMethodName = resolver.mapMethodName("intermediary", className, methodName, descriptor);
         var newDesc = Mapping.remapDescriptor(s -> resolver.mapClassName("intermediary", s), descriptor);
-        return new MapAll(newClassname, newMethodName, newDesc);
+        return new MappedFunction(newClassname.replace(".", "/"), newMethodName, newDesc);
     }
 
-    public record MapAll(String clazz, String method, String desc) {
+    public record MappedFunction(@InternalName String clazz, String method, String desc) {
     }
 
     /**

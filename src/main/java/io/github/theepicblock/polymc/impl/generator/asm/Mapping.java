@@ -1,31 +1,30 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.MappingResolver;
+import net.fabricmc.mapping.tree.TinyMappingFactory;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.function.Function;
 
-import org.jetbrains.annotations.NotNull;
-
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.MappingResolver;
-import net.fabricmc.mapping.tree.TinyMappingFactory;
-
 public class Mapping {
     public static ClassDef EMPTY_CLASS = new ClassDef(new HashMap<>(), new HashMap<>());
     /** 
      *  A map from classname in the input namespace, to classname in the output namespace
      */
-    private HashMap<String, String> classI2O = new HashMap<>();
+    private final HashMap<String, String> classI2O = new HashMap<>();
     /** 
      *  A map of {@link ClassDef}s by their name in the input namespace
      */
-    private HashMap<String, ClassDef> classInfoByI = new HashMap<>();
+    private final HashMap<String, ClassDef> classInfoByI = new HashMap<>();
     /** 
      *  A map of {@link ClassDef}s by their name in the output namespace
      */
-    private HashMap<String, ClassDef> classInfoByO = new HashMap<>();
+    private final HashMap<String, ClassDef> classInfoByO = new HashMap<>();
 
     public Mapping(BufferedReader reader, String inputNamespace, String outputNamespace) throws IOException {
         var tree = TinyMappingFactory.loadWithDetection(reader, true);

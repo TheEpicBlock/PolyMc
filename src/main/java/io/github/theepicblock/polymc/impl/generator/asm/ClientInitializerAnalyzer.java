@@ -135,7 +135,7 @@ public class ClientInitializerAnalyzer {
         });
     }
 
-    public void runAnalysis(String className, VirtualMachine vm) {
+    public void runAnalysis(@BinaryName String className, VirtualMachine vm) {
         try {
             PolyMc.LOGGER.info("OWKFoQP "+className);
             var methodName = "onInitializeClient";
@@ -144,7 +144,7 @@ public class ClientInitializerAnalyzer {
                 className = s[0];
                 methodName = s[1];
             }
-            vm.addMethodToStack(className, methodName, "()V");
+            vm.addMethodToStack(className.replace(".", "/"), methodName, "()V");
             vm.runToCompletion();
         } catch (VmException e) {
             e.printStackTrace();
