@@ -102,7 +102,7 @@ public class VirtualMachine {
 
     public void addMethodToStack(Clazz clazz, String method, String desc, @Nullable StackEntry[] arguments)
             throws VmException {
-        var meth = AsmUtils.getMethod(clazz.node, method, desc);
+        var meth = clazz.getMethod(method, desc);
         if (meth == null) {
             throw new VmException(
                     "Couldn't find method `" + method + "` with desc `" + desc + "` in class `" + clazz.node.name + "`",
@@ -194,7 +194,7 @@ public class VirtualMachine {
         switch (inst.getOpcode()) {
             case Opcodes.INVOKESTATIC -> {
                 var clazz = this.getClass(inst.owner);
-                var method = AsmUtils.getMethod(clazz.node, inst.name, inst.desc);
+                var method = clazz.getMethod(inst.name, inst.desc);
                 // This is a hard-error. Static methods shouldn't be hard to find and
                 // something's wrong here. So no returning null in this case
                 if (method == null)
@@ -210,7 +210,7 @@ public class VirtualMachine {
                 if (objectRef instanceof Lambda lambda && inst.getOpcode() != Opcodes.INVOKESPECIAL) {
                     var method = lambda.method();
                     var clazz = getClass(method.getOwner());
-                    var methNode = AsmUtils.getMethod(clazz.node, method.getName(), method.getDesc());
+                    var methNode = clazz.getMethod(method.getName(), method.getDesc());
                     if (methNode == null) return null;
                     return new MethodRef(clazz, methNode);
                 }
@@ -245,7 +245,7 @@ public class VirtualMachine {
 
                 var clazz = rootClass;
                 while (true) {
-                    var method = AsmUtils.getMethod(clazz.node, inst.name, inst.desc);
+                    var method = clazz.getMethod(inst.name, inst.desc);
                     if (method != null) {
                         if ((method.access & Opcodes.ACC_ABSTRACT) != 0) {
                             throw new VmException("Method " + inst.name + inst.desc + " in "
@@ -390,9 +390,14 @@ public class VirtualMachine {
         private ClassNode node;
         private boolean hasInitted;
         private Map<String, @NotNull StackEntry> staticFields = new HashMap<>();
+        private Map<String, @NotNull MethodNode> methodLookupCache = new HashMap<>();
 
         public Clazz(ClassNode node) {
             this.node = node;
+            // Populate method lookup cache
+            this.node.methods.forEach(method -> {
+                methodLookupCache.put(method.name+method.desc, method);
+            });
         }
 
         public @NotNull StackEntry getStatic(String name) {
@@ -401,6 +406,10 @@ public class VirtualMachine {
 
         public void setStatic(String name, @NotNull StackEntry v) {
             staticFields.put(name, v);
+        }
+
+        public @Nullable MethodNode getMethod(String name, String descriptor) {
+            return methodLookupCache.get(name+descriptor);
         }
 
         @Override

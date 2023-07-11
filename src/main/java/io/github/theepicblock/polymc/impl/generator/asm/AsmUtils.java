@@ -17,6 +17,10 @@ import org.objectweb.asm.tree.MethodNode;
 import java.util.HashMap;
 
 public class AsmUtils {
+    /**
+     * @deprecated This method is really slow, only use it in non-critical sections
+     */
+    @Deprecated
     public static @Nullable MethodNode getMethod(ClassNode node, String name, String desc) {
         return node.methods
             .stream()
