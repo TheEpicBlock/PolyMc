@@ -216,6 +216,14 @@ public class VirtualMachine {
                     throw new IllegalArgumentException(
                             "objectRef can't be null for method invocation (" + inst.getOpcode() + ")");
 
+                if (objectRef instanceof Lambda lambda && inst.getOpcode() != Opcodes.INVOKESPECIAL) {
+                    var method = lambda.method();
+                    var clazz = getClass(method.getOwner());
+                    var methNode = AsmUtils.getMethod(clazz.node, method.getName(), method.getDesc(), mappings);
+                    if (methNode == null) return null;
+                    return new MethodRef(clazz, methNode);
+                }
+
                 // Find the root class from which to start looking for the method
                 Clazz rootClass = switch (inst.getOpcode()) {
                     case Opcodes.INVOKESPECIAL -> {
