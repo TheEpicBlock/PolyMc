@@ -38,7 +38,7 @@ public class MethodExecutor {
         n.nextInstruction = this.nextInstruction;
         int i = 0;
         for (var var : this.localVariables) {
-            n.localVariables[i] = var.copy();
+            if (var != null) n.localVariables[i] = var.copy();
             i++;
         }
         return n;
