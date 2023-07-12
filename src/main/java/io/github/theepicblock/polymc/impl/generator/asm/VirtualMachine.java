@@ -207,14 +207,6 @@ public class VirtualMachine {
                     throw new IllegalArgumentException(
                             "objectRef can't be null for method invocation (" + inst.getOpcode() + ")");
 
-                if (objectRef instanceof Lambda lambda && inst.getOpcode() != Opcodes.INVOKESPECIAL) {
-                    var method = lambda.method();
-                    var clazz = getClass(method.getOwner());
-                    var methNode = clazz.getMethod(method.getName(), method.getDesc());
-                    if (methNode == null) return null;
-                    return new MethodRef(clazz, methNode);
-                }
-
                 // Find the root class from which to start looking for the method
                 Clazz rootClass = switch (inst.getOpcode()) {
                     case Opcodes.INVOKESPECIAL -> {
@@ -340,6 +332,16 @@ public class VirtualMachine {
             if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
                 // TODO figure out what to do with this
                 if (arguments[0].canBeSimplified()) arguments[0] = arguments[0].simplify(ctx.machine());
+            }
+
+            if (Util.first(arguments) instanceof Lambda lambda && inst.getOpcode() != Opcodes.INVOKESPECIAL) {
+                // This might break, it was only designed to deal with one specific type of lambda and idk if all lambda's act the same
+                var method = lambda.method();
+                var clazz = ctx.machine().getClass(method.getOwner());
+                // Remove first arg
+                var newArgs = new StackEntry[arguments.length-1];
+                System.arraycopy(arguments, 1, newArgs, 0, arguments.length - 1);
+                ctx.machine.addMethodToStack(clazz, method.getName(), method.getDesc(), newArgs);
             }
 
             // I'm pretty sure we're supposed to run clinit at this point, but let's delay
