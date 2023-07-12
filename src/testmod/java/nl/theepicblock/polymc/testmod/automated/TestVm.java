@@ -13,8 +13,6 @@ import net.minecraft.test.GameTestException;
 import net.minecraft.test.TestContext;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.function.IntFunction;
 
 public class TestVm implements FabricGameTest {
     @GameTest(templateName = EMPTY_STRUCTURE)
@@ -131,7 +129,7 @@ public class TestVm implements FabricGameTest {
 
     public static void assertReturns(String func, int expected) throws MethodExecutor.VmException {
         var vm = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {});
-        vm.addMethodToStack(TestVm.class.getName(), func, "()I"); // All test functions have a descriptor of ()I
+        vm.addMethodToStack(TestVm.class.getName().replace(".", "/"), func, "()I"); // All test functions have a descriptor of ()I
         var result = vm.runToCompletion();
         TestUtil.assertEq(result, new KnownInteger(expected));
 
