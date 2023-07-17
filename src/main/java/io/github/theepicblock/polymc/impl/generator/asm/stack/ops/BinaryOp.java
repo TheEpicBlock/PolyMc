@@ -110,8 +110,7 @@ public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements 
 
     @Override
     public <T> T extractAs(Class<T> type) {
-        // TODO better error handling here
-        throw new UnsupportedOperationException("");
+        throw new UnsupportedOperationException("Tried extracting a binOp as a "+type);
     }
 
     @Override
