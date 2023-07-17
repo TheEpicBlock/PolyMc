@@ -344,10 +344,16 @@ public class MethodExecutor {
             }
             case Opcodes.I2F -> castOp(Cast.Type.INTEGER, Cast.Type.FLOAT);
             case Opcodes.I2L -> castOp(Cast.Type.INTEGER, Cast.Type.LONG);
+            case Opcodes.I2D -> castOp(Cast.Type.INTEGER, Cast.Type.DOUBLE);
             case Opcodes.F2I -> castOp(Cast.Type.FLOAT, Cast.Type.INTEGER);
             case Opcodes.F2L -> castOp(Cast.Type.FLOAT, Cast.Type.LONG);
+            case Opcodes.F2D -> castOp(Cast.Type.FLOAT, Cast.Type.DOUBLE);
             case Opcodes.L2I -> castOp(Cast.Type.LONG, Cast.Type.INTEGER);
             case Opcodes.L2F -> castOp(Cast.Type.LONG, Cast.Type.FLOAT);
+            case Opcodes.L2D -> castOp(Cast.Type.LONG, Cast.Type.DOUBLE);
+            case Opcodes.D2I -> castOp(Cast.Type.DOUBLE, Cast.Type.INTEGER);
+            case Opcodes.D2F -> castOp(Cast.Type.DOUBLE, Cast.Type.FLOAT);
+            case Opcodes.D2L -> castOp(Cast.Type.DOUBLE, Cast.Type.LONG);
             case Opcodes.LDC -> {
                 var inst = (LdcInsnNode)instruction;
                 stack.push(StackEntry.knownStackValue(inst.cst));
