@@ -112,7 +112,7 @@ public class AsmUtils {
         }
 
         public VmObjectBuilder f(String name, Object object) {
-            this.fields.put(name, StackEntry.knownStackValue(object));
+            this.fields.put(name, StackEntry.known(object));
             return this;
         }
 

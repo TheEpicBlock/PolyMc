@@ -12,7 +12,7 @@ import org.objectweb.asm.Type;
 public interface StackEntry {
     static final Gson GSON = new Gson();
 
-    static @NotNull StackEntry knownStackValue(Object o) {
+    static @NotNull StackEntry known(Object o) {
         if (o instanceof Integer i) {
             return new KnownInteger(i);
         }
@@ -22,10 +22,29 @@ public interface StackEntry {
         if (o instanceof Float f) {
             return new KnownFloat(f);
         }
+        if (o instanceof Double d) {
+            return new KnownDouble(d);
+        }
         if (o instanceof Type t) {
             return new KnownClass(t);
         }
         return new KnownObject(o);
+    }
+
+    static @NotNull StackEntry known(int i) {
+        return new KnownInteger(i);
+    }
+
+    static @NotNull StackEntry known(long l) {
+        return new KnownLong(l);
+    }
+
+    static @NotNull StackEntry known(float f) {
+        return new KnownFloat(f);
+    }
+
+    static @NotNull StackEntry known(double d) {
+        return new KnownDouble(d);
     }
 
     default void setField(String name, StackEntry e) {

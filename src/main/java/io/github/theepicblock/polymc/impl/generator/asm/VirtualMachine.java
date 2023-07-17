@@ -4,6 +4,7 @@ import com.google.common.collect.Streams;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.lang3.NotImplementedException;
@@ -239,6 +240,9 @@ public class VirtualMachine {
                 while (true) {
                     var method = clazz.getMethod(inst.name, inst.desc);
                     if (method != null) {
+                        if ((method.access & Opcodes.ACC_NATIVE) != 0) {
+                            return null;
+                        }
                         if ((method.access & Opcodes.ACC_ABSTRACT) != 0) {
                             throw new VmException("Method " + inst.name + inst.desc + " in "
                                     + rootClass.node.name + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to an abstract method", null);
@@ -261,6 +265,7 @@ public class VirtualMachine {
     private static final @InternalName String String = Type.getInternalName(String.class);
     private static final @InternalName String Objects = Type.getInternalName(Objects.class);
     private static final @InternalName String _Arrays = Type.getInternalName(Arrays.class);
+    private static final @InternalName String _StrictMath = Type.getInternalName(StrictMath.class);
 
     public interface VmConfig {
         default @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
@@ -327,6 +332,36 @@ public class VirtualMachine {
                     && arguments[0] instanceof KnownArray a) {
                 ret(ctx, new KnownArray(Arrays.copyOf(a.data(), arguments[1].extractAs(Integer.class))));
                 return;
+            }
+            if (inst.owner.equals(_StrictMath)) {
+                // These are native methods. They need to be hardcoded
+                if (inst.name.equals("cos") && inst.desc.equals("(D)D")) {
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.cos(entry.extractAs(Double.class)))));
+                }
+                if (inst.name.equals("acos") && inst.desc.equals("(D)D")) {
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.acos(entry.extractAs(Double.class)))));
+                }
+                if (inst.name.equals("sin") && inst.desc.equals("(D)D")) {
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sin(entry.extractAs(Double.class)))));
+                }
+                if (inst.name.equals("asin") && inst.desc.equals("(D)D")) {
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.asin(entry.extractAs(Double.class)))));
+                }
+                if (inst.name.equals("tan") && inst.desc.equals("(D)D")) {
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.tan(entry.extractAs(Double.class)))));
+                }
+                if (inst.name.equals("atan") && inst.desc.equals("(D)D")) {
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.atan(entry.extractAs(Double.class)))));
+                }
+                if (inst.name.equals("log") && inst.desc.equals("(D)D")) {
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log(entry.extractAs(Double.class)))));
+                }
+                if (inst.name.equals("log10") && inst.desc.equals("(D)D")) {
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log10(entry.extractAs(Double.class)))));
+                }
+                if (inst.name.equals("sqrt") && inst.desc.equals("(D)D")) {
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sqrt(entry.extractAs(Double.class)))));
+                }
             }
 
             if (inst.getOpcode() != Opcodes.INVOKESTATIC) {

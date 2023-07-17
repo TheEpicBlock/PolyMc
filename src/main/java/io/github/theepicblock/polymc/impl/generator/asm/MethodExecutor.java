@@ -356,7 +356,7 @@ public class MethodExecutor {
             case Opcodes.D2L -> castOp(Cast.Type.DOUBLE, Cast.Type.LONG);
             case Opcodes.LDC -> {
                 var inst = (LdcInsnNode)instruction;
-                stack.push(StackEntry.knownStackValue(inst.cst));
+                stack.push(StackEntry.known(inst.cst));
             }
             case Opcodes.INSTANCEOF -> {
                 var inst = (TypeInsnNode)instruction;
