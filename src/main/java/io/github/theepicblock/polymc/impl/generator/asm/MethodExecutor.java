@@ -103,6 +103,8 @@ public class MethodExecutor {
             case Opcodes.FCONST_0 -> stack.push(new KnownFloat(0));
             case Opcodes.FCONST_1 -> stack.push(new KnownFloat(1));
             case Opcodes.FCONST_2 -> stack.push(new KnownFloat(2));
+            case Opcodes.DCONST_0 -> stack.push(new KnownDouble(0));
+            case Opcodes.DCONST_1 -> stack.push(new KnownDouble(1));
             case Opcodes.SIPUSH, Opcodes.BIPUSH -> stack.push(new KnownInteger(((IntInsnNode)instruction).operand));
             case Opcodes.ACONST_NULL -> stack.push(new KnownObject(null));
             case Opcodes.GETSTATIC -> {
