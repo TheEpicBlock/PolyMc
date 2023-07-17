@@ -21,9 +21,10 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull Map<@NotNull String, @
                 return new UnknownValue("Don't know value of field '"+name+"'");
             }
             return switch (field.desc) {
-                case "I" -> new KnownInteger(0);
+                case "I", "Z", "S", "C", "B" -> new KnownInteger(0);
                 case "J" -> new KnownLong(0);
                 case "F" -> new KnownFloat(0);
+                case "D" -> new KnownDouble(0);
                 default -> KnownObject.NULL;
             };
         }

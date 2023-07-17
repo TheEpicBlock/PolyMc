@@ -88,15 +88,7 @@ public class EntityRendererAnalyzer {
         if (rendererFactory == null) { return null; }
 
         // EntityRendererFactory.Context
-        var ctx = AsmUtils.constructVmObject(factoryVm, "net.minecraft.class_5617$class_5618")
-            .mockField("renderDispatcher")
-            .mockField("itemRenderer")
-            .mockField("blockRenderManager")
-            .mockField("heldItemRenderer")
-            .mockField("resourceManager")
-            .mockField("modelLoader")
-            .mockField("textRenderer")
-            .build();
+        var ctx = AsmUtils.mockVmObjectRemap(factoryVm, "net.minecraft.class_5617$class_5618");
 
         var renderer = factoryVm.runLambda(rendererFactory, new StackEntry[]{ ctx });
 
@@ -113,8 +105,7 @@ public class EntityRendererAnalyzer {
 
         var entityClass = InternalEntityHelpers.getEntityClass(entity);
         entityClass = entityClass == null ? Entity.class : entityClass;
-        var fakeEntity = AsmUtils.constructVmObject(factoryVm, entityClass)
-            .build();
+        var fakeEntity = AsmUtils.mockVmObject(factoryVm, entityClass.getName().replace(".", "/"));
         var matrixStack = createMatrixStack();
 
         // TODO all of these variables should be dynamic/symbolic
@@ -128,7 +119,7 @@ public class EntityRendererAnalyzer {
         var fmapper = FabricLoader.getInstance().getMappingResolver();
         var matrixStackInt = "net.minecraft.class_4587";
         var matrixStackRun = fmapper.mapClassName("intermediary", matrixStackInt).replace(".", "/");
-        var matrixStack = AsmUtils.constructVmObject(factoryVm, "net.minecraft.class_4587").build();
+        var matrixStack = AsmUtils.mockVmObjectRemap(factoryVm, "net.minecraft.class_4587");
         // Create new state for the vm, so we can generate a matrixStack without ruining other things
         var vmState = factoryVm.switchStack(null);
         factoryVm.addMethodToStack(factoryVm.getClass(matrixStackRun), "<init>", "()V", new StackEntry[] { matrixStack });

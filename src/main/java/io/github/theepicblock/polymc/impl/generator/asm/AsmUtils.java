@@ -1,15 +1,15 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
-import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.MockedField;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
 import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -77,47 +77,41 @@ public class AsmUtils {
     public record MappedFunction(@InternalName String clazz, String method, String desc) {
     }
 
-    /**
-     * Convenience method to create a vm object for a class.
-     * This is useful when {@link KnownObject}'s can't be used (such as when the object is client-only)
-     * @param className The name of the class in intermediary
-     * @throws VmException
-     */
-    public static VmObjectBuilder constructVmObject(VirtualMachine vm, String className) throws VmException {
+    public static KnownVmObject mockVmObjectRemap(VirtualMachine vm, @BinaryName String className) throws VmException {
         var runtimeName = FabricLoader.getInstance().getMappingResolver().mapClassName("intermediary", className);
-        var clazz = vm.getClass(runtimeName.replace(".", "/"));
-
-        return new VmObjectBuilder(clazz);
-    }
-    public static VmObjectBuilder constructVmObject(VirtualMachine vm, Class<?> clazzName) throws VmException {
-        var clazz = vm.getClass(clazzName.getName().replace(".", "/"));
-
-        return new VmObjectBuilder(clazz);
+        return mockVmObject(vm, runtimeName.replace(".", "/"));
     }
 
-    public static class VmObjectBuilder {
-        private final Clazz clazz;
-        private final HashMap<String, StackEntry> fields = new HashMap<>();
-        private final KnownVmObject object;
 
-        public VmObjectBuilder(Clazz clazz) {
-            this.clazz = clazz;
-            this.object = new KnownVmObject(clazz, fields);
+    public static KnownVmObject mockVmObject(VirtualMachine vm, @InternalName String className) throws VmException {
+        return mockVmObject(vm, className, 4);
+    }
+
+    public static KnownVmObject mockVmObject(VirtualMachine vm, @InternalName String className, int recursionLimit) throws VmException {
+        var clazz = vm.getClass(className);
+        var fields = new HashMap<String, StackEntry>();
+        fillFields(vm, fields, className, clazz.getNode(), recursionLimit);
+        return new KnownVmObject(clazz, fields);
+    }
+
+    private static void fillFields(VirtualMachine vm, HashMap<String, StackEntry> fields, @InternalName String rootName, ClassNode node, int recursionLimit) throws VmException {
+        if (recursionLimit == 0) return;
+        for (var field : node.fields) {
+            if ((field.access & Opcodes.ACC_STATIC) != 0) continue;
+            if (field.desc.startsWith("[")) {
+                // TODO
+                continue;
+            }
+            try {
+                fields.put(field.name, switch (field.desc) {
+                    case "I", "J", "F", "D", "Z", "B", "S", "C" -> new UnknownValue("Field "+field.name+" in "+rootName+" is mocked;");
+                    default -> mockVmObject(vm, field.desc.substring(1, field.desc.length()-1), recursionLimit - 1);
+                });
+            } catch (VmException ignored) {}
         }
-
-        public VmObjectBuilder mockField(String name) {
-            // TODO this bad, please create a `MockedObject` instead, k thx
-            this.fields.put(name, new MockedField(this.object, name));
-            return this;
-        }
-
-        public VmObjectBuilder f(String name, Object object) {
-            this.fields.put(name, StackEntry.known(object));
-            return this;
-        }
-
-        public KnownVmObject build() {
-            return new KnownVmObject(clazz, fields);
+        if (node.superName != null) {
+            var superClass = vm.getClass(node.superName);
+            fillFields(vm, fields, rootName, superClass.getNode(), recursionLimit);
         }
     }
 }
