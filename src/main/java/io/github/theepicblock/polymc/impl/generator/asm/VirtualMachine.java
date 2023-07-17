@@ -25,7 +25,7 @@ public class VirtualMachine {
     private final HashMap<@InternalName String, Clazz> classes = new HashMap<>();
     private final ClientClassLoader classResolver;
     private VmConfig config;
-    private AbstractObjectList<@NotNull MethodExecutor> stack = new ObjectArrayList<>();
+    private AbstractObjectList<@NotNull MethodExecutor> methodStack = new ObjectArrayList<>();
     private StackEntry lastReturnedValue;
 
     public VirtualMachine(ClientClassLoader classResolver, VmConfig config) {
@@ -40,8 +40,8 @@ public class VirtualMachine {
     public VirtualMachine copy() {
         var n = new VirtualMachine(this.classResolver, config);
         n.lastReturnedValue = this.lastReturnedValue;
-        for (var meth : this.stack) {
-            n.stack.add(meth.copy());
+        for (var meth : this.methodStack) {
+            n.methodStack.add(meth.copy(n));
         }
         return n;
     }
@@ -50,14 +50,14 @@ public class VirtualMachine {
         if (newStack == null) {
             newStack = new ObjectArrayList<>();
         }
-        var oldStack = this.stack;
-        this.stack = newStack;
+        var oldStack = this.methodStack;
+        this.methodStack = newStack;
         return oldStack;
     }
 
     @ApiStatus.Internal
     public MethodExecutor inspectRunningMethod() {
-        return this.stack.top();
+        return this.methodStack.top();
     }
 
     /**
@@ -66,10 +66,10 @@ public class VirtualMachine {
     @ApiStatus.Internal
     protected void onMethodReturn(@Nullable StackEntry returnValue) {
         this.lastReturnedValue = returnValue;
-        stack.pop(); // The top method returned a value now, so it shall be yeeted
+        methodStack.pop(); // The top method returned a value now, so it shall be yeeted
 
-        if (!stack.isEmpty()) {
-            stack.top().receiveReturnValue(returnValue);
+        if (!methodStack.isEmpty()) {
+            methodStack.top().receiveReturnValue(returnValue);
         }
     }
 
@@ -127,17 +127,17 @@ public class VirtualMachine {
 
         var executor = new MethodExecutor(this, localVariables,
                 methRef.clazz().node.name + "#" + meth.name + meth.desc);
-        stack.push(executor);
+        methodStack.push(executor);
         executor.setMethod(meth.instructions, methRef.clazz());
     }
 
     public StackEntry runToCompletion() throws VmException {
-        while (!this.stack.isEmpty()) {
-            var top = this.stack.top();
+        while (!this.methodStack.isEmpty()) {
+            var top = this.methodStack.top();
             try {
                 top.startExecution();
             } catch (VmException e) {
-                if (stack.isEmpty()) {
+                if (methodStack.isEmpty()) {
                     var newException = new VmException("Exception with empty stack (likely due to stack switch)", e);
                     this.config.onVmError(top.getName(), top.getName().endsWith("v"), newException);
                 } else {
@@ -382,7 +382,7 @@ public class VirtualMachine {
          */
         default void ret(Context ctx, StackEntry e) {
             // We're going to create a "method" and act like that one returned the value
-            ctx.machine.stack.push(new MethodExecutor(ctx.machine(), new StackEntry[0], "Fake method"));
+            ctx.machine.methodStack.push(new MethodExecutor(ctx.machine(), new StackEntry[0], "Fake method"));
             ctx.machine.onMethodReturn(e);
         }
     }

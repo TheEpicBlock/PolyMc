@@ -6,7 +6,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.ArrayLength;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.Cast;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.InstanceOf;
-import it.unimi.dsi.fastutil.Stack;
+import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -17,10 +17,10 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 public class MethodExecutor {
-    private Stack<@NotNull StackEntry> stack = new ObjectArrayList<>();
-    private VirtualMachine parent;
-    private StackEntry[] localVariables;
-    private String methodName;
+    private final AbstractObjectList<@NotNull StackEntry> stack = new ObjectArrayList<>();
+    private final VirtualMachine parent;
+    private final StackEntry[] localVariables;
+    private final String methodName;
     private AbstractInsnNode nextInstruction;
     private InsnList method;
     private Clazz owner;
@@ -31,8 +31,8 @@ public class MethodExecutor {
         this.methodName = methodName;
     }
 
-    public MethodExecutor copy() {
-        var n = new MethodExecutor(this.parent, new StackEntry[this.localVariables.length], this.methodName);
+    public MethodExecutor copy(VirtualMachine newVm) {
+        var n = new MethodExecutor(newVm, new StackEntry[this.localVariables.length], this.methodName);
         n.owner = this.owner;
         n.method = this.method;
         n.nextInstruction = this.nextInstruction;
@@ -40,6 +40,10 @@ public class MethodExecutor {
         for (var var : this.localVariables) {
             if (var != null) n.localVariables[i] = var.copy();
             i++;
+        }
+
+        for (var entry : this.stack) {
+            n.stack.push(entry.copy());
         }
         return n;
     }
