@@ -33,7 +33,7 @@ public record KnownObject(Object i, HashMap<Object, StackEntry> mutations) imple
     }
 
     @Override
-    public StackEntry getField(String name) throws VmException {
+    public @NotNull StackEntry getField(String name) throws VmException {
         if (mutations.containsKey(name)) {
             return mutations.get(name);
         }

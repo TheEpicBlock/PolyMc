@@ -177,7 +177,9 @@ public class MethodExecutor {
             }
             case Opcodes.GETFIELD -> {
                 var inst = (FieldInsnNode)instruction;
-                stack.push(stack.pop().getField(inst.name));
+                var obj = stack.pop();
+                if (obj.canBeSimplified()) obj = obj.simplify(this.parent);
+                stack.push(obj.getField(inst.name));
             }
             case Opcodes.AALOAD, Opcodes.BALOAD, Opcodes.CALOAD, Opcodes.DALOAD, Opcodes.FALOAD, Opcodes.IALOAD, Opcodes.LALOAD, Opcodes.SALOAD -> {
                 var index = stack.pop();
