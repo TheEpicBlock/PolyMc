@@ -266,6 +266,8 @@ public class VirtualMachine {
     private static final @InternalName String Objects = Type.getInternalName(Objects.class);
     private static final @InternalName String _Arrays = Type.getInternalName(Arrays.class);
     private static final @InternalName String _StrictMath = Type.getInternalName(StrictMath.class);
+    private static final @InternalName String _Float = Type.getInternalName(Float.class);
+    private static final @InternalName String _Double = Type.getInternalName(Double.class);
 
     public interface VmConfig {
         default @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
@@ -362,6 +364,15 @@ public class VirtualMachine {
                 if (inst.name.equals("sqrt") && inst.desc.equals("(D)D")) {
                     ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sqrt(entry.extractAs(Double.class)))));
                 }
+                return;
+            }
+            if (inst.owner.equals(_Float) && inst.name.equals("floatToRawIntBits")) {
+                ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.floatToRawIntBits(entry.extractAs(Float.class)))));
+                return;
+            }
+            if (inst.owner.equals(_Double) && inst.name.equals("doubleToRawLongBits")) {
+                ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.doubleToRawLongBits(entry.extractAs(Double.class)))));
+                return;
             }
 
             if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
