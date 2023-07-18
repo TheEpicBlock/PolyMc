@@ -382,7 +382,11 @@ public class VirtualMachine {
             // I'm pretty sure we're supposed to run clinit at this point, but let's delay
             // it as much as possible
             var method = ctx.machine().resolveMethod(currentClass, inst, Util.first(arguments));
-            if (method == null) {
+            invoke(ctx, currentClass, inst, arguments, method);
+        }
+
+        default void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments, @Nullable MethodRef methodRef) throws VmException {
+            if (methodRef == null) {
                 // This method is part of Object and wouldn't be found otherwise
                 if (inst.name.equals("hashCode") && inst.desc.equals("()I")
                         && Util.first(arguments) instanceof KnownObject obj) {
@@ -395,7 +399,7 @@ public class VirtualMachine {
                         : new UnknownValue("Can't resolve method " + inst.owner + "#" + inst.name + inst.desc));
                 return;
             }
-            ctx.machine.addMethodToStack(method, arguments);
+            ctx.machine.addMethodToStack(methodRef, arguments);
         }
 
         default @NotNull StackEntry newObject(Context ctx, TypeInsnNode inst) throws VmException {

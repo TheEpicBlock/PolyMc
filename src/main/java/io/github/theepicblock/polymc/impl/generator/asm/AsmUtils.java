@@ -18,6 +18,7 @@ import org.objectweb.asm.tree.MethodNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class AsmUtils {
@@ -42,6 +43,13 @@ public class AsmUtils {
     }
 
     public static Stream<FieldNode> getFields(VirtualMachine.Clazz rootClass) {
+        return getInheritanceChain(rootClass).stream().flatMap(classNode -> classNode.fields.stream());
+    }
+
+    /**
+     * @return a list containing the rootclass and all of its parents
+     */
+    public static List<ClassNode> getInheritanceChain(VirtualMachine.Clazz rootClass) {
         ClassNode clazz = rootClass.getNode();
         var classes = new ArrayList<ClassNode>();
         while (true) {
@@ -58,7 +66,7 @@ public class AsmUtils {
                 break;
             }
         }
-        return classes.stream().flatMap(classNode -> classNode.fields.stream());
+        return classes;
     }
 
     /**
