@@ -5,19 +5,27 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+
 /**
  * Represents and object that exists outside of the vm
  */
-public record KnownObject(Object i) implements StackEntry {
-    public static KnownObject NULL = new KnownObject(null);
+public record KnownObject(Object i, HashMap<Object, StackEntry> mutations) implements StackEntry {
+    public static KnownObject NULL = new KnownObject(null, null);
+
+    public KnownObject(Object i) {
+        this(i, new HashMap<>());
+    }
 
     @Override
     public JsonElement toJson() {
+        if (!mutations.isEmpty()) throw new NotImplementedException("Known object extraction does not yet factor in mutations");
         return StackEntry.GSON.toJsonTree(i);
     }
 
     @Override
     public <T> T extractAs(Class<T> type) {
+        if (!mutations.isEmpty()) throw new NotImplementedException("Known object extraction does not yet factor in mutations");
         if (type.isAssignableFrom(i.getClass())) {
             return (T)i;
         }
@@ -26,6 +34,9 @@ public record KnownObject(Object i) implements StackEntry {
 
     @Override
     public StackEntry getField(String name) throws VmException {
+        if (mutations.containsKey(name)) {
+            return mutations.get(name);
+        }
         try {
             var clazz = i.getClass();
             var field = clazz.getDeclaredField(name);
@@ -37,15 +48,19 @@ public record KnownObject(Object i) implements StackEntry {
     }
 
     @Override
-    public void setField(String name, StackEntry e) {
-        // We do *not* want to set this field on the actual object, because we don't know where the object originated from
-        // and we don't want the virtual machine to have any side effect on the actual jvm
-        throw new NotImplementedException("Can't set fields of jvm objects");
+    public void setField(String name, StackEntry e) throws VmException {
+        if (this.i == null) {
+            throw new VmException("Can't set property on null value", null);
+        }
+        mutations.put(name, e);
     }
 
     @Override
     public @NotNull StackEntry arrayAccess(int index) throws VmException {
         if (i instanceof Object[] arr) {
+            if (mutations.containsKey(index)) {
+                return mutations.get(index);
+            }
             if (arr[index] == null) {
                 return KnownObject.NULL;
             }
@@ -57,9 +72,7 @@ public record KnownObject(Object i) implements StackEntry {
 
     @Override
     public void arraySet(int index, @NotNull StackEntry entry) throws VmException {
-        // We do *not* want to set this index on the actual array object, because we don't know where the array object originated from
-        // and we don't want the virtual machine to have any side effect on the actual jvm
-        throw new NotImplementedException("Can't set fields of jvm objects");
+        mutations.put(index, entry);
     }
 
     @Override

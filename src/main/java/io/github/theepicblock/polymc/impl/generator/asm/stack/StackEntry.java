@@ -47,7 +47,7 @@ public interface StackEntry {
         return new KnownDouble(d);
     }
 
-    default void setField(String name, StackEntry e) {
+    default void setField(String name, StackEntry e) throws VmException {
         throw new NotImplementedException("Can't set field "+name+" on "+this);
     }
 
