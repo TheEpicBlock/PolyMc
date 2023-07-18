@@ -41,7 +41,6 @@ public class EntityRendererAnalyzer {
         @Override
         public void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
             if (cmpFunc(inst, EntityModelLoader$getModelPart)) {
-                var fmappings = FabricLoader.getInstance().getMappingResolver();
                 var modelLayer = arguments[1].simplify(ctx.machine()).extractAs(EntityModelLayer.class);
                 var texturedModelDataProvider = initializerInfo.getEntityModelLayer(modelLayer);
                 if (texturedModelDataProvider == null) {
@@ -53,7 +52,7 @@ public class EntityRendererAnalyzer {
                 // Create a new state to run these in
                 var state = factoryVm.switchStack(null);
                 var texturedModelData = factoryVm.runLambda(texturedModelDataProvider, new StackEntry[0]);
-                var texturedModelData$createModel = AsmUtils.map(fmappings, "net.minecraft.class_5607", "method_32109", "()Lnet/minecraft/class_3879;");
+                var texturedModelData$createModel = AsmUtils.map("net.minecraft.class_5607", "method_32109", "()Lnet/minecraft/class_630;");
                 var createModelFunc = factoryVm.resolveMethod(null, new MethodInsnNode(Opcodes.INVOKEVIRTUAL, texturedModelData$createModel.clazz(), texturedModelData$createModel.method(), texturedModelData$createModel.desc(), false), texturedModelData);
                 if (createModelFunc == null) throw new RuntimeException("PolyMc: Couldn't find model creation function");
                 factoryVm.addMethodToStack(createModelFunc, new StackEntry[]{ texturedModelData });
@@ -82,7 +81,6 @@ public class EntityRendererAnalyzer {
 
     public ExecutionGraphNode analyze(EntityType<?> entity) throws VmException {
         var rootNode = new ExecutionGraphNode();
-        var fmappings = FabricLoader.getInstance().getMappingResolver();
         var rendererFactory = initializerInfo.getEntityRenderer(entity);
 
         if (rendererFactory == null) { return null; }
@@ -95,7 +93,7 @@ public class EntityRendererAnalyzer {
         System.out.println("Renderer for "+entity.getTranslationKey()+": "+renderer);
 
         // We need to create a fake instruction that's calling the render method so we can resolve it
-        var entityRenderer$render = AsmUtils.map(fmappings, "net.minecraft.class_897", "method_3936", "(Lnet/minecraft/class_1297;FFLnet/minecraft/class_4587;Lnet/minecraft/class_4597;I)V");
+        var entityRenderer$render = AsmUtils.map("net.minecraft.class_897", "method_3936", "(Lnet/minecraft/class_1297;FFLnet/minecraft/class_4587;Lnet/minecraft/class_4597;I)V");
         var inst = new MethodInsnNode(Opcodes.INVOKEINTERFACE, entityRenderer$render.clazz(), entityRenderer$render.method(), entityRenderer$render.desc(), false);
         var resolvedEntityRenderer$render = factoryVm.resolveMethod(null, inst, renderer);
         if (resolvedEntityRenderer$render == null) {
