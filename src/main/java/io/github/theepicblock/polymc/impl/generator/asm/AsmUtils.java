@@ -97,7 +97,13 @@ public class AsmUtils {
     }
 
     public static @NotNull MappedFunction map(String className, String methodName, String descriptor) {
-        return map(FabricLoader.getInstance().getMappingResolver(), className, methodName, descriptor);
+        var result = map(FabricLoader.getInstance().getMappingResolver(), className, methodName, descriptor);
+        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+            if (result.clazz.equals(className) || result.method.equals(methodName)) {
+                PolyMc.LOGGER.warn("Warning: no change between "+result.clazz+"#"+result.method+result.desc+" and "+className+"#"+methodName+descriptor+" this might be wrong (unless this isn't a MC class");
+            }
+        }
+        return result;
     }
 
     public static MappedFunction map(MappingResolver resolver, String className, String methodName, String descriptor) {
