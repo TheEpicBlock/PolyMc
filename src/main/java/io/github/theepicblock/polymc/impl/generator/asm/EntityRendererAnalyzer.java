@@ -33,6 +33,8 @@ public class EntityRendererAnalyzer {
 
     private final static AsmUtils.MappedFunction EntityModelLoader$getModelPart = AsmUtils.map("net.minecraft.class_5599", "method_32072", "(Lnet/minecraft/class_5601;)Lnet/minecraft/class_630;");
     private final static AsmUtils.MappedFunction ModelPart$Cuboid$renderCuboid = AsmUtils.map("net.minecraft.class_630.class_628", "method_32089", "(Lnet/minecraft/class_4587$class_4665;Lnet/minecraft/class_4588;IIFFFF)V");
+    private final static String Entity$type = AsmUtils.mapField(Entity.class, "field_5961", "Lnet/minecraft/class_1299;");
+    private final static String Entity$dimensions = AsmUtils.mapField(Entity.class, "field_18065", "Lnet/minecraft/class_4048;");
 
     // Used to detect loops
     private final static AsmUtils.MappedFunction Iterator$hasNext = AsmUtils.map("java.util.Iterator", "hasNext", "()Z");
@@ -130,6 +132,9 @@ public class EntityRendererAnalyzer {
         var entityClass = InternalEntityHelpers.getEntityClass(entity);
         entityClass = entityClass == null ? Entity.class : entityClass;
         var fakeEntity = AsmUtils.mockVmObject(factoryVm, entityClass.getName().replace(".", "/"));
+        fakeEntity.setField(Entity$type, StackEntry.known(entity));
+        // The dimension technically could've changed in the constructor, this doesn't handle that
+        fakeEntity.setField(Entity$dimensions, StackEntry.known(entity.getDimensions()));
         var matrixStack = createMatrixStack();
 
         var rendererVm = new VirtualMachine(new ClientClassLoader(), new RendererAnalyzerVmConfig(rootNode));

@@ -106,6 +106,11 @@ public class AsmUtils {
         return new MappedFunction(newClassname.replace(".", "/"), newMethodName, newDesc);
     }
 
+    public static String mapField(Class<?> owner, String intermediaryName, String descriptor) {
+        var resolver = FabricLoader.getInstance().getMappingResolver();
+        return resolver.mapFieldName("intermediary", owner.getName(), intermediaryName, descriptor);
+    }
+
     public record MappedFunction(@InternalName String clazz, String method, String desc) {
     }
 
