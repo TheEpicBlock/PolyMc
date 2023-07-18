@@ -8,7 +8,10 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
@@ -129,9 +132,8 @@ public class EntityRendererAnalyzer {
         var fakeEntity = AsmUtils.mockVmObject(factoryVm, entityClass.getName().replace(".", "/"));
         var matrixStack = createMatrixStack();
 
-        // TODO all of these variables should be dynamic/symbolic
         var rendererVm = new VirtualMachine(new ClientClassLoader(), new RendererAnalyzerVmConfig(rootNode));
-        rendererVm.addMethodToStack(resolvedEntityRenderer$render, new StackEntry[] { renderer, fakeEntity, new KnownFloat(0.0f), new KnownFloat(0.0f), matrixStack, KnownObject.NULL, new KnownInteger(0) });
+        rendererVm.addMethodToStack(resolvedEntityRenderer$render, new StackEntry[] { renderer, fakeEntity, new UnknownValue("yaw"), new UnknownValue("tickDelta"), matrixStack, KnownObject.NULL, new UnknownValue("light") });
         rendererVm.runToCompletion();
         return rootNode;
     }
