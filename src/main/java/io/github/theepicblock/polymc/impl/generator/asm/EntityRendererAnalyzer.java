@@ -157,19 +157,19 @@ public class EntityRendererAnalyzer {
         return matrixStack;
     }
 
-    public static boolean cmpFunc(VirtualMachine.MethodRef method, AsmUtils.MappedFunction func) {
+    public static boolean cmpFunc(@NotNull VirtualMachine.MethodRef method, @NotNull AsmUtils.MappedFunction func) {
         return (method.clazz().getNode().name.equals(func.clazz()) &&
                 method.meth().name.equals(func.method()) &&
                 method.meth().desc.equals(func.desc()));
     }
 
-    public static boolean cmpInterfaceFunc(VirtualMachine.MethodRef method, AsmUtils.MappedFunction func) {
+    public static boolean cmpInterfaceFunc(@NotNull VirtualMachine.MethodRef method, @NotNull AsmUtils.MappedFunction func) {
         return (AsmUtils.getInheritanceChain(method.clazz()).stream().anyMatch(node -> func.clazz().equals(node.name)) &&
                 method.meth().name.equals(func.method()) &&
                 method.meth().desc.equals(func.desc()));
     }
 
-    public static boolean cmpFunc(MethodInsnNode inst, AsmUtils.MappedFunction func) {
+    public static boolean cmpFunc(@NotNull MethodInsnNode inst, @NotNull AsmUtils.MappedFunction func) {
         return (inst.owner.equals(func.clazz()) &&
                 inst.name.equals(func.method()) &&
                 inst.desc.equals(func.desc()));
@@ -183,7 +183,13 @@ public class EntityRendererAnalyzer {
         }
 
         @Override
-        public void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments, VirtualMachine.MethodRef method) throws VmException {
+        public void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments, @Nullable VirtualMachine.MethodRef method) throws VmException {
+            if (method == null) {
+                // Skip all the comparisons, it's null anyway
+                VmConfig.super.invoke(ctx, currentClass, inst, arguments, method);
+                return;
+            }
+
             if (cmpFunc(method, ModelPart$Cuboid$renderCuboid)) {
                 var cuboid = arguments[0];
                 var matrix = arguments[1].getField("positionMatrix"); // TODO mappings

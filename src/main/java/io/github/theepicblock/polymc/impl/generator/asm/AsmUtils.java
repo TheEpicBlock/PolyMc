@@ -9,6 +9,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
@@ -95,7 +96,7 @@ public class AsmUtils {
         return (bitfield & flag) == flag;
     }
 
-    public static MappedFunction map(String className, String methodName, String descriptor) {
+    public static @NotNull MappedFunction map(String className, String methodName, String descriptor) {
         return map(FabricLoader.getInstance().getMappingResolver(), className, methodName, descriptor);
     }
 
