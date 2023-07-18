@@ -428,15 +428,20 @@ public class MethodExecutor {
     }
 
     private boolean icmp(AbstractInsnNode inst, StackEntry value1, StackEntry value2, BiIntPredicate predicate) throws VmException {
-        if (value1 instanceof UnknownValue || value2 instanceof UnknownValue) throw new VmException("Int jump based on unknown variables ("+value1+","+value2+")", null);
-        
-        var int1 = value1.extractAs(Integer.class);
-        var int2 = value2.extractAs(Integer.class);
+        if (value1.canBeSimplified()) value1 = value1.simplify(this.parent);
+        if (value2.canBeSimplified()) value1 = value2.simplify(this.parent);
 
-        if (predicate.compute(int1, int2)) {
-            this.nextInstruction = ((JumpInsnNode)inst).label;
+        if (value1.isConcrete() && value2.isConcrete()) {
+            var int1 = value1.extractAs(Integer.class);
+            var int2 = value2.extractAs(Integer.class);
+
+            if (predicate.compute(int1, int2)) {
+                this.nextInstruction = ((JumpInsnNode)inst).label;
+            } else {
+                this.nextInstruction = inst.getNext();
+            }
         } else {
-            this.nextInstruction = inst.getNext();
+            this.parent.getConfig().handleUnknownJump(ctx(), value1, value2, inst.getOpcode(), ((JumpInsnNode)inst).label);
         }
         return true;
     }
