@@ -150,14 +150,14 @@ public class VirtualMachine {
         return this.lastReturnedValue;
     }
 
-    public Clazz getClass(@InternalName String name) throws VmException {
+    public Clazz getClass(@InternalName @NotNull String name) throws VmException {
         var clazz = this.classes.get(name);
         if (clazz == null) {
 
             // Load class using ASM
             try {
                 var node = classResolver.getClass(name);
-                clazz = new Clazz(node);
+                clazz = new Clazz(node, this);
                 this.classes.put(name, clazz);
             } catch (IOException e) {
                 throw new VmException("Error loading " + name, e);
@@ -429,17 +429,25 @@ public class VirtualMachine {
     };
 
     public static class Clazz {
-        private ClassNode node;
+        private final VirtualMachine loader;
+        private final ClassNode node;
         private boolean hasInitted;
-        private Map<String, @NotNull StackEntry> staticFields = new HashMap<>();
-        private Map<String, @NotNull MethodNode> methodLookupCache = new HashMap<>();
+        private final Map<String, @NotNull StackEntry> staticFields = new HashMap<>();
+        private final Map<String, @NotNull MethodNode> methodLookupCache = new HashMap<>();
 
-        public Clazz(ClassNode node) {
+        public Clazz(ClassNode node, VirtualMachine loader) {
             this.node = node;
             // Populate method lookup cache
             this.node.methods.forEach(method -> {
                 methodLookupCache.put(method.name+method.desc, method);
             });
+            this.loader = loader;
+        }
+
+        @ApiStatus.Internal
+        @ApiStatus.Experimental
+        public @NotNull VirtualMachine getLoader() {
+            return this.loader;
         }
 
         public @NotNull StackEntry getStatic(String name) {

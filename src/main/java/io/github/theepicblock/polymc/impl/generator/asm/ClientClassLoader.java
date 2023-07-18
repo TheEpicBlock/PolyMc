@@ -4,6 +4,7 @@ import com.google.common.collect.Streams;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.resource.ClientJarResourcesImpl;
 import net.fabricmc.loader.api.FabricLoader;
+import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
@@ -61,7 +62,7 @@ public class ClientClassLoader extends URLClassLoader {
      * The returned class is guaranteed to be in the current runtime mappings
      * as defined by {@link net.fabricmc.loader.api.MappingResolver#getCurrentRuntimeNamespace}
      */
-    public ClassNode getClass(@InternalName String clazz) throws IOException {
+    public ClassNode getClass(@InternalName @NotNull String clazz) throws IOException {
         var resource = this.getResourceAsStream(clazz + ".class");
         if (resource != null) {
             var node = new ClassNode(Opcodes.ASM9);

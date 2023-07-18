@@ -2,6 +2,7 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.github.theepicblock.polymc.impl.generator.asm.AsmUtils;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
@@ -16,7 +17,7 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull Map<@NotNull String, @
         var value = this.fields().get(name);
         if (value == null) {
             // We need to get the default value depending on the type of the field
-            var field = type.getNode().fields.stream().filter(f -> f.name.equals(name)).findAny().orElse(null);
+            var field = AsmUtils.getFields(type).filter(f -> f.name.equals(name)).findAny().orElse(null);
             if (field == null) {
                 return new UnknownValue("Don't know value of field '"+name+"'");
             }
