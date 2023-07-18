@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 public class ExecutionGraphNode {
     private final List<RenderCall> calls = new ArrayList<>();
@@ -27,15 +29,26 @@ public class ExecutionGraphNode {
     @Debug
     public Set<RenderCall> getUniqueCalls() {
         var set = new HashSet<RenderCall>();
-        getUniqueCalls(set);
+        visitContinuation(cont -> set.addAll(cont.calls));
         return set;
     }
 
-    private void getUniqueCalls(Set<RenderCall> calls) {
-        calls.addAll(this.calls);
+    private int countParallelUniverses() {
+        AtomicInteger counter = new AtomicInteger();
+        visitContinuation(cont -> {
+            // Only count leaf nodes
+            if (cont.continuation == null) {
+                counter.addAndGet(1);
+            }
+        });
+        return counter.get();
+    }
+
+    private void visitContinuation(Consumer<ExecutionGraphNode> consumer) {
+        consumer.accept(this);
         if (this.continuation != null) {
-            continuation.continuationIfFalse.getUniqueCalls(calls);
-            continuation.continuationIfTrue.getUniqueCalls(calls);
+            continuation.continuationIfFalse.visitContinuation(consumer);
+            continuation.continuationIfTrue.visitContinuation(consumer);
         }
     }
 
