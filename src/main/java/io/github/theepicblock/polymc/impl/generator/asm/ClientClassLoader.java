@@ -13,11 +13,13 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.HashMap;
 import java.util.stream.Stream;
 
 public class ClientClassLoader extends URLClassLoader {
     private final TeensyRemapper remapper;
     public final Mapping runtimeToObf = Mapping.runtimeToObfFromClasspath();
+    private final HashMap<String, ClassNode> cache = new HashMap<>();
 
     public ClientClassLoader() {
         super("PolyMc auto generated classloader", getUrls(), ClientClassLoader.getSystemClassLoader());
@@ -63,10 +65,14 @@ public class ClientClassLoader extends URLClassLoader {
      * as defined by {@link net.fabricmc.loader.api.MappingResolver#getCurrentRuntimeNamespace}
      */
     public ClassNode getClass(@InternalName @NotNull String clazz) throws IOException {
+        var c = cache.get(clazz);
+        if (c != null) return c;
+
         var resource = this.getResourceAsStream(clazz + ".class");
         if (resource != null) {
             var node = new ClassNode(Opcodes.ASM9);
             new ClassReader(resource).accept(node, 0);
+            cache.put(clazz, node);
             return node;
         }
 
@@ -79,7 +85,9 @@ public class ClientClassLoader extends URLClassLoader {
         if (resource != null) {
             // As this is part of the client jar, it needs to be remapped to
             // runtime mappings first
-            return remapper.remapPls(resource);
+            var node = remapper.remapPls(resource);
+            cache.put(clazz, node);
+            return node;
         }
 
         throw new IOException("Class "+clazz+" ("+obf+") not found");
