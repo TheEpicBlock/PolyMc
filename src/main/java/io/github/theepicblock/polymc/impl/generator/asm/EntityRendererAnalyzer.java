@@ -255,7 +255,7 @@ public class EntityRendererAnalyzer {
                 return;
             }
             if (cmpFunc(method, DataTracker$getEntry)) {
-                ret(ctx, AsmUtils.mockVmObject(ctx.machine(), "net.minecraft.class_2945.class_2946"));
+                ret(ctx, AsmUtils.mockVmObjectRemap(ctx.machine(), "net.minecraft.class_2945$class_2946"));
                 return;
             }
             if (cmpFunc(method, LivingEntityRenderer$shouldFlipUpsideDown)) {
