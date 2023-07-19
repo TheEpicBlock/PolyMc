@@ -310,6 +310,7 @@ public class MethodExecutor {
             case Opcodes.IUSHR -> binOp(BinaryOp.Type.INT, BinaryOp.Op.USHR);
             case Opcodes.ISHR  -> binOp(BinaryOp.Type.INT, BinaryOp.Op.SHR);
             case Opcodes.ISHL  -> binOp(BinaryOp.Type.INT, BinaryOp.Op.SHL);
+            case Opcodes.INEG  -> negate(BinaryOp.Type.INT);
             case Opcodes.LADD  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.ADD);
             case Opcodes.LSUB  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.SUB);
             case Opcodes.LMUL  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.MUL);
@@ -321,6 +322,7 @@ public class MethodExecutor {
             case Opcodes.LUSHR -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.USHR);
             case Opcodes.LSHR  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.SHR);
             case Opcodes.LSHL  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.SHL);
+            case Opcodes.LNEG  -> negate(BinaryOp.Type.LONG);
             case Opcodes.FADD  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.ADD);
             case Opcodes.FSUB  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.SUB);
             case Opcodes.FMUL  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.MUL);
@@ -328,6 +330,7 @@ public class MethodExecutor {
             case Opcodes.FREM  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.REM);
             case Opcodes.FCMPL -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.CMPL);
             case Opcodes.FCMPG -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.CMPG);
+            case Opcodes.FNEG  -> negate(BinaryOp.Type.FLOAT);
             case Opcodes.DADD  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.ADD);
             case Opcodes.DSUB  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.SUB);
             case Opcodes.DMUL  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.MUL);
@@ -335,6 +338,7 @@ public class MethodExecutor {
             case Opcodes.DREM  -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.REM);
             case Opcodes.DCMPL -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.CMPL);
             case Opcodes.DCMPG -> binOp(BinaryOp.Type.DOUBLE, BinaryOp.Op.CMPG);
+            case Opcodes.DNEG  -> negate(BinaryOp.Type.DOUBLE);
             case Opcodes.IINC -> {
                 var inst = (IincInsnNode)instruction;
                 var localVar = this.localVariables[inst.var];
@@ -407,6 +411,20 @@ public class MethodExecutor {
         if (c.canBeSimplified()) c = c.simplify(this.parent);
 
         stack.push(c);
+    }
+
+    private void negate(BinaryOp.Type type) throws VmException {
+        var value = stack.pop();
+        var m1 = switch (type) {
+            case INT -> new KnownInteger(-1);
+            case LONG -> new KnownLong(-1);
+            case FLOAT -> new KnownFloat(-1);
+            case DOUBLE -> new KnownDouble(-1);
+        };
+        StackEntry binOp = new BinaryOp(value, m1, BinaryOp.Op.MUL, type);
+        if (binOp.canBeSimplified()) binOp = binOp.simplify(this.parent);
+
+        stack.push(binOp);
     }
 
     private void binOp(BinaryOp.Type type, BinaryOp.Op op) throws VmException {
