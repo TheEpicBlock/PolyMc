@@ -246,7 +246,13 @@ public class MethodExecutor {
             case Opcodes.IF_ACMPEQ -> {
                 var a = stack.pop();
                 var b = stack.pop();
-                if (a instanceof UnknownValue || b instanceof UnknownValue) throw new VmException("Jump(IF_ACMPEQ) based on unknown variables ("+a+","+b+")", null);
+                if (a.canBeSimplified()) a = a.simplify(this.parent);
+                if (b.canBeSimplified()) b = b.simplify(this.parent);
+                if (!a.isConcrete() || !b.isConcrete()) {
+                    this.parent.getConfig().handleUnknownJump(ctx(), a, null, Opcodes.IF_ACMPEQ, ((JumpInsnNode)instruction).label);
+                    return true;
+                }
+
                 if (a == b) {
                     this.nextInstruction = ((JumpInsnNode)instruction).label;
                     return true;
@@ -255,7 +261,13 @@ public class MethodExecutor {
             case Opcodes.IF_ACMPNE -> {
                 var a = stack.pop();
                 var b = stack.pop();
-                if (a instanceof UnknownValue || b instanceof UnknownValue) throw new VmException("Jump(IF_ACMPNE) based on unknown variables ("+a+","+b+")", null);
+                if (a.canBeSimplified()) a = a.simplify(this.parent);
+                if (b.canBeSimplified()) b = b.simplify(this.parent);
+                if (!a.isConcrete() || !b.isConcrete()) {
+                    this.parent.getConfig().handleUnknownJump(ctx(), a, null, Opcodes.IF_ACMPNE, ((JumpInsnNode)instruction).label);
+                    return true;
+                }
+
                 if (a != b) {
                     this.nextInstruction = ((JumpInsnNode)instruction).label;
                     return true;
