@@ -92,6 +92,14 @@ public class AsmUtils {
         return null;
     }
 
+    public static boolean hasFlag(ClassNode node, int flag) {
+        return hasFlag(node.access, flag);
+    }
+
+    public static boolean hasFlag(MethodNode node, int flag) {
+        return hasFlag(node.access, flag);
+    }
+
     public static boolean hasFlag(int bitfield, int flag) {
         return (bitfield & flag) == flag;
     }

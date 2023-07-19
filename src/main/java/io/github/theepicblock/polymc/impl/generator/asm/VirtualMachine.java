@@ -213,12 +213,15 @@ public class VirtualMachine {
                     case Opcodes.INVOKESPECIAL -> {
                         // See
                         // https://docs.oracle.com/javase/specs/jvms/se10/html/jvms-6.html#jvms-6.5.invokespecial
+                        var clazz = this.getClass(inst.owner);
                         if (!inst.name.startsWith("<init>") &&
-                                !AsmUtils.hasFlag(currentClass.node.access, Opcodes.ACC_INTERFACE) &&
-                                AsmUtils.hasFlag(currentClass.node.access, Opcodes.ACC_SUPER)) {
+                                !AsmUtils.hasFlag(clazz.node, Opcodes.ACC_INTERFACE) &&
+                                // class must be a superclass of the current class
+                                AsmUtils.getInheritanceChain(currentClass).stream().skip(1).anyMatch(classNode -> classNode.name.equals(inst.owner)) &&
+                                AsmUtils.hasFlag(currentClass.node, Opcodes.ACC_SUPER)) {
                             yield this.getClass(currentClass.node.superName);
                         } else {
-                            yield this.getClass(inst.owner);
+                            yield clazz;
                         }
                     }
                     case Opcodes.INVOKEINTERFACE, Opcodes.INVOKEVIRTUAL -> {
@@ -236,30 +239,56 @@ public class VirtualMachine {
                 if (rootClass == null)
                     return null;
 
+                // Step 2 of method resolution (done recursively for each superclass)
+                // See https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-5.html#jvms-5.4.3.3
                 var clazz = rootClass;
                 while (true) {
                     var method = clazz.getMethod(inst.name, inst.desc);
                     if (method != null) {
-                        if ((method.access & Opcodes.ACC_NATIVE) != 0) {
+                        if (AsmUtils.hasFlag(method, Opcodes.ACC_NATIVE)) {
                             throw new VmException("Method " + inst.name + inst.desc + " in "
                                     + rootClass.node.name + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to a native method", null);
                         }
-                        if ((method.access & Opcodes.ACC_ABSTRACT) != 0) {
+                        if (AsmUtils.hasFlag(method, Opcodes.ACC_ABSTRACT)) {
                             throw new VmException("Method " + inst.name + inst.desc + " in "
                                     + rootClass.node.name + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to an abstract method", null);
                         }
                         return new MethodRef(clazz, method);
                     } else {
                         // Check super class
-                        if (clazz.node.superName == null)
-                            throw new VmException("Can't find method " + inst.name + inst.desc + " in "
-                                    + rootClass.node.name + " (" + inst.getOpcode() + ", " + inst.owner + ")", null);
+                        if (clazz.node.superName == null) break;
                         clazz = this.getClass(clazz.node.superName);
                     }
                 }
+
+                // Step 3 of method resolution
+                if (inst.getOpcode() == Opcodes.INVOKEINTERFACE || inst.getOpcode() == Opcodes.INVOKEVIRTUAL) {
+                    clazz = rootClass; // Reset back to the root class
+                    while (true) {
+                        for (var interface_ : clazz.node.interfaces) {
+                            var interfaceClass = this.getClass(interface_);
+                            while (true) {
+                                var defaultMethod = interfaceClass.getMethod(inst.name, inst.desc);
+                                if (defaultMethod != null &&
+                                        !AsmUtils.hasFlag(defaultMethod, Opcodes.ACC_ABSTRACT) &&
+                                        !AsmUtils.hasFlag(defaultMethod, Opcodes.ACC_STATIC) &&
+                                        !AsmUtils.hasFlag(defaultMethod, Opcodes.ACC_PRIVATE))
+                                    return new MethodRef(interfaceClass, defaultMethod);
+                                if (interfaceClass.node.superName == null) break;
+                                interfaceClass = this.getClass(interfaceClass.node.superName);
+                            }
+                        }
+                        if (clazz.node.superName == null) break;
+                        clazz = this.getClass(clazz.node.superName);
+                    }
+                }
+
+
+                throw new VmException("Can't find method " + inst.name + inst.desc + " in "
+                        + rootClass.node.name + " (" + inst.getOpcode() + ", " + inst.owner + ")", null);
             }
+            default -> throw new UnsupportedOperationException("instruction shouldn't have an opcode of "+inst.getOpcode());
         }
-        return null;
     }
 
     private static final @InternalName String LoggerFactory = Type.getInternalName(LoggerFactory.class);

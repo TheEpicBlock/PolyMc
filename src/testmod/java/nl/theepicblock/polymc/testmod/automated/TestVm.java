@@ -127,6 +127,12 @@ public class TestVm implements FabricGameTest {
         ctx.complete();
     }
 
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void interfaceDefault(TestContext ctx) throws MethodExecutor.VmException {
+        assertReturns("interfaceDefaultFunc", 546);
+        ctx.complete();
+    }
+
     public static void assertReturns(String func, int expected) throws MethodExecutor.VmException {
         var vm = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {});
         vm.addMethodToStack(TestVm.class.getName().replace(".", "/"), func, "()I"); // All test functions have a descriptor of ()I
@@ -169,5 +175,18 @@ public class TestVm implements FabricGameTest {
 
     private interface IntProvider {
         int gimme();
+    }
+
+    public static int interfaceDefaultFunc() {
+        var myRecord = new RecordImplementingDefaultInterface();
+        return myRecord.gimme();
+    }
+
+    private record RecordImplementingDefaultInterface() implements InterfaceWithDefault{}
+
+    private interface InterfaceWithDefault {
+        default int gimme() {
+            return 546;
+        }
     }
 }
