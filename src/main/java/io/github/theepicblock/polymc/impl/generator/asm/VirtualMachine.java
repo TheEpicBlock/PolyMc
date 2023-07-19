@@ -81,7 +81,7 @@ public class VirtualMachine {
         var method = lambda.method();
         var clazz = getClass(method.getOwner());
         if (method.getTag() == Opcodes.H_NEWINVOKESPECIAL) {
-            var newO = new StackEntry[] { new KnownVmObject(clazz, new HashMap<>()) };
+            var newO = new StackEntry[] { new KnownVmObject(clazz, new CowCapableMap<>()) };
             StackEntry[] args = Streams
                     .concat(Arrays.stream(newO), Arrays.stream(arguments), Arrays.stream(lambda.extraArguments()))
                     .toArray(StackEntry[]::new);
@@ -445,7 +445,7 @@ public class VirtualMachine {
 
         default @NotNull StackEntry newObject(Context ctx, TypeInsnNode inst) throws VmException {
             var clazz = ctx.machine.getClass(inst.desc);
-            return new KnownVmObject(clazz, new HashMap<>());
+            return new KnownVmObject(clazz, new CowCapableMap<>());
         }
 
         default void handleUnknownInstruction(Context ctx, AbstractInsnNode instruction, int lineNumber)

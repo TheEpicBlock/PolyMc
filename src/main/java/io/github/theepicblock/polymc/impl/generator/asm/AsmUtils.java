@@ -18,7 +18,6 @@ import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -141,7 +140,7 @@ public class AsmUtils {
 
     public static KnownVmObject mockVmObject(VirtualMachine vm, @InternalName String className, int recursionLimit) throws VmException {
         var clazz = vm.getClass(className);
-        var fields = new HashMap<String, StackEntry>();
+        var fields = new CowCapableMap<String>();
         if (recursionLimit > 0) {
             getFields(clazz).forEach(field -> {
                 if ((field.access & Opcodes.ACC_STATIC) != 0) return;

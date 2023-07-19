@@ -3,15 +3,13 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.theepicblock.polymc.impl.generator.asm.AsmUtils;
+import io.github.theepicblock.polymc.impl.generator.asm.CowCapableMap;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public record KnownVmObject(@NotNull Clazz type, @NotNull Map<@NotNull String, @NotNull StackEntry> fields) implements StackEntry {
+public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull String> fields) implements StackEntry {
     @Override
     public @NotNull StackEntry getField(String name) {
         var value = this.fields().get(name);
@@ -64,10 +62,6 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull Map<@NotNull String, @
 
     @Override
     public StackEntry copy() {
-        var newMap = new HashMap<String, StackEntry>();
-        this.fields.forEach((key, val) -> {
-            newMap.put(key, val.copy());
-        });
-        return new KnownVmObject(this.type, newMap);
+        return new KnownVmObject(this.type, this.fields.createClone());
     }
 }
