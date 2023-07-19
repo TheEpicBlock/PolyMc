@@ -12,6 +12,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
@@ -27,17 +28,23 @@ import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
 public class EntityRendererAnalyzer {
-    public static final SharedValuesKey<EntityRendererAnalyzer> KEY = new SharedValuesKey<EntityRendererAnalyzer>(EntityRendererAnalyzer::new, null);
+    public static final SharedValuesKey<EntityRendererAnalyzer> KEY = new SharedValuesKey<>(EntityRendererAnalyzer::new, null);
 
     private final ClientInitializerAnalyzer initializerInfo;
 
     private final static AsmUtils.MappedFunction EntityModelLoader$getModelPart = AsmUtils.map("net.minecraft.class_5599", "method_32072", "(Lnet/minecraft/class_5601;)Lnet/minecraft/class_630;");
-    private final static AsmUtils.MappedFunction ModelPart$Cuboid$renderCuboid = AsmUtils.map("net.minecraft.class_630.class_628", "method_32089", "(Lnet/minecraft/class_4587$class_4665;Lnet/minecraft/class_4588;IIFFFF)V");
+    private final static AsmUtils.MappedFunction ModelPart$Cuboid$renderCuboid = AsmUtils.map("net.minecraft.class_630$class_628", "method_32089", "(Lnet/minecraft/class_4587$class_4665;Lnet/minecraft/class_4588;IIFFFF)V");
+    private final static AsmUtils.MappedFunction MobEntityRenderer$renderLeash = AsmUtils.map("net.minecraft.class_927", "method_4073", "(Lnet/minecraft/class_1308;FLnet/minecraft/class_4587;Lnet/minecraft/class_4597;Lnet/minecraft/class_1297;)V");
     private final static String Entity$type = AsmUtils.mapField(Entity.class, "field_5961", "Lnet/minecraft/class_1299;");
     private final static String Entity$dimensions = AsmUtils.mapField(Entity.class, "field_18065", "Lnet/minecraft/class_4048;");
+    private final static AsmUtils.MappedFunction VertexConsumerProvider$getBuffer = AsmUtils.map("net.minecraft.class_4597", "getBuffer", "(Lnet/minecraft/class_1921;)Lnet/minecraft/class_4597;");
 
     // Used to detect loops
     private final static AsmUtils.MappedFunction Iterator$hasNext = AsmUtils.map("java.util.Iterator", "hasNext", "()Z");
+
+    // Needs to be special-cased because I'm not instantiating a darn *MinecraftClient* instance in the vm
+    private final static AsmUtils.MappedFunction MinecraftClient$getInstance = AsmUtils.map("net.minecraft.class_310", "method_1551", "()Lnet/minecraft/class_310;");
+    private final static AsmUtils.MappedFunction MinecraftClient$hasOutline = AsmUtils.map("net.minecraft.class_310", "method_27022", "(Lnet/minecraft/class_1297;)Z");
 
     // We can consider these methods to just be properties of the entity
     // They're not executed in order to prevent jumps on unknown values
@@ -48,6 +55,7 @@ public class EntityRendererAnalyzer {
     private final static AsmUtils.MappedFunction LivingEntity$getHandSwingProgress = AsmUtils.map("net.minecraft.class_1309", "method_6055", "(F)F");
     private final static AsmUtils.MappedFunction LivingEntityRenderer$hasLabel = AsmUtils.map("net.minecraft.class_922", "method_4055", "(Lnet/minecraft/class_1309;)Z");
     private final static AsmUtils.MappedFunction MobEntityRenderer$hasLabel = AsmUtils.map("net.minecraft.class_927", "method_4071", "(Lnet/minecraft/class_1308;)Z");
+    private final static AsmUtils.MappedFunction DataTracker$getEntry = AsmUtils.map("net.minecraft.class_2945", "method_12783", "(Lnet/minecraft/class_2940;)Lnet/minecraft/class_2945$class_2946;");
 
     // These methods are functional and have no side effects.
     // They're executed lazily in order to prevent jumps on unknown values
@@ -56,6 +64,7 @@ public class EntityRendererAnalyzer {
     private final static AsmUtils.MappedFunction MathHelper$wrapDegreesF = AsmUtils.map("net.minecraft.class_3532", "method_15393", "(F)F");
     private final static AsmUtils.MappedFunction MathHelper$wrapDegreesD = AsmUtils.map("net.minecraft.class_3532", "method_15338", "(D)D");
     private final static AsmUtils.MappedFunction Entity$removeClickEvents = AsmUtils.map("net.minecraft.class_1297", "method_5856", "(Lnet/minecraft/class_2561;)Lnet/minecraft/class_2561;");
+    private final static AsmUtils.MappedFunction Entity$isInPose = AsmUtils.map("net.minecraft.class_1297", "method_41328", "(Lnet/minecraft/class_4050;)Z");
 
     /**
      * Vm for invoking the factory
@@ -197,8 +206,21 @@ public class EntityRendererAnalyzer {
                 ret(ctx, null); // Function is void
                 return;
             }
+            if (cmpFunc(method, MobEntityRenderer$renderLeash)) {
+                // TODO should probably track these calls
+                ret(ctx, null); // Function is void
+                return;
+            }
 
             // Other special-cased functions
+            if (cmpFunc(method, MinecraftClient$getInstance)) {
+                ret(ctx, AsmUtils.mockVmObjectRemap(ctx.machine(), "net.minecraft.class_310"));
+                return;
+            }
+            if (cmpFunc(method, MinecraftClient$hasOutline)) {
+                ret(ctx, new KnownInteger(false)); // Let's… not deal with that now
+                return;
+            }
             if (cmpFunc(method, Iterator$hasNext) && !arguments[0].isConcrete()) {
                 // If we don't do this, infinite amounts of parallel universes will be created.
                 // One for each potential iteration of the loop
@@ -232,6 +254,10 @@ public class EntityRendererAnalyzer {
                 ret(ctx, new UnknownValue("hasLabel"));
                 return;
             }
+            if (cmpFunc(method, DataTracker$getEntry)) {
+                ret(ctx, AsmUtils.mockVmObject(ctx.machine(), "net.minecraft.class_2945.class_2946"));
+                return;
+            }
             if (cmpFunc(method, LivingEntityRenderer$shouldFlipUpsideDown)) {
                 ret(ctx, new UnaryArbitraryOp(arguments[0], stackEntry -> new KnownInteger(1))); // TODO
                 return;
@@ -252,8 +278,25 @@ public class EntityRendererAnalyzer {
                 ret(ctx, new UnaryArbitraryOp(arguments[0], stackEntry -> stackEntry)); // TODO
                 return;
             }
+            if (cmpFunc(method, Entity$isInPose)) {
+                ret(ctx, new BinaryArbitraryOp(arguments[0], arguments[1], (stackEntry, stackEntry2) -> new KnownInteger(false))); // TODO
+                return;
+            }
 
             VmConfig.super.invoke(ctx, currentClass, inst, arguments, method);
+        }
+
+        @Override
+        public void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
+            // The vertex consumer is actually KnownObject(null), so it produces an npe
+            // That's why this function is placed here, before the method is actually resolved to bytecode
+            if (cmpFunc(inst, VertexConsumerProvider$getBuffer)) {
+                // TODO, needs to be tracked further
+                ret(ctx, new UnknownValue("VertexBuffer"));
+                return;
+            }
+
+            VmConfig.super.invoke(ctx, currentClass, inst, arguments);
         }
 
         @Override

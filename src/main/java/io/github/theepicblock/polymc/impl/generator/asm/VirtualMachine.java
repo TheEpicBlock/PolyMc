@@ -241,7 +241,8 @@ public class VirtualMachine {
                     var method = clazz.getMethod(inst.name, inst.desc);
                     if (method != null) {
                         if ((method.access & Opcodes.ACC_NATIVE) != 0) {
-                            return null;
+                            throw new VmException("Method " + inst.name + inst.desc + " in "
+                                    + rootClass.node.name + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to a native method", null);
                         }
                         if ((method.access & Opcodes.ACC_ABSTRACT) != 0) {
                             throw new VmException("Method " + inst.name + inst.desc + " in "
