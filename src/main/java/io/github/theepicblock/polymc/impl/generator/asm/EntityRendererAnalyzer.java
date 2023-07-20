@@ -70,7 +70,7 @@ public class EntityRendererAnalyzer {
     /**
      * Vm for invoking the factory
      */
-    private final VirtualMachine factoryVm = new VirtualMachine(new ClientClassLoader(), (VmConfig) new VmConfig() {
+    private final VirtualMachine factoryVm = new VirtualMachine(new ClientClassLoader(), new VmConfig() {
         @Override
         public @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
             return new StaticFieldValue(inst.owner, inst.name); // Evaluate static fields lazily
@@ -192,10 +192,11 @@ public class EntityRendererAnalyzer {
 
         @Override
         public @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
-            if (inst.owner.equals("org/joml/Runtime")) {
-                return new KnownInteger(false);
-            }
-            return new StaticFieldValue(inst.owner, inst.name); // Evaluate static fields lazily
+            var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, inst);
+            if (fromEnvironment != null) return fromEnvironment;
+            // Try and resolve the static field in the factoryVm, I don't think it's a good idea to
+            // spawn parallel universes from static fields at the moment
+            return new StaticFieldValue(inst.owner, inst.name).simplify(root.factoryVm);
         }
 
         @Override

@@ -9,6 +9,9 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Type;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public interface StackEntry {
     static final Gson GSON = new Gson();
 
@@ -67,10 +70,17 @@ public interface StackEntry {
         return false;
     }
 
+    default StackEntry simplify(VirtualMachine vm) throws VmException {
+        return simplify(vm, new HashMap<>());
+    }
+
     /**
      * For stack entries that represent delayed instructions, such as {@link StaticFieldValue}
+     * @param simplificationCache A mutable map that can be used to cache a {@link StackEntry} to its simplified value
+     *                            This prevents infinite recursion when an entry contains a reference to itself.
+     *                            This cache isn't used in most {@link StackEntry}'s, except {@link KnownVmObject}
      */
-    default StackEntry simplify(VirtualMachine vm) throws VmException {
+    default StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws VmException {
         return this;
     }
 

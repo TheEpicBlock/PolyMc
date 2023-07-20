@@ -339,6 +339,10 @@ public class VirtualMachine {
                     ret(ctx, new KnownInteger(str.length()));
                     return;
                 }
+                if (inst.name.equals("hashCode")) {
+                    ret(ctx, new KnownInteger(str.length()));
+                    return;
+                }
                 if (inst.name.equals("charAt")) {
                     if (arguments[1].canBeSimplified()) arguments[1].simplify(ctx.machine());
                     if (arguments[1].isConcrete()) {
@@ -454,7 +458,7 @@ public class VirtualMachine {
         }
 
         default void handleUnknownJump(Context ctx, StackEntry compA, @Nullable StackEntry compB, int opcode, LabelNode target) throws VmException {
-            throw new VmException("Jump on unknown value(s)", null);
+            throw new VmException("Jump on unknown value(s) ("+compA+", "+compB+")", null);
         }
 
         /**

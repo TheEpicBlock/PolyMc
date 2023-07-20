@@ -5,6 +5,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -16,9 +17,9 @@ public record UnaryArbitraryOp(StackEntry inner, Function<StackEntry, StackEntry
     }
 
     @Override
-    public StackEntry simplify(VirtualMachine vm) throws MethodExecutor.VmException {
+    public StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws MethodExecutor.VmException {
         var entryinner = this.inner;
-        if (entryinner.canBeSimplified()) entryinner = entryinner.simplify(vm);
+        if (entryinner.canBeSimplified()) entryinner = entryinner.simplify(vm, simplificationCache);
 
         if (entryinner.isConcrete()) {
             var result = arbitraryFunction.apply(entryinner);

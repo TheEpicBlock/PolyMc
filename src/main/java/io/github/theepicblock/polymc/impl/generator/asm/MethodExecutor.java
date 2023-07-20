@@ -91,7 +91,7 @@ public class MethodExecutor {
         pushIfNotNull(returnValue);
     }
 
-    public boolean execute(AbstractInsnNode instruction) throws VmException, ReturnEarly {
+    public boolean execute(AbstractInsnNode instruction) throws VmException {
         switch (instruction.getOpcode()) {
             case Opcodes.ICONST_0 -> stack.push(new KnownInteger(0));
             case Opcodes.ICONST_1 -> stack.push(new KnownInteger(1));
@@ -461,7 +461,7 @@ public class MethodExecutor {
 
     private boolean icmp(AbstractInsnNode inst, StackEntry value1, StackEntry value2, BiIntPredicate predicate) throws VmException {
         if (value1.canBeSimplified()) value1 = value1.simplify(this.parent);
-        if (value2.canBeSimplified()) value1 = value2.simplify(this.parent);
+        if (value2.canBeSimplified()) value2 = value2.simplify(this.parent);
 
         if (value1.isConcrete() && value2.isConcrete()) {
             var int1 = value1.extractAs(Integer.class);
@@ -489,12 +489,6 @@ public class MethodExecutor {
     }
 
 
-    ///
-
-    public static class ReturnEarly extends Exception {
-
-    }
-
     public static class VmException extends Exception {
         public VmException(String message, Throwable cause) {
             super(message, cause);
@@ -513,7 +507,7 @@ public class MethodExecutor {
                 if (cause instanceof VmException e) {
                     err.append(e.getMessage());
                 } else {
-                    err.append(cause.toString());
+                    err.append(cause);
                 }
                 err.append("]");
                 cause = cause.getCause();

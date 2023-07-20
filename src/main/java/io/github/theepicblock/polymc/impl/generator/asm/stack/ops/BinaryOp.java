@@ -6,17 +6,19 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import org.apache.commons.lang3.NotImplementedException;
 
+import java.util.Map;
+
 public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements StackEntry {
     public boolean canBeSimplified() {
         return (a.canBeSimplified() && b.canBeSimplified()) || (a.isConcrete() && b.isConcrete());
     }
 
     @Override
-    public StackEntry simplify(VirtualMachine vm) throws MethodExecutor.VmException {
+    public StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws MethodExecutor.VmException {
         var entryA = this.a;
-        if (entryA.canBeSimplified()) entryA = entryA.simplify(vm);
+        if (entryA.canBeSimplified()) entryA = entryA.simplify(vm, simplificationCache);
         var entryB = this.b;
-        if (entryB.canBeSimplified()) entryB = entryB.simplify(vm);
+        if (entryB.canBeSimplified()) entryB = entryB.simplify(vm, simplificationCache);
 
         if (entryA.isConcrete() && entryB.isConcrete()) {
             switch (this.type) {

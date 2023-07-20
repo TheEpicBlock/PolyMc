@@ -9,6 +9,8 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+
 public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull String> fields) implements StackEntry {
     @Override
     public @NotNull StackEntry getField(String name) {
@@ -48,8 +50,11 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
     }
 
     @Override
-    public StackEntry simplify(VirtualMachine vm) throws VmException {
-        this.fields.simplify(vm);
+    public StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws VmException {
+        if (simplificationCache.containsKey(this)) return simplificationCache.get(this);
+        simplificationCache.put(this, this);
+
+        this.fields.simplify(vm, simplificationCache);
         return this;
     }
 

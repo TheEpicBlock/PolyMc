@@ -6,6 +6,8 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 
+import java.util.Map;
+
 public record ArrayLength(StackEntry array) implements StackEntry {
     @Override
     public boolean canBeSimplified() {
@@ -13,9 +15,9 @@ public record ArrayLength(StackEntry array) implements StackEntry {
     }
 
     @Override
-    public StackEntry simplify(VirtualMachine vm) throws MethodExecutor.VmException {
+    public StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws MethodExecutor.VmException {
         var array = this.array;
-        if (array.canBeSimplified()) array = array.simplify(vm);
+        if (array.canBeSimplified()) array = array.simplify(vm, simplificationCache);
 
         if (array.isConcrete()) {
             return new KnownInteger(array.extractAs(Object[].class).length);

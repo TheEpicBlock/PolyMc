@@ -9,6 +9,8 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import org.apache.commons.lang3.NotImplementedException;
 
+import java.util.Map;
+
 public record InstanceOf(StackEntry entry, String toCheck) implements StackEntry {
     @Override
     public JsonElement toJson() {
@@ -29,8 +31,8 @@ public record InstanceOf(StackEntry entry, String toCheck) implements StackEntry
     }
 
     @Override
-    public StackEntry simplify(VirtualMachine vm) throws VmException {
-        return new KnownInteger(toInt(entry.simplify(vm), toCheck));
+    public StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws VmException {
+        return new KnownInteger(toInt(entry.simplify(vm, simplificationCache), toCheck));
     }
 
     public int toInt() throws VmException {

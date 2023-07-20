@@ -122,15 +122,15 @@ public class CowCapableMap<T> {
         m.forEach(this::put);
     }
 
-    public void simplify(VirtualMachine vm) throws MethodExecutor.VmException {
+    public void simplify(VirtualMachine vm, Map<StackEntry, StackEntry> simplificationCache) throws MethodExecutor.VmException {
         if (this.overrides != null) {
             for (var entry : overrides.entrySet()) {
                 // No need to notify children since a simplification shouldn't change the meaning of the value
-                overrides.put(entry.getKey(), entry.getValue().simplify(vm));
+                overrides.put(entry.getKey(), entry.getValue().simplify(vm, simplificationCache));
             }
         }
         if (this.daddy != null) {
-            this.daddy.simplify(vm);
+            this.daddy.simplify(vm, simplificationCache);
         }
     }
 
