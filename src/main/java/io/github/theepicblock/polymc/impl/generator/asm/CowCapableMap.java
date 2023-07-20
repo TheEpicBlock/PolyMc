@@ -5,18 +5,22 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
 
-public class CowCapableMap<T> implements Map<T, @NotNull StackEntry> {
-    private CowCapableMap<T> daddy = null;
-    private HashMap<T, @NotNull StackEntry> overrides = null;
-    private ArrayList<CowCapableMap<T>> children = null;
+@SuppressWarnings("unused")
+public class CowCapableMap<T> {
+    private @Nullable CowCapableMap<T> daddy = null;
+    private @Nullable HashMap<T, StackEntry> overrides = null;
+    private @Nullable ArrayList<CowCapableMap<T>> children = null;
 
     public CowCapableMap() {
         this.overrides = new HashMap<>();
     }
 
-    private CowCapableMap(CowCapableMap<T> daddy) {
+    private CowCapableMap(@NotNull CowCapableMap<T> daddy) {
         this.daddy = daddy;
     }
 
@@ -27,7 +31,6 @@ public class CowCapableMap<T> implements Map<T, @NotNull StackEntry> {
         return child;
     }
 
-    @Override
     public int size() {
         int daddySize = 0;
         if (daddy != null) {
@@ -41,7 +44,6 @@ public class CowCapableMap<T> implements Map<T, @NotNull StackEntry> {
         return daddySize + overridesSize;
     }
 
-    @Override
     public boolean isEmpty() {
         boolean daddyEmpty = false;
         if (daddy != null) {
@@ -55,8 +57,7 @@ public class CowCapableMap<T> implements Map<T, @NotNull StackEntry> {
         return daddyEmpty || overridesEmpty;
     }
 
-    @Override
-    public boolean containsKey(Object key) {
+    public boolean containsKey(T key) {
         boolean daddyContains = false;
         if (daddy != null) {
             daddyContains = daddy.containsKey(key);
@@ -69,8 +70,7 @@ public class CowCapableMap<T> implements Map<T, @NotNull StackEntry> {
         return daddyContains || overridesContains;
     }
 
-    @Override
-    public boolean containsValue(Object value) {
+    public boolean containsValue(StackEntry value) {
         boolean daddyContains = false;
         if (daddy != null) {
             daddyContains = daddy.containsValue(value);
@@ -83,8 +83,7 @@ public class CowCapableMap<T> implements Map<T, @NotNull StackEntry> {
         return daddyContains || overridesContains;
     }
 
-    @Override
-    public StackEntry get(Object key) {
+    public StackEntry get(T key) {
         if (overrides != null) {
             var o = overrides.get(key);
             if (o != null) return o;
@@ -101,49 +100,26 @@ public class CowCapableMap<T> implements Map<T, @NotNull StackEntry> {
     }
 
     @Nullable
-    @Override
     public StackEntry put(T key, StackEntry value) {
         if (overrides == null) overrides = new HashMap<>();
         var previous = overrides.put(key, value);
         if (children != null) {
             for (var child : children) {
-                child.put(key, previous); // Preserve the previous value in all the children :3
+                if (child.overrides == null) child.overrides = new HashMap<>();
+                if (!child.overrides.containsKey(key)) {
+                    child.overrides.put(key, previous); // Preserve the previous value in all the children :3
+                }
             }
         }
         return previous;
     }
 
-    @Override
     public StackEntry remove(Object key) {
         throw new NotImplementedException("Don't remove stuff from cows pls");
     }
 
-    @Override
     public void putAll(@NotNull Map<? extends T,? extends StackEntry> m) {
         m.forEach(this::put);
-    }
-
-    @Override
-    public void clear() {
-        throw new NotImplementedException("Cows can't be cleared, srry");
-    }
-
-    @NotNull
-    @Override
-    public Set<T> keySet() {
-        throw new NotImplementedException("Cows can't be keysetted, srry");
-    }
-
-    @NotNull
-    @Override
-    public Collection<StackEntry> values() {
-        throw new NotImplementedException("Cows can't be values, srry");
-    }
-
-    @NotNull
-    @Override
-    public Set<Entry<T,StackEntry>> entrySet() {
-        throw new NotImplementedException("Cows can't be entryset, srry");
     }
 
     public void simplify(VirtualMachine vm) throws MethodExecutor.VmException {
@@ -155,6 +131,21 @@ public class CowCapableMap<T> implements Map<T, @NotNull StackEntry> {
         }
         if (this.daddy != null) {
             this.daddy.simplify(vm);
+        }
+    }
+
+    public void forEach(BiConsumer<? super T,? super StackEntry> action) {
+        if (this.overrides != null) {
+            this.overrides.forEach(action);
+            if (this.daddy != null) {
+                this.daddy.forEach((key, val) -> {
+                    if (!overrides.containsKey(key)) {
+                        action.accept(key, val);
+                    }
+                });
+            }
+        } else if (this.daddy != null) {
+            this.daddy.forEach(action);
         }
     }
 }

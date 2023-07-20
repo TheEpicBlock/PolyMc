@@ -41,9 +41,9 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
     @Override
     public JsonElement toJson() {
         var element = new JsonObject();
-        for (var f : this.fields.entrySet()) {
-            element.add(f.getKey(), f.getValue().toJson());
-        }
+        this.fields.forEach((key, val) -> {
+            element.add(key, val.toJson());
+        });
         return element;
     }
 
