@@ -8,10 +8,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
@@ -32,12 +29,15 @@ public class EntityRendererAnalyzer {
 
     private final ClientInitializerAnalyzer initializerInfo;
 
+    private final KnownVmObject cachedMinecraftClient;
     private final static AsmUtils.MappedFunction EntityModelLoader$getModelPart = AsmUtils.map("net.minecraft.class_5599", "method_32072", "(Lnet/minecraft/class_5601;)Lnet/minecraft/class_630;");
     private final static AsmUtils.MappedFunction ModelPart$Cuboid$renderCuboid = AsmUtils.map("net.minecraft.class_630$class_628", "method_32089", "(Lnet/minecraft/class_4587$class_4665;Lnet/minecraft/class_4588;IIFFFF)V");
     private final static AsmUtils.MappedFunction MobEntityRenderer$renderLeash = AsmUtils.map("net.minecraft.class_927", "method_4073", "(Lnet/minecraft/class_1308;FLnet/minecraft/class_4587;Lnet/minecraft/class_4597;Lnet/minecraft/class_1297;)V");
+    private final static AsmUtils.MappedFunction TextRenderer$drawInternal = AsmUtils.map("net.minecraft.class_327", "method_1723", "(Lnet/minecraft/class_5481;FFIZLorg/joml/Matrix4f;Lnet/minecraft/class_4597;Lnet/minecraft/class_327$class_6415;II)I");
+    private final static AsmUtils.MappedFunction EntityRenderer$renderLabelIfPresent = AsmUtils.map("net.minecraft.class_897", "method_3926", "(Lnet/minecraft/class_1297;Lnet/minecraft/class_2561;Lnet/minecraft/class_4587;Lnet/minecraft/class_4597;I)V");
     private final static String Entity$type = AsmUtils.mapField(Entity.class, "field_5961", "Lnet/minecraft/class_1299;");
     private final static String Entity$dimensions = AsmUtils.mapField(Entity.class, "field_18065", "Lnet/minecraft/class_4048;");
-    private final static AsmUtils.MappedFunction VertexConsumerProvider$getBuffer = AsmUtils.map("net.minecraft.class_4597", "getBuffer", "(Lnet/minecraft/class_1921;)Lnet/minecraft/class_4597;");
+    private final static AsmUtils.MappedFunction VertexConsumerProvider$getBuffer = AsmUtils.map("net.minecraft.class_4597", "getBuffer", "(Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588;");
 
     // Used to detect loops
     private final static AsmUtils.MappedFunction Iterator$hasNext = AsmUtils.map("java.util.Iterator", "hasNext", "()Z");
@@ -65,6 +65,7 @@ public class EntityRendererAnalyzer {
     private final static AsmUtils.MappedFunction MathHelper$wrapDegreesD = AsmUtils.map("net.minecraft.class_3532", "method_15338", "(D)D");
     private final static AsmUtils.MappedFunction Entity$removeClickEvents = AsmUtils.map("net.minecraft.class_1297", "method_5856", "(Lnet/minecraft/class_2561;)Lnet/minecraft/class_2561;");
     private final static AsmUtils.MappedFunction Entity$isInPose = AsmUtils.map("net.minecraft.class_1297", "method_41328", "(Lnet/minecraft/class_4050;)Z");
+    private final static AsmUtils.MappedFunction Entity$visitFormatted = AsmUtils.map("net.minecraft.class_1297", "method_41328", "(Lnet/minecraft/class_4050;)Z");
 
     /**
      * Vm for invoking the factory
@@ -114,6 +115,11 @@ public class EntityRendererAnalyzer {
 
     public EntityRendererAnalyzer(PolyRegistry registry) {
         this.initializerInfo = registry.getSharedValues(ClientInitializerAnalyzer.KEY);
+        try {
+            this.cachedMinecraftClient = AsmUtils.mockVmObjectRemap(factoryVm, "net.minecraft.class_310");
+        } catch (VmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public ExecutionGraphNode analyze(EntityType<?> entity) throws VmException {
@@ -126,8 +132,6 @@ public class EntityRendererAnalyzer {
         var ctx = AsmUtils.mockVmObjectRemap(factoryVm, "net.minecraft.class_5617$class_5618");
 
         var renderer = factoryVm.runLambda(rendererFactory, new StackEntry[]{ ctx });
-
-        System.out.println("Renderer for "+entity.getTranslationKey()+": "+renderer);
 
         // We need to create a fake instruction that's calling the render method so we can resolve it
         var entityRenderer$render = AsmUtils.map("net.minecraft.class_897", "method_3936", "(Lnet/minecraft/class_1297;FFLnet/minecraft/class_4587;Lnet/minecraft/class_4597;I)V");
@@ -146,7 +150,7 @@ public class EntityRendererAnalyzer {
         fakeEntity.setField(Entity$dimensions, StackEntry.known(entity.getDimensions()));
         var matrixStack = createMatrixStack();
 
-        var rendererVm = new VirtualMachine(new ClientClassLoader(), new RendererAnalyzerVmConfig(rootNode));
+        var rendererVm = new VirtualMachine(new ClientClassLoader(), new RendererAnalyzerVmConfig(rootNode, this));
         rendererVm.addMethodToStack(resolvedEntityRenderer$render, new StackEntry[] { renderer, fakeEntity, new UnknownValue("yaw"), new UnknownValue("tickDelta"), matrixStack, KnownObject.NULL, new UnknownValue("light") });
         rendererVm.runToCompletion();
         return rootNode;
@@ -184,10 +188,13 @@ public class EntityRendererAnalyzer {
                 inst.desc.equals(func.desc()));
     }
 
-    public record RendererAnalyzerVmConfig(ExecutionGraphNode node) implements VmConfig {
+    public record RendererAnalyzerVmConfig(ExecutionGraphNode node, EntityRendererAnalyzer root) implements VmConfig {
 
         @Override
         public @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
+            if (inst.owner.equals("org/joml/Runtime")) {
+                return new KnownInteger(false);
+            }
             return new StaticFieldValue(inst.owner, inst.name); // Evaluate static fields lazily
         }
 
@@ -211,10 +218,20 @@ public class EntityRendererAnalyzer {
                 ret(ctx, null); // Function is void
                 return;
             }
+            if (cmpFunc(method, TextRenderer$drawInternal)) {
+                // TODO should probably track these calls
+                ret(ctx, new UnknownValue("Width of the draw call or smth"));
+                return;
+            }
+            if (cmpFunc(method, EntityRenderer$renderLabelIfPresent)) {
+                // TODO should probably track these calls
+                ret(ctx, null); // Function is void
+                return;
+            }
 
             // Other special-cased functions
             if (cmpFunc(method, MinecraftClient$getInstance)) {
-                ret(ctx, AsmUtils.mockVmObjectRemap(ctx.machine(), "net.minecraft.class_310"));
+                ret(ctx, root.cachedMinecraftClient);
                 return;
             }
             if (cmpFunc(method, MinecraftClient$hasOutline)) {
@@ -312,8 +329,8 @@ public class EntityRendererAnalyzer {
             var vmNoJump = ctx.machine();
             var vmJump = ctx.machine().copy();
 
-            vmNoJump.changeConfig(new RendererAnalyzerVmConfig(continuationNoJump));
-            vmJump.changeConfig(new RendererAnalyzerVmConfig(continuationJump));
+            vmNoJump.changeConfig(new RendererAnalyzerVmConfig(continuationNoJump, root));
+            vmJump.changeConfig(new RendererAnalyzerVmConfig(continuationJump, root));
 
             var noJumpMeth = vmNoJump.inspectRunningMethod();
             noJumpMeth.overrideNextInsn(noJumpMeth.inspectCurrentInsn().getNext());
