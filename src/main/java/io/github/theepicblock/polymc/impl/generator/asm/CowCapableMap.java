@@ -145,4 +145,16 @@ public class CowCapableMap<T> implements Map<T, @NotNull StackEntry> {
     public Set<Entry<T,StackEntry>> entrySet() {
         throw new NotImplementedException("Cows can't be entryset, srry");
     }
+
+    public void simplify(VirtualMachine vm) throws MethodExecutor.VmException {
+        if (this.overrides != null) {
+            for (var entry : overrides.entrySet()) {
+                // No need to notify children since a simplification shouldn't change the meaning of the value
+                overrides.put(entry.getKey(), entry.getValue().simplify(vm));
+            }
+        }
+        if (this.daddy != null) {
+            this.daddy.simplify(vm);
+        }
+    }
 }

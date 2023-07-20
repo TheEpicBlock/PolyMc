@@ -49,9 +49,7 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
 
     @Override
     public StackEntry simplify(VirtualMachine vm) throws VmException {
-        for (var entry : fields.entrySet()) {
-            fields.put(entry.getKey(), entry.getValue().simplify(vm));
-        }
+        this.fields.simplify(vm);
         return this;
     }
 
