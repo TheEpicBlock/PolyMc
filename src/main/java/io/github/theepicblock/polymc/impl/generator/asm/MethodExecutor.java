@@ -439,6 +439,9 @@ public class MethodExecutor {
             }
             case Opcodes.POP -> stack.pop();
             case Opcodes.POP2 -> { stack.pop(); stack.pop(); }
+            // There's no multithreading…
+            case Opcodes.MONITORENTER -> {}
+            case Opcodes.MONITOREXIT -> {}
             case -1 -> {} // This is a virtual opcodes defined by asm, can be safely ignored
             default -> {
                 parent.getConfig().handleUnknownInstruction(ctx(), instruction, 0); // TODO

@@ -367,11 +367,21 @@ public class VirtualMachine {
          */
         default void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments)
                 throws VmException {
-            if ((inst.owner.equals(_Integer) && Util.first(arguments) instanceof KnownInteger) ||
-                    (inst.owner.equals(_Long) && Util.first(arguments) instanceof KnownLong) ||
-                    (inst.owner.equals(_Double) && Util.first(arguments) instanceof KnownDouble) ||
-                    (inst.owner.equals(_Float) && Util.first(arguments) instanceof KnownFloat)) {
-                var boxedObject = new KnownVmObject(ctx.machine().getClass(inst.owner));
+            // Auto-boxing
+            if (Util.first(arguments) instanceof KnownInteger ||
+                    Util.first(arguments) instanceof KnownLong ||
+                    Util.first(arguments) instanceof KnownDouble ||
+                    Util.first(arguments) instanceof KnownFloat) {
+                KnownVmObject boxedObject;
+                if (arguments[0] instanceof KnownInteger) {
+                    boxedObject = new KnownVmObject(ctx.machine().getClass(_Integer));
+                } else if (arguments[0] instanceof KnownLong) {
+                    boxedObject = new KnownVmObject(ctx.machine().getClass(_Long));
+                } else if (arguments[0] instanceof KnownDouble) {
+                    boxedObject = new KnownVmObject(ctx.machine().getClass(_Double));
+                } else if (arguments[0] instanceof KnownFloat) {
+                    boxedObject = new KnownVmObject(ctx.machine().getClass(_Float));
+                } else { throw new UnsupportedOperationException(); }
                 boxedObject.setField("value", arguments[0]);
                 arguments[0] = boxedObject;
             }
@@ -519,7 +529,7 @@ public class VirtualMachine {
                     return;
                 }
                 if (inst.name.startsWith("get") && inst.desc.startsWith("(Ljava/lang/Object;J)") && arguments[1] instanceof KnownArray arr) {
-                    // Arrays can use normal longs to be indexed
+                    // Arrays may use normal longs as indices
                     if (arguments[2].canBeSimplified()) arguments[2] = arguments[2].simplify(ctx.machine());
                     ret(ctx, arr.arrayAccess((int)(long)arguments[2].extractAs(Long.class)));
                     return;
@@ -528,9 +538,23 @@ public class VirtualMachine {
                     ret(ctx, arguments[1].getField(ref.fieldName()));
                     return;
                 }
+                if (inst.name.startsWith("put") && inst.desc.startsWith("(Ljava/lang/Object;J") && inst.desc.endsWith(")V") && arguments[1] instanceof KnownArray arr) {
+                    // Arrays may use normal longs as indices
+                    if (arguments[2].canBeSimplified()) arguments[2] = arguments[2].simplify(ctx.machine());
+                    arr.arraySet((int)(long)arguments[2].extractAs(Long.class), arguments[4]);
+                    ret(ctx, null);
+                    return;
+                }
                 if (inst.name.startsWith("put") && inst.desc.startsWith("(Ljava/lang/Object;J") && inst.desc.endsWith(")V") && arguments[2] instanceof UnsafeFieldReference ref) {
                     arguments[1].setField(ref.fieldName(), arguments[3]);
                     ret(ctx, null);
+                    return;
+                }
+                if (inst.name.startsWith("compareAndSet") && arguments[1] instanceof KnownArray arr) {
+                    // Arrays may use normal longs as indices
+                    if (arguments[2].canBeSimplified()) arguments[2] = arguments[2].simplify(ctx.machine());
+                    arr.arraySet((int)(long)arguments[2].extractAs(Long.class), arguments[4]);
+                    ret(ctx, new KnownInteger(true));
                     return;
                 }
                 if (inst.name.startsWith("compareAndSet") && arguments[2] instanceof UnsafeFieldReference ref) {
