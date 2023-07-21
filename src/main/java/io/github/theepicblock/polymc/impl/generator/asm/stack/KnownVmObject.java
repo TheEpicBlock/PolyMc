@@ -8,6 +8,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import org.jetbrains.annotations.NotNull;
+import org.objectweb.asm.Opcodes;
 
 import java.util.Map;
 
@@ -17,7 +18,10 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
         var value = this.fields().get(name);
         if (value == null) {
             // We need to get the default value depending on the type of the field
-            var field = AsmUtils.getFields(type).filter(f -> f.name.equals(name)).findAny().orElse(null);
+            var field = AsmUtils.getFields(type)
+                    .filter(f -> f.name.equals(name))
+                    .filter(f -> !AsmUtils.hasFlag(f, Opcodes.ACC_STATIC))
+                    .findAny().orElse(null);
             if (field == null) {
                 return new UnknownValue("Don't know value of field '"+name+"'");
             }

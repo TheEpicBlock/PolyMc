@@ -1,5 +1,6 @@
 package nl.theepicblock.polymc.testmod.automated;
 
+import com.google.common.collect.Lists;
 import io.github.theepicblock.polymc.impl.generator.asm.ClientClassLoader;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
@@ -8,7 +9,6 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownFloat;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp;
-import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.test.GameTest;
@@ -17,6 +17,7 @@ import net.minecraft.test.TestContext;
 import org.objectweb.asm.Type;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 public class TestVm implements FabricGameTest {
     @GameTest(templateName = EMPTY_STRUCTURE)
@@ -189,6 +190,12 @@ public class TestVm implements FabricGameTest {
         ctx.complete();
     }
 
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void streamCollect(TestContext ctx) throws MethodExecutor.VmException {
+        assertReturns("streamCollectFunc", 35);
+        ctx.complete();
+    }
+
     public static void assertReturns(String func, int expected) throws MethodExecutor.VmException {
         var vm = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {});
         vm.addMethodToStack(TestVm.class.getName().replace(".", "/"), func, "()I"); // All test functions have a descriptor of ()I
@@ -244,5 +251,12 @@ public class TestVm implements FabricGameTest {
         default int gimme() {
             return 546;
         }
+    }
+
+    public static int streamCollectFunc() {
+        var myList = Lists.newArrayList(0, 1, 2, 3, 4);
+        int x = 5;
+        var newMap = myList.stream().collect(Collectors.toMap(num -> num, num -> num+x));
+        return newMap.values().stream().reduce(Integer::sum).orElse(-1);
     }
 }

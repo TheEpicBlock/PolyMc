@@ -12,7 +12,6 @@ import net.fabricmc.loader.api.MappingResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -97,6 +96,10 @@ public class AsmUtils {
     }
 
     public static boolean hasFlag(MethodNode node, int flag) {
+        return hasFlag(node.access, flag);
+    }
+
+    public static boolean hasFlag(FieldNode node, int flag) {
         return hasFlag(node.access, flag);
     }
 
