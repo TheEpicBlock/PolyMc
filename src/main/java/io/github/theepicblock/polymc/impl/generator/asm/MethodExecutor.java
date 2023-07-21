@@ -6,6 +6,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.ArrayLength;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.Cast;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.InstanceOf;
+import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.ApiStatus;
@@ -117,22 +118,8 @@ public class MethodExecutor {
             }
             case Opcodes.INVOKESTATIC, Opcodes.INVOKEVIRTUAL, Opcodes.INVOKEINTERFACE, Opcodes.INVOKESPECIAL -> {
                 var inst = (MethodInsnNode)instruction;
-                var descriptor = Type.getType(inst.desc);
+                var arguments = assembleLocalVariableArray(Type.getType(inst.desc), stack, inst.getOpcode() == Opcodes.INVOKESTATIC);
 
-                int i = descriptor.getArgumentTypes().length;
-                if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
-                    i += 1;
-                }
-                
-                var arguments = new StackEntry[i];
-                for (Type argumentType : descriptor.getArgumentTypes()) {
-                    i--;
-                    arguments[i] = stack.pop(); // pop all the arguments
-                }
-                
-                if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
-                    arguments[0] = stack.pop(); // objectref
-                }
                 // We're going to return control back to the vm.
                 // The vm will then call receiveReturnValue with the correct return value,
                 // and then it'll call startExecution again
@@ -476,6 +463,31 @@ public class MethodExecutor {
             this.parent.getConfig().handleUnknownJump(ctx(), value1, value2, inst.getOpcode(), ((JumpInsnNode)inst).label);
         }
         return true;
+    }
+
+    /**
+     * Extracts the arguments for a method call into a properly sized local variable array
+     */
+    @ApiStatus.Internal // This is only public for testing
+    public static StackEntry[] assembleLocalVariableArray(Type descriptor, Stack<StackEntry> stack, boolean isStatic) {
+        int length = 0;
+        for (Type arg : descriptor.getArgumentTypes()) length += arg.getSize();
+        if (!isStatic) {
+            length += 1;
+        }
+
+        int i = length;
+        var array = new StackEntry[i];
+        for (Type argumentType : descriptor.getArgumentTypes()) {
+            i -= argumentType.getSize();
+            array[i] = stack.pop(); // pop all the arguments
+        }
+
+        if (!isStatic) {
+            array[0] = stack.pop(); // objectref
+        }
+
+        return array;
     }
 
     private void pushIfNotNull(@Nullable StackEntry e) {

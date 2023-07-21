@@ -6,11 +6,15 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownDouble;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownFloat;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp;
+import it.unimi.dsi.fastutil.Stack;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.GameTestException;
 import net.minecraft.test.TestContext;
+import org.objectweb.asm.Type;
 
 import java.io.IOException;
 
@@ -76,6 +80,7 @@ public class TestVm implements FabricGameTest {
         assertCmpInner(fInstr, op, a, b, expected);
         assertCmpInner(dInstr, op, a, b, expected);
     }
+
     private static void assertCmpInner(BinaryOp instruction, BinaryOp.Op op, double a, double b, int expected) {
         try {
             if (!instruction.canBeSimplified()) {
@@ -92,6 +97,57 @@ public class TestVm implements FabricGameTest {
         } catch (MethodExecutor.VmException e) {
             throw new GameTestException(e.createFancyErrorMessage());
         }
+    }
+
+    /**
+     * Tests the creation of the local variable array when a method is invoked.
+     */
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void testLocalVariableArrayCreation(TestContext ctx) {
+        var objA = StackEntry.known(new Object());
+        var objB = StackEntry.known(new Object());
+        var objC = StackEntry.known(new Object());
+        var objWide = StackEntry.known(0.0d); // Doubles (and longs) take up two slots
+
+        var stack1 = new ObjectArrayList<StackEntry>();
+        stack1.push(objA);
+        stack1.push(objB);
+        var desc1 = "(Ljava/lang/Object;)V";
+        var lva1 = MethodExecutor.assembleLocalVariableArray(Type.getType(desc1), stack1, false);
+        TestUtil.assertEq(lva1.length, 2);
+        TestUtil.assertEq(lva1[0], objA);
+        TestUtil.assertEq(lva1[1], objB);
+
+        var stack2 = new ObjectArrayList<StackEntry>();
+        stack2.push(objA);
+        stack2.push(objB);
+        stack2.push(objC);
+        var desc2 = "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;";
+        var lva2 = MethodExecutor.assembleLocalVariableArray(Type.getType(desc2), stack2, true);
+        TestUtil.assertEq(lva2.length, 3);
+        TestUtil.assertEq(lva2[0], objA);
+        TestUtil.assertEq(lva2[1], objB);
+        TestUtil.assertEq(lva2[2], objC);
+
+        var stack3 = new ObjectArrayList<StackEntry>();
+        stack3.push(objA);
+        stack3.push(objWide);
+        var desc3 = "(D)V";
+        var lva3 = MethodExecutor.assembleLocalVariableArray(Type.getType(desc3), stack3, false);
+        TestUtil.assertEq(lva3.length, 3);
+        TestUtil.assertEq(lva3[0], objA);
+        TestUtil.assertEq(lva3[1], objWide);
+        TestUtil.assertEq(lva3[2], null, "The second slot of a wide object should be unused");
+
+        var stack4 = new ObjectArrayList<StackEntry>();
+        stack4.push(objWide);
+        var desc4 = "(D)V";
+        var lva4 = MethodExecutor.assembleLocalVariableArray(Type.getType(desc4), stack4, true);
+        TestUtil.assertEq(lva4.length, 2);
+        TestUtil.assertEq(lva4[0], objWide);
+        TestUtil.assertEq(lva4[1], null, "The second slot of a wide object should be unused");
+
+        ctx.complete();
     }
 
     @GameTest(templateName = EMPTY_STRUCTURE)

@@ -12,6 +12,7 @@ import net.fabricmc.loader.api.MappingResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -132,7 +133,6 @@ public class AsmUtils {
         var runtimeName = FabricLoader.getInstance().getMappingResolver().mapClassName("intermediary", className);
         return mockVmObject(vm, runtimeName.replace(".", "/"));
     }
-
 
     public static KnownVmObject mockVmObject(VirtualMachine vm, @InternalName String className) throws VmException {
         return mockVmObject(vm, className, 4);

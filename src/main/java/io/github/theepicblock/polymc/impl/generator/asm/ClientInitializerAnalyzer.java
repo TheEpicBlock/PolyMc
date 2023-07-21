@@ -144,6 +144,7 @@ public class ClientInitializerAnalyzer {
                 className = s[0];
                 methodName = s[1];
             }
+            // TODO, you absolute buffoon, this is an instance method, you've got to instantiate an instance
             vm.addMethodToStack(className.replace(".", "/"), methodName, "()V");
             vm.runToCompletion();
         } catch (VmException e) {
