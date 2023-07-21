@@ -61,7 +61,7 @@ public class VirtualMachine {
     private void init() {
         var state = this.switchStack(null);
         try {
-            this.addMethodToStack("java/lang/System", "setJavaLangAccess", "()V");
+            this.addMethodToStack(_System, "setJavaLangAccess", "()V");
             this.runToCompletion();
         } catch (VmException e) {
             PolyMc.LOGGER.warn("Error initializing VM: "+e.createFancyErrorMessage());
@@ -216,7 +216,7 @@ public class VirtualMachine {
             if (o.i() == null) {
                 throw new VmException("VM-NPE", null);
             }
-            return this.getClass(o.i().getClass().getCanonicalName().replace(".", "/"));
+            return this.getClass(Type.getInternalName(o.i().getClass()));
         } else if (entry instanceof KnownVmObject o) {
             return o.type();
         } else if (entry instanceof KnownClass) {
@@ -334,6 +334,9 @@ public class VirtualMachine {
     private static final @InternalName String _Double = Type.getInternalName(Double.class);
     private static final @InternalName String _VM = "jdk/internal/misc/VM";
     private static final @InternalName String _Class = Type.getInternalName(Class.class);
+    private static final @InternalName String _System = Type.getInternalName(System.class);
+    private static final @InternalName String _Runtime = Type.getInternalName(Runtime.class);
+    private static final @InternalName String _Unsafe = "jdk/internal/misc/Unsafe";
     private static final @InternalName String _SharedSecrets = "jdk/internal/access/SharedSecrets";
     private static final @InternalName String _CDS = "jdk/internal/misc/CDS";
     private static final @InternalName String _Reflection = "jdk/internal/reflect/Reflection";
@@ -391,40 +394,60 @@ public class VirtualMachine {
                 // These are native methods. They need to be hardcoded
                 if (inst.name.equals("cos") && inst.desc.equals("(D)D")) {
                     ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.cos(entry.extractAs(Double.class)))));
+                    return;
                 }
                 if (inst.name.equals("acos") && inst.desc.equals("(D)D")) {
                     ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.acos(entry.extractAs(Double.class)))));
+                    return;
                 }
                 if (inst.name.equals("sin") && inst.desc.equals("(D)D")) {
                     ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sin(entry.extractAs(Double.class)))));
+                    return;
                 }
                 if (inst.name.equals("asin") && inst.desc.equals("(D)D")) {
                     ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.asin(entry.extractAs(Double.class)))));
+                    return;
                 }
                 if (inst.name.equals("tan") && inst.desc.equals("(D)D")) {
                     ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.tan(entry.extractAs(Double.class)))));
+                    return;
                 }
                 if (inst.name.equals("atan") && inst.desc.equals("(D)D")) {
                     ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.atan(entry.extractAs(Double.class)))));
+                    return;
                 }
                 if (inst.name.equals("log") && inst.desc.equals("(D)D")) {
                     ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log(entry.extractAs(Double.class)))));
+                    return;
                 }
                 if (inst.name.equals("log10") && inst.desc.equals("(D)D")) {
                     ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log10(entry.extractAs(Double.class)))));
+                    return;
                 }
                 if (inst.name.equals("sqrt") && inst.desc.equals("(D)D")) {
                     ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sqrt(entry.extractAs(Double.class)))));
+                    return;
                 }
-                return;
             }
-            if (inst.owner.equals(_Float) && inst.name.equals("floatToRawIntBits")) {
-                ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.floatToRawIntBits(entry.extractAs(Float.class)))));
-                return;
+            if (inst.owner.equals(_Float)) {
+                if (inst.name.equals("floatToRawIntBits")) {
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.floatToRawIntBits(entry.extractAs(Float.class)))));
+                    return;
+                }
+                if (inst.name.equals("intBitsToFloat")) {
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.intBitsToFloat(entry.extractAs(Integer.class)))));
+                    return;
+                }
             }
-            if (inst.owner.equals(_Double) && inst.name.equals("doubleToRawLongBits")) {
-                ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.doubleToRawLongBits(entry.extractAs(Double.class)))));
-                return;
+            if (inst.owner.equals(_Double)) {
+                if (inst.name.equals("doubleToRawLongBits")) {
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.doubleToRawLongBits(entry.extractAs(Double.class)))));
+                    return;
+                }
+                if (inst.name.equals("longBitsToDouble")) {
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.longBitsToDouble(entry.extractAs(Long.class)))));
+                    return;
+                }
             }
             if (inst.owner.equals(_VM)) {
                 if (inst.name.equals("getSavedProperty")) {
@@ -475,6 +498,82 @@ public class VirtualMachine {
             if (inst.owner.equals(_Reflection)) {
                 if (inst.name.equals("getCallerClass")) {
                     ret(ctx, new KnownClass(currentClass));
+                    return;
+                }
+            }
+            if (inst.owner.equals(_Unsafe)) {
+                if (inst.name.equals("registerNatives")) {
+                    ret(ctx, null);
+                    return;
+                }
+                if (inst.name.equals("objectFieldOffset") && inst.desc.equals("(Ljava/lang/Class;Ljava/lang/String;)J")) {
+                    ret(ctx, new UnsafeFieldReference(arguments[2].extractAs(String.class)));
+                    return;
+                }
+                if (inst.name.equals("arrayIndexScale")) {
+                    ret(ctx, new KnownInteger(1)); // Keeps everything nice and simple
+                    return;
+                }
+                if (inst.name.equals("arrayBaseOffset")) {
+                    ret(ctx, new KnownInteger(0)); // Keeps everything nice and simple
+                    return;
+                }
+                if (inst.name.startsWith("get") && inst.desc.startsWith("(Ljava/lang/Object;J)") && arguments[1] instanceof KnownArray arr) {
+                    // Arrays can use normal longs to be indexed
+                    if (arguments[2].canBeSimplified()) arguments[2] = arguments[2].simplify(ctx.machine());
+                    ret(ctx, arr.arrayAccess((int)(long)arguments[2].extractAs(Long.class)));
+                    return;
+                }
+                if (inst.name.startsWith("get") && inst.desc.startsWith("(Ljava/lang/Object;J)") && arguments[2] instanceof UnsafeFieldReference ref) {
+                    ret(ctx, arguments[1].getField(ref.fieldName()));
+                    return;
+                }
+                if (inst.name.startsWith("put") && inst.desc.startsWith("(Ljava/lang/Object;J") && inst.desc.endsWith(")V") && arguments[2] instanceof UnsafeFieldReference ref) {
+                    arguments[1].setField(ref.fieldName(), arguments[3]);
+                    ret(ctx, null);
+                    return;
+                }
+                if (inst.name.startsWith("compareAndSet") && arguments[2] instanceof UnsafeFieldReference ref) {
+                    // No need to compare, this isn't threaded anyway
+                    arguments[1].setField(ref.fieldName(), arguments[4]);
+                    ret(ctx, new KnownInteger(true));
+                    return;
+                }
+                if (inst.name.startsWith("compareAndExchange") && arguments[2] instanceof UnsafeFieldReference ref) {
+                    // No need to compare, this isn't threaded anyway
+                    var original = arguments[1].getField(ref.fieldName());
+                    arguments[1].setField(ref.fieldName(), arguments[4]);
+                    ret(ctx, original);
+                    return;
+                }
+            }
+            if (inst.owner.equals(_System)) {
+                if (inst.name.equals("registerNatives")) {
+                    ret(ctx, null);
+                    return;
+                }
+            }
+            if (inst.owner.equals(_Runtime)) {
+                if (inst.name.equals("availableProcessors")) {
+                    // Do you think this vm supports multithreading??? Lmao
+                    ret(ctx, new KnownInteger(1));
+                    return;
+                }
+                if (inst.name.equals("freeMemory")) {
+                    ret(ctx, new KnownLong(Runtime.getRuntime().freeMemory() / 2));
+                    return;
+                }
+                if (inst.name.equals("totalMemory")) {
+                    ret(ctx, new KnownLong(Runtime.getRuntime().totalMemory() / 2));
+                    return;
+                }
+                if (inst.name.equals("maxMemory")) {
+                    ret(ctx, new KnownLong(Runtime.getRuntime().maxMemory()));
+                    return;
+                }
+                if (inst.name.equals("gc")) {
+                    System.gc(); // I guess we'll trust that we do in fact need some gc
+                    ret(ctx, null);
                     return;
                 }
             }

@@ -6,7 +6,6 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.ArrayLength;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.Cast;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.InstanceOf;
-import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.ApiStatus;
@@ -120,18 +119,38 @@ public class MethodExecutor {
             }
             case Opcodes.INVOKESTATIC, Opcodes.INVOKEVIRTUAL, Opcodes.INVOKEINTERFACE, Opcodes.INVOKESPECIAL -> {
                 var inst = (MethodInsnNode)instruction;
-                if (!stack.isEmpty() && stack.top() instanceof Lambda l && l.method().getTag() == Opcodes.H_NEWINVOKESPECIAL) {
-                    var clazz = parent.getClass(l.method().getOwner());
-                    var instance = new KnownVmObject(clazz);
-                    stack.pop();
-                    stack.push(instance);
-                    stack.push(instance);
-                    var arguments = assembleLocalVariableArray(Type.getType(l.method().getDesc()), stack, false);
-                    parent.getConfig().invoke(ctx(), clazz, new MethodInsnNode(Opcodes.INVOKESPECIAL, l.method().getOwner(), l.method().getName(), l.method().getDesc()), arguments);
-                    this.nextInstruction = instruction.getNext();
-                    return false;
+
+                var descriptor = Type.getType(inst.desc);
+                var isStatic = inst.getOpcode() == Opcodes.INVOKESTATIC;
+
+                int length = 0;
+                var argumentTypes = descriptor.getArgumentTypes();
+                for (Type arg : argumentTypes) length += arg.getSize();
+                if (!isStatic) {
+                    length += 1;
                 }
-                var arguments = assembleLocalVariableArray(Type.getType(inst.desc), stack, inst.getOpcode() == Opcodes.INVOKESTATIC);
+
+                // Iterate in reverse order, due to how the arguments are on the stack
+                // i keeps track of the position in the arguments array. j keeps track of the argument we're on.
+                // (since some values take up multiple spaces in the local variable array)
+                int i = length;
+                var arguments = new StackEntry[i];
+                for (int j = argumentTypes.length-1; j >= 0; j--) {
+                    i -= argumentTypes[j].getSize();
+                    arguments[i] = stack.pop(); // pop all the arguments
+                }
+
+                if (!isStatic) {
+                    arguments[0] = stack.pop(); // objectref
+
+                    if (arguments[0] instanceof Lambda l && l.method().getTag() == Opcodes.H_NEWINVOKESPECIAL) {
+                        var clazz = parent.getClass(l.method().getOwner());
+                        var instance = new KnownVmObject(clazz);
+                        stack.push(instance); // Make sure there's one left over on the stack. Lets pretend the function we're calling returned it
+                        arguments[0] = instance;
+                        inst = new MethodInsnNode(Opcodes.INVOKESPECIAL, l.method().getOwner(), l.method().getName(), l.method().getDesc());
+                    }
+                }
 
                 // We're going to return control back to the vm.
                 // The vm will then call receiveReturnValue with the correct return value,
@@ -488,31 +507,6 @@ public class MethodExecutor {
             this.parent.getConfig().handleUnknownJump(ctx(), value1, value2, inst.getOpcode(), ((JumpInsnNode)inst).label);
         }
         return true;
-    }
-
-    /**
-     * Extracts the arguments for a method call into a properly sized local variable array
-     */
-    @ApiStatus.Internal // This is only public for testing
-    public static StackEntry[] assembleLocalVariableArray(Type descriptor, Stack<StackEntry> stack, boolean isStatic) {
-        int length = 0;
-        for (Type arg : descriptor.getArgumentTypes()) length += arg.getSize();
-        if (!isStatic) {
-            length += 1;
-        }
-
-        int i = length;
-        var array = new StackEntry[i];
-        for (Type argumentType : descriptor.getArgumentTypes()) {
-            i -= argumentType.getSize();
-            array[i] = stack.pop(); // pop all the arguments
-        }
-
-        if (!isStatic) {
-            array[0] = stack.pop(); // objectref
-        }
-
-        return array;
     }
 
     private static boolean stackEntryEqual(StackEntry a, StackEntry b) {

@@ -3,7 +3,6 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
@@ -99,7 +98,7 @@ public class AsmUtils {
             */
 
             // Will error if this class can't be loaded from the environment
-            return new KnownObject(Class.forName(inst.owner.replace("/", ".")).getField(inst.name).get(null));
+            return StackEntry.known(Class.forName(inst.owner.replace("/", ".")).getField(inst.name).get(null));
         } catch (Throwable e) {}
         return null;
     }

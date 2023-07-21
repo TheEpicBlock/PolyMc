@@ -19,6 +19,15 @@ public interface StackEntry {
         if (o instanceof Integer i) {
             return new KnownInteger(i);
         }
+        if (o instanceof Boolean i) {
+            return new KnownInteger(i);
+        }
+        if (o instanceof Byte i) {
+            return new KnownInteger(i);
+        }
+        if (o instanceof Character i) {
+            return new KnownInteger(i);
+        }
         if (o instanceof Long l) {
             return new KnownLong(l);
         }
