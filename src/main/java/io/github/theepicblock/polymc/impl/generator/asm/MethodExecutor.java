@@ -53,7 +53,7 @@ public class MethodExecutor {
         return methodName;
     }
     
-    public void setMethod(InsnList bytecode, Clazz owner) {
+    public void setMethod(@NotNull InsnList bytecode, @NotNull Clazz owner) {
         this.owner = owner;
         this.nextInstruction = bytecode.getFirst();
     }
@@ -94,6 +94,7 @@ public class MethodExecutor {
 
     public boolean execute(AbstractInsnNode instruction) throws VmException {
         switch (instruction.getOpcode()) {
+            case Opcodes.ACONST_NULL -> stack.push(new KnownObject(null));
             case Opcodes.ICONST_0 -> stack.push(new KnownInteger(0));
             case Opcodes.ICONST_1 -> stack.push(new KnownInteger(1));
             case Opcodes.ICONST_2 -> stack.push(new KnownInteger(2));
@@ -101,13 +102,14 @@ public class MethodExecutor {
             case Opcodes.ICONST_4 -> stack.push(new KnownInteger(4));
             case Opcodes.ICONST_5 -> stack.push(new KnownInteger(5));
             case Opcodes.ICONST_M1 -> stack.push(new KnownInteger(-1));
+            case Opcodes.LCONST_0 -> stack.push(new KnownLong(0));
+            case Opcodes.LCONST_1 -> stack.push(new KnownLong(1));
             case Opcodes.FCONST_0 -> stack.push(new KnownFloat(0));
             case Opcodes.FCONST_1 -> stack.push(new KnownFloat(1));
             case Opcodes.FCONST_2 -> stack.push(new KnownFloat(2));
             case Opcodes.DCONST_0 -> stack.push(new KnownDouble(0));
             case Opcodes.DCONST_1 -> stack.push(new KnownDouble(1));
             case Opcodes.SIPUSH, Opcodes.BIPUSH -> stack.push(new KnownInteger(((IntInsnNode)instruction).operand));
-            case Opcodes.ACONST_NULL -> stack.push(new KnownObject(null));
             case Opcodes.GETSTATIC -> {
                 var inst = (FieldInsnNode)instruction;
                 stack.push(parent.getConfig().loadStaticField(ctx(), inst));
@@ -118,6 +120,17 @@ public class MethodExecutor {
             }
             case Opcodes.INVOKESTATIC, Opcodes.INVOKEVIRTUAL, Opcodes.INVOKEINTERFACE, Opcodes.INVOKESPECIAL -> {
                 var inst = (MethodInsnNode)instruction;
+                if (!stack.isEmpty() && stack.top() instanceof Lambda l && l.method().getTag() == Opcodes.H_NEWINVOKESPECIAL) {
+                    var clazz = parent.getClass(l.method().getOwner());
+                    var instance = new KnownVmObject(clazz);
+                    stack.pop();
+                    stack.push(instance);
+                    stack.push(instance);
+                    var arguments = assembleLocalVariableArray(Type.getType(l.method().getDesc()), stack, false);
+                    parent.getConfig().invoke(ctx(), clazz, new MethodInsnNode(Opcodes.INVOKESPECIAL, l.method().getOwner(), l.method().getName(), l.method().getDesc()), arguments);
+                    this.nextInstruction = instruction.getNext();
+                    return false;
+                }
                 var arguments = assembleLocalVariableArray(Type.getType(inst.desc), stack, inst.getOpcode() == Opcodes.INVOKESTATIC);
 
                 // We're going to return control back to the vm.
@@ -219,7 +232,8 @@ public class MethodExecutor {
             }
             case Opcodes.LOOKUPSWITCH -> {
                 var key = stack.pop();
-                if (key instanceof UnknownValue) throw new VmException("Jump(LOOKUPSWITCH) based on unknown variable ("+key+")", null);
+                if (key.canBeSimplified()) key = key.simplify(this.parent);
+                if (!key.isConcrete()) throw new VmException("Jump(LOOKUPSWITCH) based on unknown variable ("+key+")", null);
                 
                 var inst = (LookupSwitchInsnNode)instruction;
                 var keyValue = key.extractAs(Integer.class);
@@ -228,6 +242,20 @@ public class MethodExecutor {
                     this.nextInstruction = inst.dflt;
                 } else {
                     this.nextInstruction = inst.labels.get(labelIndex);
+                }
+            }
+            case Opcodes.TABLESWITCH -> {
+                var key = stack.pop();
+                if (key.canBeSimplified()) key = key.simplify(this.parent);
+                if (!key.isConcrete()) throw new VmException("Jump(TABLESWITCH) based on unknown variable ("+key+")", null);
+
+                var inst = (TableSwitchInsnNode)instruction;
+                var keyValue = key.extractAs(Integer.class);
+                var label = inst.labels.get(keyValue);
+                if (label == null) {
+                    this.nextInstruction = inst.dflt;
+                } else {
+                    this.nextInstruction = label;
                 }
             }
             case Opcodes.IF_ACMPEQ -> {
@@ -240,7 +268,7 @@ public class MethodExecutor {
                     return true;
                 }
 
-                if (a == b) {
+                if (stackEntryEqual(a, b)) {
                     this.nextInstruction = ((JumpInsnNode)instruction).label;
                     return true;
                 }
@@ -255,7 +283,7 @@ public class MethodExecutor {
                     return true;
                 }
 
-                if (a != b) {
+                if (!stackEntryEqual(a, b)) {
                     this.nextInstruction = ((JumpInsnNode)instruction).label;
                     return true;
                 }
@@ -321,6 +349,7 @@ public class MethodExecutor {
             case Opcodes.LUSHR -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.USHR);
             case Opcodes.LSHR  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.SHR);
             case Opcodes.LSHL  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.SHL);
+            case Opcodes.LCMP  -> binOp(BinaryOp.Type.LONG, BinaryOp.Op.CMP);
             case Opcodes.LNEG  -> negate(BinaryOp.Type.LONG);
             case Opcodes.FADD  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.ADD);
             case Opcodes.FSUB  -> binOp(BinaryOp.Type.FLOAT, BinaryOp.Op.SUB);
@@ -341,13 +370,9 @@ public class MethodExecutor {
             case Opcodes.IINC -> {
                 var inst = (IincInsnNode)instruction;
                 var localVar = this.localVariables[inst.var];
-                try {
-                    var i = localVar.extractAs(Integer.class);
-                    this.localVariables[inst.var] = new KnownInteger(i + inst.incr);
-                } catch (Exception e) {
-                    this.localVariables[inst.var] = new UnknownValue("Can't increment "+localVar+" because of "+e);
-                }
-
+                StackEntry op = new BinaryOp(localVar, StackEntry.known(inst.incr), BinaryOp.Op.ADD, BinaryOp.Type.INT);
+                if (op.canBeSimplified()) op = op.simplify(this.parent);
+                this.localVariables[inst.var] = op;
             }
             case Opcodes.I2F -> castOp(Cast.Type.INTEGER, Cast.Type.FLOAT);
             case Opcodes.I2L -> castOp(Cast.Type.INTEGER, Cast.Type.LONG);
@@ -490,6 +515,14 @@ public class MethodExecutor {
         return array;
     }
 
+    private static boolean stackEntryEqual(StackEntry a, StackEntry b) {
+        if (a == b) return true;
+        if (a instanceof KnownClass clA && b instanceof KnownClass clB) {
+            return clA.type().equals(clB.type());
+        }
+        return false;
+    }
+
     private void pushIfNotNull(@Nullable StackEntry e) {
         if (e != null) {
             this.stack.push(e);
@@ -499,7 +532,6 @@ public class MethodExecutor {
     private VirtualMachine.Context ctx() {
         return new VirtualMachine.Context(parent);
     }
-
 
     public static class VmException extends Exception {
         public VmException(String message, Throwable cause) {

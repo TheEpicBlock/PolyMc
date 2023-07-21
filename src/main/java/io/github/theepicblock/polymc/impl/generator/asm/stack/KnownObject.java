@@ -10,8 +10,8 @@ import java.util.HashMap;
 /**
  * Represents and object that exists outside of the vm
  */
-public record KnownObject(Object i, HashMap<Object, StackEntry> mutations) implements StackEntry {
-    public static KnownObject NULL = new KnownObject(null, null);
+public record KnownObject(Object i, @NotNull HashMap<Object, StackEntry> mutations) implements StackEntry {
+    public static KnownObject NULL = new KnownObject(null, new HashMap<>());
 
     public KnownObject(Object i) {
         this(i, new HashMap<>());

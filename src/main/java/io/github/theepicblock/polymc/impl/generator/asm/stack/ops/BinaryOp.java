@@ -10,7 +10,7 @@ import java.util.Map;
 
 public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements StackEntry {
     public boolean canBeSimplified() {
-        return (a.canBeSimplified() && b.canBeSimplified()) || (a.isConcrete() && b.isConcrete());
+        return (a.canBeSimplified() || a.isConcrete()) && (b.canBeSimplified() || b.isConcrete());
     }
 
     @Override
@@ -44,6 +44,9 @@ public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements 
                 case LONG -> {
                     long a = entryA.extractAs(Long.class);
                     long b = entryB.extractAs(Long.class);
+                    if (this.op == Op.CMP) {
+                        return new KnownInteger(Long.compare(a, b));
+                    }
                     long result = switch (this.op) {
                         case ADD  -> a+b;
                         case SUB  -> a-b;
@@ -132,6 +135,10 @@ public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements 
         USHR,
         SHR,
         SHL,
+        /**
+         * Currently only used for the lcmp instruction
+         */
+        CMP,
         /**
          * Has the same semantics as fcmpl and dcmpl
          */

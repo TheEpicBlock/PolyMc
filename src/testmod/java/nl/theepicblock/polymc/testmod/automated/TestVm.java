@@ -4,10 +4,7 @@ import com.google.common.collect.Lists;
 import io.github.theepicblock.polymc.impl.generator.asm.ClientClassLoader;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownDouble;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownFloat;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
@@ -196,8 +193,25 @@ public class TestVm implements FabricGameTest {
         ctx.complete();
     }
 
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void objHashcode(TestContext ctx) throws MethodExecutor.VmException {
+        assertReturns("objHashcodeFunc", 1);
+        ctx.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void classHashcode(TestContext ctx) throws MethodExecutor.VmException {
+        assertReturns("classHashcodeFunc", 1);
+        ctx.complete();
+    }
+
     public static void assertReturns(String func, int expected) throws MethodExecutor.VmException {
-        var vm = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {});
+        var vm = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {
+            @Override
+            public StackEntry onVmError(String method, boolean returnsVoid, MethodExecutor.VmException e) throws MethodExecutor.VmException {
+                return new UnknownValue("");
+            }
+        });
         vm.addMethodToStack(TestVm.class.getName().replace(".", "/"), func, "()I"); // All test functions have a descriptor of ()I
         var result = vm.runToCompletion();
         TestUtil.assertEq(result, new KnownInteger(expected));
@@ -258,5 +272,25 @@ public class TestVm implements FabricGameTest {
         int x = 5;
         var newMap = myList.stream().collect(Collectors.toMap(num -> num, num -> num+x));
         return newMap.values().stream().reduce(Integer::sum).orElse(-1);
+    }
+
+    public static int objHashcodeFunc() {
+        var obj = new Object();
+        var obj2 = new Object();
+        if (obj.hashCode() != obj2.hashCode()) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
+    public static int classHashcodeFunc() {
+        var class1 = Object.class;
+        var class2 = Integer.class;
+        if (class1.hashCode() != class2.hashCode()) {
+            return 1;
+        } else {
+            return -1;
+        }
     }
 }

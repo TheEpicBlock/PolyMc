@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
 import com.google.common.collect.Streams;
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
@@ -32,6 +33,17 @@ public class VirtualMachine {
     public VirtualMachine(ClientClassLoader classResolver, VmConfig config) {
         this.classResolver = classResolver;
         this.config = config;
+
+        this.init();
+    }
+
+    /**
+     * Internal use for copied vm's
+     */
+    private VirtualMachine(ClientClassLoader classResolver, VmConfig config, StackEntry lastReturnedValue) {
+        this.classResolver = classResolver;
+        this.config = config;
+        this.lastReturnedValue = lastReturnedValue;
     }
 
     public void changeConfig(VmConfig config) {
@@ -39,12 +51,22 @@ public class VirtualMachine {
     }
 
     public VirtualMachine copy() {
-        var n = new VirtualMachine(this.classResolver, config);
-        n.lastReturnedValue = this.lastReturnedValue;
+        var n = new VirtualMachine(this.classResolver, config, lastReturnedValue);
         for (var meth : this.methodStack) {
             n.methodStack.add(meth.copy(n));
         }
         return n;
+    }
+
+    private void init() {
+        var state = this.switchStack(null);
+        try {
+            this.addMethodToStack("java/lang/System", "setJavaLangAccess", "()V");
+            this.runToCompletion();
+        } catch (VmException e) {
+            PolyMc.LOGGER.warn("Error initializing VM: "+e.createFancyErrorMessage());
+        }
+        this.switchStack(state);
     }
 
     public AbstractObjectList<@NotNull MethodExecutor> switchStack(@Nullable AbstractObjectList<@NotNull MethodExecutor> newStack) {
@@ -178,10 +200,29 @@ public class VirtualMachine {
         // This isn't spec-compliant
         if (!node.hasInitted) {
             node.hasInitted = true;
-            var stack = this.switchStack(null); // Run this in a new, fresh state
-            addMethodToStack(node, "<clinit>", "()V", null);
-            runToCompletion();
-            this.switchStack(stack); // Restore old state
+            try {
+                var stack = this.switchStack(null); // Run this in a new, fresh state
+                addMethodToStack(node, "<clinit>", "()V", null);
+                runToCompletion();
+                this.switchStack(stack); // Restore old state
+            } catch (VmException e) {
+                throw new VmException("Error in clinit of "+node, e);
+            }
+        }
+    }
+
+    public Clazz getType(StackEntry entry) throws VmException {
+        if (entry instanceof KnownObject o) {
+            if (o.i() == null) {
+                throw new VmException("VM-NPE", null);
+            }
+            return this.getClass(o.i().getClass().getCanonicalName().replace(".", "/"));
+        } else if (entry instanceof KnownVmObject o) {
+            return o.type();
+        } else if (entry instanceof KnownClass) {
+            return this.getClass("java/lang/Class");
+        } else {
+            return null;
         }
     }
 
@@ -201,6 +242,10 @@ public class VirtualMachine {
                 if (method == null)
                     throw new VmException("Couldn't find static method " + inst.name + inst.desc + " in " + inst.owner,
                             null);
+                if (AsmUtils.hasFlag(method, Opcodes.ACC_NATIVE)) {
+                    throw new VmException("Static method " + inst.name + inst.desc + " in "
+                            + clazz + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to a native method", null);
+                }
                 return new MethodRef(clazz, method);
             }
             case Opcodes.INVOKEINTERFACE, Opcodes.INVOKEVIRTUAL, Opcodes.INVOKESPECIAL -> {
@@ -224,17 +269,7 @@ public class VirtualMachine {
                             yield clazz;
                         }
                     }
-                    case Opcodes.INVOKEINTERFACE, Opcodes.INVOKEVIRTUAL -> {
-                        if (objectRef instanceof KnownObject o) {
-                            yield this.getClass(o.i().getClass().getCanonicalName().replace(".", "/"));
-                        } else if (objectRef instanceof KnownVmObject o) {
-                            yield o.type();
-                        } else if (objectRef instanceof KnownClass) {
-                            yield this.getClass("java/lang/Class");
-                        } else {
-                            yield null;
-                        }
-                    }
+                    case Opcodes.INVOKEINTERFACE, Opcodes.INVOKEVIRTUAL -> getType(objectRef);
                     default -> throw new IllegalStateException();
                 };
 
@@ -249,11 +284,11 @@ public class VirtualMachine {
                     if (method != null) {
                         if (AsmUtils.hasFlag(method, Opcodes.ACC_NATIVE)) {
                             throw new VmException("Method " + inst.name + inst.desc + " in "
-                                    + rootClass.node.name + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to a native method", null);
+                                    + rootClass + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to a native method", null);
                         }
                         if (AsmUtils.hasFlag(method, Opcodes.ACC_ABSTRACT)) {
                             throw new VmException("Method " + inst.name + inst.desc + " in "
-                                    + rootClass.node.name + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to an abstract method", null);
+                                    + rootClass + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to an abstract method", null);
                         }
                         return new MethodRef(clazz, method);
                     } else {
@@ -267,19 +302,16 @@ public class VirtualMachine {
                 if (inst.getOpcode() == Opcodes.INVOKEINTERFACE || inst.getOpcode() == Opcodes.INVOKEVIRTUAL) {
                     clazz = rootClass; // Reset back to the root class
                     while (true) {
-                        for (var interface_ : clazz.node.interfaces) {
-                            var interfaceClass = this.getClass(interface_);
-                            while (true) {
-                                var defaultMethod = interfaceClass.getMethod(inst.name, inst.desc);
-                                if (defaultMethod != null &&
-                                        !AsmUtils.hasFlag(defaultMethod, Opcodes.ACC_ABSTRACT) &&
-                                        !AsmUtils.hasFlag(defaultMethod, Opcodes.ACC_STATIC) &&
-                                        !AsmUtils.hasFlag(defaultMethod, Opcodes.ACC_PRIVATE))
-                                    return new MethodRef(interfaceClass, defaultMethod);
-                                if (interfaceClass.node.superName == null) break;
-                                interfaceClass = this.getClass(interfaceClass.node.superName);
-                            }
-                        }
+                        var method = AsmUtils.forEachInterface(clazz, interfaceClass -> {
+                            var defaultMethod = interfaceClass.getMethod(inst.name, inst.desc);
+                            if (defaultMethod != null &&
+                                    !AsmUtils.hasFlag(defaultMethod, Opcodes.ACC_ABSTRACT) &&
+                                    !AsmUtils.hasFlag(defaultMethod, Opcodes.ACC_STATIC) &&
+                                    !AsmUtils.hasFlag(defaultMethod, Opcodes.ACC_PRIVATE))
+                                return new MethodRef(interfaceClass, defaultMethod);
+                            return null;
+                        });
+                        if (method != null) return method;
                         if (clazz.node.superName == null) break;
                         clazz = this.getClass(clazz.node.superName);
                     }
@@ -302,6 +334,11 @@ public class VirtualMachine {
     private static final @InternalName String _Double = Type.getInternalName(Double.class);
     private static final @InternalName String _VM = "jdk/internal/misc/VM";
     private static final @InternalName String _Class = Type.getInternalName(Class.class);
+    private static final @InternalName String _SharedSecrets = "jdk/internal/access/SharedSecrets";
+    private static final @InternalName String _CDS = "jdk/internal/misc/CDS";
+    private static final @InternalName String _Reflection = "jdk/internal/reflect/Reflection";
+    private static final @InternalName String _Integer = Type.getInternalName(Integer.class);
+    private static final @InternalName String _Long = Type.getInternalName(Long.class);
 
     public interface VmConfig {
         default @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
@@ -327,42 +364,19 @@ public class VirtualMachine {
          */
         default void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments)
                 throws VmException {
+            if ((inst.owner.equals(_Integer) && Util.first(arguments) instanceof KnownInteger) ||
+                    (inst.owner.equals(_Long) && Util.first(arguments) instanceof KnownLong) ||
+                    (inst.owner.equals(_Double) && Util.first(arguments) instanceof KnownDouble) ||
+                    (inst.owner.equals(_Float) && Util.first(arguments) instanceof KnownFloat)) {
+                var boxedObject = new KnownVmObject(ctx.machine().getClass(inst.owner));
+                boxedObject.setField("value", arguments[0]);
+                arguments[0] = boxedObject;
+            }
             if (inst.owner.equals(LoggerFactory)) {
                 ret(ctx, new UnknownValue("Refusing to invoke LoggerFactory for optimization reasons"));
                 return;
             }
             // Hardcoded functions
-            if (inst.owner.equals(String) && arguments[0] instanceof KnownObject o && o.i() instanceof String str) {
-                // String is quite strict with its fields, we can't reflect into them
-                // This causes the jvm to be unable to execute many methods inside String
-                if (inst.name.equals("isEmpty")) {
-                    ret(ctx, new KnownInteger(str.isEmpty()));
-                    return;
-                }
-                if (inst.name.equals("length")) {
-                    ret(ctx, new KnownInteger(str.length()));
-                    return;
-                }
-                if (inst.name.equals("hashCode")) {
-                    ret(ctx, new KnownInteger(str.length()));
-                    return;
-                }
-                if (inst.name.equals("charAt")) {
-                    if (arguments[1].canBeSimplified()) arguments[1].simplify(ctx.machine());
-                    if (arguments[1].isConcrete()) {
-                        ret(ctx, new KnownInteger(str.charAt(arguments[1].extractAs(Integer.class))));
-                        return;
-                    }
-                }
-                if (inst.name.equals("indexOf") && inst.desc.equals("(II)v")) {
-                    if (arguments[1].canBeSimplified()) arguments[1].simplify(ctx.machine());
-                    if (arguments[2].canBeSimplified()) arguments[2].simplify(ctx.machine());
-                    if (arguments[1].isConcrete() && arguments[2].isConcrete()) {
-                        ret(ctx, new KnownInteger(str.indexOf(arguments[1].extractAs(Integer.class), arguments[2].extractAs(Integer.class))));
-                        return;
-                    }
-                }
-            }
             if (inst.owner.equals(Objects) && inst.name.equals("requireNonNull")) {
                 ret(ctx, arguments[0]);
                 return;
@@ -425,6 +439,54 @@ public class VirtualMachine {
                     ret(ctx, new KnownInteger(false));
                     return;
                 }
+                if (inst.name.equals("getEnumConstantsShared") && Util.first(arguments) instanceof KnownClass cl) {
+                    var clazz = ctx.machine.getClass(cl.type().getInternalName());
+                    ret(ctx, clazz.getStatic("$VALUES"));
+                    return;
+                }
+                if (inst.name.equals("isInterface") && Util.first(arguments) instanceof KnownClass cl) {
+                    var clazz = ctx.machine.getClass(cl.type().getInternalName());
+                    ret(ctx, new KnownInteger(AsmUtils.hasFlag(clazz.node, Opcodes.ACC_INTERFACE)));
+                    return;
+                }
+                if (inst.name.equals("isArray") && Util.first(arguments) instanceof KnownClass cl) {
+                    ret(ctx, new KnownInteger(cl.type().getSort() == Type.ARRAY));
+                    return;
+                }
+                if (inst.name.equals("isPrimitive") && Util.first(arguments) instanceof KnownClass cl) {
+                    ret(ctx, new KnownInteger(cl.type().getSort() != Type.OBJECT && cl.type().getSort() != Type.ARRAY));
+                    return;
+                }
+                if (inst.name.equals("getSuperclass") && Util.first(arguments) instanceof KnownClass cl) {
+                    ret(ctx, new KnownClass(ctx.machine.getClass(ctx.machine.getClass(cl.type().getInternalName()).node.superName)));
+                    return;
+                }
+            }
+            if (inst.owner.equals(_CDS)) {
+                if (inst.name.equals("initializeFromArchive")) {
+                    ret(ctx, null); // Just pretend it can't be initialized. I don't even know what a CDS dump is
+                    return;
+                }
+                if (inst.name.equals("getRandomSeedForDumping")) {
+                    ret(ctx, new KnownLong(4)); // Chosen by fair dice roll, guaranteed to be random
+                    return;
+                }
+            }
+            if (inst.owner.equals(_Reflection)) {
+                if (inst.name.equals("getCallerClass")) {
+                    ret(ctx, new KnownClass(currentClass));
+                    return;
+                }
+            }
+            if (inst.name.equals("getClass") && inst.desc.equals("()Ljava/lang/Class;")) {
+                var first = arguments[0];
+                if (first.canBeSimplified()) first = first.simplify(ctx.machine());
+                ret(ctx, new KnownClass(ctx.machine.getType(first)));
+                return;
+            }
+            if (inst.owner.startsWith("[") && inst.name.equals("clone") && Util.first(arguments) instanceof KnownArray array) {
+                ret(ctx, array.shallowCopy());
+                return;
             }
 
             if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
@@ -432,35 +494,82 @@ public class VirtualMachine {
                 if (arguments[0].canBeSimplified()) arguments[0] = arguments[0].simplify(ctx.machine());
             }
 
-            if (Util.first(arguments) instanceof Lambda lambda && inst.getOpcode() != Opcodes.INVOKESPECIAL) {
+            if (Util.first(arguments) instanceof Lambda lambda && inst.getOpcode() != Opcodes.INVOKESPECIAL && inst.getOpcode() != Opcodes.INVOKESTATIC) {
                 // This might break, it was only designed to deal with one specific type of lambda and idk if all lambda's act the same
                 var method = lambda.method();
                 var clazz = ctx.machine().getClass(method.getOwner());
                 // Remove first arg
-                var newArgs = new StackEntry[arguments.length-1];
-                System.arraycopy(arguments, 1, newArgs, 0, arguments.length - 1);
+                var newArgs = new StackEntry[lambda.extraArguments().length+arguments.length-1];
+                System.arraycopy(lambda.extraArguments(), 0, newArgs, 0, lambda.extraArguments().length);
+                System.arraycopy(arguments, 1, newArgs, lambda.extraArguments().length, arguments.length - 1);
                 ctx.machine.addMethodToStack(clazz, method.getName(), method.getDesc(), newArgs);
+                return;
             }
 
             // I'm pretty sure we're supposed to run clinit at this point, but let's delay
             // it as much as possible
-            var method = ctx.machine().resolveMethod(currentClass, inst, Util.first(arguments));
-            invoke(ctx, currentClass, inst, arguments, method);
+            try {
+                var method = ctx.machine().resolveMethod(currentClass, inst, Util.first(arguments));
+                invoke(ctx, currentClass, inst, arguments, method);
+            } catch (VmException e) {
+                // This method is part of Object and wouldn't be found otherwise
+                if (inst.name.equals("hashCode") && inst.desc.equals("()I")) {
+                    if (Util.first(arguments) instanceof KnownObject obj) {
+                        ret(ctx, new KnownInteger(obj.i().hashCode())); // It's no problem to do this in the outer vm
+                        return;
+                    }
+                    if (Util.first(arguments) instanceof KnownVmObject obj) {
+                        ret(ctx, new KnownInteger(obj.hashCode())); // It's no problem to do this in the outer vm
+                        return;
+                    }
+                    if (Util.first(arguments) instanceof KnownClass cl) {
+                        ret(ctx, new KnownInteger(cl.type().hashCode())); // It's no problem to do this in the outer vm
+                        return;
+                    }
+                }
+
+                throw e;
+            }
         }
 
         default void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments, @Nullable MethodRef methodRef) throws VmException {
             if (methodRef == null) {
-                // This method is part of Object and wouldn't be found otherwise
-                if (inst.name.equals("hashCode") && inst.desc.equals("()I")
-                        && Util.first(arguments) instanceof KnownObject obj) {
-                    ret(ctx, new KnownInteger(obj.i().hashCode())); // It's no problem to do this in the outer vm
-                    return;
-                }
-
                 // Can't be resolved, return an unknown value
                 ret(ctx, Type.getReturnType(inst.desc) == Type.VOID_TYPE ? null
                         : new UnknownValue("Can't resolve "+inst.owner+"#"+inst.name+inst.desc+" because "+Util.first(arguments)+" has no type"));
                 return;
+            }
+
+            if (methodRef.className().equals(String) && arguments[0] instanceof KnownObject o && o.i() instanceof String str) {
+                // String is quite strict with its fields, we can't reflect into them
+                // This causes the jvm to be unable to execute many methods inside String
+                if (methodRef.name().equals("isEmpty")) {
+                    ret(ctx, new KnownInteger(str.isEmpty()));
+                    return;
+                }
+                if (methodRef.name().equals("length")) {
+                    ret(ctx, new KnownInteger(str.length()));
+                    return;
+                }
+                if (methodRef.name().equals("hashCode")) {
+                    ret(ctx, new KnownInteger(str.length()));
+                    return;
+                }
+                if (methodRef.name().equals("charAt")) {
+                    if (arguments[1].canBeSimplified()) arguments[1].simplify(ctx.machine());
+                    if (arguments[1].isConcrete()) {
+                        ret(ctx, new KnownInteger(str.charAt(arguments[1].extractAs(Integer.class))));
+                        return;
+                    }
+                }
+                if (methodRef.name().equals("indexOf") && methodRef.desc().equals("(II)v")) {
+                    if (arguments[1].canBeSimplified()) arguments[1].simplify(ctx.machine());
+                    if (arguments[2].canBeSimplified()) arguments[2].simplify(ctx.machine());
+                    if (arguments[1].isConcrete() && arguments[2].isConcrete()) {
+                        ret(ctx, new KnownInteger(str.indexOf(arguments[1].extractAs(Integer.class), arguments[2].extractAs(Integer.class))));
+                        return;
+                    }
+                }
             }
             ctx.machine.addMethodToStack(methodRef, arguments);
         }
@@ -493,6 +602,17 @@ public class VirtualMachine {
     }
 
     public record MethodRef(@NotNull Clazz clazz, @NotNull MethodNode meth) {
+        public String className() {
+            return clazz.node.name;
+        }
+
+        public String name() {
+            return meth.name;
+        }
+
+        public String desc() {
+            return meth.desc;
+        }
     };
 
     public static class Clazz {

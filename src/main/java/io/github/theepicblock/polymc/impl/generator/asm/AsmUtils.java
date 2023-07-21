@@ -19,6 +19,7 @@ import org.objectweb.asm.tree.MethodNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class AsmUtils {
@@ -49,7 +50,7 @@ public class AsmUtils {
     /**
      * @return a list containing the rootclass and all of its parents
      */
-    public static List<ClassNode> getInheritanceChain(VirtualMachine.Clazz rootClass) {
+    public static List<ClassNode> getInheritanceChain(@NotNull VirtualMachine.Clazz rootClass) {
         ClassNode clazz = rootClass.getNode();
         var classes = new ArrayList<ClassNode>();
         while (true) {
@@ -67,6 +68,18 @@ public class AsmUtils {
             }
         }
         return classes;
+    }
+
+    public static <T> @Nullable T forEachInterface(@NotNull VirtualMachine.Clazz root, Function<VirtualMachine.Clazz, @Nullable T> func) throws VmException {
+        var vm = root.getLoader();
+        for (var interface_ : root.getNode().interfaces) {
+            var interfaceClass = vm.getClass(interface_);
+            var result = func.apply(interfaceClass);
+            if (result != null) return result;
+            var recursiveResult = forEachInterface(interfaceClass, func);
+            if (recursiveResult != null) return recursiveResult;
+        }
+        return null;
     }
 
     /**

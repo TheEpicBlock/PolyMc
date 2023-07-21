@@ -13,6 +13,10 @@ import org.objectweb.asm.Opcodes;
 import java.util.Map;
 
 public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull String> fields) implements StackEntry {
+    public KnownVmObject(@NotNull Clazz type) {
+        this(type, new CowCapableMap<>());
+    }
+
     @Override
     public @NotNull StackEntry getField(String name) {
         var value = this.fields().get(name);
@@ -38,10 +42,18 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
 
     @Override
     public void setField(String name, StackEntry e) {
-        if (e == this) {
-            return; // I just… don't want to deal with that
-        }
         this.fields().put(name, e);
+    }
+
+    @Override
+    public <T> T extractAs(Class<T> type) {
+        if ((type == Integer.class && this.type.getNode().name.equals("java/lang/Integer")) ||
+                (type == Long.class && this.type.getNode().name.equals("java/lang/Long")) ||
+                (type == Float.class && this.type.getNode().name.equals("java/lang/Float")) ||
+                (type == Double.class && this.type.getNode().name.equals("java/lang/Double"))) {
+            return this.getField("value").extractAs(type);
+        }
+        return StackEntry.super.extractAs(type);
     }
 
     @Override

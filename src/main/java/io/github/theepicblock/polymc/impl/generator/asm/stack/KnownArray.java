@@ -51,4 +51,8 @@ public record KnownArray(@Nullable StackEntry[] data) implements StackEntry {
         }
         return new KnownArray(newArr);
     }
+
+    public StackEntry shallowCopy() {
+        return new KnownArray(this.data.clone());
+    }
 }

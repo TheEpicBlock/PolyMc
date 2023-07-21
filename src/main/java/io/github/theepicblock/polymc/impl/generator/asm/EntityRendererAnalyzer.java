@@ -171,9 +171,9 @@ public class EntityRendererAnalyzer {
     }
 
     public static boolean cmpFunc(@NotNull VirtualMachine.MethodRef method, @NotNull AsmUtils.MappedFunction func) {
-        return (method.clazz().getNode().name.equals(func.clazz()) &&
-                method.meth().name.equals(func.method()) &&
-                method.meth().desc.equals(func.desc()));
+        return (method.className().equals(func.clazz()) &&
+                method.name().equals(func.method()) &&
+                method.desc().equals(func.desc()));
     }
 
     public static boolean cmpInterfaceFunc(@NotNull VirtualMachine.MethodRef method, @NotNull AsmUtils.MappedFunction func) {
