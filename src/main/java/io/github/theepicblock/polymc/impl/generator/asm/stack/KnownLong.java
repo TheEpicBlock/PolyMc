@@ -21,4 +21,9 @@ public record KnownLong(long i) implements StackEntry {
     public boolean isConcrete() {
         return true;
     }
+
+    @Override
+    public int getWidth() {
+        return 2;
+    }
 }

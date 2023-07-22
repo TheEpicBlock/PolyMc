@@ -21,4 +21,9 @@ public record KnownDouble(double d) implements StackEntry {
     public boolean isConcrete() {
         return true;
     }
+
+    @Override
+    public int getWidth() {
+        return 2;
+    }
 }

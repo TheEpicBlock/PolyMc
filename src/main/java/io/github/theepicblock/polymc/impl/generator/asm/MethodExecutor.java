@@ -434,14 +434,20 @@ public class MethodExecutor {
             case Opcodes.DUP2 -> {
                 var value2 = stack.peek(1);
                 var value1 = stack.peek(0);
-                stack.push(value2);
-                stack.push(value1);
+                if (value1.getWidth() == 2) {
+                    // Yep, if it takes up two slots then it'll be the only thing duplicated
+                    // As you might understand, this is really annoying for a jvm that does symbolic execution
+                    // As such, getWidth might be incorrect in some cases. Let's hope those happen *too* often.
+                    stack.push(value1);
+                } else {
+                    stack.push(value2);
+                    stack.push(value1);
+                }
             }
             case Opcodes.POP -> stack.pop();
             case Opcodes.POP2 -> { stack.pop(); stack.pop(); }
-            // There's no multithreading…
-            case Opcodes.MONITORENTER -> {}
-            case Opcodes.MONITOREXIT -> {}
+            case Opcodes.MONITORENTER -> {} // There's no multithreading…
+            case Opcodes.MONITOREXIT -> {} // There's no multithreading…
             case -1 -> {} // This is a virtual opcodes defined by asm, can be safely ignored
             default -> {
                 parent.getConfig().handleUnknownInstruction(ctx(), instruction, 0); // TODO

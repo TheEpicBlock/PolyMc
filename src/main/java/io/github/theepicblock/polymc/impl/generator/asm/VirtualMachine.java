@@ -576,6 +576,16 @@ public class VirtualMachine {
                     ret(ctx, null);
                     return;
                 }
+                if (inst.name.equals("arrayCopy")) {
+                    for (var i = 0; i <= arguments.length; i++) {
+                        if (arguments[i].canBeSimplified()) arguments[i] = arguments[i].simplify(ctx.machine());
+                    }
+                    if (arguments[0] instanceof KnownArray src && arguments[2] instanceof KnownArray dst) {
+                        System.arraycopy(src.data(), arguments[1].extractAs(Integer.class), dst.data(), arguments[3].extractAs(Integer.class), arguments[4].extractAs(Integer.class));
+                        ret(ctx, null);
+                        return;
+                    }
+                }
             }
             if (inst.owner.equals(_Runtime)) {
                 if (inst.name.equals("availableProcessors")) {

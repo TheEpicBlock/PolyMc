@@ -51,6 +51,8 @@ public class EntityRendererAnalyzer {
     private final static AsmUtils.MappedFunction Entity$isFrozen = AsmUtils.map("net.minecraft.class_1297", "method_32314", "()Z");
     private final static AsmUtils.MappedFunction Entity$getFlag = AsmUtils.map("net.minecraft.class_1297", "method_5795", "(I)Z");
     private final static AsmUtils.MappedFunction Nameable$getName = AsmUtils.map("net.minecraft.class_1275", "method_5477", "()Lnet/minecraft/class_2561;");
+    private final static AsmUtils.MappedFunction Nameable$getDisplayName = AsmUtils.map("net.minecraft.class_1275", "method_5476", "()Lnet/minecraft/class_2561;");
+    private final static AsmUtils.MappedFunction Nameable$getCustomName = AsmUtils.map("net.minecraft.class_1275", "method_5797", "()Lnet/minecraft/class_2561;");
     private final static AsmUtils.MappedFunction LivingEntity$isUsingRiptide = AsmUtils.map("net.minecraft.class_1309", "method_6123", "()Z");
     private final static AsmUtils.MappedFunction LivingEntity$getHandSwingProgress = AsmUtils.map("net.minecraft.class_1309", "method_6055", "(F)F");
     private final static AsmUtils.MappedFunction LivingEntityRenderer$hasLabel = AsmUtils.map("net.minecraft.class_922", "method_4055", "(Lnet/minecraft/class_1309;)Z");
@@ -176,8 +178,11 @@ public class EntityRendererAnalyzer {
                 method.desc().equals(func.desc()));
     }
 
-    public static boolean cmpInterfaceFunc(@NotNull VirtualMachine.MethodRef method, @NotNull AsmUtils.MappedFunction func) {
-        return (AsmUtils.getInheritanceChain(method.clazz()).stream().anyMatch(node -> func.clazz().equals(node.name)) &&
+    /**
+     * Will match any function that overrides a specified function.
+     */
+    public static boolean cmpFuncOrOverrides(@NotNull VirtualMachine.MethodRef method, @NotNull AsmUtils.MappedFunction func) {
+        return (// TODO, check if it actually overrides
                 method.meth().name.equals(func.method()) &&
                 method.meth().desc.equals(func.desc()));
     }
@@ -256,8 +261,16 @@ public class EntityRendererAnalyzer {
                 ret(ctx, new UnknownValue("getFlag"));
                 return;
             }
-            if (cmpInterfaceFunc(method, Nameable$getName)) {
+            if (cmpFuncOrOverrides(method, Nameable$getName)) {
                 ret(ctx, new UnknownValue("getName"));
+                return;
+            }
+            if (cmpFuncOrOverrides(method, Nameable$getDisplayName)) {
+                ret(ctx, new UnknownValue("getDisplayName"));
+                return;
+            }
+            if (cmpFuncOrOverrides(method, Nameable$getCustomName)) {
+                ret(ctx, new UnknownValue("getCustomName"));
                 return;
             }
             if (cmpFunc(method, LivingEntity$getHandSwingProgress)) {

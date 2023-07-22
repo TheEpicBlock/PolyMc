@@ -123,6 +123,11 @@ public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements 
         throw new NotImplementedException();
     }
 
+    @Override
+    public int getWidth() {
+        return (this.type == Type.LONG || this.type == Type.DOUBLE) ? 2 : 1;
+    }
+
     public enum Op {
         ADD,
         SUB,

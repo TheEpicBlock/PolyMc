@@ -112,4 +112,12 @@ public interface StackEntry {
     default StackEntry copy() {
         return this;
     }
+
+    /**
+     * Equivalent to the computational type category as defined in
+     * <a href="https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-2.html#jvms-2.11.1-320">this table</a>
+     */
+    default int getWidth() {
+        return 1;
+    }
 }
