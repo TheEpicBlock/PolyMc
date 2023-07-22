@@ -376,20 +376,12 @@ public class VirtualMachine {
         default void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments)
                 throws VmException {
             // Auto-boxing
-            if (Util.first(arguments) instanceof KnownInteger ||
+            if (inst.getOpcode() != Opcodes.INVOKESTATIC &&
+                    (Util.first(arguments) instanceof KnownInteger ||
                     Util.first(arguments) instanceof KnownLong ||
                     Util.first(arguments) instanceof KnownDouble ||
-                    Util.first(arguments) instanceof KnownFloat) {
-                KnownVmObject boxedObject;
-                if (arguments[0] instanceof KnownInteger) {
-                    boxedObject = new KnownVmObject(ctx.machine().getClass(_Integer));
-                } else if (arguments[0] instanceof KnownLong) {
-                    boxedObject = new KnownVmObject(ctx.machine().getClass(_Long));
-                } else if (arguments[0] instanceof KnownDouble) {
-                    boxedObject = new KnownVmObject(ctx.machine().getClass(_Double));
-                } else if (arguments[0] instanceof KnownFloat) {
-                    boxedObject = new KnownVmObject(ctx.machine().getClass(_Float));
-                } else { throw new UnsupportedOperationException(); }
+                    Util.first(arguments) instanceof KnownFloat)) {
+                var boxedObject = new KnownVmObject(ctx.machine().getClass(inst.owner));
                 boxedObject.setField("value", arguments[0]);
                 arguments[0] = boxedObject;
             }
