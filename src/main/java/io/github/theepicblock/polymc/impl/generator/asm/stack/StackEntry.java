@@ -47,6 +47,10 @@ public interface StackEntry {
         return new KnownInteger(i);
     }
 
+    static @NotNull StackEntry known(boolean b) {
+        return new KnownInteger(b);
+    }
+
     static @NotNull StackEntry known(long l) {
         return new KnownLong(l);
     }

@@ -221,6 +221,14 @@ public class VirtualMachine {
             return o.type();
         } else if (entry instanceof KnownClass) {
             return this.getClass("java/lang/Class");
+        } else if (entry instanceof KnownInteger) {
+            return this.getClass(_Integer);
+        } else if (entry instanceof KnownLong) {
+            return this.getClass(_Long);
+        } else if (entry instanceof KnownFloat) {
+            return this.getClass(_Float);
+        } else if (entry instanceof KnownDouble) {
+            return this.getClass(_Double);
         } else {
             return null;
         }

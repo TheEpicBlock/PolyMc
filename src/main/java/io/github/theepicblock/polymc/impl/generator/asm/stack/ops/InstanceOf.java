@@ -3,11 +3,9 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 import com.google.gson.JsonElement;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.Map;
 
@@ -19,20 +17,24 @@ public record InstanceOf(StackEntry entry, String toCheck) implements StackEntry
     }
 
     @Override
-    public <T> T extractAs(Class<T> type) {
-        if (type == Integer.class) {
-            try {
-                return (T)(Integer)this.toInt();
-            } catch (VmException e) {
-                throw new NotImplementedException(e);
-            }
-        }
-        return StackEntry.super.extractAs(type);
+    public boolean canBeSimplified() {
+        return entry.canBeSimplified() || entry.isConcrete();
     }
 
     @Override
     public StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws VmException {
-        return new KnownInteger(toInt(entry.simplify(vm, simplificationCache), toCheck));
+        StackEntry entry1 = entry;
+        if (entry1.canBeSimplified()) entry1 = entry1.simplify(vm);
+
+        if (entry1 instanceof KnownObject o && o.i() == null) {
+            return StackEntry.known(false);
+        }
+        var type = vm.getType(entry1);
+        if (type == null) {
+            return new InstanceOf(entry1, toCheck);
+        } else {
+            return StackEntry.known(type.getNode().name.equals(toCheck));
+        }
     }
 
     public int toInt() throws VmException {

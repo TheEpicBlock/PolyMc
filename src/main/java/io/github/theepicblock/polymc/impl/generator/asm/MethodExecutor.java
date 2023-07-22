@@ -411,12 +411,10 @@ public class MethodExecutor {
             }
             case Opcodes.INSTANCEOF -> {
                 var inst = (TypeInsnNode)instruction;
-                var objectref = stack.pop();
-                try {
-                    stack.push(new KnownInteger(InstanceOf.toInt(objectref, inst.desc)));
-                } catch (VmException e) {
-                    stack.push(new UnknownValue(e));
-                }
+                StackEntry operation = new InstanceOf(stack.pop(), inst.desc);
+                if (operation.canBeSimplified()) operation = operation.simplify(this.parent);
+
+                stack.push(operation);
             }
             case Opcodes.CHECKCAST -> {
                 var inst = (TypeInsnNode)instruction;
