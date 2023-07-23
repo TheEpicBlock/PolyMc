@@ -442,6 +442,12 @@ public class MethodExecutor {
                     stack.push(value1);
                 }
             }
+            case Opcodes.SWAP -> {
+                var value1 = stack.pop();
+                var value2 = stack.pop();
+                stack.push(value2);
+                stack.push(value1);
+            }
             case Opcodes.POP -> stack.pop();
             case Opcodes.POP2 -> { stack.pop(); stack.pop(); }
             case Opcodes.MONITORENTER -> {} // There's no multithreading…
