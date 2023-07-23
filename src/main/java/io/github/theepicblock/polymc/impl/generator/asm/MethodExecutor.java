@@ -445,8 +445,8 @@ public class MethodExecutor {
             case Opcodes.SWAP -> {
                 var value1 = stack.pop();
                 var value2 = stack.pop();
-                stack.push(value2);
                 stack.push(value1);
+                stack.push(value2);
             }
             case Opcodes.POP -> stack.pop();
             case Opcodes.POP2 -> { stack.pop(); stack.pop(); }
