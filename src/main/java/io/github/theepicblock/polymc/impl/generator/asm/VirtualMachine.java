@@ -18,6 +18,7 @@ import org.objectweb.asm.tree.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -336,6 +337,8 @@ public class VirtualMachine {
     private static final @InternalName String LoggerFactory = Type.getInternalName(LoggerFactory.class);
     private static final @InternalName String String = Type.getInternalName(String.class);
     private static final @InternalName String Objects = Type.getInternalName(Objects.class);
+
+    private static final @InternalName String _Array = Type.getInternalName(Array.class);
     private static final @InternalName String _Arrays = Type.getInternalName(Arrays.class);
     private static final @InternalName String _StrictMath = Type.getInternalName(StrictMath.class);
     private static final @InternalName String _Float = Type.getInternalName(Float.class);
@@ -394,10 +397,16 @@ public class VirtualMachine {
                 ret(ctx, arguments[0]);
                 return;
             }
+            if (inst.owner.equals(_Array)) {
+                if (inst.name.equals("newArray")) {
+                    ret(ctx, KnownArray.withLength(arguments[1].simplify(ctx.machine()).extractAs(Integer.class)));
+                    return;
+                }
+            }
             if (inst.owner.equals(_Arrays) && inst.name.equals("copyOf")
                     && inst.desc.equals("([Ljava/lang/Object;I)[Ljava/lang/Object;")
                     && arguments[0] instanceof KnownArray a) {
-                ret(ctx, new KnownArray(Arrays.copyOf(a.data(), arguments[1].extractAs(Integer.class))));
+                ret(ctx, new KnownArray(Arrays.copyOf(a.data(), arguments[1].simplify(ctx.machine()).extractAs(Integer.class))));
                 return;
             }
             if (inst.owner.equals(_StrictMath)) {
@@ -576,8 +585,8 @@ public class VirtualMachine {
                     ret(ctx, null);
                     return;
                 }
-                if (inst.name.equals("arrayCopy")) {
-                    for (var i = 0; i <= arguments.length; i++) {
+                if (inst.name.equals("arraycopy")) {
+                    for (var i = 0; i < arguments.length; i++) {
                         if (arguments[i].canBeSimplified()) arguments[i] = arguments[i].simplify(ctx.machine());
                     }
                     if (arguments[0] instanceof KnownArray src && arguments[2] instanceof KnownArray dst) {
