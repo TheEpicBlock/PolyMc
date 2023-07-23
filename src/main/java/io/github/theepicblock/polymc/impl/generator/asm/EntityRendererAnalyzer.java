@@ -20,7 +20,6 @@ import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
@@ -74,8 +73,8 @@ public class EntityRendererAnalyzer {
      */
     private final VirtualMachine factoryVm = new VirtualMachine(new ClientClassLoader(), new VmConfig() {
         @Override
-        public @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
-            return new StaticFieldValue(inst.owner, inst.name); // Evaluate static fields lazily
+        public @NotNull StackEntry loadStaticField(Context ctx, Clazz owner, String fieldName) throws VmException {
+            return new StaticFieldValue(owner.getNode().name, fieldName); // Evaluate static fields lazily
         }
 
         @Override
@@ -196,12 +195,12 @@ public class EntityRendererAnalyzer {
     public record RendererAnalyzerVmConfig(ExecutionGraphNode node, EntityRendererAnalyzer root) implements VmConfig {
 
         @Override
-        public @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
-            var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, inst);
+        public @NotNull StackEntry loadStaticField(Context ctx, Clazz owner, String fieldName) throws VmException {
+            var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, owner.name(), fieldName);
             if (fromEnvironment != null) return fromEnvironment;
             // Try and resolve the static field in the factoryVm, I don't think it's a good idea to
             // spawn parallel universes from static fields at the moment
-            return new StaticFieldValue(inst.owner, inst.name).simplify(root.factoryVm);
+            return new StaticFieldValue(owner.name(), fieldName).simplify(root.factoryVm);
         }
 
         @Override

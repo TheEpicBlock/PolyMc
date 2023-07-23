@@ -9,6 +9,9 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.Map;
 
+/**
+ * @param owner should be the *actual* owner of the static field. This code won't deal with inheritance
+ */
 public record StaticFieldValue(@InternalName String owner, String field) implements StackEntry {
     @Override
     public boolean canBeSimplified() {

@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -42,6 +41,9 @@ public class AsmUtils {
         return internalName.replace("/", ".");
     }
 
+    /**
+     * @implNote Does not account for static fields declared in interfaces
+     */
     public static Stream<FieldNode> getFields(VirtualMachine.Clazz rootClass) {
         return getInheritanceChain(rootClass).stream().flatMap(classNode -> classNode.fields.stream());
     }
@@ -84,7 +86,7 @@ public class AsmUtils {
     /**
      * Checks the *actual* jvm to see if the static field referenced by {@code inst} is already loaded
      */
-    public static @Nullable StackEntry tryGetStaticFieldFromEnvironment(Context ctx, FieldInsnNode inst) {
+    public static @Nullable StackEntry tryGetStaticFieldFromEnvironment(Context ctx, @NotNull @InternalName String className, @NotNull String fieldName) {
         try {
             /*
             // Only if the class is already loaded
@@ -98,7 +100,7 @@ public class AsmUtils {
             */
 
             // Will error if this class can't be loaded from the environment
-            return StackEntry.known(Class.forName(inst.owner.replace("/", ".")).getField(inst.name).get(null));
+            return StackEntry.known(Class.forName(className.replace("/", ".")).getField(fieldName).get(null));
         } catch (Throwable e) {}
         return null;
     }

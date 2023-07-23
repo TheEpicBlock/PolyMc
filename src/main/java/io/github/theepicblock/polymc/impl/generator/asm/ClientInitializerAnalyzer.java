@@ -17,7 +17,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
 import java.lang.reflect.InvocationTargetException;
@@ -63,11 +62,12 @@ public class ClientInitializerAnalyzer {
         // Create vm
         var vm = new VirtualMachine(classLoader, new VmConfig() {
             @Override
-            public @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
-                var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, inst);
+            public @NotNull StackEntry loadStaticField(Context ctx, Clazz owner, String fieldName) throws VmException {
+                var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, owner.name(), fieldName);
                 if (fromEnvironment != null) return fromEnvironment; // Return the known value if the class is already loaded in the *actual* jvm
-                return new StaticFieldValue(inst.owner, inst.name); // Evaluate static fields lazily
+                return new StaticFieldValue(owner.getNode().name, fieldName); // Evaluate static fields lazily
             }
+
             @Override
             public void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
                 try {

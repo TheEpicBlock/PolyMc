@@ -356,9 +356,14 @@ public class VirtualMachine {
 
     public interface VmConfig {
         default @NotNull StackEntry loadStaticField(Context ctx, FieldInsnNode inst) throws VmException {
-            var clazz = ctx.machine.getClass(inst.owner);
-            ctx.machine.ensureClinit(clazz);
-            return clazz.getStatic(inst.name);
+            var rootClazz = ctx.machine.getClass(inst.owner);
+            var actualField = rootClazz.resolveStaticField(inst.name);
+            return loadStaticField(ctx, ctx.machine().getClass(actualField.clazz()), actualField.fieldName());
+        }
+
+        default @NotNull StackEntry loadStaticField(Context ctx, Clazz owner, String fieldName) throws VmException {
+            ctx.machine.ensureClinit(owner);
+            return owner.getStatic(fieldName);
         }
 
         default StackEntry onVmError(String method, boolean returnsVoid, VmException e) throws VmException {
@@ -482,8 +487,10 @@ public class VirtualMachine {
                     return;
                 }
                 if (inst.name.equals("getEnumConstantsShared") && Util.first(arguments) instanceof KnownClass cl) {
-                    var clazz = ctx.machine.getClass(cl.type().getInternalName());
-                    ret(ctx, clazz.getStatic("$VALUES"));
+                    var field = this.loadStaticField(ctx, new FieldInsnNode(Opcodes.GETSTATIC, cl.type().getInternalName(), "$VALUES", null));
+                    if (field.canBeSimplified()) field = field.simplify(ctx.machine());
+                    if (field instanceof KnownArray array) field = array.shallowCopy();
+                    ret(ctx, field);
                     return;
                 }
                 if (inst.name.equals("isInterface") && Util.first(arguments) instanceof KnownClass cl) {
@@ -773,17 +780,47 @@ public class VirtualMachine {
             this.loader = loader;
         }
 
+        public FieldRef resolveStaticField(String fieldname) throws VmException {
+            // Guess what, static fields have inheritance!
+            // https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-5.html#jvms-5.4.3.2
+            Clazz clazz = this;
+            while (true) {
+                var res = clazz.node.fields.stream()
+                        .filter(f -> f.name.equals(fieldname))
+                        .filter(f -> AsmUtils.hasFlag(f, Opcodes.ACC_STATIC))
+                        .findAny().orElse(null);
+                if (res != null) return new FieldRef(clazz.node.name, res.name);
+
+                var res2 = AsmUtils.forEachInterface(clazz, interf -> interf.node.fields.stream()
+                        .filter(f -> f.name.equals(fieldname))
+                        .filter(f -> AsmUtils.hasFlag(f, Opcodes.ACC_STATIC))
+                        .findAny()
+                        .map(f -> new FieldRef(interf.node.name, f.name))
+                        .orElse(null));
+                if (res2 != null) return res2;
+
+                if (clazz.node.superName != null) {
+                    clazz = this.loader.getClass(clazz.node.superName);
+                }
+            }
+        }
+
+        public record FieldRef(@InternalName String clazz, String fieldName) {}
+
         @ApiStatus.Internal
         @ApiStatus.Experimental
         public @NotNull VirtualMachine getLoader() {
             return this.loader;
         }
 
+        /**
+         * Gets a static field *that's part of this class*. It is up to the caller to handle inheritance of static fields
+         */
         public @NotNull StackEntry getStatic(String name) {
             var value = staticFields.get(name);
             if (value == null) {
                 // We need to get the default value depending on the type of the field
-                var field = AsmUtils.getFields(this)
+                var field = this.node.fields.stream()
                         .filter(f -> f.name.equals(name))
                         .filter(f -> AsmUtils.hasFlag(f, Opcodes.ACC_STATIC))
                         .findAny().orElse(null);
@@ -807,6 +844,10 @@ public class VirtualMachine {
 
         public @Nullable MethodNode getMethod(String name, String descriptor) {
             return methodLookupCache.get(name+descriptor);
+        }
+
+        public @InternalName String name() {
+            return node.name;
         }
 
         @Override
