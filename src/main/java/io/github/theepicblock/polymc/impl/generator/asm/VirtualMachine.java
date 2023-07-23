@@ -335,7 +335,7 @@ public class VirtualMachine {
     }
 
     private static final @InternalName String LoggerFactory = Type.getInternalName(LoggerFactory.class);
-    private static final @InternalName String String = Type.getInternalName(String.class);
+    private static final @InternalName String _String = Type.getInternalName(String.class);
     private static final @InternalName String Objects = Type.getInternalName(Objects.class);
 
     private static final @InternalName String _Array = Type.getInternalName(Array.class);
@@ -689,9 +689,13 @@ public class VirtualMachine {
                 return;
             }
 
-            if (methodRef.className().equals(String) && arguments[0] instanceof KnownObject o && o.i() instanceof String str) {
+            if (methodRef.className().equals(_String) && arguments[0] instanceof KnownObject o && o.i() instanceof String str) {
                 // String is quite strict with its fields, we can't reflect into them
                 // This causes the jvm to be unable to execute many methods inside String
+                if (methodRef.name().equals("equals")) {
+                    ret(ctx, StackEntry.known(str.equals(arguments[1].extractAs(Object.class))));
+                    return;
+                }
                 if (methodRef.name().equals("isEmpty")) {
                     ret(ctx, new KnownInteger(str.isEmpty()));
                     return;
@@ -711,7 +715,7 @@ public class VirtualMachine {
                         return;
                     }
                 }
-                if (methodRef.name().equals("indexOf") && methodRef.desc().equals("(II)v")) {
+                if (methodRef.name().equals("indexOf") && methodRef.desc().equals("(II)I")) {
                     if (arguments[1].canBeSimplified()) arguments[1].simplify(ctx.machine());
                     if (arguments[2].canBeSimplified()) arguments[2].simplify(ctx.machine());
                     if (arguments[1].isConcrete() && arguments[2].isConcrete()) {

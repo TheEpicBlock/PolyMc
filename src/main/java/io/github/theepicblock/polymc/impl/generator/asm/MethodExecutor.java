@@ -203,6 +203,8 @@ public class MethodExecutor {
             case Opcodes.AALOAD, Opcodes.BALOAD, Opcodes.CALOAD, Opcodes.DALOAD, Opcodes.FALOAD, Opcodes.IALOAD, Opcodes.LALOAD, Opcodes.SALOAD -> {
                 var index = stack.pop();
                 var array = stack.pop();
+                if (array.canBeSimplified()) array = array.simplify(this.parent);
+                if (index.canBeSimplified()) index = index.simplify(this.parent);
                 if (index instanceof KnownInteger i) {
                     stack.push(array.arrayAccess(i.i()));
                 } else {
@@ -213,6 +215,8 @@ public class MethodExecutor {
                 var value = stack.pop();
                 var index = stack.pop();
                 var array = stack.pop();
+                if (array.canBeSimplified()) array = array.simplify(this.parent);
+                if (index.canBeSimplified()) index = index.simplify(this.parent);
                 if (index instanceof KnownInteger i) {
                     array.arraySet(i.i(), value);
                 } else {
