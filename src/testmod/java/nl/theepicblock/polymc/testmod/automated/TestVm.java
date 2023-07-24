@@ -7,14 +7,65 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
-import net.minecraft.test.GameTest;
-import net.minecraft.test.GameTestException;
-import net.minecraft.test.TestContext;
+import net.minecraft.test.*;
+import net.minecraft.util.Pair;
+import org.objectweb.asm.Type;
 
 import java.io.IOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("ConstantValue")
 public class TestVm implements FabricGameTest {
+    /**
+     * Plumbing to run {@link #runVmTest(TestContext, Method, VmTest)} on every method annotated with {@link VmTest} in this class
+     */
+    @CustomTestProvider
+    public Collection<TestFunction> vmRunnerTests() {
+        var selfClass = TestVm.class;
+        return Arrays.stream(selfClass.getDeclaredMethods())
+                .map(method -> new Pair<>(method, method.getAnnotation(VmTest.class)))
+                .filter(p -> p.getRight() != null)
+                .map(pair -> {
+                    var method = pair.getLeft();
+                    var annotation = pair.getRight();
+                    return TestUtil.testBuilder()
+                            .name(method.getName())
+                            .func((ctx) -> runVmTest(ctx, method, annotation))
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    private static void runVmTest(TestContext ctx, Method method, VmTest annotation) {
+        var vm = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {
+            @Override
+            public StackEntry onVmError(String method, boolean returnsVoid, MethodExecutor.VmException e) throws MethodExecutor.VmException {
+                return new UnknownValue("");
+            }
+        });
+        try {
+            vm.addMethodToStack(Type.getInternalName(method.getDeclaringClass()), method.getName(), Type.getMethodDescriptor(method));
+            var result = vm.runToCompletion();
+            TestUtil.assertEq(result, new KnownInteger(annotation.expected()));
+        } catch (MethodExecutor.VmException e) {
+            throw new RuntimeException(e);
+        }
+        ctx.complete();
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD})
+    public @interface VmTest {
+        int expected();
+    }
+
     @GameTest(templateName = EMPTY_STRUCTURE)
     public void testVmPrettyPrint(TestContext ctx) {
         var directNull = new MethodExecutor.VmException("Test msg1", null);
@@ -95,77 +146,13 @@ public class TestVm implements FabricGameTest {
         }
     }
 
-    @GameTest(templateName = EMPTY_STRUCTURE)
-    public void createOne(TestContext ctx) throws MethodExecutor.VmException {
-        // A function that just returns 1
-        assertReturns("createOneFunc", 1);
-        ctx.complete();
+    @VmTest(expected = 1)
+    public static int createOne() {
+        return 1;
     }
 
-    @GameTest(templateName = EMPTY_STRUCTURE)
-    public void invoke(TestContext ctx) throws MethodExecutor.VmException {
-        // Function that invokes another function
-        assertReturns("invokeFunc", 9);
-        ctx.complete();
-    }
-
-    @GameTest(templateName = EMPTY_STRUCTURE)
-    public void ifStatement(TestContext ctx) throws MethodExecutor.VmException {
-        // Function with an if statement
-        assertReturns("ifStatementFunc", 9);
-        ctx.complete();
-    }
-
-    @GameTest(templateName = EMPTY_STRUCTURE)
-    public void stringLength(TestContext ctx) throws MethodExecutor.VmException {
-        assertReturns("stringLengthFunc", 6);
-        ctx.complete();
-    }
-
-    @GameTest(templateName = EMPTY_STRUCTURE)
-    public void checkCast(TestContext ctx) throws MethodExecutor.VmException {
-        assertReturns("checkCastFunc", 7);
-        ctx.complete();
-    }
-
-    @GameTest(templateName = EMPTY_STRUCTURE)
-    public void interfaceDefault(TestContext ctx) throws MethodExecutor.VmException {
-        assertReturns("interfaceDefaultFunc", 546);
-        ctx.complete();
-    }
-
-    @GameTest(templateName = EMPTY_STRUCTURE)
-    public void streamCollect(TestContext ctx) throws MethodExecutor.VmException {
-        assertReturns("streamCollectFunc", 35);
-        ctx.complete();
-    }
-
-    @GameTest(templateName = EMPTY_STRUCTURE)
-    public void objHashcode(TestContext ctx) throws MethodExecutor.VmException {
-        assertReturns("objHashcodeFunc", 1);
-        ctx.complete();
-    }
-
-    @GameTest(templateName = EMPTY_STRUCTURE)
-    public void classHashcode(TestContext ctx) throws MethodExecutor.VmException {
-        assertReturns("classHashcodeFunc", 1);
-        ctx.complete();
-    }
-
-    public static void assertReturns(String func, int expected) throws MethodExecutor.VmException {
-        var vm = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {
-            @Override
-            public StackEntry onVmError(String method, boolean returnsVoid, MethodExecutor.VmException e) throws MethodExecutor.VmException {
-                return new UnknownValue("");
-            }
-        });
-        vm.addMethodToStack(TestVm.class.getName().replace(".", "/"), func, "()I"); // All test functions have a descriptor of ()I
-        var result = vm.runToCompletion();
-        TestUtil.assertEq(result, new KnownInteger(expected));
-
-    }
-
-    public static int ifStatementFunc() {
+    @VmTest(expected = 9)
+    public static int ifStatement() {
         int integer = 634;
         if (integer + 1 == 635) {
             return 9;
@@ -174,19 +161,18 @@ public class TestVm implements FabricGameTest {
         }
     }
 
-    public static int invokeFunc() {
-        return createOneFunc() + 8;
+    @VmTest(expected = 9)
+    public static int invoke() {
+        return createOne() + 8;
     }
 
-    public static int createOneFunc() {
-        return 1;
-    }
-
-    public static int stringLengthFunc() {
+    @VmTest(expected = 6)
+    public static int stringLength() {
         return "abcdef".length();
     }
 
-    public static int checkCastFunc() {
+    @VmTest(expected = 7)
+    public static int checkCast() {
         var myGetter = new IntProvider() {
             @Override
             public int gimme() {
@@ -201,7 +187,8 @@ public class TestVm implements FabricGameTest {
         int gimme();
     }
 
-    public static int interfaceDefaultFunc() {
+    @VmTest(expected = 546)
+    public static int interfaceDefault() {
         var myRecord = new RecordImplementingDefaultInterface();
         return myRecord.gimme();
     }
@@ -214,14 +201,16 @@ public class TestVm implements FabricGameTest {
         }
     }
 
-    public static int streamCollectFunc() {
+    @VmTest(expected = 35)
+    public static int streamCollect() {
         var myList = Lists.newArrayList(0, 1, 2, 3, 4);
         int x = 5;
         var newMap = myList.stream().collect(Collectors.toMap(num -> num, num -> num+x));
         return newMap.values().stream().reduce(Integer::sum).orElse(-1);
     }
 
-    public static int objHashcodeFunc() {
+    @VmTest(expected = 1)
+    public static int objHashcode() {
         var obj = new Object();
         var obj2 = new Object();
         if (obj.hashCode() != obj2.hashCode()) {
@@ -231,7 +220,8 @@ public class TestVm implements FabricGameTest {
         }
     }
 
-    public static int classHashcodeFunc() {
+    @VmTest(expected = 1)
+    public static int classHashcode() {
         var class1 = Object.class;
         var class2 = Integer.class;
         if (class1.hashCode() != class2.hashCode()) {
@@ -239,5 +229,13 @@ public class TestVm implements FabricGameTest {
         } else {
             return -1;
         }
+    }
+
+    @VmTest(expected = 1+2+3)
+    public static int arrayClone() {
+        var array = new int[]{1,2,3};
+        var newArray = array.clone();
+        array[1] = 5;
+        return newArray[0]+newArray[1]+newArray[2];
     }
 }

@@ -2,10 +2,12 @@ package nl.theepicblock.polymc.testmod.automated;
 
 import io.github.theepicblock.polymc.impl.NOPPolyMap;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.test.CustomTestProvider;
+import net.minecraft.test.TestContext;
 import net.minecraft.test.TestFunction;
 import net.minecraft.util.math.BlockPos;
 import nl.theepicblock.polymc.testmod.Testmod;
@@ -29,39 +31,37 @@ public class BlockTests implements FabricGameTest {
             for (var useNopMap : new Boolean[]{false, true}) {
                 for (var method : reserializationMethods.entrySet()) {
                     var block = isBlockVanilla ? Blocks.DIRT : Testmod.TEST_BLOCK;
-                    list.add(new TestFunction(
-                            "blockbatch_"+i++,
-                            String.format("blocktests (%s, %s, %s)", isBlockVanilla, useNopMap, method.getKey()),
-                            EMPTY_STRUCTURE,
-                            100,
-                            0,
-                            true,
-                            (ctx) -> {
-                                // The actual test function
-                                var packetCtx = new PacketTester(ctx);
-                                if (useNopMap) {
-                                    packetCtx.setMap(new NOPPolyMap());
-                                }
-
-                                var originalState = block.getDefaultState();
-                                method.getValue().reserialize(originalState, packetCtx, newState -> {
-                                    if (isBlockVanilla || useNopMap) {
-                                        ctx.assertTrue(newState == originalState, "Item shouldn't have been transformed by PolyMc. Result: "+newState);
-                                    } else {
-                                        ctx.assertTrue(newState != originalState, "Item should've been transformed by PolyMc. Result: "+newState);
-                                    }
-
-                                    packetCtx.close();
-                                    ctx.complete();
-                                });
-                            }
-                    ));
+                    list.add(TestUtil.testBuilder()
+                            .batch("blockbatch_"+i++)
+                            .name(String.format("%s, %s, %s", isBlockVanilla, useNopMap, method.getKey()))
+                            .func((ctx) -> runBlockTest(ctx, block, method.getValue(), isBlockVanilla, useNopMap))
+                            .build());
                 }
             }
         }
 
         return list;
     }
+
+    private static void runBlockTest(TestContext ctx, Block block, ReserializationMethod method, boolean isBlockVanilla, boolean useNopMap) {
+        var packetCtx = new PacketTester(ctx);
+        if (useNopMap) {
+            packetCtx.setMap(new NOPPolyMap());
+        }
+
+        var originalState = block.getDefaultState();
+        method.reserialize(originalState, packetCtx, newState -> {
+            if (isBlockVanilla || useNopMap) {
+                ctx.assertTrue(newState == originalState, "Item shouldn't have been transformed by PolyMc. Result: "+newState);
+            } else {
+                ctx.assertTrue(newState != originalState, "Item should've been transformed by PolyMc. Result: "+newState);
+            }
+
+            packetCtx.close();
+            ctx.complete();
+        });
+    }
+
 
     public void reencodeMethod(BlockState state, PacketTester ctx, Consumer<BlockState> newStateConsumer) {
         newStateConsumer.accept(
