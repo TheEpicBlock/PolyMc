@@ -30,7 +30,7 @@ public record Cast(StackEntry value, Type in, Type out) implements StackEntry {
         }
 
         if (value.isConcrete()) {
-            Object in = this.value.extractAs((Class<?>)(switch (this.in) {
+            Object in = value.extractAs((Class<?>)(switch (this.in) {
                 case INTEGER -> Integer.class;
                 case FLOAT -> Float.class;
                 case LONG -> Long.class;
