@@ -1,5 +1,6 @@
 package nl.theepicblock.polymc.testmod.automated;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import io.github.theepicblock.polymc.impl.generator.asm.ClientClassLoader;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
@@ -47,7 +48,7 @@ public class TestVm implements FabricGameTest {
         var vm = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {
             @Override
             public StackEntry onVmError(String method, boolean returnsVoid, MethodExecutor.VmException e) throws MethodExecutor.VmException {
-                return new UnknownValue("");
+                return new UnknownValue("Error executing "+method+": "+e.createFancyErrorMessage());
             }
         });
         try {
@@ -202,11 +203,22 @@ public class TestVm implements FabricGameTest {
     }
 
     @VmTest(expected = 35)
-    public static int streamCollect() {
+    public static int streamCollectMap() {
         var myList = Lists.newArrayList(0, 1, 2, 3, 4);
         int x = 5;
         var newMap = myList.stream().collect(Collectors.toMap(num -> num, num -> num+x));
         return newMap.values().stream().reduce(Integer::sum).orElse(-1);
+    }
+
+    @VmTest(expected = 64*2)
+    public static int streamCollectImmutableList() {
+        var myList = Lists.newArrayList(1, 1, 64, 1, 1);
+        var newList = myList
+                .stream()
+                .map(i -> i+i)
+                .collect(ImmutableList.toImmutableList());
+        myList.set(2, 999);
+        return newList.get(2);
     }
 
     @VmTest(expected = 1)
