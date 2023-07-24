@@ -2,10 +2,7 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.ArrayLength;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.Cast;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.InstanceOf;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.*;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.ApiStatus;
@@ -175,12 +172,10 @@ public class MethodExecutor {
                 stack.push(parent.getConfig().newObject(ctx(), inst));
             }
             case Opcodes.ANEWARRAY, Opcodes.NEWARRAY -> {
-                var count = stack.pop();
-                if (count instanceof KnownInteger i) {
-                    stack.push(KnownArray.withLength(i.i()));
-                } else {
-                    throw new VmException("Tried to construct array of length "+count, null);
-                }
+                var length = stack.pop();
+                var result = new UnaryArbitraryOp(length, l -> KnownArray.withLength(l.extractAs(int.class)));
+                if (result.canBeSimplified()) result.simplify(this.parent);
+                stack.push(result);
             }
             case Opcodes.ARRAYLENGTH -> {
                 StackEntry length = new ArrayLength(stack.pop());
