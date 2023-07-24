@@ -10,6 +10,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.test.*;
 import net.minecraft.util.Pair;
+import org.apache.logging.log4j.LogManager;
 import org.objectweb.asm.Type;
 
 import java.io.IOException;
@@ -45,9 +46,11 @@ public class TestVm implements FabricGameTest {
     }
 
     private static void runVmTest(TestContext ctx, Method method, VmTest annotation) {
+        var logger = LogManager.getLogger("PolyMc/vm/"+method.getName());
         var vm = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {
             @Override
             public StackEntry onVmError(String method, boolean returnsVoid, MethodExecutor.VmException e) throws MethodExecutor.VmException {
+                logger.info("Error executing "+method+": "+e.createFancyErrorMessage());
                 return new UnknownValue("Error executing "+method+": "+e.createFancyErrorMessage());
             }
         });
@@ -163,7 +166,7 @@ public class TestVm implements FabricGameTest {
     }
 
     @VmTest(expected = 9)
-    public static int invoke() {
+    public static int invokeStatic() {
         return createOne() + 8;
     }
 
@@ -249,5 +252,48 @@ public class TestVm implements FabricGameTest {
         var newArray = array.clone();
         array[1] = 5;
         return newArray[0]+newArray[1]+newArray[2];
+    }
+
+    @VmTest(expected = 42+65)
+    public static int staticFieldInheritance() {
+        return StaticB.MyNumA + StaticB.MyNumB;
+    }
+
+    @VmTest(expected = 12+19)
+    public static int staticMethodInheritance() {
+        return StaticB.methA() + StaticB.methB();
+    }
+
+    public static class StaticA {
+        public static int MyNumA = 42;
+        public static int MyNumB = 43;
+
+        public static int methA() {
+            return 12;
+        }
+
+        public static int methB() {
+            return 217;
+        }
+    }
+
+    public static class StaticB extends StaticA {
+        public static int MyNumB = 65;
+
+        public static int methB() {
+            return 19;
+        }
+    }
+
+    @VmTest(expected = 5)
+    public static int intToString() {
+        return Integer.toString(32576).length();
+    }
+
+    @VmTest(expected = 3)
+    public static int newArray() {
+        var myLength = createOne() + 2; // Just to spice things up a bit
+        var myArray = new Object[myLength];
+        return myArray.length;
     }
 }
