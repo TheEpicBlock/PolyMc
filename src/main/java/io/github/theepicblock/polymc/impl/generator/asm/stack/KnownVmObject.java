@@ -47,10 +47,10 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
 
     @Override
     public <T> T extractAs(Class<T> type) {
-        if ((type == Integer.class && this.type.getNode().name.equals("java/lang/Integer")) ||
-                (type == Long.class && this.type.getNode().name.equals("java/lang/Long")) ||
-                (type == Float.class && this.type.getNode().name.equals("java/lang/Float")) ||
-                (type == Double.class && this.type.getNode().name.equals("java/lang/Double"))) {
+        if ((type == int.class && this.type.getNode().name.equals("java/lang/Integer")) ||
+                (type == long.class && this.type.getNode().name.equals("java/lang/Long")) ||
+                (type == float.class && this.type.getNode().name.equals("java/lang/Float")) ||
+                (type == double.class && this.type.getNode().name.equals("java/lang/Double"))) {
             return this.getField("value").extractAs(type);
         }
         return StackEntry.super.extractAs(type);

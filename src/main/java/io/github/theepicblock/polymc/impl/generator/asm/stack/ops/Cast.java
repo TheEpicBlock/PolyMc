@@ -31,10 +31,10 @@ public record Cast(StackEntry value, Type in, Type out) implements StackEntry {
 
         if (value.isConcrete()) {
             Object in = value.extractAs((Class<?>)(switch (this.in) {
-                case INTEGER -> Integer.class;
-                case FLOAT -> Float.class;
-                case LONG -> Long.class;
-                case DOUBLE -> Double.class;
+                case INTEGER -> int.class;
+                case FLOAT -> float.class;
+                case LONG -> long.class;
+                case DOUBLE -> double.class;
             }));
 
             return switch (this.in) {

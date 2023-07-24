@@ -141,7 +141,7 @@ public class TestVm implements FabricGameTest {
             if (!simple.isConcrete()) {
                 throw new GameTestException("("+a+" "+op+" "+b+" ="+expected+") expected result of simplification to be concrete, considering its inputs are concrete");
             }
-            var result = simple.extractAs(Integer.class);
+            var result = simple.extractAs(int.class);
             if (expected != result) {
                 throw new GameTestException("Expected "+a+" "+op+" "+b+" = "+expected+", but found "+ result);
             }

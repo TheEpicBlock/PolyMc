@@ -23,8 +23,8 @@ public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements 
         if (entryA.isConcrete() && entryB.isConcrete()) {
             switch (this.type) {
                 case INT -> {
-                    int a = entryA.extractAs(Integer.class);
-                    int b = entryB.extractAs(Integer.class);
+                    int a = entryA.extractAs(int.class);
+                    int b = entryB.extractAs(int.class);
                     int result = switch (this.op) {
                         case ADD  -> a+b;
                         case SUB  -> a-b;
@@ -42,8 +42,8 @@ public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements 
                     return new KnownInteger(result);
                 }
                 case LONG -> {
-                    long a = entryA.extractAs(Long.class);
-                    long b = entryB.extractAs(Long.class);
+                    long a = entryA.extractAs(long.class);
+                    long b = entryB.extractAs(long.class);
                     if (this.op == Op.CMP) {
                         return new KnownInteger(Long.compare(a, b));
                     }
@@ -64,8 +64,8 @@ public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements 
                     return new KnownLong(result);
                 }
                 case FLOAT -> {
-                    float a = entryA.extractAs(Float.class);
-                    float b = entryB.extractAs(Float.class);
+                    float a = entryA.extractAs(float.class);
+                    float b = entryB.extractAs(float.class);
                     if (this.op == Op.CMPL || this.op == Op.CMPG) {
                         if (Float.isNaN(a) || Float.isNaN(b)) {
                             return new KnownInteger(this.op == Op.CMPG ? 1 : -1);
@@ -86,8 +86,8 @@ public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements 
                     return new KnownFloat(result);
                 }
                 case DOUBLE -> {
-                    double a = entryA.extractAs(Double.class);
-                    double b = entryB.extractAs(Double.class);
+                    double a = entryA.extractAs(double.class);
+                    double b = entryB.extractAs(double.class);
                     if (this.op == Op.CMPL || this.op == Op.CMPG) {
                         if (Double.isNaN(a) || Double.isNaN(b)) {
                             return new KnownInteger(this.op == Op.CMPG ? 1 : -1);

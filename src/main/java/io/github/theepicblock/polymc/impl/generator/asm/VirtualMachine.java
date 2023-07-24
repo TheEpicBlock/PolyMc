@@ -388,7 +388,7 @@ public class VirtualMachine {
             if (inst.owner.equals(_Array)) {
                 if (inst.name.equals("newArray")) {
                     AsmUtils.simplifyAll(ctx, arguments);
-                    ret(ctx, KnownArray.withLength(arguments[1].simplify(ctx.machine()).extractAs(Integer.class)));
+                    ret(ctx, KnownArray.withLength(arguments[1].simplify(ctx.machine()).extractAs(int.class)));
                     return;
                 }
             }
@@ -397,7 +397,7 @@ public class VirtualMachine {
                     ret(ctx, new BinaryArbitraryOp(
                             arguments[0],
                             arguments[1],
-                            (a, b) -> new KnownArray(Arrays.copyOf(a.asKnownArray(), b.extractAs(Integer.class)))
+                            (a, b) -> new KnownArray(Arrays.copyOf(a.asKnownArray(), b.extractAs(int.class)))
                     ));
                     return;
                 }
@@ -405,59 +405,59 @@ public class VirtualMachine {
             if (inst.owner.equals(_StrictMath)) {
                 // These are native methods. They need to be hardcoded
                 if (inst.name.equals("cos") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.cos(entry.extractAs(Double.class)))));
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.cos(entry.extractAs(double.class)))));
                     return;
                 }
                 if (inst.name.equals("acos") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.acos(entry.extractAs(Double.class)))));
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.acos(entry.extractAs(double.class)))));
                     return;
                 }
                 if (inst.name.equals("sin") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sin(entry.extractAs(Double.class)))));
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sin(entry.extractAs(double.class)))));
                     return;
                 }
                 if (inst.name.equals("asin") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.asin(entry.extractAs(Double.class)))));
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.asin(entry.extractAs(double.class)))));
                     return;
                 }
                 if (inst.name.equals("tan") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.tan(entry.extractAs(Double.class)))));
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.tan(entry.extractAs(double.class)))));
                     return;
                 }
                 if (inst.name.equals("atan") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.atan(entry.extractAs(Double.class)))));
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.atan(entry.extractAs(double.class)))));
                     return;
                 }
                 if (inst.name.equals("log") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log(entry.extractAs(Double.class)))));
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log(entry.extractAs(double.class)))));
                     return;
                 }
                 if (inst.name.equals("log10") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log10(entry.extractAs(Double.class)))));
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log10(entry.extractAs(double.class)))));
                     return;
                 }
                 if (inst.name.equals("sqrt") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sqrt(entry.extractAs(Double.class)))));
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sqrt(entry.extractAs(double.class)))));
                     return;
                 }
             }
             if (inst.owner.equals(_Float)) {
                 if (inst.name.equals("floatToRawIntBits")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.floatToRawIntBits(entry.extractAs(Float.class)))));
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.floatToRawIntBits(entry.extractAs(float.class)))));
                     return;
                 }
                 if (inst.name.equals("intBitsToFloat")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.intBitsToFloat(entry.extractAs(Integer.class)))));
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.intBitsToFloat(entry.extractAs(int.class)))));
                     return;
                 }
             }
             if (inst.owner.equals(_Double)) {
                 if (inst.name.equals("doubleToRawLongBits")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.doubleToRawLongBits(entry.extractAs(Double.class)))));
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.doubleToRawLongBits(entry.extractAs(double.class)))));
                     return;
                 }
                 if (inst.name.equals("longBitsToDouble")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.longBitsToDouble(entry.extractAs(Long.class)))));
+                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.longBitsToDouble(entry.extractAs(long.class)))));
                     return;
                 }
             }
@@ -542,7 +542,7 @@ public class VirtualMachine {
                 }
                 if (inst.name.startsWith("get") && inst.desc.startsWith("(Ljava/lang/Object;J)") && arguments[1] instanceof KnownArray arr) {
                     // Arrays may use normal longs as indices
-                    ret(ctx, arr.arrayAccess((int)(long)arguments[2].extractAs(Long.class)));
+                    ret(ctx, arr.arrayAccess((int)(long)arguments[2].extractAs(long.class)));
                     return;
                 }
                 if (inst.name.startsWith("get") && inst.desc.startsWith("(Ljava/lang/Object;J)")) {
@@ -551,7 +551,7 @@ public class VirtualMachine {
                 }
                 if (inst.name.startsWith("put") && inst.desc.startsWith("(Ljava/lang/Object;J") && inst.desc.endsWith(")V") && arguments[1] instanceof KnownArray arr) {
                     // Arrays may use normal longs as indices
-                    arr.arraySet((int)(long)arguments[2].extractAs(Long.class), arguments[4]);
+                    arr.arraySet((int)(long)arguments[2].extractAs(long.class), arguments[4]);
                     ret(ctx, null);
                     return;
                 }
@@ -562,7 +562,7 @@ public class VirtualMachine {
                 }
                 if (inst.name.startsWith("compareAndSet") && arguments[1] instanceof KnownArray arr) {
                     // Arrays may use normal longs as indices
-                    arr.arraySet((int)(long)arguments[2].extractAs(Long.class), arguments[4]);
+                    arr.arraySet((int)(long)arguments[2].extractAs(long.class), arguments[4]);
                     ret(ctx, StackEntry.known(true));
                     return;
                 }
@@ -588,7 +588,7 @@ public class VirtualMachine {
                 }
                 if (inst.name.equals("arraycopy")) {
                     AsmUtils.simplifyAll(ctx, arguments);
-                    System.arraycopy(arguments[0].asKnownArray(), arguments[1].extractAs(Integer.class), arguments[2].asKnownArray(), arguments[3].extractAs(Integer.class), arguments[4].extractAs(Integer.class));
+                    System.arraycopy(arguments[0].asKnownArray(), arguments[1].extractAs(int.class), arguments[2].asKnownArray(), arguments[3].extractAs(int.class), arguments[4].extractAs(Integer.class));
                     ret(ctx, null);
                     return;
                 }
@@ -713,7 +713,7 @@ public class VirtualMachine {
                 if (methodRef.name().equals("charAt")) {
                     if (arguments[1].canBeSimplified()) arguments[1].simplify(ctx.machine());
                     if (arguments[1].isConcrete()) {
-                        ret(ctx, new KnownInteger(str.charAt(arguments[1].extractAs(Integer.class))));
+                        ret(ctx, new KnownInteger(str.charAt(arguments[1].extractAs(int.class))));
                         return;
                     }
                 }
@@ -721,7 +721,7 @@ public class VirtualMachine {
                     if (arguments[1].canBeSimplified()) arguments[1].simplify(ctx.machine());
                     if (arguments[2].canBeSimplified()) arguments[2].simplify(ctx.machine());
                     if (arguments[1].isConcrete() && arguments[2].isConcrete()) {
-                        ret(ctx, new KnownInteger(str.indexOf(arguments[1].extractAs(Integer.class), arguments[2].extractAs(Integer.class))));
+                        ret(ctx, new KnownInteger(str.indexOf(arguments[1].extractAs(int.class), arguments[2].extractAs(int.class))));
                         return;
                     }
                 }

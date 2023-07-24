@@ -19,7 +19,7 @@ public record KnownInteger(int i) implements StackEntry {
 
     @Override
     public <T> T extractAs(Class<T> type) {
-        if (type == Integer.class) {
+        if (type == int.class) {
             return (T)(Integer)i;
         }
         return StackEntry.super.extractAs(type);

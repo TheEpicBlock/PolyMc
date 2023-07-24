@@ -293,15 +293,15 @@ public class EntityRendererAnalyzer {
                 return;
             }
             if (cmpFunc(method, MathHelper$wrapDegreesI)) {
-                ret(ctx, new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(Integer.class)))));
+                ret(ctx, new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(int.class)))));
                 return;
             }
             if (cmpFunc(method, MathHelper$wrapDegreesF)) {
-                ret(ctx, new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(Float.class)))));
+                ret(ctx, new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(float.class)))));
                 return;
             }
             if (cmpFunc(method, MathHelper$wrapDegreesD)) {
-                ret(ctx, new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(Double.class)))));
+                ret(ctx, new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(double.class)))));
                 return;
             }
             if (cmpFunc(method, Entity$removeClickEvents)) {

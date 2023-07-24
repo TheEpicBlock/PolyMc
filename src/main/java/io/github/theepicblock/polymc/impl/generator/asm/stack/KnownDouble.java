@@ -11,7 +11,7 @@ public record KnownDouble(double d) implements StackEntry {
 
     @Override
     public <T> T extractAs(Class<T> type) {
-        if (type == Double.class) {
+        if (type == double.class) {
             return (T)(Double)d;
         }
         return StackEntry.super.extractAs(type);

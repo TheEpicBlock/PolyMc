@@ -11,7 +11,7 @@ public record KnownLong(long i) implements StackEntry {
 
     @Override
     public <T> T extractAs(Class<T> type) {
-        if (type == Long.class) {
+        if (type == long.class) {
             return (T)(Long)i;
         }
         return StackEntry.super.extractAs(type);

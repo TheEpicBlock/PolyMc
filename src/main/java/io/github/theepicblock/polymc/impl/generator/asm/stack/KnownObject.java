@@ -26,6 +26,11 @@ public record KnownObject(Object i, @NotNull HashMap<Object, StackEntry> mutatio
     @Override
     public <T> T extractAs(Class<T> type) {
         if (!mutations.isEmpty()) throw new NotImplementedException("Known object extraction does not yet factor in mutations");
+        if (i == null && type.isPrimitive()) {
+            // Primitive types shouldn't be null
+            throw new ClassCastException("Can't extract known null as "+type);
+        }
+        if (i == null) return null;
         if (type.isAssignableFrom(i.getClass())) {
             return (T)i;
         }

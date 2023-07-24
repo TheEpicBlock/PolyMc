@@ -254,7 +254,7 @@ public class MethodExecutor {
                 if (!key.isConcrete()) throw new VmException("Jump(LOOKUPSWITCH) based on unknown variable ("+key+")", null);
                 
                 var inst = (LookupSwitchInsnNode)instruction;
-                var keyValue = key.extractAs(Integer.class);
+                var keyValue = key.extractAs(int.class);
                 var labelIndex = inst.keys.indexOf(keyValue);
                 if (labelIndex == -1) {
                     this.nextInstruction = inst.dflt;
@@ -268,7 +268,7 @@ public class MethodExecutor {
                 if (!key.isConcrete()) throw new VmException("Jump(TABLESWITCH) based on unknown variable ("+key+")", null);
 
                 var inst = (TableSwitchInsnNode)instruction;
-                var keyValue = key.extractAs(Integer.class);
+                var keyValue = key.extractAs(int.class);
                 var label = inst.labels.get(keyValue);
                 if (label == null) {
                     this.nextInstruction = inst.dflt;
@@ -514,8 +514,8 @@ public class MethodExecutor {
         if (value2.canBeSimplified()) value2 = value2.simplify(this.parent);
 
         if (value1.isConcrete() && value2.isConcrete()) {
-            var int1 = value1.extractAs(Integer.class);
-            var int2 = value2.extractAs(Integer.class);
+            var int1 = value1.extractAs(int.class);
+            var int2 = value2.extractAs(int.class);
 
             if (predicate.compute(int1, int2)) {
                 this.nextInstruction = ((JumpInsnNode)inst).label;

@@ -11,7 +11,7 @@ public record KnownFloat(float i) implements StackEntry {
 
     @Override
     public <T> T extractAs(Class<T> type) {
-        if (type == Float.class) {
+        if (type == float.class) {
             return (T)(Float)i;
         }
         return StackEntry.super.extractAs(type);
