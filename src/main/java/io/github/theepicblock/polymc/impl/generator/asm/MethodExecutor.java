@@ -173,8 +173,8 @@ public class MethodExecutor {
             }
             case Opcodes.ANEWARRAY, Opcodes.NEWARRAY -> {
                 var length = stack.pop();
-                var result = new UnaryArbitraryOp(length, l -> KnownArray.withLength(l.extractAs(int.class)));
-                if (result.canBeSimplified()) result.simplify(this.parent);
+                StackEntry result = new UnaryArbitraryOp(length, l -> KnownArray.withLength(l.extractAs(int.class)));
+                if (result.canBeSimplified()) result = result.simplify(this.parent);
                 stack.push(result);
             }
             case Opcodes.ARRAYLENGTH -> {
@@ -210,7 +210,8 @@ public class MethodExecutor {
                 var value = stack.pop();
                 var index = stack.pop();
                 var array = stack.pop();
-                if (array.canBeSimplified()) array = array.simplify(this.parent);
+                // It's unsafe to simplify the array here, any assignments to the newly created array won't be propagated
+                // if (array.canBeSimplified()) array = array.simplify(this.parent);
                 if (index.canBeSimplified()) index = index.simplify(this.parent);
                 if (index instanceof KnownInteger i) {
                     array.arraySet(i.i(), value);
