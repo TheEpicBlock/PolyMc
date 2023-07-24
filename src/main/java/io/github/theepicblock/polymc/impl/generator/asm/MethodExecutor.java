@@ -453,7 +453,14 @@ public class MethodExecutor {
                 stack.push(value2);
             }
             case Opcodes.POP -> stack.pop();
-            case Opcodes.POP2 -> { stack.pop(); stack.pop(); }
+            case Opcodes.POP2 -> {
+                // Pop 2 elements. If the top is 2 wide, it'll be the only one popped
+                if (stack.top().getWidth() == 2) {
+                    stack.pop();
+                } else {
+                    stack.pop(); stack.pop();
+                }
+            }
             case Opcodes.MONITORENTER -> {} // There's no multithreading…
             case Opcodes.MONITOREXIT -> {} // There's no multithreading…
             case -1 -> {} // This is a virtual opcodes defined by asm, can be safely ignored
