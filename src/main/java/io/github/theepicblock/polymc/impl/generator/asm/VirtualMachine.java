@@ -144,8 +144,8 @@ public class VirtualMachine {
         // Fill in arguments
         if (arguments != null) {
             int i = 0;
-            for (var pair : arguments) {
-                localVariables[i] = pair;
+            for (var arg : arguments) {
+                localVariables[i] = arg;
                 i++;
             }
         }
@@ -663,7 +663,15 @@ public class VirtualMachine {
                 var newArgs = new StackEntry[lambda.extraArguments().length+arguments.length-1];
                 System.arraycopy(lambda.extraArguments(), 0, newArgs, 0, lambda.extraArguments().length);
                 System.arraycopy(arguments, 1, newArgs, lambda.extraArguments().length, arguments.length - 1);
-                ctx.machine.addMethodToStack(clazz, method.getName(), method.getDesc(), newArgs);
+                var newOpcode = switch (method.getTag()) {
+                    case Opcodes.H_INVOKEINTERFACE -> Opcodes.INVOKEINTERFACE;
+                    case Opcodes.H_INVOKESPECIAL -> Opcodes.INVOKESPECIAL;
+                    case Opcodes.H_INVOKEVIRTUAL -> Opcodes.INVOKEVIRTUAL;
+                    case Opcodes.H_INVOKESTATIC -> Opcodes.INVOKESTATIC;
+                    default -> throw new UnsupportedOperationException("Unsupported tag "+method.getTag());
+                };
+                var newInst = new MethodInsnNode(newOpcode, clazz.name(), method.getName(), method.getDesc());
+                this.invoke(ctx, currentClass, newInst, newArgs);
                 return;
             }
 
