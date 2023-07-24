@@ -37,6 +37,11 @@ public record KnownArray(@Nullable StackEntry[] data) implements StackEntry {
     }
 
     @Override
+    public StackEntry[] asKnownArray() {
+        return data();
+    }
+
+    @Override
     public boolean isConcrete() {
         return true;
     }

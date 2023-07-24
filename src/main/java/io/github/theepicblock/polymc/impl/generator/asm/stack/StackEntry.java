@@ -113,6 +113,10 @@ public interface StackEntry {
         return GSON.fromJson(this.toJson(), type);
     }
 
+    default StackEntry[] asKnownArray() {
+        throw new NotImplementedException(this+" is not an array");
+    }
+
     default StackEntry copy() {
         return this;
     }

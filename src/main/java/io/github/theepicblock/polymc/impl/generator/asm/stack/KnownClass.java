@@ -18,6 +18,7 @@ public record KnownClass(@NotNull Type type) implements StackEntry {
 
     @Override
     public <T> T extractAs(Class<T> type) {
+        if (type == Type.class) return (T)this.type;
         throw new NotImplementedException();
     }
 

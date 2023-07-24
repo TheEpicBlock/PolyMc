@@ -5,6 +5,7 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -404,15 +405,20 @@ public class VirtualMachine {
             }
             if (inst.owner.equals(_Array)) {
                 if (inst.name.equals("newArray")) {
+                    AsmUtils.simplifyAll(ctx, arguments);
                     ret(ctx, KnownArray.withLength(arguments[1].simplify(ctx.machine()).extractAs(Integer.class)));
                     return;
                 }
             }
-            if (inst.owner.equals(_Arrays) && inst.name.equals("copyOf")
-                    && inst.desc.equals("([Ljava/lang/Object;I)[Ljava/lang/Object;")
-                    && arguments[0] instanceof KnownArray a) {
-                ret(ctx, new KnownArray(Arrays.copyOf(a.data(), arguments[1].simplify(ctx.machine()).extractAs(Integer.class))));
-                return;
+            if (inst.owner.equals(_Arrays)) {
+                if (inst.name.equals("copyOf") && inst.desc.equals("([Ljava/lang/Object;I)[Ljava/lang/Object;")) {
+                    ret(ctx, new BinaryArbitraryOp(
+                            arguments[0],
+                            arguments[1],
+                            (a, b) -> new KnownArray(Arrays.copyOf(a.asKnownArray(), b.extractAs(Integer.class)))
+                    ));
+                    return;
+                }
             }
             if (inst.owner.equals(_StrictMath)) {
                 // These are native methods. They need to be hardcoded
@@ -475,6 +481,7 @@ public class VirtualMachine {
             }
             if (inst.owner.equals(_VM)) {
                 if (inst.name.equals("getSavedProperty")) {
+                    AsmUtils.simplifyAll(ctx, arguments);
                     if (arguments[0] instanceof KnownObject o && o.i() instanceof String str && str.equals("java.lang.Integer.IntegerCache.high")) {
                         ret(ctx, new KnownObject("127"));
                         return;
@@ -482,32 +489,37 @@ public class VirtualMachine {
                 }
             }
             if (inst.owner.equals(_Class)) {
+                AsmUtils.simplifyAll(ctx, arguments);
+                var thisType = arguments[0].extractAs(Type.class);
+
                 if (inst.name.equals("desiredAssertionStatus")) {
                     ret(ctx, new KnownInteger(false));
                     return;
                 }
-                if (inst.name.equals("getEnumConstantsShared") && Util.first(arguments) instanceof KnownClass cl) {
-                    var field = this.loadStaticField(ctx, new FieldInsnNode(Opcodes.GETSTATIC, cl.type().getInternalName(), "$VALUES", null));
+                if (inst.name.equals("getEnumConstantsShared")) {
+                    var field = this.loadStaticField(ctx, new FieldInsnNode(Opcodes.GETSTATIC, thisType.getInternalName(), "$VALUES", null));
+
                     if (field.canBeSimplified()) field = field.simplify(ctx.machine());
                     if (field instanceof KnownArray array) field = array.shallowCopy();
+
                     ret(ctx, field);
                     return;
                 }
-                if (inst.name.equals("isInterface") && Util.first(arguments) instanceof KnownClass cl) {
-                    var clazz = ctx.machine.getClass(cl.type().getInternalName());
+                if (inst.name.equals("isInterface")) {
+                    var clazz = ctx.machine.getClass(thisType.getInternalName());
                     ret(ctx, new KnownInteger(AsmUtils.hasFlag(clazz.node, Opcodes.ACC_INTERFACE)));
                     return;
                 }
-                if (inst.name.equals("isArray") && Util.first(arguments) instanceof KnownClass cl) {
-                    ret(ctx, new KnownInteger(cl.type().getSort() == Type.ARRAY));
+                if (inst.name.equals("isArray")) {
+                    ret(ctx, new KnownInteger(thisType.getSort() == Type.ARRAY));
                     return;
                 }
-                if (inst.name.equals("isPrimitive") && Util.first(arguments) instanceof KnownClass cl) {
-                    ret(ctx, new KnownInteger(cl.type().getSort() != Type.OBJECT && cl.type().getSort() != Type.ARRAY));
+                if (inst.name.equals("isPrimitive")) {
+                    ret(ctx, new KnownInteger(thisType.getSort() != Type.OBJECT && thisType.getSort() != Type.ARRAY));
                     return;
                 }
-                if (inst.name.equals("getSuperclass") && Util.first(arguments) instanceof KnownClass cl) {
-                    ret(ctx, new KnownClass(ctx.machine.getClass(ctx.machine.getClass(cl.type().getInternalName()).node.superName)));
+                if (inst.name.equals("getSuperclass")) {
+                    ret(ctx, new KnownClass(ctx.machine.getClass(ctx.machine.getClass(thisType.getInternalName()).node.superName)));
                     return;
                 }
             }
@@ -528,11 +540,13 @@ public class VirtualMachine {
                 }
             }
             if (inst.owner.equals(_Unsafe)) {
+                AsmUtils.simplifyAll(ctx, arguments);
                 if (inst.name.equals("registerNatives")) {
                     ret(ctx, null);
                     return;
                 }
                 if (inst.name.equals("objectFieldOffset") && inst.desc.equals("(Ljava/lang/Class;Ljava/lang/String;)J")) {
+                    AsmUtils.simplifyAll(ctx, arguments);
                     ret(ctx, new UnsafeFieldReference(arguments[2].extractAs(String.class)));
                     return;
                 }
@@ -546,43 +560,41 @@ public class VirtualMachine {
                 }
                 if (inst.name.startsWith("get") && inst.desc.startsWith("(Ljava/lang/Object;J)") && arguments[1] instanceof KnownArray arr) {
                     // Arrays may use normal longs as indices
-                    if (arguments[2].canBeSimplified()) arguments[2] = arguments[2].simplify(ctx.machine());
                     ret(ctx, arr.arrayAccess((int)(long)arguments[2].extractAs(Long.class)));
                     return;
                 }
-                if (inst.name.startsWith("get") && inst.desc.startsWith("(Ljava/lang/Object;J)") && arguments[2] instanceof UnsafeFieldReference ref) {
-                    ret(ctx, arguments[1].getField(ref.fieldName()));
+                if (inst.name.startsWith("get") && inst.desc.startsWith("(Ljava/lang/Object;J)")) {
+                    ret(ctx, arguments[1].getField(((UnsafeFieldReference)arguments[2]).fieldName()));
                     return;
                 }
                 if (inst.name.startsWith("put") && inst.desc.startsWith("(Ljava/lang/Object;J") && inst.desc.endsWith(")V") && arguments[1] instanceof KnownArray arr) {
                     // Arrays may use normal longs as indices
-                    if (arguments[2].canBeSimplified()) arguments[2] = arguments[2].simplify(ctx.machine());
                     arr.arraySet((int)(long)arguments[2].extractAs(Long.class), arguments[4]);
                     ret(ctx, null);
                     return;
                 }
-                if (inst.name.startsWith("put") && inst.desc.startsWith("(Ljava/lang/Object;J") && inst.desc.endsWith(")V") && arguments[2] instanceof UnsafeFieldReference ref) {
-                    arguments[1].setField(ref.fieldName(), arguments[3]);
+                if (inst.name.startsWith("put") && inst.desc.startsWith("(Ljava/lang/Object;J")) {
+                    arguments[1].setField(((UnsafeFieldReference)arguments[2]).fieldName(), arguments[3]);
                     ret(ctx, null);
                     return;
                 }
                 if (inst.name.startsWith("compareAndSet") && arguments[1] instanceof KnownArray arr) {
                     // Arrays may use normal longs as indices
-                    if (arguments[2].canBeSimplified()) arguments[2] = arguments[2].simplify(ctx.machine());
                     arr.arraySet((int)(long)arguments[2].extractAs(Long.class), arguments[4]);
-                    ret(ctx, new KnownInteger(true));
+                    ret(ctx, StackEntry.known(true));
                     return;
                 }
-                if (inst.name.startsWith("compareAndSet") && arguments[2] instanceof UnsafeFieldReference ref) {
+                if (inst.name.startsWith("compareAndSet")) {
                     // No need to compare, this isn't threaded anyway
-                    arguments[1].setField(ref.fieldName(), arguments[4]);
-                    ret(ctx, new KnownInteger(true));
+                    arguments[1].setField(((UnsafeFieldReference)arguments[2]).fieldName(), arguments[4]);
+                    ret(ctx, StackEntry.known(true));
                     return;
                 }
-                if (inst.name.startsWith("compareAndExchange") && arguments[2] instanceof UnsafeFieldReference ref) {
+                if (inst.name.startsWith("compareAndExchange")) {
                     // No need to compare, this isn't threaded anyway
-                    var original = arguments[1].getField(ref.fieldName());
-                    arguments[1].setField(ref.fieldName(), arguments[4]);
+                    var fieldName = ((UnsafeFieldReference)arguments[2]).fieldName();
+                    var original = arguments[1].getField(fieldName);
+                    arguments[1].setField(fieldName, arguments[4]);
                     ret(ctx, original);
                     return;
                 }
@@ -593,14 +605,10 @@ public class VirtualMachine {
                     return;
                 }
                 if (inst.name.equals("arraycopy")) {
-                    for (var i = 0; i < arguments.length; i++) {
-                        if (arguments[i].canBeSimplified()) arguments[i] = arguments[i].simplify(ctx.machine());
-                    }
-                    if (arguments[0] instanceof KnownArray src && arguments[2] instanceof KnownArray dst) {
-                        System.arraycopy(src.data(), arguments[1].extractAs(Integer.class), dst.data(), arguments[3].extractAs(Integer.class), arguments[4].extractAs(Integer.class));
-                        ret(ctx, null);
-                        return;
-                    }
+                    AsmUtils.simplifyAll(ctx, arguments);
+                    System.arraycopy(arguments[0].asKnownArray(), arguments[1].extractAs(Integer.class), arguments[2].asKnownArray(), arguments[3].extractAs(Integer.class), arguments[4].extractAs(Integer.class));
+                    ret(ctx, null);
+                    return;
                 }
             }
             if (inst.owner.equals(_Runtime)) {
@@ -628,13 +636,17 @@ public class VirtualMachine {
                 }
             }
             if (inst.name.equals("getClass") && inst.desc.equals("()Ljava/lang/Class;")) {
-                var first = arguments[0];
-                if (first.canBeSimplified()) first = first.simplify(ctx.machine());
-                ret(ctx, new KnownClass(ctx.machine.getType(first)));
+                AsmUtils.simplifyAll(ctx, arguments);
+                ret(ctx, new KnownClass(ctx.machine.getType(arguments[0])));
                 return;
             }
-            if (inst.owner.startsWith("[") && inst.name.equals("clone") && Util.first(arguments) instanceof KnownArray array) {
-                ret(ctx, array.shallowCopy());
+            if (inst.owner.startsWith("[") && inst.name.equals("clone")) {
+                AsmUtils.simplifyAll(ctx, arguments);
+                if (arguments[0] instanceof KnownArray array) {
+                    ret(ctx, array.shallowCopy());
+                } else {
+                    ret(ctx, arguments[0].copy());
+                }
                 return;
             }
 

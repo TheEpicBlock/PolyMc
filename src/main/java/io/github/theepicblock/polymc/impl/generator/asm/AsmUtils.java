@@ -143,6 +143,12 @@ public class AsmUtils {
         return resolver.mapFieldName("intermediary", owner.getName(), intermediaryName, descriptor);
     }
 
+    public static void simplifyAll(Context ctx, @Nullable StackEntry[] entries) throws VmException {
+        for (var i = 0; i < entries.length; i++) {
+            if (entries[i] != null && entries[i].canBeSimplified()) entries[i] = entries[i].simplify(ctx.machine());
+        }
+    }
+
     public record MappedFunction(@InternalName String clazz, String method, String desc) {
     }
 
