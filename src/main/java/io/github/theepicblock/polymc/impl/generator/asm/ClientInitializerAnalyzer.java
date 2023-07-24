@@ -137,7 +137,7 @@ public class ClientInitializerAnalyzer {
 
     public void runAnalysis(@BinaryName String className, VirtualMachine vm) {
         try {
-            PolyMc.LOGGER.info("OWKFoQP "+className);
+            PolyMc.LOGGER.info("Running clientside initializer analysis:  "+className);
             var methodName = "onInitializeClient";
             if (className.contains("::")) {
                 var s = className.split("::");

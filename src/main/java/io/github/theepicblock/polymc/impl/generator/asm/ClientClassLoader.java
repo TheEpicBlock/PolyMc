@@ -24,9 +24,6 @@ public class ClientClassLoader extends URLClassLoader {
     public ClientClassLoader() {
         super("PolyMc auto generated classloader", getUrls(), ClientClassLoader.getSystemClassLoader());
 
-        PolyMc.LOGGER.info("Current runtime mappings: "+FabricLoader.getInstance().getMappingResolver().getCurrentRuntimeNamespace());
-        FabricLoader.getInstance().getMappingResolver().getNamespaces().forEach(PolyMc.LOGGER::info);
-
         // The client jar is in official mappings, and needs to be transformed into official
         this.remapper = new TeensyRemapper("official");
     }
