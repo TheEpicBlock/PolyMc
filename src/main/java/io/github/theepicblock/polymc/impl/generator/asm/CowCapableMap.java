@@ -2,12 +2,15 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.function.ToBooleanBiFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 
 @SuppressWarnings("unused")
@@ -99,6 +102,10 @@ public class CowCapableMap<T> {
         return null;
     }
 
+    public StackEntry getErased(Object key) {
+        return get((T)key);
+    }
+
     @Nullable
     public StackEntry put(T key, StackEntry value) {
         if (overrides == null) overrides = new HashMap<>();
@@ -146,6 +153,53 @@ public class CowCapableMap<T> {
             }
         } else if (this.daddy != null) {
             this.daddy.forEach(action);
+        }
+    }
+
+    public boolean findAny(ToBooleanBiFunction<? super T,? super StackEntry> filter) {
+        if (this.overrides != null) {
+            for (var entry : this.overrides.entrySet()) {
+                if (filter.applyAsBoolean(entry.getKey(), entry.getValue())) {
+                    return true;
+                }
+            }
+            if (this.daddy != null) {
+                this.daddy.findAny((key, val) -> !overrides.containsKey(key) && filter.applyAsBoolean(key, val));
+            }
+        } else if (this.daddy != null) {
+            this.daddy.findAny(filter);
+        }
+        return false;
+    }
+
+    /**
+     * 5000iq, very good programming
+     */
+    private boolean isBeingCompared = false;
+
+    @Override
+    public int hashCode() {
+        if (isBeingCompared) return 0;
+        // Is this a good order independent hash? Probable not
+        isBeingCompared = true;
+        AtomicLong hash = new AtomicLong();
+        this.forEach((key, value) -> hash.addAndGet(Objects.hash(key, value)));
+        long longHash = hash.get();
+        isBeingCompared = false;
+        return (int)(longHash >> Long.numberOfTrailingZeros(longHash));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (isBeingCompared) return true;
+        isBeingCompared = true;
+        try {
+            if (obj instanceof CowCapableMap<?> otherMap) {
+                return !this.findAny((key, value) -> !otherMap.getErased(key).equals(value));
+            }
+            return super.equals(obj);
+        } finally {
+            isBeingCompared = false;
         }
     }
 }

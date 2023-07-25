@@ -4,10 +4,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import net.minecraft.util.annotation.Debug;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -52,8 +49,21 @@ public class ExecutionGraphNode {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ExecutionGraphNode that = (ExecutionGraphNode)o;
+        return Objects.equals(calls, that.calls) && Objects.equals(continuation, that.continuation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(calls, continuation);
+    }
+
     /**
-     * Represents a comparision between two elements (which might not have a concrete value),
+     * Represents a comparison between two elements (which might not have a concrete value),
      * and the paths that are taken due to it
      */
     public record IfStatement(StackEntry compA, @Nullable StackEntry compB, int opcode, ExecutionGraphNode continuationIfFalse, ExecutionGraphNode continuationIfTrue) {

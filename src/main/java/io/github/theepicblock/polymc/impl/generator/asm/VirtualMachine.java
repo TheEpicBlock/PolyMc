@@ -664,11 +664,11 @@ public class VirtualMachine {
                 // This method is part of Object and wouldn't be found otherwise
                 if (inst.name.equals("hashCode") && inst.desc.equals("()I")) {
                     if (Util.first(arguments) instanceof KnownObject obj) {
-                        ret(ctx, new KnownInteger(obj.i().hashCode())); // It's no problem to do this in the outer vm
+                        ret(ctx, new KnownInteger(System.identityHashCode(obj.i()))); // It's no problem to do this in the outer vm
                         return;
                     }
                     if (Util.first(arguments) instanceof KnownVmObject obj) {
-                        ret(ctx, new KnownInteger(obj.hashCode())); // It's no problem to do this in the outer vm
+                        ret(ctx, new KnownInteger(System.identityHashCode(obj))); // It's no problem to do this in the outer vm
                         return;
                     }
                     if (Util.first(arguments) instanceof KnownClass cl) {
@@ -705,7 +705,7 @@ public class VirtualMachine {
                     return;
                 }
                 if (methodRef.name().equals("hashCode")) {
-                    ret(ctx, new KnownInteger(str.length()));
+                    ret(ctx, new KnownInteger(str.hashCode()));
                     return;
                 }
                 if (methodRef.name().equals("charAt")) {

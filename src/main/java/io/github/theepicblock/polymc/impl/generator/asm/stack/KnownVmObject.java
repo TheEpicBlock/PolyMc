@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Opcodes;
 
 import java.util.Map;
+import java.util.Objects;
 
 public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull String> fields) implements StackEntry {
     public KnownVmObject(@NotNull Clazz type) {
@@ -82,5 +83,19 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
     @Override
     public StackEntry copy() {
         return new KnownVmObject(this.type, this.fields.createClone());
+    }
+
+    // We're overriding these because the type shouldn't really matter
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        KnownVmObject that = (KnownVmObject)o;
+        return Objects.equals(fields, that.fields);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fields);
     }
 }

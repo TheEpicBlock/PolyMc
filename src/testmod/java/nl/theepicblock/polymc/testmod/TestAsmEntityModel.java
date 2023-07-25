@@ -16,7 +16,10 @@ public class TestAsmEntityModel extends EntityModel<TestAsmEntity> {
         var data = new ModelData();
         var part = data.getRoot();
 
-        part.addChild("main", ModelPartBuilder.create().uv(0, 0).cuboid(-16.0F, -16.0F, 0.0F, 16.0F, 16.0F, 12.0F), ModelTransform.pivot(0.0F, 24.0F, 0.0F));
+        part.addChild("main", ModelPartBuilder.create()
+                    .uv(0, 0)
+                    .cuboid(-16.0F, -16.0F, 0.0F, 16.0F, 16.0F, 12.0F),
+                ModelTransform.pivot(0.0F, 24.0F, 0.0F));
 
         return TexturedModelData.of(data, 16, 16);
     }
