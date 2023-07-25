@@ -319,4 +319,15 @@ public class TestVm implements FabricGameTest {
         var enums = clazz.getEnumConstants();
         return enums.length;
     }
+
+    @VmTest(expected = 424)
+    public static int gotoInstr() {
+        int i = 10;
+        while (true) {
+            if (i < 3) return 424;
+            if (i < 1) break;
+            i--;
+        }
+        return 10;
+    }
 }

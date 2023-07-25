@@ -549,19 +549,19 @@ public class VirtualMachine {
                     return;
                 }
                 if (inst.name.startsWith("put") && inst.desc.startsWith("(Ljava/lang/Object;J")) {
-                    arguments[1].setField(((UnsafeFieldReference)arguments[2]).fieldName(), arguments[3]);
+                    arguments[1].setField(((UnsafeFieldReference)arguments[2]).fieldName(), arguments[4]);
                     ret(ctx, null);
                     return;
                 }
                 if (inst.name.startsWith("compareAndSet") && arguments[1] instanceof KnownArray arr) {
                     // Arrays may use normal longs as indices
-                    arr.arraySet((int)(long)arguments[2].extractAs(long.class), arguments[4]);
+                    arr.arraySet((int)(long)arguments[2].extractAs(long.class), arguments[5]);
                     ret(ctx, StackEntry.known(true));
                     return;
                 }
                 if (inst.name.startsWith("compareAndSet")) {
                     // No need to compare, this isn't threaded anyway
-                    arguments[1].setField(((UnsafeFieldReference)arguments[2]).fieldName(), arguments[4]);
+                    arguments[1].setField(((UnsafeFieldReference)arguments[2]).fieldName(), arguments[5]);
                     ret(ctx, StackEntry.known(true));
                     return;
                 }
@@ -569,7 +569,7 @@ public class VirtualMachine {
                     // No need to compare, this isn't threaded anyway
                     var fieldName = ((UnsafeFieldReference)arguments[2]).fieldName();
                     var original = arguments[1].getField(fieldName);
-                    arguments[1].setField(fieldName, arguments[4]);
+                    arguments[1].setField(fieldName, arguments[5]);
                     ret(ctx, original);
                     return;
                 }
