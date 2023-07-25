@@ -465,12 +465,19 @@ public class VirtualMachine {
                     return;
                 }
                 if (inst.name.equals("getEnumConstantsShared")) {
-                    var field = this.loadStaticField(ctx, new FieldInsnNode(Opcodes.GETSTATIC, thisType.getInternalName(), "$VALUES", null));
-
-                    if (field.canBeSimplified()) field = field.simplify(ctx.machine());
-                    if (field instanceof KnownArray array) field = array.shallowCopy();
-
-                    ret(ctx, field);
+                    var state = ctx.machine().switchStack(null);
+                    StackEntry result;
+                    try {
+                        var valuesInst = new MethodInsnNode(Opcodes.INVOKESTATIC, thisType.getInternalName(), "values", "()[L" + thisType.getInternalName() + ";");
+                        this.invoke(ctx, currentClass, valuesInst, new StackEntry[0]);
+                        result = ctx.machine().runToCompletion();
+                        if (result.canBeSimplified()) result = result.simplify(ctx.machine());
+                    } catch (VmException e) {
+                        ctx.machine().switchStack(state);
+                        throw new VmException("Error getting enum constants for "+thisType, e);
+                    }
+                    ctx.machine().switchStack(state);
+                    ret(ctx, result);
                     return;
                 }
                 if (inst.name.equals("isInterface")) {

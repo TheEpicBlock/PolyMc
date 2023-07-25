@@ -8,6 +8,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.test.*;
 import net.minecraft.util.Pair;
 import org.apache.logging.log4j.LogManager;
@@ -310,5 +311,12 @@ public class TestVm implements FabricGameTest {
         var myLength = createOne() + 2; // Just to spice things up a bit
         var myArray = new Object[myLength];
         return myArray.length;
+    }
+
+    @VmTest(expected = 2)
+    public static int enumConstantsShared() {
+        var clazz = DoubleBlockHalf.class;
+        var enums = clazz.getEnumConstants();
+        return enums.length;
     }
 }
