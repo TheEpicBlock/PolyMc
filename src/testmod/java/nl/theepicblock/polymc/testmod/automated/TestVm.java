@@ -213,15 +213,17 @@ public class TestVm implements FabricGameTest {
         return newMap.values().stream().reduce(Integer::sum).orElse(-1);
     }
 
-    @VmTest(expected = 64*2)
-    public static int streamCollectImmutableList() {
-        var myList = Lists.newArrayList(1, 1, 64, 1, 1);
-        var newList = myList
-                .stream()
-                .map(i -> i+i)
-                .collect(ImmutableList.toImmutableList());
-        myList.set(2, 999);
-        return newList.get(2);
+    @VmTest(expected = 20+40)
+    public static int immutableListBuilder() {
+        var builder = new ImmutableList.Builder<Integer>();
+        // The builder has an array of length 4 by default, so we should add at least 5 elements
+        builder.add(0);
+        builder.add(10);
+        builder.add(20);
+        builder.add(30);
+        builder.add(40);
+        var list = builder.build();
+        return list.get(2)+list.get(4);
     }
 
     @VmTest(expected = 1)
@@ -252,6 +254,14 @@ public class TestVm implements FabricGameTest {
         var newArray = array.clone();
         array[1] = 5;
         return newArray[0]+newArray[1]+newArray[2];
+    }
+
+    @VmTest(expected = 61+2+131+9427)
+    public static int arrayCopy() {
+        var array = new Integer[]{3256,131,9427};
+        var smallerArray = Arrays.copyOf(array, 2);
+        var biggerArray = Arrays.copyOf(array, 61);
+        return biggerArray.length+smallerArray.length+smallerArray[1]+biggerArray[2];
     }
 
     @VmTest(expected = 42+65)
@@ -288,6 +298,11 @@ public class TestVm implements FabricGameTest {
     @VmTest(expected = 5)
     public static int intToString() {
         return Integer.toString(32576).length();
+    }
+
+    @VmTest(expected = 1<<18)
+    public static int highestOneBit() {
+        return Integer.highestOneBit(324141);
     }
 
     @VmTest(expected = 3)

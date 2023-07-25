@@ -262,6 +262,7 @@ public class MethodExecutor {
                 } else {
                     this.nextInstruction = inst.labels.get(labelIndex);
                 }
+                return true;
             }
             case Opcodes.TABLESWITCH -> {
                 var key = stack.pop();
@@ -276,6 +277,7 @@ public class MethodExecutor {
                 } else {
                     this.nextInstruction = label;
                 }
+                return true;
             }
             case Opcodes.IF_ACMPEQ -> {
                 var a = stack.pop();

@@ -5,7 +5,6 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -320,9 +319,7 @@ public class VirtualMachine {
     private static final @InternalName String LoggerFactory = Type.getInternalName(LoggerFactory.class);
     private static final @InternalName String _String = Type.getInternalName(String.class);
     private static final @InternalName String Objects = Type.getInternalName(Objects.class);
-
     private static final @InternalName String _Array = Type.getInternalName(Array.class);
-    private static final @InternalName String _Arrays = Type.getInternalName(Arrays.class);
     private static final @InternalName String _StrictMath = Type.getInternalName(StrictMath.class);
     private static final @InternalName String _Float = Type.getInternalName(Float.class);
     private static final @InternalName String _Double = Type.getInternalName(Double.class);
@@ -331,7 +328,6 @@ public class VirtualMachine {
     private static final @InternalName String _System = Type.getInternalName(System.class);
     private static final @InternalName String _Runtime = Type.getInternalName(Runtime.class);
     private static final @InternalName String _Unsafe = "jdk/internal/misc/Unsafe";
-    private static final @InternalName String _SharedSecrets = "jdk/internal/access/SharedSecrets";
     private static final @InternalName String _CDS = "jdk/internal/misc/CDS";
     private static final @InternalName String _Reflection = "jdk/internal/reflect/Reflection";
     private static final @InternalName String _Integer = Type.getInternalName(Integer.class);
@@ -389,16 +385,6 @@ public class VirtualMachine {
                 if (inst.name.equals("newArray")) {
                     AsmUtils.simplifyAll(ctx, arguments);
                     ret(ctx, KnownArray.withLength(arguments[1].simplify(ctx.machine()).extractAs(int.class)));
-                    return;
-                }
-            }
-            if (inst.owner.equals(_Arrays)) {
-                if (inst.name.equals("copyOf") && inst.desc.equals("([Ljava/lang/Object;I)[Ljava/lang/Object;")) {
-                    ret(ctx, new BinaryArbitraryOp(
-                            arguments[0],
-                            arguments[1],
-                            (a, b) -> new KnownArray(Arrays.copyOf(a.asKnownArray(), b.extractAs(int.class)))
-                    ));
                     return;
                 }
             }
@@ -619,7 +605,12 @@ public class VirtualMachine {
             }
             if (inst.name.equals("getClass") && inst.desc.equals("()Ljava/lang/Class;")) {
                 AsmUtils.simplifyAll(ctx, arguments);
-                ret(ctx, new KnownClass(ctx.machine.getType(arguments[0])));
+                if (arguments[0] instanceof KnownArray) {
+                    // Array types aren't currently tracked, but this is good enough
+                    ret(ctx, new KnownClass(Type.getType(Object[].class)));
+                } else {
+                    ret(ctx, new KnownClass(ctx.machine.getType(arguments[0])));
+                }
                 return;
             }
             if (inst.owner.startsWith("[") && inst.name.equals("clone")) {
@@ -807,6 +798,8 @@ public class VirtualMachine {
 
                 if (clazz.node.superName != null) {
                     clazz = this.loader.getClass(clazz.node.superName);
+                } else {
+                    throw new VmException("Couldn't find field "+fieldname+" in "+this, null);
                 }
             }
         }
