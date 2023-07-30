@@ -10,6 +10,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryArbitraryOp;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
 import net.fabricmc.loader.api.FabricLoader;
@@ -72,6 +73,11 @@ public class EntityRendererAnalyzer {
      */
     private final VirtualMachine factoryVm = new VirtualMachine(new ClientClassLoader(), new VmConfig() {
         @Override
+        public @NotNull StackEntry loadStaticField(Context ctx, Clazz owner, String fieldName) throws VmException {
+            return new StaticFieldValue(owner.getNode().name, fieldName); // Evaluate static fields lazily
+        }
+
+        @Override
         public void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments) throws VmException {
             if (cmpFunc(inst, EntityModelLoader$getModelPart)) {
                 var modelLayer = arguments[1].simplify(ctx.machine()).extractAs(EntityModelLayer.class);
@@ -118,7 +124,6 @@ public class EntityRendererAnalyzer {
     }
 
     public ExecutionGraphNode analyze(EntityType<?> entity) throws VmException {
-//        if (true) return null;
         var rootNode = new ExecutionGraphNode();
         var rendererFactory = initializerInfo.getEntityRenderer(entity);
 
@@ -188,6 +193,16 @@ public class EntityRendererAnalyzer {
     }
 
     public record RendererAnalyzerVmConfig(ExecutionGraphNode node, EntityRendererAnalyzer root) implements VmConfig {
+
+        @Override
+        public @NotNull StackEntry loadStaticField(Context ctx, Clazz owner, String fieldName) throws VmException {
+            var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, owner.name(), fieldName);
+            if (fromEnvironment != null) return fromEnvironment;
+            // Try and resolve the static field in the factoryVm, I don't think it's a good idea to
+            // spawn parallel universes from static fields at the moment
+            return new StaticFieldValue(owner.name(), fieldName).simplify(root.factoryVm);
+        }
+
         @Override
         public void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments, @Nullable VirtualMachine.MethodRef method) throws VmException {
             if (method == null) {
