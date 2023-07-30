@@ -6,18 +6,20 @@ import org.apache.commons.lang3.function.ToBooleanBiFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
 public class CowCapableMap<T> {
     private @Nullable CowCapableMap<T> daddy = null;
     private @Nullable HashMap<T, StackEntry> overrides = null;
-    private @Nullable ArrayList<CowCapableMap<T>> children = null;
+    private @Nullable ArrayList<WeakReference<CowCapableMap<T>>> children = null;
 
     public CowCapableMap() {
         this.overrides = new HashMap<>();
@@ -30,7 +32,7 @@ public class CowCapableMap<T> {
     public CowCapableMap<T> createClone() {
         var child = new CowCapableMap<>(this);
         if (children == null) children = new ArrayList<>();
-        this.children.add(child);
+        this.children.add(new WeakReference<>(child));
         return child;
     }
 
@@ -110,15 +112,28 @@ public class CowCapableMap<T> {
     public StackEntry put(T key, StackEntry value) {
         if (overrides == null) overrides = new HashMap<>();
         var previous = overrides.put(key, value);
+        iterChildren(child -> {
+            if (child.overrides == null) child.overrides = new HashMap<>();
+            if (!child.overrides.containsKey(key)) {
+                child.overrides.put(key, previous); // Preserve the previous value in all the children :3
+            }
+        });
+        return previous;
+    }
+
+    private void iterChildren(Consumer<CowCapableMap<T>> childConsumer) {
         if (children != null) {
-            for (var child : children) {
-                if (child.overrides == null) child.overrides = new HashMap<>();
-                if (!child.overrides.containsKey(key)) {
-                    child.overrides.put(key, previous); // Preserve the previous value in all the children :3
+            var childIter = children.iterator();
+            while (childIter.hasNext()) {
+                var child = childIter.next().get();
+                if (child == null) {
+                    childIter.remove();
+                    continue;
                 }
+
+                childConsumer.accept(child);
             }
         }
-        return previous;
     }
 
     public StackEntry remove(Object key) {
