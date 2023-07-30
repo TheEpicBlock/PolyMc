@@ -198,9 +198,7 @@ public class EntityRendererAnalyzer {
         public @NotNull StackEntry loadStaticField(Context ctx, Clazz owner, String fieldName) throws VmException {
             var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, owner.name(), fieldName);
             if (fromEnvironment != null) return fromEnvironment;
-            // Try and resolve the static field in the factoryVm, I don't think it's a good idea to
-            // spawn parallel universes from static fields at the moment
-            return new StaticFieldValue(owner.name(), fieldName).simplify(root.factoryVm);
+            return new StaticFieldValue(owner.name(), fieldName);
         }
 
         @Override

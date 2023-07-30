@@ -210,8 +210,10 @@ public class MethodExecutor {
                 var value = stack.pop();
                 var index = stack.pop();
                 var array = stack.pop();
-                // It's unsafe to simplify the array here, any assignments to the newly created array won't be propagated
-                // if (array.canBeSimplified()) array = array.simplify(this.parent);
+                // It's usually unsafe to simplify the array here, any assignments to the newly created array won't be propagated
+                if (array instanceof StaticFieldValue) {
+                    array = array.simplify(this.parent);
+                }
                 if (index.canBeSimplified()) index = index.simplify(this.parent);
                 if (index instanceof KnownInteger i) {
                     array.arraySet(i.i(), value);
