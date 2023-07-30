@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Type;
@@ -88,7 +87,7 @@ public interface StackEntry {
     }
 
     /**
-     * For stack entries that represent delayed instructions, such as {@link StaticFieldValue}
+     * For stack entries that represent delayed instructions, such as {@link io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryOp}
      * @param simplificationCache A mutable map that can be used to cache a {@link StackEntry} to its simplified value
      *                            This prevents infinite recursion when an entry contains a reference to itself.
      *                            This cache isn't used in most {@link StackEntry}'s, except {@link KnownVmObject}

@@ -10,7 +10,6 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.Lambda;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
@@ -65,7 +64,7 @@ public class ClientInitializerAnalyzer {
             public @NotNull StackEntry loadStaticField(Context ctx, Clazz owner, String fieldName) throws VmException {
                 var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, owner.name(), fieldName);
                 if (fromEnvironment != null) return fromEnvironment; // Return the known value if the class is already loaded in the *actual* jvm
-                return new StaticFieldValue(owner.getNode().name, fieldName); // Evaluate static fields lazily
+                return VmConfig.super.loadStaticField(ctx, owner, fieldName);
             }
 
             @Override
