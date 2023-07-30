@@ -30,6 +30,7 @@ public class VirtualMachine {
     private VmConfig config;
     private AbstractObjectList<@NotNull MethodExecutor> methodStack = new ObjectArrayList<>();
     private StackEntry lastReturnedValue;
+    private boolean isClinit = false;
 
     public VirtualMachine(ClientClassLoader classResolver, VmConfig config) {
         this.classResolver = classResolver;
@@ -77,6 +78,10 @@ public class VirtualMachine {
         var oldStack = this.methodStack;
         this.methodStack = newStack;
         return oldStack;
+    }
+
+    public boolean isClinit() {
+        return isClinit;
     }
 
     @ApiStatus.Internal
@@ -201,13 +206,17 @@ public class VirtualMachine {
         // This isn't spec-compliant
         if (!node.hasInitted) {
             node.hasInitted = true;
+            var prevClinit = this.isClinit;
             try {
+                this.isClinit = true;
                 var stack = this.switchStack(null); // Run this in a new, fresh state
                 addMethodToStack(node, "<clinit>", "()V", null);
                 runToCompletion();
                 this.switchStack(stack); // Restore old state
             } catch (VmException e) {
                 throw new VmException("Error in clinit of "+node, e);
+            } finally {
+                this.isClinit = prevClinit;
             }
         }
     }
@@ -458,6 +467,18 @@ public class VirtualMachine {
             }
             if (inst.owner.equals(_Class)) {
                 AsmUtils.simplifyAll(ctx, arguments);
+                if (inst.name.equals("getPrimitiveClass")) {
+                    ret(ctx, new KnownClass(switch (arguments[0].extractAs(String.class)) {
+                        case "int" -> Type.INT_TYPE;
+                        case "float" -> Type.FLOAT_TYPE;
+                        case "double" -> Type.DOUBLE_TYPE;
+                        case "boolean" -> Type.BOOLEAN_TYPE;
+                        case "byte" -> Type.BYTE_TYPE;
+                        case "char" -> Type.CHAR_TYPE;
+                        case "long" -> Type.LONG_TYPE;
+                        default -> throw new VmException("Unknown primitive "+arguments[0], null);
+                    }));
+                }
                 var thisType = arguments[0].extractAs(Type.class);
 
                 if (inst.name.equals("desiredAssertionStatus")) {

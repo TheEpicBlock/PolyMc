@@ -316,6 +316,11 @@ public class EntityRendererAnalyzer {
 
         @Override
         public void handleUnknownJump(Context ctx, StackEntry compA, @Nullable StackEntry compB, int opcode, LabelNode target) throws VmException {
+            if (ctx.machine().isClinit()) {
+                // Cloning a VM whilst it's doing clinit just leads to problems. We're likely not interested in this anyway
+                VmConfig.super.handleUnknownJump(ctx, compA, compB, opcode, target);
+                return;
+            }
             // We're going to clone the vm to create a parallel universe / continuation
             // The clone will take the jump, and we won't
 
