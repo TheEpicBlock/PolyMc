@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.Util;
@@ -21,7 +22,6 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class VirtualMachine {
@@ -54,9 +54,13 @@ public class VirtualMachine {
 
     public VirtualMachine copy() {
         var n = new VirtualMachine(this.classResolver, config, lastReturnedValue);
-        for (var meth : this.methodStack) {
+        this.methodStack.forEach(meth -> {
             n.methodStack.add(meth.copy(n));
-        }
+        });
+        this.classes.forEach((name, clazz) -> {
+            n.classes.put(name, clazz.copy(n));
+        });
+
         return n;
     }
 
@@ -793,16 +797,38 @@ public class VirtualMachine {
         private final VirtualMachine loader;
         private final ClassNode node;
         private boolean hasInitted;
-        private final Map<String, @NotNull StackEntry> staticFields = new HashMap<>();
-        private final Map<String, @NotNull MethodNode> methodLookupCache = new HashMap<>();
+        private final CowCapableMap<String> staticFields;
+        private final ImmutableMap<@NotNull String, @NotNull MethodNode> methodLookupCache;
 
         public Clazz(ClassNode node, VirtualMachine loader) {
             this.node = node;
-            // Populate method lookup cache
-            this.node.methods.forEach(method -> {
-                methodLookupCache.put(method.name+method.desc, method);
-            });
             this.loader = loader;
+            this.staticFields = new CowCapableMap<>();
+
+            // Populate method lookup cache
+            var lookupCache = new ImmutableMap.Builder<@NotNull String, @NotNull MethodNode>();
+            this.node.methods.forEach(method -> {
+                lookupCache.put(method.name+method.desc, method);
+            });
+            this.methodLookupCache = lookupCache.build();
+        }
+
+        private Clazz(ClassNode node, VirtualMachine loader, boolean hasInitted, CowCapableMap<@NotNull String> staticFields, ImmutableMap<String, @NotNull MethodNode> preComputedCache) {
+            this.node = node;
+            this.loader = loader;
+            this.hasInitted = hasInitted;
+            this.staticFields = staticFields;
+            this.methodLookupCache = preComputedCache;
+        }
+
+        public Clazz copy(VirtualMachine newLoader) {
+            return new Clazz(
+                    node,
+                    newLoader,
+                    this.hasInitted,
+                    this.staticFields.createClone(),
+                    this.methodLookupCache
+            );
         }
 
         public FieldRef resolveStaticField(String fieldname) throws VmException {
