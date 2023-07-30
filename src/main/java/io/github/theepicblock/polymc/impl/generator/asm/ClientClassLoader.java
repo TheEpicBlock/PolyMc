@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 public class ClientClassLoader extends URLClassLoader {
     private final TeensyRemapper remapper;
     public final Mapping runtimeToObf = Mapping.runtimeToObfFromClasspath();
-    private final HashMap<String, ClassNode> cache = new HashMap<>();
+    private final HashMap<String, Object> cache = new HashMap<>();
 
     public ClientClassLoader() {
         super("PolyMc auto generated classloader", getUrls(), ClientClassLoader.getSystemClassLoader());
@@ -63,7 +63,10 @@ public class ClientClassLoader extends URLClassLoader {
      */
     public ClassNode getClass(@InternalName @NotNull String clazz) throws IOException {
         var c = cache.get(clazz);
-        if (c != null) return c;
+        if (c != null) {
+            if (c instanceof IOException e) throw e;
+            return (ClassNode)c;
+        }
 
         var resource = this.getResourceAsStream(clazz + ".class");
         if (resource != null) {
@@ -87,6 +90,8 @@ public class ClientClassLoader extends URLClassLoader {
             return node;
         }
 
-        throw new IOException("Class "+clazz+" ("+obf+") not found");
+        var e = new IOException("Class "+clazz+" ("+obf+") not found");
+        cache.put(clazz, e);
+        throw e;
     }
 }
