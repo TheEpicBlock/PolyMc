@@ -6,6 +6,8 @@ import org.apache.commons.lang3.function.ToBooleanBiFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,9 +19,13 @@ import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
 public class CowCapableMap<T> {
+    /**
+     * TODO this spawns a thread, which should probably be stopped at some point
+     */
+    private static final ReferenceQueue<CowCapableMap<?>> GLOBAL_CLEANING_MAP = new ReferenceQueue<>();
     private @Nullable CowCapableMap<T> daddy = null;
     private @Nullable HashMap<T, StackEntry> overrides = null;
-    private @Nullable ArrayList<WeakReference<CowCapableMap<T>>> children = null;
+    private @Nullable ArrayList<CowWeakReference<T>> children = null;
 
     public CowCapableMap() {
         this.overrides = new HashMap<>();
@@ -32,7 +38,7 @@ public class CowCapableMap<T> {
     public CowCapableMap<T> createClone() {
         var child = new CowCapableMap<>(this);
         if (children == null) children = new ArrayList<>();
-        this.children.add(new WeakReference<>(child));
+        this.children.add(new CowWeakReference<>(child, GLOBAL_CLEANING_MAP));
         return child;
     }
 
@@ -122,6 +128,7 @@ public class CowCapableMap<T> {
     }
 
     private void iterChildren(Consumer<CowCapableMap<T>> childConsumer) {
+        checkGlobalCleaningQueue();
         if (children != null) {
             var childIter = children.iterator();
             while (childIter.hasNext()) {
@@ -215,6 +222,24 @@ public class CowCapableMap<T> {
             return super.equals(obj);
         } finally {
             isBeingCompared = false;
+        }
+    }
+
+    private static void checkGlobalCleaningQueue() {
+        for (Reference<? extends CowCapableMap<?>> x; (x = GLOBAL_CLEANING_MAP.poll()) != null; ) {
+            var ref = (CowWeakReference<?>)x;
+            if (ref.parent.children != null) {
+                ref.parent.children.removeIf(entry -> entry.get() == null);
+            }
+        }
+    }
+
+    private static class CowWeakReference<T> extends WeakReference<CowCapableMap<T>> {
+        @NotNull CowCapableMap<T> parent;
+        public CowWeakReference(CowCapableMap<T> referent, ReferenceQueue<? super CowCapableMap<T>> q) {
+            super(referent, q);
+            assert referent.daddy != null;
+            this.parent = referent.daddy;
         }
     }
 }
