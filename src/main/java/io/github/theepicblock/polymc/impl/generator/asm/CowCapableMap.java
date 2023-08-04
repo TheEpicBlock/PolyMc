@@ -19,12 +19,9 @@ import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
 public class CowCapableMap<T> {
-    /**
-     * TODO this spawns a thread, which should probably be stopped at some point
-     */
     private static final ReferenceQueue<CowCapableMap<?>> GLOBAL_CLEANING_MAP = new ReferenceQueue<>();
     private @Nullable CowCapableMap<T> daddy = null;
-    private @Nullable HashMap<T, StackEntry> overrides = null;
+    private @Nullable HashMap<T, @Nullable StackEntry> overrides = null;
     private @Nullable ArrayList<CowWeakReference<T>> children = null;
 
     public CowCapableMap() {
@@ -76,7 +73,7 @@ public class CowCapableMap<T> {
 
         boolean overridesContains = false;
         if (overrides != null) {
-            overridesContains = overrides.containsKey(key);
+            overridesContains = overrides.get(key) != null;
         }
         return daddyContains || overridesContains;
     }
@@ -97,13 +94,28 @@ public class CowCapableMap<T> {
     public StackEntry get(T key) {
         if (overrides != null) {
             var o = overrides.get(key);
-            if (o != null) return o;
+            if (o != null) {
+                iterChildren(child -> {
+                    if (child.overrides == null) child.overrides = new HashMap<>();
+                    if (!child.overrides.containsKey(key)) {
+                        child.overrides.put(key, o.copy()); // Just in case this one will be edited
+                    }
+                });
+                return o;
+            }
         }
         if (daddy != null) {
             var o = daddy.get(key);
             if (o != null) {
                 var copy = o.copy();
-                this.put((T)key, copy);
+                if (this.overrides == null) this.overrides = new HashMap<>();
+                this.overrides.put(key, copy);
+                iterChildren(child -> {
+                    if (child.overrides == null) child.overrides = new HashMap<>();
+                    if (!child.overrides.containsKey(key)) {
+                        child.overrides.put(key, o.copy()); // Just in case this one will be edited
+                    }
+                });
                 return copy;
             }
         }
@@ -114,8 +126,25 @@ public class CowCapableMap<T> {
         return get((T)key);
     }
 
+    private StackEntry getImmutable(T key) {
+        if (overrides != null) {
+            var o = overrides.get(key);
+            if (o != null) {
+                return o;
+            };
+        }
+        if (daddy != null) {
+            return daddy.getImmutable(key);
+        }
+        return null;
+    }
+
+    private StackEntry getImmutableErased(Object key) {
+        return get((T)key);
+    }
+
     @Nullable
-    public StackEntry put(T key, StackEntry value) {
+    public StackEntry put(T key, @NotNull StackEntry value) {
         if (overrides == null) overrides = new HashMap<>();
         var previous = overrides.put(key, value);
         iterChildren(child -> {
@@ -154,6 +183,7 @@ public class CowCapableMap<T> {
     public void simplify(VirtualMachine vm, Map<StackEntry, StackEntry> simplificationCache) throws MethodExecutor.VmException {
         if (this.overrides != null) {
             for (var entry : overrides.entrySet()) {
+                if (entry.getValue() == null) continue;
                 // No need to notify children since a simplification shouldn't change the meaning of the value
                 overrides.put(entry.getKey(), entry.getValue().simplify(vm, simplificationCache));
             }
@@ -163,18 +193,23 @@ public class CowCapableMap<T> {
         }
     }
 
-    public void forEach(BiConsumer<? super T,? super StackEntry> action) {
+    public void forEachImmutable(BiConsumer<? super T,? super StackEntry> action) {
         if (this.overrides != null) {
-            this.overrides.forEach(action);
+            this.overrides.forEach((key, val) -> {
+                if (val != null) {
+                    // A null value indicates a field isn't supposed to exist
+                    action.accept(key, val);
+                }
+            });
             if (this.daddy != null) {
-                this.daddy.forEach((key, val) -> {
+                this.daddy.forEachImmutable((key, val) -> {
                     if (!overrides.containsKey(key)) {
                         action.accept(key, val);
                     }
                 });
             }
         } else if (this.daddy != null) {
-            this.daddy.forEach(action);
+            this.daddy.forEachImmutable(action);
         }
     }
 
@@ -186,10 +221,10 @@ public class CowCapableMap<T> {
                 }
             }
             if (this.daddy != null) {
-                this.daddy.findAny((key, val) -> !overrides.containsKey(key) && filter.applyAsBoolean(key, val));
+                return this.daddy.findAny((key, val) -> !overrides.containsKey(key) && filter.applyAsBoolean(key, val));
             }
         } else if (this.daddy != null) {
-            this.daddy.findAny(filter);
+            return this.daddy.findAny(filter);
         }
         return false;
     }
@@ -205,7 +240,7 @@ public class CowCapableMap<T> {
         // Is this a good order independent hash? Probable not
         isBeingCompared = true;
         AtomicLong hash = new AtomicLong();
-        this.forEach((key, value) -> hash.addAndGet(Objects.hash(key, value)));
+        this.forEachImmutable((key, value) -> hash.addAndGet(Objects.hash(key, value)));
         long longHash = hash.get();
         isBeingCompared = false;
         return (int)(longHash >> Long.numberOfTrailingZeros(longHash));
@@ -217,7 +252,8 @@ public class CowCapableMap<T> {
         isBeingCompared = true;
         try {
             if (obj instanceof CowCapableMap<?> otherMap) {
-                return !this.findAny((key, value) -> !otherMap.getErased(key).equals(value));
+                if (otherMap == this) return true;
+                return !this.findAny((key, value) -> !Objects.equals(otherMap.getImmutableErased(key), value));
             }
             return super.equals(obj);
         } finally {
@@ -228,8 +264,15 @@ public class CowCapableMap<T> {
     private static void checkGlobalCleaningQueue() {
         for (Reference<? extends CowCapableMap<?>> x; (x = GLOBAL_CLEANING_MAP.poll()) != null; ) {
             var ref = (CowWeakReference<?>)x;
-            if (ref.parent.children != null) {
-                ref.parent.children.removeIf(entry -> entry.get() == null);
+            var children = ref.parent.children;
+            if (children != null) {
+                // Reïmplementation of `removeIf` to avoid allocations
+                for (var i = 0; i < children.size(); i++) {
+                    if (children.get(i).get() == null) {
+                        children.remove(i);
+                        break;
+                    }
+                }
             }
         }
     }

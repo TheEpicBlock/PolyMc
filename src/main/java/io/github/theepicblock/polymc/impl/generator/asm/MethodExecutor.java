@@ -13,6 +13,9 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class MethodExecutor {
     private final AbstractObjectList<@NotNull StackEntry> stack = new ObjectArrayList<>();
     private final VirtualMachine parent;
@@ -597,5 +600,20 @@ public class MethodExecutor {
     @ApiStatus.Internal
     public void overrideNextInsn(AbstractInsnNode target) {
         this.nextInstruction = target;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MethodExecutor that = (MethodExecutor)o;
+        return Objects.equals(stack, that.stack) && Arrays.equals(localVariables, that.localVariables) && Objects.equals(methodName, that.methodName) && Objects.equals(nextInstruction, that.nextInstruction);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(stack, methodName, nextInstruction);
+        result = 31 * result + Arrays.hashCode(localVariables);
+        return result;
     }
 }

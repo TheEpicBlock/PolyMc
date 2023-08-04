@@ -30,19 +30,21 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
             if (field == null) {
                 return new UnknownValue("Don't know value of field '"+name+"'");
             }
-            return switch (field.desc) {
+            var result = switch (field.desc) {
                 case "I", "Z", "S", "C", "B" -> new KnownInteger(0);
                 case "J" -> new KnownLong(0);
                 case "F" -> new KnownFloat(0);
                 case "D" -> new KnownDouble(0);
                 default -> KnownObject.NULL;
             };
+            this.fields.put(name, result);
+            return result;
         }
         return value;
     }
 
     @Override
-    public void setField(String name, StackEntry e) {
+    public void setField(String name, @NotNull StackEntry e) {
         this.fields().put(name, e);
     }
 
@@ -60,7 +62,7 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
     @Override
     public JsonElement toJson() {
         var element = new JsonObject();
-        this.fields.forEach((key, val) -> {
+        this.fields.forEachImmutable((key, val) -> {
             element.add(key, val.toJson());
         });
         return element;

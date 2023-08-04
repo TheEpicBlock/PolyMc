@@ -22,19 +22,36 @@ public class TestUtil {
     @Contract("null, _ -> fail")
     public static void assertNonNull(@Nullable Object o, String message) {
         if (o == null) {
-            throw new GameTestException(message);
+            var line = Thread.currentThread().getStackTrace()[2].getLineNumber();
+            throw new GameTestException("L"+line+" "+message);
         }
     }
 
     public static void assertEq(Object a, Object b) {
         if (!Objects.equals(a, b)) {
-            throw new GameTestException("Assertion failed: "+a+" != "+b);
+            var line = Thread.currentThread().getStackTrace()[2].getLineNumber();
+            throw new GameTestException("L"+line+" Assertion failed: "+a+" != "+b);
         }
     }
 
     public static void assertEq(Object a, Object b, String message) {
         if (!Objects.equals(a, b)) {
-            throw new GameTestException("Assertion failed: "+a+" != "+b+" "+message);
+            var line = Thread.currentThread().getStackTrace()[2].getLineNumber();
+            throw new GameTestException("L"+line+" Assertion failed: "+a+" != "+b+" "+message);
+        }
+    }
+
+    public static void assertDifferent(Object a, Object b) {
+        if (Objects.equals(a, b)) {
+            var line = Thread.currentThread().getStackTrace()[2].getLineNumber();
+            throw new GameTestException("L"+line+" Assertion failed: "+a+" = "+b);
+        }
+    }
+
+    public static void assertDifferent(Object a, Object b, String message) {
+        if (Objects.equals(a, b)) {
+            var line = Thread.currentThread().getStackTrace()[2].getLineNumber();
+            throw new GameTestException("L"+line+" Assertion failed: "+a+" = "+b+" "+message);
         }
     }
 

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class VirtualMachine {
@@ -911,5 +912,18 @@ public class VirtualMachine {
         public ClassNode getNode() {
             return node;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VirtualMachine that = (VirtualMachine)o;
+        return java.util.Objects.equals(methodStack, that.methodStack);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(methodStack);
     }
 }
