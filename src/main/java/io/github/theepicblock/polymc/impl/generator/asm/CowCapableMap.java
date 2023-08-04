@@ -9,8 +9,8 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -22,7 +22,7 @@ public class CowCapableMap<T> {
     private static final ReferenceQueue<CowCapableMap<?>> GLOBAL_CLEANING_MAP = new ReferenceQueue<>();
     private @Nullable CowCapableMap<T> daddy = null;
     private @Nullable HashMap<T, @Nullable StackEntry> overrides = null;
-    private @Nullable ArrayList<CowWeakReference<T>> children = null;
+    private @Nullable HashSet<CowWeakReference<T>> children = null;
 
     public CowCapableMap() {
         this.overrides = new HashMap<>();
@@ -34,7 +34,7 @@ public class CowCapableMap<T> {
 
     public CowCapableMap<T> createClone() {
         var child = new CowCapableMap<>(this);
-        if (children == null) children = new ArrayList<>();
+        if (children == null) children = new HashSet<>();
         this.children.add(new CowWeakReference<>(child, GLOBAL_CLEANING_MAP));
         return child;
     }
@@ -93,17 +93,19 @@ public class CowCapableMap<T> {
 
     public StackEntry get(T key) {
         if (overrides != null) {
-            var o = overrides.get(key);
-            if (o != null) {
-                iterChildren(child -> {
-                    var copy = o.copy();
-                    if (copy != o) {
-                        if (child.overrides == null) child.overrides = new HashMap<>();
-                        if (!child.overrides.containsKey(key)) {
-                            child.overrides.put(key, o.copy()); // Just in case this one will be edited
+            if (overrides.containsKey(key)) {
+                var o = overrides.get(key);
+                if (o != null) {
+                    iterChildren(child -> {
+                        var copy = o.copy();
+                        if (copy != o) {
+                            if (child.overrides == null) child.overrides = new HashMap<>();
+                            if (!child.overrides.containsKey(key)) {
+                                child.overrides.put(key, copy); // Just in case this one will be edited
+                            }
                         }
-                    }
-                });
+                    });
+                }
                 return o;
             }
         }
@@ -133,10 +135,9 @@ public class CowCapableMap<T> {
 
     private StackEntry getImmutable(T key) {
         if (overrides != null) {
-            var o = overrides.get(key);
-            if (o != null) {
-                return o;
-            };
+            if (overrides.containsKey(key)) {
+                return overrides.get(key);
+            }
         }
         if (daddy != null) {
             return daddy.getImmutable(key);
@@ -145,13 +146,14 @@ public class CowCapableMap<T> {
     }
 
     private StackEntry getImmutableErased(Object key) {
-        return get((T)key);
+        return getImmutable((T)key);
     }
 
     @Nullable
     public StackEntry put(T key, @NotNull StackEntry value) {
         if (overrides == null) overrides = new HashMap<>();
-        var previous = overrides.put(key, value);
+        var previous = this.getImmutable(key);
+        overrides.put(key, value);
         iterChildren(child -> {
             if (child.overrides == null) child.overrides = new HashMap<>();
             if (!child.overrides.containsKey(key)) {
@@ -273,10 +275,7 @@ public class CowCapableMap<T> {
             if (children != null) {
                 // Reïmplementation of `removeIf` to avoid allocations
                 for (var i = 0; i < children.size(); i++) {
-                    if (children.get(i).get() == null) {
-                        children.remove(i);
-                        break;
-                    }
+                    children.remove(ref);
                 }
             }
         }

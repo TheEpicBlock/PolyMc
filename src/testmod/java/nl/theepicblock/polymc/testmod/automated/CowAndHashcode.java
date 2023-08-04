@@ -41,6 +41,8 @@ public class CowAndHashcode implements FabricGameTest {
         assertEq(originHash, origin.hashCode(), "Hashcode shouldn't change after the exact same value is inserted");
 
         var copy = origin.createClone();
+        var copy2 = origin.createClone();
+        var copy3 = copy.createClone();
         // Check if everything's still equal
         assertEq(origin.get("a"), StackEntry.known(1));
         assertEq(origin.get("b"), StackEntry.known(1));
@@ -69,6 +71,18 @@ public class CowAndHashcode implements FabricGameTest {
         origin.get("d").setField("yeet", StackEntry.known(1));
         assertEq(copy.get("d"), new KnownVmObject(null, new CowCapableMap<>()), "Original affecting copy");
         assertEq(copyHash2, copy.hashCode(), "Original affecting copy");
+
+        // Check if copy2 and copy3 were completely unaffected by everything going on
+        assertEq(copy2.get("a"), StackEntry.known(1));
+        assertEq(copy2.get("b"), StackEntry.known(1));
+        assertEq(copy2.get("c"), new KnownVmObject(null, new CowCapableMap<>()));
+        assertEq(copy2.get("d"), new KnownVmObject(null, new CowCapableMap<>()));
+        assertEq(copy3.get("a"), StackEntry.known(1));
+        assertEq(copy3.get("b"), StackEntry.known(1));
+        assertEq(copy3.get("c"), new KnownVmObject(null, new CowCapableMap<>()));
+        assertEq(copy3.get("d"), new KnownVmObject(null, new CowCapableMap<>()));
+        assertEq(copy2, copy3);
+        assertEq(copy2.hashCode(), copy3.hashCode());
 
         ctx.complete();
     }
