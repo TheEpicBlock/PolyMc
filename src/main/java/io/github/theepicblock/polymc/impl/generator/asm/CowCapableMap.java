@@ -96,9 +96,12 @@ public class CowCapableMap<T> {
             var o = overrides.get(key);
             if (o != null) {
                 iterChildren(child -> {
-                    if (child.overrides == null) child.overrides = new HashMap<>();
-                    if (!child.overrides.containsKey(key)) {
-                        child.overrides.put(key, o.copy()); // Just in case this one will be edited
+                    var copy = o.copy();
+                    if (copy != o) {
+                        if (child.overrides == null) child.overrides = new HashMap<>();
+                        if (!child.overrides.containsKey(key)) {
+                            child.overrides.put(key, o.copy()); // Just in case this one will be edited
+                        }
                     }
                 });
                 return o;
@@ -108,14 +111,16 @@ public class CowCapableMap<T> {
             var o = daddy.get(key);
             if (o != null) {
                 var copy = o.copy();
-                if (this.overrides == null) this.overrides = new HashMap<>();
-                this.overrides.put(key, copy);
-                iterChildren(child -> {
-                    if (child.overrides == null) child.overrides = new HashMap<>();
-                    if (!child.overrides.containsKey(key)) {
-                        child.overrides.put(key, o.copy()); // Just in case this one will be edited
-                    }
-                });
+                if (copy != o) {
+                    if (this.overrides == null) this.overrides = new HashMap<>();
+                    this.overrides.put(key, copy);
+                    iterChildren(child -> {
+                        if (child.overrides == null) child.overrides = new HashMap<>();
+                        if (!child.overrides.containsKey(key)) {
+                            child.overrides.put(key, o.copy()); // Just in case this one will be edited
+                        }
+                    });
+                }
                 return copy;
             }
         }
