@@ -6,6 +6,7 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.MethodCall;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -21,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
-import java.util.function.Consumer;
 
 public class VirtualMachine {
     private HashMap<@InternalName String, Clazz> classes = new HashMap<>();
@@ -719,6 +719,11 @@ public class VirtualMachine {
                 // Can't be resolved, return an unknown value
                 ret(ctx, Type.getReturnType(inst.desc) == Type.VOID_TYPE ? null
                         : new UnknownValue("Can't resolve "+inst.owner+"#"+inst.name+inst.desc+" because "+Util.first(arguments)+" has no type"));
+                return;
+            }
+
+            if (Util.first(arguments) instanceof MockedObject) {
+                ret(ctx, new MethodCall(currentClass, inst, arguments));
                 return;
             }
 

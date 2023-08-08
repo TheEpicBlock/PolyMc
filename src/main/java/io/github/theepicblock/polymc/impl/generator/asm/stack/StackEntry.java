@@ -97,7 +97,9 @@ public interface StackEntry {
         return this;
     }
 
-    JsonElement toJson();
+    default JsonElement toJson() {
+        throw new NotImplementedException();
+    };
 
     /**
      * @return Whether this stack value represents a concrete value that's ready to be extracted

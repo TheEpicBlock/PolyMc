@@ -1,6 +1,5 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 
-import com.google.gson.JsonElement;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
@@ -24,10 +23,5 @@ public record ArrayLength(StackEntry array) implements StackEntry {
         } else {
             return new ArrayLength(array);
         }
-    }
-
-    @Override
-    public JsonElement toJson() {
-        return null;
     }
 }

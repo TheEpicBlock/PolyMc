@@ -1,6 +1,5 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 
-import com.google.gson.JsonElement;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
@@ -29,10 +28,5 @@ public record BinaryArbitraryOp(StackEntry inner, StackEntry inner2, BiFunction<
             return result;
         }
         return new BinaryArbitraryOp(entryinner, entryinner2, arbitraryFunction);
-    }
-
-    @Override
-    public JsonElement toJson() {
-        return null;
     }
 }

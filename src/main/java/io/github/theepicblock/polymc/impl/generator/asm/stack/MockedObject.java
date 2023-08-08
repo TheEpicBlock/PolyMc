@@ -1,6 +1,5 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
-import com.google.gson.JsonElement;
 import io.github.theepicblock.polymc.impl.generator.asm.AsmUtils;
 import io.github.theepicblock.polymc.impl.generator.asm.CowCapableMap;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
@@ -46,11 +45,6 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
         } else {
             return new MockedObject(new FieldAccess(this, name), null, new CowCapableMap<>());
         }
-    }
-
-    @Override
-    public JsonElement toJson() {
-        throw new NotImplementedException();
     }
 
     @Override

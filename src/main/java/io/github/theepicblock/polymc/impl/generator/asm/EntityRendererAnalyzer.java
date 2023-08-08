@@ -23,13 +23,8 @@ import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
-
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class EntityRendererAnalyzer {
     public static final SharedValuesKey<EntityRendererAnalyzer> KEY = new SharedValuesKey<>(EntityRendererAnalyzer::new, null);

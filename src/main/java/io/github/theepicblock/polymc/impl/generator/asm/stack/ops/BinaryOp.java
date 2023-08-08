@@ -1,10 +1,8 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 
-import com.google.gson.JsonElement;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.Map;
 
@@ -116,11 +114,6 @@ public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements 
     @Override
     public <T> T extractAs(Class<T> type) {
         throw new UnsupportedOperationException("Tried extracting a binOp as a "+type);
-    }
-
-    @Override
-    public JsonElement toJson() {
-        throw new NotImplementedException();
     }
 
     @Override

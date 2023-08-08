@@ -1,6 +1,5 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 
-import com.google.gson.JsonElement;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
@@ -10,12 +9,6 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import java.util.Map;
 
 public record InstanceOf(StackEntry entry, String toCheck) implements StackEntry {
-    @Override
-    public JsonElement toJson() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'toJson'");
-    }
-
     @Override
     public boolean canBeSimplified() {
         return entry.canBeSimplified() || entry.isConcrete();
