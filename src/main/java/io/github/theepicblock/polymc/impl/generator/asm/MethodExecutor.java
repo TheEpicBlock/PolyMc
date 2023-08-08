@@ -14,6 +14,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.Objects;
 
 public class MethodExecutor {
@@ -31,19 +32,19 @@ public class MethodExecutor {
         this.methodName = methodName;
     }
 
-    public MethodExecutor copy(VirtualMachine newVm) {
+    public MethodExecutor copy(VirtualMachine newVm, IdentityHashMap<StackEntry,StackEntry> copyCache) {
         var n = new MethodExecutor(newVm, new StackEntry[this.localVariables.length], this.methodName);
         n.owner = this.owner;
         n.method = this.method;
         n.nextInstruction = this.nextInstruction;
         int i = 0;
         for (var var : this.localVariables) {
-            if (var != null) n.localVariables[i] = var.copy();
+            if (var != null) n.localVariables[i] = var.copy(copyCache);
             i++;
         }
 
         for (var entry : this.stack) {
-            n.stack.push(entry.copy());
+            n.stack.push(entry.copy(copyCache));
         }
         return n;
     }
@@ -190,6 +191,7 @@ public class MethodExecutor {
                 var inst = (FieldInsnNode)instruction;
                 var value = stack.pop();
                 var objectRef = stack.pop();
+                if (value.canBeSimplified()) value = value.simplify(this.parent);
                 objectRef.setField(inst.name, value);
             }
             case Opcodes.GETFIELD -> {
@@ -206,7 +208,7 @@ public class MethodExecutor {
                 if (index instanceof KnownInteger i) {
                     stack.push(array.arrayAccess(i.i()));
                 } else {
-                    throw new VmException("Tried to acces array index of "+index, null);
+                    throw new VmException("Tried to access array index of "+index, null);
                 }
             }
             case Opcodes.AASTORE, Opcodes.BASTORE, Opcodes.CASTORE, Opcodes.DASTORE, Opcodes.FASTORE, Opcodes.IASTORE, Opcodes.LASTORE, Opcodes.SASTORE -> {
@@ -217,11 +219,12 @@ public class MethodExecutor {
                 if (array instanceof StaticFieldValue) {
                     array = array.simplify(this.parent);
                 }
+                if (value.canBeSimplified()) value = value.simplify(this.parent);
                 if (index.canBeSimplified()) index = index.simplify(this.parent);
                 if (index instanceof KnownInteger i) {
                     array.arraySet(i.i(), value);
                 } else {
-                    throw new VmException("Tried to acces array index of "+index, null);
+                    throw new VmException("Tried to access array index of "+index, null);
                 }
             }
             case Opcodes.ALOAD, Opcodes.DLOAD, Opcodes.FLOAD, Opcodes.ILOAD, Opcodes.LLOAD -> {
@@ -294,7 +297,7 @@ public class MethodExecutor {
                     return true;
                 }
 
-                if (stackEntryEqual(a, b)) {
+                if (stackEntryIdentityEqual(a, b)) {
                     this.nextInstruction = ((JumpInsnNode)instruction).label;
                     return true;
                 }
@@ -309,7 +312,7 @@ public class MethodExecutor {
                     return true;
                 }
 
-                if (!stackEntryEqual(a, b)) {
+                if (!stackEntryIdentityEqual(a, b)) {
                     this.nextInstruction = ((JumpInsnNode)instruction).label;
                     return true;
                 }
@@ -536,7 +539,7 @@ public class MethodExecutor {
         return true;
     }
 
-    private static boolean stackEntryEqual(StackEntry a, StackEntry b) {
+    private static boolean stackEntryIdentityEqual(StackEntry a, StackEntry b) {
         if (a == b) return true;
         if (a instanceof KnownClass clA && b instanceof KnownClass clB) {
             return clA.type().equals(clB.type());
@@ -607,7 +610,7 @@ public class MethodExecutor {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MethodExecutor that = (MethodExecutor)o;
-        return Objects.equals(stack, that.stack) && Arrays.equals(localVariables, that.localVariables) && Objects.equals(methodName, that.methodName) && Objects.equals(nextInstruction, that.nextInstruction);
+        return Arrays.equals(localVariables, that.localVariables) && Objects.equals(stack, that.stack) && Objects.equals(methodName, that.methodName) && Objects.equals(nextInstruction, that.nextInstruction);
     }
 
     @Override

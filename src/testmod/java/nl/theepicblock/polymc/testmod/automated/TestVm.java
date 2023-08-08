@@ -227,6 +227,13 @@ public class TestVm implements FabricGameTest {
         return list.get(2)+list.get(4);
     }
 
+    @VmTest(expected = 3)
+    public static int streamCollectImmutableList() {
+        var myList = Lists.newArrayList(0, 1, 2, 3, 4);
+        var newMap = myList.stream().collect(ImmutableList.toImmutableList());
+        return newMap.get(3);
+    }
+
     @VmTest(expected = 1)
     public static int objHashcode() {
         var obj = new Object();

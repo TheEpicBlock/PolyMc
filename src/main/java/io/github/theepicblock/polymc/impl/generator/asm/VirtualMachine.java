@@ -20,13 +20,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Consumer;
 
 public class VirtualMachine {
-    private final HashMap<@InternalName String, Clazz> classes = new HashMap<>();
+    private HashMap<@InternalName String, Clazz> classes = new HashMap<>();
     private final ClientClassLoader classResolver;
     private VmConfig config;
     private AbstractObjectList<@NotNull MethodExecutor> methodStack = new ObjectArrayList<>();
@@ -55,12 +53,14 @@ public class VirtualMachine {
 
     public VirtualMachine copy() {
         var n = new VirtualMachine(this.classResolver, config, lastReturnedValue);
+        var copyCache = new IdentityHashMap<StackEntry, StackEntry>();
         this.methodStack.forEach(meth -> {
-            n.methodStack.add(meth.copy(n));
+            n.methodStack.add(meth.copy(n, copyCache));
         });
-        this.classes.forEach((name, clazz) -> {
-            n.classes.put(name, clazz.copy(n));
-        });
+        n.classes = this.classes;
+//        this.classes.forEach((name, clazz) -> {
+//            n.classes.put(name, clazz.copy(n));
+//        });
 
         return n;
     }
@@ -114,7 +114,7 @@ public class VirtualMachine {
         var method = lambda.method();
         var clazz = getClass(method.getOwner());
         if (method.getTag() == Opcodes.H_NEWINVOKESPECIAL) {
-            var newO = new StackEntry[] { new KnownVmObject(clazz, new CowCapableMap<>()) };
+            var newO = new StackEntry[] { new KnownVmObject(clazz) };
             StackEntry[] args = Streams
                     .concat(Arrays.stream(newO), Arrays.stream(arguments), Arrays.stream(lambda.extraArguments()))
                     .toArray(StackEntry[]::new);
@@ -233,6 +233,8 @@ public class VirtualMachine {
             }
             return this.getClass(Type.getInternalName(o.i().getClass()));
         } else if (entry instanceof KnownVmObject o) {
+            return o.type();
+        } else if (entry instanceof MockedObject o) {
             return o.type();
         } else if (entry instanceof KnownClass) {
             return this.getClass("java/lang/Class");
@@ -386,254 +388,259 @@ public class VirtualMachine {
                 boxedObject.setField("value", arguments[0]);
                 arguments[0] = boxedObject;
             }
-            if (inst.owner.equals(LoggerFactory)) {
-                ret(ctx, new UnknownValue("Refusing to invoke LoggerFactory for optimization reasons"));
-                return;
-            }
+
             // Hardcoded functions
-            if (inst.owner.equals(Objects) && inst.name.equals("requireNonNull")) {
-                ret(ctx, arguments[0]);
-                return;
-            }
-            if (inst.owner.equals(_Array)) {
-                if (inst.name.equals("newArray")) {
-                    AsmUtils.simplifyAll(ctx, arguments);
-                    ret(ctx, KnownArray.withLength(arguments[1].simplify(ctx.machine()).extractAs(int.class)));
+            switch (inst.owner) {
+                case "org/slf4j/LoggerFactory" -> {
+                    ret(ctx, new UnknownValue("Refusing to invoke LoggerFactory for optimization reasons"));
                     return;
                 }
-            }
-            if (inst.owner.equals(_StrictMath)) {
-                // These are native methods. They need to be hardcoded
-                if (inst.name.equals("cos") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.cos(entry.extractAs(double.class)))));
-                    return;
-                }
-                if (inst.name.equals("acos") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.acos(entry.extractAs(double.class)))));
-                    return;
-                }
-                if (inst.name.equals("sin") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sin(entry.extractAs(double.class)))));
-                    return;
-                }
-                if (inst.name.equals("asin") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.asin(entry.extractAs(double.class)))));
-                    return;
-                }
-                if (inst.name.equals("tan") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.tan(entry.extractAs(double.class)))));
-                    return;
-                }
-                if (inst.name.equals("atan") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.atan(entry.extractAs(double.class)))));
-                    return;
-                }
-                if (inst.name.equals("log") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log(entry.extractAs(double.class)))));
-                    return;
-                }
-                if (inst.name.equals("log10") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log10(entry.extractAs(double.class)))));
-                    return;
-                }
-                if (inst.name.equals("sqrt") && inst.desc.equals("(D)D")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sqrt(entry.extractAs(double.class)))));
-                    return;
-                }
-            }
-            if (inst.owner.equals(_Float)) {
-                if (inst.name.equals("floatToRawIntBits")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.floatToRawIntBits(entry.extractAs(float.class)))));
-                    return;
-                }
-                if (inst.name.equals("intBitsToFloat")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.intBitsToFloat(entry.extractAs(int.class)))));
-                    return;
-                }
-            }
-            if (inst.owner.equals(_Double)) {
-                if (inst.name.equals("doubleToRawLongBits")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.doubleToRawLongBits(entry.extractAs(double.class)))));
-                    return;
-                }
-                if (inst.name.equals("longBitsToDouble")) {
-                    ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.longBitsToDouble(entry.extractAs(long.class)))));
-                    return;
-                }
-            }
-            if (inst.owner.equals(_VM)) {
-                if (inst.name.equals("getSavedProperty")) {
-                    AsmUtils.simplifyAll(ctx, arguments);
-                    if (arguments[0] instanceof KnownObject o && o.i() instanceof String str && str.equals("java.lang.Integer.IntegerCache.high")) {
-                        ret(ctx, new KnownObject("127"));
+                case "java/util/Objects" -> {
+                    if (inst.name.equals("requireNonNull")) {
+                        ret(ctx, arguments[0]);
                         return;
                     }
                 }
-            }
-            if (inst.owner.equals(_Class)) {
-                AsmUtils.simplifyAll(ctx, arguments);
-                if (inst.name.equals("getPrimitiveClass")) {
-                    ret(ctx, new KnownClass(switch (arguments[0].extractAs(String.class)) {
-                        case "int" -> Type.INT_TYPE;
-                        case "float" -> Type.FLOAT_TYPE;
-                        case "double" -> Type.DOUBLE_TYPE;
-                        case "boolean" -> Type.BOOLEAN_TYPE;
-                        case "byte" -> Type.BYTE_TYPE;
-                        case "char" -> Type.CHAR_TYPE;
-                        case "long" -> Type.LONG_TYPE;
-                        default -> throw new VmException("Unknown primitive "+arguments[0], null);
-                    }));
-                }
-                var thisType = arguments[0].extractAs(Type.class);
-
-                if (inst.name.equals("desiredAssertionStatus")) {
-                    ret(ctx, new KnownInteger(false));
-                    return;
-                }
-                if (inst.name.equals("getEnumConstantsShared")) {
-                    var state = ctx.machine().switchStack(null);
-                    StackEntry result;
-                    try {
-                        var valuesInst = new MethodInsnNode(Opcodes.INVOKESTATIC, thisType.getInternalName(), "values", "()[L" + thisType.getInternalName() + ";");
-                        this.invoke(ctx, currentClass, valuesInst, new StackEntry[0]);
-                        result = ctx.machine().runToCompletion();
-                        if (result.canBeSimplified()) result = result.simplify(ctx.machine());
-                    } catch (VmException e) {
-                        ctx.machine().switchStack(state);
-                        throw new VmException("Error getting enum constants for "+thisType, e);
+                case "java/lang/reflect/Array" -> {
+                    if (inst.name.equals("newArray")) {
+                        AsmUtils.simplifyAll(ctx, arguments);
+                        ret(ctx, KnownArray.withLength(arguments[1].simplify(ctx.machine()).extractAs(int.class)));
+                        return;
                     }
-                    ctx.machine().switchStack(state);
-                    ret(ctx, result);
-                    return;
                 }
-                if (inst.name.equals("isInterface")) {
-                    var clazz = ctx.machine.getClass(thisType.getInternalName());
-                    ret(ctx, new KnownInteger(AsmUtils.hasFlag(clazz.node, Opcodes.ACC_INTERFACE)));
-                    return;
+                case "java/lang/StrictMath" -> {
+                    // These are native methods. They need to be hardcoded
+                    if (inst.name.equals("cos") && inst.desc.equals("(D)D")) {
+                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.cos(entry.extractAs(double.class)))));
+                        return;
+                    }
+                    if (inst.name.equals("acos") && inst.desc.equals("(D)D")) {
+                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.acos(entry.extractAs(double.class)))));
+                        return;
+                    }
+                    if (inst.name.equals("sin") && inst.desc.equals("(D)D")) {
+                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sin(entry.extractAs(double.class)))));
+                        return;
+                    }
+                    if (inst.name.equals("asin") && inst.desc.equals("(D)D")) {
+                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.asin(entry.extractAs(double.class)))));
+                        return;
+                    }
+                    if (inst.name.equals("tan") && inst.desc.equals("(D)D")) {
+                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.tan(entry.extractAs(double.class)))));
+                        return;
+                    }
+                    if (inst.name.equals("atan") && inst.desc.equals("(D)D")) {
+                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.atan(entry.extractAs(double.class)))));
+                        return;
+                    }
+                    if (inst.name.equals("log") && inst.desc.equals("(D)D")) {
+                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log(entry.extractAs(double.class)))));
+                        return;
+                    }
+                    if (inst.name.equals("log10") && inst.desc.equals("(D)D")) {
+                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log10(entry.extractAs(double.class)))));
+                        return;
+                    }
+                    if (inst.name.equals("sqrt") && inst.desc.equals("(D)D")) {
+                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sqrt(entry.extractAs(double.class)))));
+                        return;
+                    }
                 }
-                if (inst.name.equals("isArray")) {
-                    ret(ctx, new KnownInteger(thisType.getSort() == Type.ARRAY));
-                    return;
+                case "java/lang/Float" -> {
+                    if (inst.name.equals("floatToRawIntBits")) {
+                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.floatToRawIntBits(entry.extractAs(float.class)))));
+                        return;
+                    }
+                    if (inst.name.equals("intBitsToFloat")) {
+                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.intBitsToFloat(entry.extractAs(int.class)))));
+                        return;
+                    }
                 }
-                if (inst.name.equals("isPrimitive")) {
-                    ret(ctx, new KnownInteger(thisType.getSort() != Type.OBJECT && thisType.getSort() != Type.ARRAY));
-                    return;
+                case "java/lang/Double" -> {
+                    if (inst.name.equals("doubleToRawLongBits")) {
+                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.doubleToRawLongBits(entry.extractAs(double.class)))));
+                        return;
+                    }
+                    if (inst.name.equals("longBitsToDouble")) {
+                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.longBitsToDouble(entry.extractAs(long.class)))));
+                        return;
+                    }
                 }
-                if (inst.name.equals("getSuperclass")) {
-                    ret(ctx, new KnownClass(ctx.machine.getClass(ctx.machine.getClass(thisType.getInternalName()).node.superName)));
-                    return;
+                case "jdk/internal/misc/VM" -> {
+                    if (inst.name.equals("getSavedProperty")) {
+                        AsmUtils.simplifyAll(ctx, arguments);
+                        if (arguments[0] instanceof KnownObject o && o.i() instanceof String str && str.equals("java.lang.Integer.IntegerCache.high")) {
+                            ret(ctx, new KnownObject("127"));
+                            return;
+                        }
+                    }
                 }
-            }
-            if (inst.owner.equals(_CDS)) {
-                if (inst.name.equals("initializeFromArchive")) {
-                    ret(ctx, null); // Just pretend it can't be initialized. I don't even know what a CDS dump is
-                    return;
-                }
-                if (inst.name.equals("getRandomSeedForDumping")) {
-                    ret(ctx, new KnownLong(4)); // Chosen by fair dice roll, guaranteed to be random
-                    return;
-                }
-            }
-            if (inst.owner.equals(_Reflection)) {
-                if (inst.name.equals("getCallerClass")) {
-                    ret(ctx, new KnownClass(currentClass));
-                    return;
-                }
-            }
-            if (inst.owner.equals(_Unsafe)) {
-                AsmUtils.simplifyAll(ctx, arguments);
-                if (inst.name.equals("registerNatives")) {
-                    ret(ctx, null);
-                    return;
-                }
-                if (inst.name.equals("objectFieldOffset") && inst.desc.equals("(Ljava/lang/Class;Ljava/lang/String;)J")) {
+                case "java/lang/Class" -> {
                     AsmUtils.simplifyAll(ctx, arguments);
-                    ret(ctx, new UnsafeFieldReference(arguments[2].extractAs(String.class)));
-                    return;
+                    if (inst.name.equals("getPrimitiveClass")) {
+                        ret(ctx, new KnownClass(switch (arguments[0].extractAs(String.class)) {
+                            case "int" -> Type.INT_TYPE;
+                            case "float" -> Type.FLOAT_TYPE;
+                            case "double" -> Type.DOUBLE_TYPE;
+                            case "boolean" -> Type.BOOLEAN_TYPE;
+                            case "byte" -> Type.BYTE_TYPE;
+                            case "char" -> Type.CHAR_TYPE;
+                            case "long" -> Type.LONG_TYPE;
+                            default -> throw new VmException("Unknown primitive "+arguments[0], null);
+                        }));
+                    }
+                    var thisType = arguments[0].extractAs(Type.class);
+
+                    if (inst.name.equals("desiredAssertionStatus")) {
+                        ret(ctx, new KnownInteger(false));
+                        return;
+                    }
+                    if (inst.name.equals("getEnumConstantsShared")) {
+                        var state = ctx.machine().switchStack(null);
+                        StackEntry result;
+                        try {
+                            var valuesInst = new MethodInsnNode(Opcodes.INVOKESTATIC, thisType.getInternalName(), "values", "()[L" + thisType.getInternalName() + ";");
+                            this.invoke(ctx, currentClass, valuesInst, new StackEntry[0]);
+                            result = ctx.machine().runToCompletion();
+                            if (result.canBeSimplified()) result = result.simplify(ctx.machine());
+                        } catch (VmException e) {
+                            ctx.machine().switchStack(state);
+                            throw new VmException("Error getting enum constants for "+thisType, e);
+                        }
+                        ctx.machine().switchStack(state);
+                        ret(ctx, result);
+                        return;
+                    }
+                    if (inst.name.equals("isInterface")) {
+                        var clazz = ctx.machine.getClass(thisType.getInternalName());
+                        ret(ctx, new KnownInteger(AsmUtils.hasFlag(clazz.node, Opcodes.ACC_INTERFACE)));
+                        return;
+                    }
+                    if (inst.name.equals("isArray")) {
+                        ret(ctx, new KnownInteger(thisType.getSort() == Type.ARRAY));
+                        return;
+                    }
+                    if (inst.name.equals("isPrimitive")) {
+                        ret(ctx, new KnownInteger(thisType.getSort() != Type.OBJECT && thisType.getSort() != Type.ARRAY));
+                        return;
+                    }
+                    if (inst.name.equals("getSuperclass")) {
+                        ret(ctx, new KnownClass(ctx.machine.getClass(ctx.machine.getClass(thisType.getInternalName()).node.superName)));
+                        return;
+                    }
                 }
-                if (inst.name.equals("arrayIndexScale")) {
-                    ret(ctx, new KnownInteger(1)); // Keeps everything nice and simple
-                    return;
+                case "jdk/internal/misc/CDS" -> {
+                    if (inst.name.equals("initializeFromArchive")) {
+                        ret(ctx, null); // Just pretend it can't be initialized. I don't even know what a CDS dump is
+                        return;
+                    }
+                    if (inst.name.equals("getRandomSeedForDumping")) {
+                        ret(ctx, new KnownLong(4)); // Chosen by fair dice roll, guaranteed to be random
+                        return;
+                    }
                 }
-                if (inst.name.equals("arrayBaseOffset")) {
-                    ret(ctx, new KnownInteger(0)); // Keeps everything nice and simple
-                    return;
+                case "jdk/internal/reflect/Reflection" -> {
+                    if (inst.name.equals("getCallerClass")) {
+                        ret(ctx, new KnownClass(currentClass));
+                        return;
+                    }
                 }
-                if (inst.name.startsWith("get") && inst.desc.startsWith("(Ljava/lang/Object;J)") && arguments[1] instanceof KnownArray arr) {
-                    // Arrays may use normal longs as indices
-                    ret(ctx, arr.arrayAccess((int)(long)arguments[2].extractAs(long.class)));
-                    return;
-                }
-                if (inst.name.startsWith("get") && inst.desc.startsWith("(Ljava/lang/Object;J)")) {
-                    ret(ctx, arguments[1].getField(((UnsafeFieldReference)arguments[2]).fieldName()));
-                    return;
-                }
-                if (inst.name.startsWith("put") && inst.desc.startsWith("(Ljava/lang/Object;J") && inst.desc.endsWith(")V") && arguments[1] instanceof KnownArray arr) {
-                    // Arrays may use normal longs as indices
-                    arr.arraySet((int)(long)arguments[2].extractAs(long.class), arguments[4]);
-                    ret(ctx, null);
-                    return;
-                }
-                if (inst.name.startsWith("put") && inst.desc.startsWith("(Ljava/lang/Object;J")) {
-                    arguments[1].setField(((UnsafeFieldReference)arguments[2]).fieldName(), arguments[4]);
-                    ret(ctx, null);
-                    return;
-                }
-                if (inst.name.startsWith("compareAndSet") && arguments[1] instanceof KnownArray arr) {
-                    // Arrays may use normal longs as indices
-                    arr.arraySet((int)(long)arguments[2].extractAs(long.class), arguments[5]);
-                    ret(ctx, StackEntry.known(true));
-                    return;
-                }
-                if (inst.name.startsWith("compareAndSet")) {
-                    // No need to compare, this isn't threaded anyway
-                    arguments[1].setField(((UnsafeFieldReference)arguments[2]).fieldName(), arguments[5]);
-                    ret(ctx, StackEntry.known(true));
-                    return;
-                }
-                if (inst.name.startsWith("compareAndExchange")) {
-                    // No need to compare, this isn't threaded anyway
-                    var fieldName = ((UnsafeFieldReference)arguments[2]).fieldName();
-                    var original = arguments[1].getField(fieldName);
-                    arguments[1].setField(fieldName, arguments[5]);
-                    ret(ctx, original);
-                    return;
-                }
-            }
-            if (inst.owner.equals(_System)) {
-                if (inst.name.equals("registerNatives")) {
-                    ret(ctx, null);
-                    return;
-                }
-                if (inst.name.equals("arraycopy")) {
+                case "jdk/internal/misc/Unsafe" -> {
                     AsmUtils.simplifyAll(ctx, arguments);
-                    System.arraycopy(arguments[0].asKnownArray(), arguments[1].extractAs(int.class), arguments[2].asKnownArray(), arguments[3].extractAs(int.class), arguments[4].extractAs(Integer.class));
-                    ret(ctx, null);
-                    return;
+                    if (inst.name.equals("registerNatives")) {
+                        ret(ctx, null);
+                        return;
+                    }
+                    if (inst.name.equals("objectFieldOffset") && inst.desc.equals("(Ljava/lang/Class;Ljava/lang/String;)J")) {
+                        AsmUtils.simplifyAll(ctx, arguments);
+                        ret(ctx, new UnsafeFieldReference(arguments[2].extractAs(String.class)));
+                        return;
+                    }
+                    if (inst.name.equals("arrayIndexScale")) {
+                        ret(ctx, new KnownInteger(1)); // Keeps everything nice and simple
+                        return;
+                    }
+                    if (inst.name.equals("arrayBaseOffset")) {
+                        ret(ctx, new KnownInteger(0)); // Keeps everything nice and simple
+                        return;
+                    }
+                    if (inst.name.startsWith("get") && inst.desc.startsWith("(Ljava/lang/Object;J)") && arguments[1] instanceof KnownArray arr) {
+                        // Arrays may use normal longs as indices
+                        ret(ctx, arr.arrayAccess((int)(long)arguments[2].extractAs(long.class)));
+                        return;
+                    }
+                    if (inst.name.startsWith("get") && inst.desc.startsWith("(Ljava/lang/Object;J)")) {
+                        ret(ctx, arguments[1].getField(((UnsafeFieldReference)arguments[2]).fieldName()));
+                        return;
+                    }
+                    if (inst.name.startsWith("put") && inst.desc.startsWith("(Ljava/lang/Object;J") && inst.desc.endsWith(")V") && arguments[1] instanceof KnownArray arr) {
+                        // Arrays may use normal longs as indices
+                        arr.arraySet((int)(long)arguments[2].extractAs(long.class), arguments[4]);
+                        ret(ctx, null);
+                        return;
+                    }
+                    if (inst.name.startsWith("put") && inst.desc.startsWith("(Ljava/lang/Object;J")) {
+                        arguments[1].setField(((UnsafeFieldReference)arguments[2]).fieldName(), arguments[4]);
+                        ret(ctx, null);
+                        return;
+                    }
+                    if (inst.name.startsWith("compareAndSet") && arguments[1] instanceof KnownArray arr) {
+                        // Arrays may use normal longs as indices
+                        arr.arraySet((int)(long)arguments[2].extractAs(long.class), arguments[5]);
+                        ret(ctx, StackEntry.known(true));
+                        return;
+                    }
+                    if (inst.name.startsWith("compareAndSet")) {
+                        // No need to compare, this isn't threaded anyway
+                        arguments[1].setField(((UnsafeFieldReference)arguments[2]).fieldName(), arguments[5]);
+                        ret(ctx, StackEntry.known(true));
+                        return;
+                    }
+                    if (inst.name.startsWith("compareAndExchange")) {
+                        // No need to compare, this isn't threaded anyway
+                        var fieldName = ((UnsafeFieldReference)arguments[2]).fieldName();
+                        var original = arguments[1].getField(fieldName);
+                        arguments[1].setField(fieldName, arguments[5]);
+                        ret(ctx, original);
+                        return;
+                    }
                 }
-            }
-            if (inst.owner.equals(_Runtime)) {
-                if (inst.name.equals("availableProcessors")) {
-                    // Do you think this vm supports multithreading??? Lmao
-                    ret(ctx, new KnownInteger(1));
-                    return;
+                case "java/lang/System" -> {
+                    if (inst.name.equals("registerNatives")) {
+                        ret(ctx, null);
+                        return;
+                    }
+                    if (inst.name.equals("arraycopy")) {
+                        AsmUtils.simplifyAll(ctx, arguments);
+                        System.arraycopy(arguments[0].asKnownArray(), arguments[1].extractAs(int.class), arguments[2].asKnownArray(), arguments[3].extractAs(int.class), arguments[4].extractAs(Integer.class));
+                        ret(ctx, null);
+                        return;
+                    }
                 }
-                if (inst.name.equals("freeMemory")) {
-                    ret(ctx, new KnownLong(Runtime.getRuntime().freeMemory() / 2));
-                    return;
-                }
-                if (inst.name.equals("totalMemory")) {
-                    ret(ctx, new KnownLong(Runtime.getRuntime().totalMemory() / 2));
-                    return;
-                }
-                if (inst.name.equals("maxMemory")) {
-                    ret(ctx, new KnownLong(Runtime.getRuntime().maxMemory()));
-                    return;
-                }
-                if (inst.name.equals("gc")) {
-                    System.gc(); // I guess we'll trust that we do in fact need some gc
-                    ret(ctx, null);
-                    return;
+                case "java/lang/Runtime" -> {
+                    if (inst.name.equals("availableProcessors")) {
+                        // Do you think this vm supports multithreading??? Lmao
+                        ret(ctx, new KnownInteger(1));
+                        return;
+                    }
+                    if (inst.name.equals("freeMemory")) {
+                        ret(ctx, new KnownLong(Runtime.getRuntime().freeMemory() / 2));
+                        return;
+                    }
+                    if (inst.name.equals("totalMemory")) {
+                        ret(ctx, new KnownLong(Runtime.getRuntime().totalMemory() / 2));
+                        return;
+                    }
+                    if (inst.name.equals("maxMemory")) {
+                        ret(ctx, new KnownLong(Runtime.getRuntime().maxMemory()));
+                        return;
+                    }
+                    if (inst.name.equals("gc")) {
+                        System.gc(); // I guess we'll trust that we do in fact need some gc
+                        ret(ctx, null);
+                        return;
+                    }
                 }
             }
             if (inst.name.equals("getClass") && inst.desc.equals("()Ljava/lang/Class;")) {
@@ -755,7 +762,7 @@ public class VirtualMachine {
 
         default @NotNull StackEntry newObject(Context ctx, TypeInsnNode inst) throws VmException {
             var clazz = ctx.machine.getClass(inst.desc);
-            return new KnownVmObject(clazz, new CowCapableMap<>());
+            return new KnownVmObject(clazz);
         }
 
         default void handleUnknownInstruction(Context ctx, AbstractInsnNode instruction, int lineNumber)
@@ -800,6 +807,7 @@ public class VirtualMachine {
         private boolean hasInitted;
         private final CowCapableMap<String> staticFields;
         private final ImmutableMap<@NotNull String, @NotNull MethodNode> methodLookupCache;
+        public final List<String> nonPrimitiveFields;
 
         public Clazz(ClassNode node, VirtualMachine loader) {
             this.node = node;
@@ -812,14 +820,20 @@ public class VirtualMachine {
                 lookupCache.put(method.name+method.desc, method);
             });
             this.methodLookupCache = lookupCache.build();
+            this.nonPrimitiveFields = AsmUtils.getFields(this)
+                    .filter(f -> !AsmUtils.hasFlag(f, Opcodes.ACC_STATIC))
+                    .filter(f -> f.desc.startsWith("L") || f.desc.startsWith("["))
+                    .map(f -> f.name)
+                    .toList();
         }
 
-        private Clazz(ClassNode node, VirtualMachine loader, boolean hasInitted, CowCapableMap<@NotNull String> staticFields, ImmutableMap<String, @NotNull MethodNode> preComputedCache) {
+        private Clazz(ClassNode node, VirtualMachine loader, boolean hasInitted, CowCapableMap<@NotNull String> staticFields, ImmutableMap<String, @NotNull MethodNode> preComputedCache, List<String> nonPrimitiveFields) {
             this.node = node;
             this.loader = loader;
             this.hasInitted = hasInitted;
             this.staticFields = staticFields;
             this.methodLookupCache = preComputedCache;
+            this.nonPrimitiveFields = nonPrimitiveFields;
         }
 
         public Clazz copy(VirtualMachine newLoader) {
@@ -828,7 +842,8 @@ public class VirtualMachine {
                     newLoader,
                     this.hasInitted,
                     this.staticFields.createClone(),
-                    this.methodLookupCache
+                    this.methodLookupCache,
+                    this.nonPrimitiveFields
             );
         }
 

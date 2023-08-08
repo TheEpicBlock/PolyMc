@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class ExecutionGraphNode {
-    private final List<RenderCall> calls = new ArrayList<>();
+    private @Nullable List<RenderCall> calls;
     private IfStatement continuation = null;
 
     public void setContinuation(IfStatement statement) {
@@ -20,17 +20,20 @@ public class ExecutionGraphNode {
         if (this.continuation != null) {
             throw new IllegalStateException("This node has been continued elsewhere, there shouldn't be calls added to it");
         }
+        if (this.calls == null) this.calls = new ArrayList<>();
         this.calls.add(call);
     }
 
     @Debug
     public Set<RenderCall> getUniqueCalls() {
         var set = new HashSet<RenderCall>();
-        visitContinuation(cont -> set.addAll(cont.calls));
+        visitContinuation(cont -> {
+            if (cont.calls != null) set.addAll(cont.calls);
+        });
         return set;
     }
 
-    private int countParallelUniverses() {
+    private int countForks() {
         AtomicInteger counter = new AtomicInteger();
         visitContinuation(cont -> {
             // Only count leaf nodes

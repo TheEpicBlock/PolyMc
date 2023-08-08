@@ -5,6 +5,9 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.IdentityHashMap;
+
 public record KnownArray(@Nullable StackEntry[] data) implements StackEntry {
     @Override
     public JsonElement toJson() {
@@ -47,17 +50,34 @@ public record KnownArray(@Nullable StackEntry[] data) implements StackEntry {
     }
 
     @Override
-    public StackEntry copy() {
+    public StackEntry copy(IdentityHashMap<StackEntry,StackEntry> copyCache) {
+        if (copyCache.containsKey(this)) return copyCache.get(this);
+
         var newArr = new StackEntry[this.data.length];
         int i = 0;
         for (var v : this.data) {
-            if (v != null) newArr[i] = v.copy();
+            if (v != null) newArr[i] = v.copy(copyCache);
             i++;
         }
-        return new KnownArray(newArr);
+        var ret = new KnownArray(newArr);
+        copyCache.put(this, ret);
+        return ret;
     }
 
     public StackEntry shallowCopy() {
         return new KnownArray(this.data.clone());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        KnownArray that = (KnownArray)o;
+        return Arrays.deepEquals(data, that.data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(data);
     }
 }

@@ -4,33 +4,50 @@ import io.github.theepicblock.polymc.impl.generator.asm.ClientClassLoader;
 import io.github.theepicblock.polymc.impl.generator.asm.CowCapableMap;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownArray;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
 import org.objectweb.asm.Type;
+import org.spongepowered.include.com.google.common.collect.ImmutableMap;
+import org.spongepowered.include.com.google.common.collect.Sets;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
-import static nl.theepicblock.polymc.testmod.automated.TestUtil.assertDifferent;
-import static nl.theepicblock.polymc.testmod.automated.TestUtil.assertEq;
+import static nl.theepicblock.polymc.testmod.automated.TestUtil.*;
 
 public class CowAndHashcode implements FabricGameTest {
+    private static final VirtualMachine.Clazz TstType;
+
+    static {
+        try {
+            var vm = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {});
+            TstType = vm.getClass("java/lang/Object");
+        } catch (MethodExecutor.VmException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
     @GameTest(templateName = EMPTY_STRUCTURE)
     public void testCowMap(TestContext ctx) throws MethodExecutor.VmException {
-        var origin = new CowCapableMap<String>();
+        var veryOrigin = new CowCapableMap<String>();
+        var origin = veryOrigin.createClone();
         var emptyHashcode = origin.hashCode();
         assertEq(emptyHashcode, new CowCapableMap<String>().hashCode(), "two empty maps should have the same hashcode");
 
         origin.put("a", StackEntry.known(1));
         origin.put("b", StackEntry.known(1));
-        origin.put("c", new KnownVmObject(null, new CowCapableMap<>()));
-        origin.put("d", new KnownVmObject(null, new CowCapableMap<>()));
+        origin.put("c", new KnownVmObject(TstType));
+        origin.put("d", new KnownVmObject(TstType));
         assertEq(origin.get("a"), StackEntry.known(1));
         assertEq(origin.get("b"), StackEntry.known(1));
-        assertEq(origin.get("c"), new KnownVmObject(null, new CowCapableMap<>()));
-        assertEq(origin.get("d"), new KnownVmObject(null, new CowCapableMap<>()));
+        assertEq(origin.get("c"), new KnownVmObject(TstType));
+        assertEq(origin.get("d"), new KnownVmObject(TstType));
 
         assertDifferent(origin, new CowCapableMap<>(), "Filled map shouldn't equal empty one");
         assertDifferent(origin.createClone(), new CowCapableMap<>(), "Copied filled map shouldn't equal empty one");
@@ -58,7 +75,7 @@ public class CowAndHashcode implements FabricGameTest {
         assertDifferent(copy.hashCode(), origin.hashCode(), "Hashcode should change after something's changed");
 
         copy.get("c").setField("yeet", StackEntry.known(1));
-        assertEq(origin.get("c"), new KnownVmObject(null, new CowCapableMap<>()), "Copy affecting original");
+        assertEq(origin.get("c"), new KnownVmObject(TstType), "Copy affecting original");
         assertDifferent(copy, origin);
         assertDifferent(copy.hashCode(), origin.hashCode(), "Hashcode should change after something's changed");
 
@@ -68,21 +85,151 @@ public class CowAndHashcode implements FabricGameTest {
         assertEq(copyHash, copy.hashCode(), "Original affecting copy");
 
         var copyHash2 = copy.hashCode();
-        origin.get("d").setField("yeet", StackEntry.known(1));
-        assertEq(copy.get("d"), new KnownVmObject(null, new CowCapableMap<>()), "Original affecting copy");
+        origin.get("d").setField("beet", StackEntry.known(1));
+        assertEq(copy.get("d"), new KnownVmObject(TstType), "Original affecting copy");
         assertEq(copyHash2, copy.hashCode(), "Original affecting copy");
 
         // Check if copy2 and copy3 were completely unaffected by everything going on
         assertEq(copy2.get("a"), StackEntry.known(1));
         assertEq(copy2.get("b"), StackEntry.known(1));
-        assertEq(copy2.get("c"), new KnownVmObject(null, new CowCapableMap<>()));
-        assertEq(copy2.get("d"), new KnownVmObject(null, new CowCapableMap<>()));
+        assertEq(copy2.get("c"), new KnownVmObject(TstType));
+        assertEq(copy2.get("d"), new KnownVmObject(TstType));
         assertEq(copy3.get("a"), StackEntry.known(1));
         assertEq(copy3.get("b"), StackEntry.known(1));
-        assertEq(copy3.get("c"), new KnownVmObject(null, new CowCapableMap<>()));
-        assertEq(copy3.get("d"), new KnownVmObject(null, new CowCapableMap<>()));
+        assertEq(copy3.get("c"), new KnownVmObject(TstType));
+        assertEq(copy3.get("d"), new KnownVmObject(TstType));
         assertEq(copy2, copy3);
         assertEq(copy2.hashCode(), copy3.hashCode());
+
+        origin.put("c", StackEntry.known(69));
+        copy.put("b", StackEntry.known(71));
+
+        assertEq(copy2.get("a"), StackEntry.known(1));
+        assertEq(copy2.get("b"), StackEntry.known(1));
+        assertEq(copy2.get("c"), new KnownVmObject(TstType));
+        assertEq(copy2.get("d"), new KnownVmObject(TstType));
+        assertEq(copy3.get("a"), StackEntry.known(1));
+        assertEq(copy3.get("b"), StackEntry.known(1));
+        assertEq(copy3.get("c"), new KnownVmObject(TstType));
+        assertEq(copy3.get("d"), new KnownVmObject(TstType));
+        assertEq(copy2, copy3);
+        assertEq(copy2.hashCode(), copy3.hashCode());
+
+        // This should still be empty
+        assertEq(veryOrigin.get("a"), null);
+        assertEq(veryOrigin.get("b"), null);
+        assertEq(veryOrigin.get("c"), null);
+        assertEq(veryOrigin.get("d"), null);
+        assertEq(veryOrigin, new CowCapableMap<>());
+        assertEq(veryOrigin.hashCode(), new CowCapableMap<>().hashCode());
+
+        // Test iters
+        var set = Sets.newHashSet("a", "b", "c", "d");
+        var collector = new Object2IntOpenHashMap<String>();
+        copy2.forEachImmutable((key, val) -> collector.addTo(key, 1));
+        assertTrue(set.containsAll(collector.keySet()));
+        collector.forEach((key, val) -> {
+            assertEq(val, 1);
+        });
+
+        ctx.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void testKnownObjectRecursion(TestContext ctx) throws MethodExecutor.VmException {
+        var obj = new KnownVmObject(TstType);
+        obj.setField("a", obj);
+        assertEq(obj.getField("a"), obj);
+
+        var prevHash = obj.hashCode();
+        var copy = obj.copy();
+        assertEq(obj, copy);
+        assertEq(obj.hashCode(), copy.hashCode());
+
+        // Set "b" to "1" on the inner ref
+        copy.getField("a").setField("b", StackEntry.known(1));
+        // It should appear on the outer
+        assertEq(copy.getField("b"), StackEntry.known(1));
+        // And it shouldn't appear on the original
+        assertDifferent(obj.getField("b"), StackEntry.known(1));
+        // In fact, the original should be completely unaffected
+        assertEq(obj.getField("a"), obj);
+        assertEq(obj.hashCode(), prevHash);
+
+        // Object with 1 in-between
+        var a = new KnownVmObject(TstType);
+        var b = new KnownVmObject(TstType);
+        b.setField("myA", a);
+        a.setField("myB", b);
+
+        assertEq(a, a.copy());
+        assertEq(a.hashCode(), a.copy().hashCode());
+
+        ctx.complete();
+    }
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void testCowMapIter(TestContext ctx) throws MethodExecutor.VmException {
+        var ONE = StackEntry.known(1);
+        var TWO = StackEntry.known(2);
+
+        var map = new CowCapableMap<String>();
+        var clone = map.createClone();
+
+        map.put("a", ONE);
+        clone.put("b", ONE);
+        map.put("c", ONE);
+        clone.put("c", TWO);
+
+        var mapExpected = ImmutableMap.builder()
+                .put("a", ONE)
+                .put("c", ONE)
+                .build();
+        var mapCol = new HashMap<String, StackEntry>();
+        map.forEachImmutable(mapCol::put);
+        assertEq(mapCol, mapExpected);
+
+        var cloneExpected = ImmutableMap.builder()
+                .put("b", ONE)
+                .put("c", TWO)
+                .build();
+        var cloneCol = new HashMap<String, StackEntry>();
+        clone.forEachImmutable(cloneCol::put);
+        assertEq(cloneCol, cloneExpected);
+
+        ctx.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void testCowMapFind(TestContext ctx) throws MethodExecutor.VmException {
+        var ONE = StackEntry.known(1);
+        var TWO = StackEntry.known(2);
+
+        var map = new CowCapableMap<String>();
+
+        map.put("c", ONE);
+        var clone = map.createClone();
+        map.put("a", ONE);
+        clone.put("b", ONE);
+        clone.put("c", TWO);
+
+        assertTrue(map.findAny((key, val) -> key.equals("a") && val.equals(ONE)));
+        assertFalse(clone.findAny((key, val) -> key.equals("a")));
+        assertFalse(map.findAny((key, val) -> key.equals("b")));
+        assertTrue(clone.findAny((key, val) -> key.equals("b") && val.equals(ONE)));
+        assertTrue(map.findAny((key, val) -> key.equals("c") && val.equals(ONE)));
+        assertFalse(map.findAny((key, val) -> key.equals("c") && !val.equals(ONE)));
+        assertTrue(clone.findAny((key, val) -> key.equals("c") && val.equals(TWO)));
+        assertFalse(clone.findAny((key, val) -> key.equals("c") && !val.equals(TWO)));
+
+        ctx.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void testKnownArray(TestContext ctx) throws MethodExecutor.VmException {
+        var arr = KnownArray.withLength(2);
+        arr.arraySet(0, StackEntry.known(1));
+        assertEq(arr, arr.copy());
+        assertEq(arr.hashCode(), arr.copy().hashCode());
 
         ctx.complete();
     }

@@ -10,6 +10,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Opcodes;
 
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -72,8 +73,7 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
     public StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws VmException {
         if (simplificationCache.containsKey(this)) return simplificationCache.get(this);
         simplificationCache.put(this, this);
-
-        this.fields.simplify(vm, simplificationCache);
+//        this.fields.simplify(vm, simplificationCache);
         return this;
     }
 
@@ -83,8 +83,13 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
     }
 
     @Override
-    public StackEntry copy() {
-        return new KnownVmObject(this.type, this.fields.createClone());
+    public StackEntry copy(IdentityHashMap<StackEntry,StackEntry> copyCache) {
+        if (copyCache.containsKey(this)) return copyCache.get(this);
+        var newMap = new CowCapableMap<String>();
+        var newObj = new KnownVmObject(this.type, newMap);
+        copyCache.put(this, newObj);
+        newMap.clearAndCopy(this.fields, this.type.nonPrimitiveFields, copyCache);
+        return newObj;
     }
 
     // We're overriding these because the type shouldn't really matter
@@ -99,5 +104,10 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
     @Override
     public int hashCode() {
         return Objects.hash(fields);
+    }
+
+    @Override
+    public String toString() {
+        return "KnownVmObject["+type+"]";
     }
 }

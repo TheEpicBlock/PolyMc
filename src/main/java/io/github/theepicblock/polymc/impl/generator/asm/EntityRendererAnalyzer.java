@@ -8,7 +8,10 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
@@ -20,15 +23,20 @@ import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
+
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class EntityRendererAnalyzer {
     public static final SharedValuesKey<EntityRendererAnalyzer> KEY = new SharedValuesKey<>(EntityRendererAnalyzer::new, null);
 
     private final ClientInitializerAnalyzer initializerInfo;
 
-    private final KnownVmObject cachedMinecraftClient;
+    private final StackEntry cachedMinecraftClient;
     private final static AsmUtils.MappedFunction EntityModelLoader$getModelPart = AsmUtils.map("net.minecraft.class_5599", "method_32072", "(Lnet/minecraft/class_5601;)Lnet/minecraft/class_630;");
     private final static AsmUtils.MappedFunction ModelPart$Cuboid$renderCuboid = AsmUtils.map("net.minecraft.class_630$class_628", "method_32089", "(Lnet/minecraft/class_4587$class_4665;Lnet/minecraft/class_4588;IIFFFF)V");
     private final static AsmUtils.MappedFunction MobEntityRenderer$renderLeash = AsmUtils.map("net.minecraft.class_927", "method_4073", "(Lnet/minecraft/class_1308;FLnet/minecraft/class_4587;Lnet/minecraft/class_4597;Lnet/minecraft/class_1297;)V");
@@ -37,6 +45,7 @@ public class EntityRendererAnalyzer {
     private final static String Entity$type = AsmUtils.mapField(Entity.class, "field_5961", "Lnet/minecraft/class_1299;");
     private final static String Entity$dimensions = AsmUtils.mapField(Entity.class, "field_18065", "Lnet/minecraft/class_4048;");
     private final static AsmUtils.MappedFunction VertexConsumerProvider$getBuffer = AsmUtils.map("net.minecraft.class_4597", "getBuffer", "(Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588;");
+    private final static String MatrixStack = AsmUtils.mapClass("net.minecraft.client.util.math.MatrixStack");
 
     // Used to detect loops
     private final static AsmUtils.MappedFunction Iterator$hasNext = AsmUtils.map("java.util.Iterator", "hasNext", "()Z");
@@ -122,6 +131,9 @@ public class EntityRendererAnalyzer {
             throw new RuntimeException(e);
         }
     }
+
+    public int amountOfVmsTotal = 1;
+    public int amountOfVms = 1;
 
     public ExecutionGraphNode analyze(EntityType<?> entity) throws VmException {
         var rootNode = new ExecutionGraphNode();
@@ -241,8 +253,8 @@ public class EntityRendererAnalyzer {
                 ret(ctx, new KnownInteger(false)); // Let's… not deal with that now
                 return;
             }
-            if (cmpFunc(method, Iterator$hasNext) && !arguments[0].isConcrete()) {
-                // If we don't do this, infinite amounts of parallel universes will be created.
+            if (cmpFuncOrOverrides(method, Iterator$hasNext) && !arguments[0].isConcrete()) {
+                // If we don't do this, infinite amounts of forks will be created.
                 // One for each potential iteration of the loop
                 throw new VmException("Attempt to loop on unknown value "+arguments[0], null);
             }
@@ -353,8 +365,11 @@ public class EntityRendererAnalyzer {
             var jumpMeth = vmJump.inspectRunningMethod();
             jumpMeth.overrideNextInsn(target);
 
+            root.amountOfVmsTotal++;
+            root.amountOfVms++;
             // This vm was cloned, and needs to restarted
             vmJump.runToCompletion();
+            root.amountOfVms--;
             // The other vm will continue after this call
         }
 

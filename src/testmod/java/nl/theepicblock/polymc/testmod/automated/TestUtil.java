@@ -27,6 +27,20 @@ public class TestUtil {
         }
     }
 
+    public static void assertTrue(boolean a) {
+        if (!a) {
+            var line = Thread.currentThread().getStackTrace()[2].getLineNumber();
+            throw new GameTestException("L"+line+" Assertion failed");
+        }
+    }
+
+    public static void assertFalse(boolean a) {
+        if (a) {
+            var line = Thread.currentThread().getStackTrace()[2].getLineNumber();
+            throw new GameTestException("L"+line+" Assertion failed");
+        }
+    }
+
     public static void assertEq(Object a, Object b) {
         if (!Objects.equals(a, b)) {
             var line = Thread.currentThread().getStackTrace()[2].getLineNumber();

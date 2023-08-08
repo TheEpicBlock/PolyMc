@@ -1,7 +1,8 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownArray;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.function.ToBooleanBiFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -9,10 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -23,6 +21,8 @@ public class CowCapableMap<T> {
     private @Nullable CowCapableMap<T> daddy = null;
     private @Nullable HashMap<T, @Nullable StackEntry> overrides = null;
     private @Nullable HashSet<CowWeakReference<T>> children = null;
+    private static int INVALID_KEYCODE;
+    private int keyCode = INVALID_KEYCODE;
 
     public CowCapableMap() {
         this.overrides = new HashMap<>();
@@ -33,32 +33,47 @@ public class CowCapableMap<T> {
     }
 
     public CowCapableMap<T> createClone() {
-        var child = new CowCapableMap<>(this);
-        if (children == null) children = new HashSet<>();
-        this.children.add(new CowWeakReference<>(child, GLOBAL_CLEANING_MAP));
+        return createClone(new IdentityHashMap<>());
+    }
+
+    public CowCapableMap<T> createClone(IdentityHashMap<StackEntry,StackEntry> copyCache) {
+        var child = new CowCapableMap<T>();
+        child.clearAndCopy(this, copyCache);
         return child;
     }
 
-    public int size() {
-        int daddySize = 0;
-        if (daddy != null) {
-            daddySize = daddy.size();
-        }
+    public void clearAndCopy(@NotNull CowCapableMap<T> daddy, @NotNull IdentityHashMap<StackEntry,StackEntry> copyCache) {
+        this.daddy = daddy;
+        this.overrides = null;
+        this.forEachImmutable((key,val) -> {
+            if (val instanceof KnownVmObject || val instanceof KnownArray) {
+                this.put(key, val.copy(copyCache));
+            }
+        });
+        if (daddy.children == null) daddy.children = new HashSet<>();
+        daddy.children.add(new CowWeakReference<>(this, GLOBAL_CLEANING_MAP));
+    }
 
-        int overridesSize = 0;
-        if (overrides != null) {
-            overridesSize = overrides.size();
-        }
-        return daddySize + overridesSize;
+    public void clearAndCopy(@NotNull CowCapableMap<T> daddy, List<T> nonPrimitiveFields, @NotNull IdentityHashMap<StackEntry,StackEntry> copyCache) {
+        this.daddy = daddy;
+        this.overrides = null;
+        nonPrimitiveFields.forEach(field -> {
+            var e = daddy.getImmutable(field);
+            if (e != null) {
+                this.put(field, e.copy(copyCache));
+            }
+        });
+        if (daddy.children == null) daddy.children = new HashSet<>();
+        daddy.children.add(new CowWeakReference<>(this, GLOBAL_CLEANING_MAP));
     }
 
     public boolean isEmpty() {
-        boolean daddyEmpty = false;
+        boolean daddyEmpty = true;
         if (daddy != null) {
             daddyEmpty = daddy.isEmpty();
         }
 
-        boolean overridesEmpty = false;
+        boolean overridesEmpty = true;
         if (overrides != null) {
             overridesEmpty = overrides.isEmpty();
         }
@@ -96,15 +111,16 @@ public class CowCapableMap<T> {
             if (overrides.containsKey(key)) {
                 var o = overrides.get(key);
                 if (o != null) {
-                    iterChildren(child -> {
-                        var copy = o.copy();
-                        if (copy != o) {
+                    var copy = o.copy(); // Yeah, this copy is pretty useless, but it prevents some CME's when the map is recursive
+                    if (copy != o) {
+                        iterChildren(child -> {
                             if (child.overrides == null) child.overrides = new HashMap<>();
                             if (!child.overrides.containsKey(key)) {
-                                child.overrides.put(key, copy); // Just in case this one will be edited
+                                child.keyCode = INVALID_KEYCODE;
+                                child.overrides.put(key, copy.copy()); // Just in case this one will be edited
                             }
-                        }
-                    });
+                        });
+                    }
                 }
                 return o;
             }
@@ -119,6 +135,7 @@ public class CowCapableMap<T> {
                     iterChildren(child -> {
                         if (child.overrides == null) child.overrides = new HashMap<>();
                         if (!child.overrides.containsKey(key)) {
+                            child.keyCode = INVALID_KEYCODE;
                             child.overrides.put(key, o.copy()); // Just in case this one will be edited
                         }
                     });
@@ -153,10 +170,12 @@ public class CowCapableMap<T> {
     public StackEntry put(T key, @NotNull StackEntry value) {
         if (overrides == null) overrides = new HashMap<>();
         var previous = this.getImmutable(key);
+        keyCode = INVALID_KEYCODE;
         overrides.put(key, value);
         iterChildren(child -> {
             if (child.overrides == null) child.overrides = new HashMap<>();
             if (!child.overrides.containsKey(key)) {
+                child.keyCode = INVALID_KEYCODE;
                 child.overrides.put(key, previous); // Preserve the previous value in all the children :3
             }
         });
@@ -179,10 +198,6 @@ public class CowCapableMap<T> {
         }
     }
 
-    public StackEntry remove(Object key) {
-        throw new NotImplementedException("Don't remove stuff from cows pls");
-    }
-
     public void putAll(@NotNull Map<? extends T,? extends StackEntry> m) {
         m.forEach(this::put);
     }
@@ -195,8 +210,10 @@ public class CowCapableMap<T> {
                 overrides.put(entry.getKey(), entry.getValue().simplify(vm, simplificationCache));
             }
         }
-        if (this.daddy != null) {
-            this.daddy.simplify(vm, simplificationCache);
+        // If the dad has the same keys then it won't affect this map anyway, so we can skip those
+        var nextDad = this.getDaddyWithDifferentKeys();
+        if (nextDad != null) {
+            nextDad.simplify(vm, simplificationCache);
         }
     }
 
@@ -204,12 +221,14 @@ public class CowCapableMap<T> {
         if (this.overrides != null) {
             this.overrides.forEach((key, val) -> {
                 if (val != null) {
-                    // A null value indicates a field isn't supposed to exist
+                    // Null indicates that this entry doesn't exist in the map. It shouldn't be exposed
                     action.accept(key, val);
                 }
             });
-            if (this.daddy != null) {
-                this.daddy.forEachImmutable((key, val) -> {
+            // If the dad has the same keys then it won't affect this map anyway, so we can skip those
+            var nextDad = this.getDaddyWithDifferentKeys();
+            if (nextDad != null) {
+                nextDad.forEachImmutable((key, val) -> {
                     if (!overrides.containsKey(key)) {
                         action.accept(key, val);
                     }
@@ -223,17 +242,50 @@ public class CowCapableMap<T> {
     public boolean findAny(ToBooleanBiFunction<? super T,? super StackEntry> filter) {
         if (this.overrides != null) {
             for (var entry : this.overrides.entrySet()) {
+                // Null indicates that this entry doesn't exist in the map. It shouldn't be exposed
+                if (entry.getValue() == null) continue;
                 if (filter.applyAsBoolean(entry.getKey(), entry.getValue())) {
                     return true;
                 }
             }
-            if (this.daddy != null) {
-                return this.daddy.findAny((key, val) -> !overrides.containsKey(key) && filter.applyAsBoolean(key, val));
+            // If the dad has the same keys then it won't affect this map anyway, so we can skip those
+            var nextDad = this.getDaddyWithDifferentKeys();
+            if (nextDad != null) {
+                return nextDad.findAny((key, val) -> !overrides.containsKey(key) && filter.applyAsBoolean(key, val));
             }
         } else if (this.daddy != null) {
             return this.daddy.findAny(filter);
         }
         return false;
+    }
+
+    private @Nullable CowCapableMap<T> getDaddyWithDifferentKeys() {
+        var c = this;
+        while (true) {
+            var d = c.daddy;
+            if (d == null) return null;
+            var cSize = c.overrides == null ? 0 : c.overrides.size();
+            var dSize = d.overrides == null ? 0 : d.overrides.size();
+            if (cSize != dSize && c.getKeyHashCode() != d.getKeyHashCode()) {
+                return d;
+            }
+            c = d;
+        }
+    }
+
+    public int getKeyHashCode() {
+        if (this.keyCode == INVALID_KEYCODE) {
+            if (this.overrides != null) {
+                int result = 1;
+                for (var key : this.overrides.keySet()) {
+                    result = 31 * result + (key == null ? 0 : key.hashCode());
+                }
+                this.keyCode = result;
+            } else {
+                this.keyCode = 1;
+            }
+        }
+        return this.keyCode;
     }
 
     /**

@@ -9,7 +9,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Type;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 public interface StackEntry {
@@ -84,7 +84,7 @@ public interface StackEntry {
     }
 
     default StackEntry simplify(VirtualMachine vm) throws VmException {
-        return simplify(vm, new HashMap<>());
+        return simplify(vm, new IdentityHashMap<>());
     }
 
     /**
@@ -118,6 +118,10 @@ public interface StackEntry {
     }
 
     default StackEntry copy() {
+        return copy(new IdentityHashMap<>());
+    }
+
+    default StackEntry copy(IdentityHashMap<StackEntry,StackEntry> simplificationCache) {
         return this;
     }
 
