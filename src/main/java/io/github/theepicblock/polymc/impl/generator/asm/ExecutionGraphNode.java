@@ -2,6 +2,7 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import net.minecraft.util.annotation.Debug;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -52,6 +53,21 @@ public class ExecutionGraphNode {
         }
     }
 
+    /**
+     * Frees up memory
+     */
+    public void tryMerge() {
+        if (this.continuation == null) return; // Nothing to merge
+        if (this.continuation.continuationIfTrue.isEmpty() &&
+            this.continuation.continuationIfFalse.isEmpty()) {
+            this.continuation = null;
+        }
+    }
+
+    private boolean isEmpty() {
+        return this.continuation == null && (this.calls == null || this.calls.isEmpty());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -69,7 +85,7 @@ public class ExecutionGraphNode {
      * Represents a comparison between two elements (which might not have a concrete value),
      * and the paths that are taken due to it
      */
-    public record IfStatement(StackEntry compA, @Nullable StackEntry compB, int opcode, ExecutionGraphNode continuationIfFalse, ExecutionGraphNode continuationIfTrue) {
+    public record IfStatement(StackEntry compA, @Nullable StackEntry compB, int opcode, @NotNull ExecutionGraphNode continuationIfFalse, @NotNull ExecutionGraphNode continuationIfTrue) {
     }
 
     public record RenderCall(StackEntry cuboid, StackEntry matrix) {}
