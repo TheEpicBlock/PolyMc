@@ -57,12 +57,14 @@ public class CowCapableMap<T> {
     public void clearAndCopy(@NotNull CowCapableMap<T> daddy, List<T> nonPrimitiveFields, @NotNull IdentityHashMap<StackEntry,StackEntry> copyCache) {
         this.daddy = daddy;
         this.overrides = null;
-        nonPrimitiveFields.forEach(field -> {
-            var e = daddy.getImmutable(field);
-            if (e != null) {
-                this.put(field, e.copy(copyCache));
-            }
-        });
+//        for (var field : nonPrimitiveFields) {
+//            var e = daddy.getImmutable(field);
+//            if (e != null) {
+//                var copy = e.copy(copyCache);
+//                if (copy == e) continue; // This is an immutable value
+//                this.put(field, e.copy(copyCache));
+//            }
+//        }
         if (daddy.children == null) daddy.children = new HashSet<>();
         daddy.children.add(new CowWeakReference<>(this, GLOBAL_CLEANING_MAP));
     }
@@ -125,8 +127,9 @@ public class CowCapableMap<T> {
                 return o;
             }
         }
-        if (daddy != null) {
-            var o = daddy.get(key);
+        var nextDad = this.getDaddyWithDifferentKeys();
+        if (nextDad != null) {
+            var o = nextDad.get(key);
             if (o != null) {
                 var copy = o.copy();
                 if (copy != o) {
@@ -156,8 +159,9 @@ public class CowCapableMap<T> {
                 return overrides.get(key);
             }
         }
-        if (daddy != null) {
-            return daddy.getImmutable(key);
+        var nextDad = this.getDaddyWithDifferentKeys();
+        if (nextDad != null) {
+            return nextDad.getImmutable(key);
         }
         return null;
     }
@@ -169,8 +173,9 @@ public class CowCapableMap<T> {
     @Nullable
     public StackEntry put(T key, @NotNull StackEntry value) {
         if (overrides == null) overrides = new HashMap<>();
-        var previous = this.getImmutable(key);
         keyCode = INVALID_KEYCODE;
+        // If the children are null there's no reason to compute the previous value
+        var previous = children == null ? null : this.getImmutable(key);
         overrides.put(key, value);
         iterChildren(child -> {
             if (child.overrides == null) child.overrides = new HashMap<>();
@@ -183,17 +188,13 @@ public class CowCapableMap<T> {
     }
 
     private void iterChildren(Consumer<CowCapableMap<T>> childConsumer) {
-        checkGlobalCleaningQueue();
-        if (children != null) {
-            var childIter = children.iterator();
-            while (childIter.hasNext()) {
-                var child = childIter.next().get();
-                if (child == null) {
-                    childIter.remove();
-                    continue;
+        var c = children;
+        if (c != null) {
+            for (var weakReference : c) {
+                var child = weakReference.get();
+                if (child != null) {
+                    childConsumer.accept(child);
                 }
-
-                childConsumer.accept(child);
             }
         }
     }
@@ -219,12 +220,14 @@ public class CowCapableMap<T> {
 
     public void forEachImmutable(BiConsumer<? super T,? super StackEntry> action) {
         if (this.overrides != null) {
-            this.overrides.forEach((key, val) -> {
-                if (val != null) {
+            for (var entry : this.overrides.entrySet()) {
+                var k = entry.getKey();
+                var value = entry.getValue();
+                if (value != null) {
                     // Null indicates that this entry doesn't exist in the map. It shouldn't be exposed
-                    action.accept(key, val);
+                    action.accept(k, value);
                 }
-            });
+            }
             // If the dad has the same keys then it won't affect this map anyway, so we can skip those
             var nextDad = this.getDaddyWithDifferentKeys();
             if (nextDad != null) {
@@ -339,6 +342,27 @@ public class CowCapableMap<T> {
             super(referent, q);
             assert referent.daddy != null;
             this.parent = referent.daddy;
+        }
+    }
+
+    public static CleanerThread spawnCleanerThread() {
+        var thread = new CleanerThread();
+        thread.setDaemon(true);
+        thread.setName("PolyMc Vm Cleaner");
+        thread.start();
+        return thread;
+    }
+
+    public static class CleanerThread extends Thread {
+        public boolean stopped = false;
+        @Override
+        public void run() {
+            while (!stopped) {
+                checkGlobalCleaningQueue();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ignored) {}
+            }
         }
     }
 }

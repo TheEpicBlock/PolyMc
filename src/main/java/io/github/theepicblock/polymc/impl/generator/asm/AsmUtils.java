@@ -3,15 +3,12 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.MockedObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -168,30 +165,6 @@ public class AsmUtils {
         return new MockedObject(new MockedObject.Root(), vm.getClass(className));
 //        return mockVmObject(vm, className, 4);
     }
-
-    public static StackEntry mockVmObject(VirtualMachine vm, @InternalName String className, int recursionLimit) throws VmException {
-        var clazz = vm.getClass(className);
-        var fields = new CowCapableMap<String>();
-        if (recursionLimit > 0) {
-            getFields(clazz).forEach(field -> {
-                if ((field.access & Opcodes.ACC_STATIC) != 0) return;
-                if (field.desc.startsWith("[")) {
-                    // TODO
-                    return;
-                }
-                try {
-                    fields.put(field.name, switch (field.desc) {
-                        case "I", "J", "F", "D", "Z", "B", "S", "C" ->
-                                new UnknownValue("Field " + field.name + " in " + className + " is mocked;");
-                        default -> mockVmObject(vm, field.desc.substring(1, field.desc.length() - 1), recursionLimit - 1);
-                    });
-                } catch (VmException ignored) {
-                }
-            });
-        }
-        return new KnownVmObject(clazz, fields);
-    }
-
     public static Stream<AbstractInsnNode> insnStream(AbstractInsnNode start) {
         return Stream.iterate(start, s -> s.getNext() != null, AbstractInsnNode::getNext);
     }

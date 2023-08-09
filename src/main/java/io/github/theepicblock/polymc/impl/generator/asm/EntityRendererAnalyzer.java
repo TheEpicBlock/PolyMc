@@ -12,7 +12,6 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.BinaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
@@ -20,11 +19,18 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.MathHelper;
+import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 
 public class EntityRendererAnalyzer {
     public static final SharedValuesKey<EntityRendererAnalyzer> KEY = new SharedValuesKey<>(EntityRendererAnalyzer::new, null);
@@ -39,6 +45,7 @@ public class EntityRendererAnalyzer {
     private final static AsmUtils.MappedFunction EntityRenderer$renderLabelIfPresent = AsmUtils.map("net.minecraft.class_897", "method_3926", "(Lnet/minecraft/class_1297;Lnet/minecraft/class_2561;Lnet/minecraft/class_4587;Lnet/minecraft/class_4597;I)V");
     private final static String Entity$type = AsmUtils.mapField(Entity.class, "field_5961", "Lnet/minecraft/class_1299;");
     private final static String Entity$dimensions = AsmUtils.mapField(Entity.class, "field_18065", "Lnet/minecraft/class_4048;");
+    private final static String Entity$deathTime = AsmUtils.mapField(Entity.class, "deathTime", "I"); // TODO
     private final static AsmUtils.MappedFunction VertexConsumerProvider$getBuffer = AsmUtils.map("net.minecraft.class_4597", "getBuffer", "(Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588;");
     private final static String MatrixStack = AsmUtils.mapClass("net.minecraft.client.util.math.MatrixStack");
 
@@ -127,8 +134,10 @@ public class EntityRendererAnalyzer {
         }
     }
 
+    private final HashSet<String> branchCauses = new HashSet<>();
     public int amountOfVmsTotal = 1;
     public int amountOfVms = 1;
+    public StopWatch time;
 
     public ExecutionGraphNode analyze(EntityType<?> entity) throws VmException {
         var rootNode = new ExecutionGraphNode();
@@ -136,6 +145,9 @@ public class EntityRendererAnalyzer {
 
         if (rendererFactory == null) { return null; }
 
+        var cleanerThread = CowCapableMap.spawnCleanerThread();
+        time = new StopWatch();
+        time.start();
         // EntityRendererFactory.Context
         var ctx = AsmUtils.mockVmObjectRemap(factoryVm, "net.minecraft.class_5617$class_5618");
 
@@ -161,6 +173,7 @@ public class EntityRendererAnalyzer {
         var rendererVm = new VirtualMachine(new ClientClassLoader(), new RendererAnalyzerVmConfig(rootNode, this));
         rendererVm.addMethodToStack(resolvedEntityRenderer$render, new StackEntry[] { renderer, fakeEntity, new UnknownValue("yaw"), new UnknownValue("tickDelta"), matrixStack, KnownObject.NULL, new UnknownValue("light") });
         rendererVm.runToCompletion();
+        cleanerThread.stopped = true;
         return rootNode;
     }
 
@@ -203,9 +216,79 @@ public class EntityRendererAnalyzer {
 
         @Override
         public @NotNull StackEntry loadStaticField(Context ctx, Clazz owner, String fieldName) throws VmException {
-            var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, owner.name(), fieldName);
-            if (fromEnvironment != null) return fromEnvironment;
+            if (!owner.hasInitted()) {
+                var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, owner.name(), fieldName);
+                if (fromEnvironment != null) return fromEnvironment;
+            }
             return new StaticFieldValue(owner.name(), fieldName);
+        }
+
+        private static final HashMap<AsmUtils.MappedFunction, SpecialMethod> SPECIAL_METHODS = new HashMap<>();
+
+        @FunctionalInterface
+        private interface SpecialMethod {
+            StackEntry apply(StackEntry[] arguments, RendererAnalyzerVmConfig config) throws VmException;
+        }
+
+        static {
+            SPECIAL_METHODS.put(ModelPart$Cuboid$renderCuboid, (arguments, config) -> {
+                var cuboid = arguments[0];
+                var matrix = arguments[1].getField("positionMatrix"); // TODO mappings
+                config.node.addCall(new ExecutionGraphNode.RenderCall(cuboid, matrix));
+                return null;
+            });
+            SPECIAL_METHODS.put(MobEntityRenderer$renderLeash, (arguments, config) -> {
+                // TODO should probably track these calls
+                return null;
+            });
+            SPECIAL_METHODS.put(TextRenderer$drawInternal, (arguments, config) -> {
+                // TODO should probably track these calls
+                return null;
+            });
+            SPECIAL_METHODS.put(EntityRenderer$renderLabelIfPresent, (arguments, config) -> {
+                // TODO should probably track these calls
+                return null;
+            });
+            // Other special-cased functions
+            SPECIAL_METHODS.put(MinecraftClient$getInstance, (arguments, config) -> {
+                return config.root.cachedMinecraftClient;
+            });
+            SPECIAL_METHODS.put(MinecraftClient$hasOutline, (arguments, config) -> {
+                return new KnownInteger(false); // Let's… not deal with that now
+            });
+//            SPECIAL_METHODS.put(Entity$getFlag, (arguments, config) -> {
+//                return new UnknownValue("getFlag");
+//            });
+//            SPECIAL_METHODS.put(Nameable$getName, (arguments, config) -> {
+//                return new UnknownValue("getName");
+//            });
+//            SPECIAL_METHODS.put(Nameable$getDisplayName, (arguments, config) -> {
+//                return new UnknownValue("getDisplayName");
+//            });
+//            SPECIAL_METHODS.put(Nameable$getCustomName, (arguments, config) -> {
+//                return new UnknownValue("getCustomName");
+//            });
+            SPECIAL_METHODS.put(LivingEntityRenderer$hasLabel, (arguments, config) -> {
+                return new UnknownValue("hasLabel");
+            });
+            SPECIAL_METHODS.put(MobEntityRenderer$hasLabel, (arguments, config) -> {
+                return new UnknownValue("hasLabel");
+            });
+            SPECIAL_METHODS.put(DataTracker$getEntry, (arguments, config) -> {
+                return AsmUtils.mockVmObjectRemap(config.root.factoryVm, "net.minecraft.class_2945$class_2946");
+            });
+            SPECIAL_METHODS.put(LivingEntityRenderer$shouldFlipUpsideDown, (arguments, config) -> {
+                return new UnaryArbitraryOp(arguments[0], stackEntry -> new KnownInteger(1)); //TODO
+            });
+            SPECIAL_METHODS.put(MathHelper$wrapDegreesI, (arguments, config) -> {
+                return new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(int.class))));
+            });
+            SPECIAL_METHODS.put(MathHelper$wrapDegreesF, (arguments, config) -> {
+                return new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(float.class))));
+            });
+            SPECIAL_METHODS.put(MathHelper$wrapDegreesD, (arguments, config) -> {
+                return new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(double.class))));
+            });
         }
 
         @Override
@@ -216,105 +299,15 @@ public class EntityRendererAnalyzer {
                 return;
             }
 
-            if (cmpFunc(method, ModelPart$Cuboid$renderCuboid)) {
-                var cuboid = arguments[0];
-                var matrix = arguments[1].getField("positionMatrix"); // TODO mappings
-                node.addCall(new ExecutionGraphNode.RenderCall(cuboid, matrix));
-                ret(ctx, null); // Function is void
-                return;
-            }
-            if (cmpFunc(method, MobEntityRenderer$renderLeash)) {
-                // TODO should probably track these calls
-                ret(ctx, null); // Function is void
-                return;
-            }
-            if (cmpFunc(method, TextRenderer$drawInternal)) {
-                // TODO should probably track these calls
-                ret(ctx, new UnknownValue("Width of the draw call or smth"));
-                return;
-            }
-            if (cmpFunc(method, EntityRenderer$renderLabelIfPresent)) {
-                // TODO should probably track these calls
-                ret(ctx, null); // Function is void
-                return;
-            }
-
-            // Other special-cased functions
-            if (cmpFunc(method, MinecraftClient$getInstance)) {
-                ret(ctx, root.cachedMinecraftClient);
-                return;
-            }
-            if (cmpFunc(method, MinecraftClient$hasOutline)) {
-                ret(ctx, new KnownInteger(false)); // Let's… not deal with that now
-                return;
-            }
             if (cmpFuncOrOverrides(method, Iterator$hasNext) && !arguments[0].isConcrete()) {
                 // If we don't do this, infinite amounts of forks will be created.
                 // One for each potential iteration of the loop
                 throw new VmException("Attempt to loop on unknown value "+arguments[0], null);
             }
-            if (cmpFunc(method, Entity$isFrozen)) {
-                ret(ctx, new UnknownValue("isFrozen"));
-                return;
-            }
-            if (cmpFunc(method, LivingEntity$isUsingRiptide)) {
-                ret(ctx, new UnknownValue("isUsingRiptide"));
-                return;
-            }
-            if (cmpFunc(method, Entity$getFlag)) {
-                ret(ctx, new UnknownValue("getFlag"));
-                return;
-            }
-            if (cmpFuncOrOverrides(method, Nameable$getName)) {
-                ret(ctx, new UnknownValue("getName"));
-                return;
-            }
-            if (cmpFuncOrOverrides(method, Nameable$getDisplayName)) {
-                ret(ctx, new UnknownValue("getDisplayName"));
-                return;
-            }
-            if (cmpFuncOrOverrides(method, Nameable$getCustomName)) {
-                ret(ctx, new UnknownValue("getCustomName"));
-                return;
-            }
-            if (cmpFunc(method, LivingEntity$getHandSwingProgress)) {
-                ret(ctx, new UnknownValue("getFlag"));
-                return;
-            }
-            if (cmpFunc(method, LivingEntityRenderer$hasLabel)) {
-                ret(ctx, new UnknownValue("hasLabel"));
-                return;
-            }
-            if (cmpFunc(method, MobEntityRenderer$hasLabel)) {
-                ret(ctx, new UnknownValue("hasLabel"));
-                return;
-            }
-            if (cmpFunc(method, DataTracker$getEntry)) {
-                ret(ctx, AsmUtils.mockVmObjectRemap(ctx.machine(), "net.minecraft.class_2945$class_2946"));
-                return;
-            }
-            if (cmpFunc(method, LivingEntityRenderer$shouldFlipUpsideDown)) {
-                ret(ctx, new UnaryArbitraryOp(arguments[0], stackEntry -> new KnownInteger(1))); // TODO
-                return;
-            }
-            if (cmpFunc(method, MathHelper$wrapDegreesI)) {
-                ret(ctx, new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(int.class)))));
-                return;
-            }
-            if (cmpFunc(method, MathHelper$wrapDegreesF)) {
-                ret(ctx, new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(float.class)))));
-                return;
-            }
-            if (cmpFunc(method, MathHelper$wrapDegreesD)) {
-                ret(ctx, new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(double.class)))));
-                return;
-            }
-            if (cmpFunc(method, Entity$removeClickEvents)) {
-                ret(ctx, new UnaryArbitraryOp(arguments[0], stackEntry -> stackEntry)); // TODO
-                return;
-            }
-            if (cmpFunc(method, Entity$isInPose)) {
-                ret(ctx, new BinaryArbitraryOp(arguments[0], arguments[1], (stackEntry, stackEntry2) -> new KnownInteger(false))); // TODO
+
+            var specialMethod = SPECIAL_METHODS.get(new AsmUtils.MappedFunction(inst.owner, inst.name, inst.desc));
+            if (specialMethod != null) {
+                ret(ctx, specialMethod.apply(arguments, this));
                 return;
             }
 
@@ -344,6 +337,8 @@ public class EntityRendererAnalyzer {
             // We're going to clone the vm to create a parallel universe / continuation
             // The clone will take the jump, and we won't
 
+            root.branchCauses.add(ctx.machine().inspectRunningMethod().getName() + "-" + ctx.machine().inspectRunningMethod().getLineNumber());
+
             var continuationNoJump = new ExecutionGraphNode();
             var continuationJump = new ExecutionGraphNode();
             var ifStmnt = new ExecutionGraphNode.IfStatement(compA, compB, opcode, continuationNoJump, continuationJump);
@@ -361,6 +356,11 @@ public class EntityRendererAnalyzer {
             jumpMeth.overrideNextInsn(target);
 
             root.amountOfVmsTotal++;
+            if (root.amountOfVmsTotal % 1000 == 0) {
+                PolyMc.LOGGER.info(root.amountOfVmsTotal+": "+root.time.formatTime());
+                root.time.reset();
+                root.time.start();
+            }
             root.amountOfVms++;
             // This vm was cloned, and needs to restarted
             vmJump.runToCompletion();
@@ -374,7 +374,51 @@ public class EntityRendererAnalyzer {
             if (returnsVoid) {
                 return null;
             }
-            return new UnknownValue("Error executing "+method+": "+e.createFancyErrorMessage());
+            return new UnknownValue("Error executing " + method + ": " + e.createFancyErrorMessage());
+        }
+
+        @SuppressWarnings({"DuplicateBranchesInSwitch", "RedundantIfStatement"})
+        private boolean isSseEligible(AbstractInsnNode currentInstr, LabelNode target) {
+            // Check if the two branches converge back somewhere in the next 50 insns
+            var insnJumpedOver = AsmUtils.insnStream(currentInstr)
+                    .limit(50)
+                    .takeWhile(i -> i != target)
+                    .collect(Collectors.toSet());
+
+            if (insnJumpedOver.size() == 50) {
+                return false;
+            }
+            return insnJumpedOver
+                    .stream()
+                    .noneMatch(insn -> {
+                        // Jumps are fine only if they are within the jumped over area
+                        // This ensures that they too are sse-eligible
+                        if (insn instanceof JumpInsnNode jump) {
+                            return !insnJumpedOver.contains(jump.label) && jump.label != target;
+                        }
+                        switch (insn.getOpcode()) {
+                            // I don't want to deal with these
+                            case Opcodes.GOTO, Opcodes.RET, Opcodes.LOOKUPSWITCH, Opcodes.TABLESWITCH -> {
+                                return true;
+                            }
+                            // If the branch returns it causes the same issues as a method call
+                            case Opcodes.RETURN, Opcodes.ARETURN, Opcodes.DRETURN, Opcodes.FRETURN, Opcodes.IRETURN, Opcodes.LRETURN -> {
+                                return true;
+                            }
+                        }
+                        // Calling functions means that a whole load of other code will get executed.
+                        // These could call stuff that can't be SSE'd, such as rendering calls
+                        if (insn instanceof MethodInsnNode method) {
+                            // Math is fine though
+                            if (method.owner.equals("java/lang/Math")) return false;
+                            // Matrix ops too
+                            if (method.owner.equals(MatrixStack)) return false;
+                            return true;
+                        }
+
+                        // This instruction is fine
+                        return false;
+                    });
         }
     }
 }

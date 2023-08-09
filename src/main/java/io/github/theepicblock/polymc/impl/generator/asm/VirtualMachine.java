@@ -6,8 +6,10 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.MethodCall;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
+import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.ApiStatus;
@@ -721,6 +723,14 @@ public class VirtualMachine {
                 return;
             }
 
+            if (Util.first(arguments) instanceof MockedObject) {
+                var clazz = methodRef.clazz;
+                if (clazz.isMethodComplicated(methodRef.name(), methodRef.desc())) {
+                    ret(ctx, new MethodCall(currentClass, inst, arguments));
+                    return;
+                }
+            }
+
             if (methodRef.className().equals(_String) && arguments[0] instanceof KnownObject o && o.i() instanceof String str) {
                 // String is quite strict with its fields, we can't reflect into them
                 // This causes the jvm to be unable to execute many methods inside String
@@ -807,6 +817,7 @@ public class VirtualMachine {
         private final CowCapableMap<String> staticFields;
         private final ImmutableMap<@NotNull String, @NotNull MethodNode> methodLookupCache;
         public final List<String> nonPrimitiveFields;
+        public final Object2BooleanOpenHashMap<@NotNull String> methodComplicatedCache;
 
         public Clazz(ClassNode node, VirtualMachine loader) {
             this.node = node;
@@ -824,15 +835,17 @@ public class VirtualMachine {
                     .filter(f -> f.desc.startsWith("L") || f.desc.startsWith("["))
                     .map(f -> f.name)
                     .toList();
+            this.methodComplicatedCache = new Object2BooleanOpenHashMap<>();
         }
 
-        private Clazz(ClassNode node, VirtualMachine loader, boolean hasInitted, CowCapableMap<@NotNull String> staticFields, ImmutableMap<String, @NotNull MethodNode> preComputedCache, List<String> nonPrimitiveFields) {
+        private Clazz(ClassNode node, VirtualMachine loader, boolean hasInitted, CowCapableMap<@NotNull String> staticFields, ImmutableMap<String, @NotNull MethodNode> preComputedCache, List<String> nonPrimitiveFields, Object2BooleanOpenHashMap<@NotNull String> methodComplicatedCache) {
             this.node = node;
             this.loader = loader;
             this.hasInitted = hasInitted;
             this.staticFields = staticFields;
             this.methodLookupCache = preComputedCache;
             this.nonPrimitiveFields = nonPrimitiveFields;
+            this.methodComplicatedCache = methodComplicatedCache;
         }
 
         public Clazz copy(VirtualMachine newLoader) {
@@ -842,7 +855,8 @@ public class VirtualMachine {
                     this.hasInitted,
                     this.staticFields.createClone(),
                     this.methodLookupCache,
-                    this.nonPrimitiveFields
+                    this.nonPrimitiveFields,
+                    this.methodComplicatedCache
             );
         }
 
@@ -881,6 +895,16 @@ public class VirtualMachine {
             return this.loader;
         }
 
+        public boolean isMethodComplicated(String name, String descriptor) {
+            var combi = name+descriptor;
+            return this.methodComplicatedCache.computeIfAbsent(combi, (key) -> {
+                var method = methodLookupCache.get(key);
+                assert method != null;
+                return AsmUtils.insnStream(method.instructions.getFirst())
+                        .anyMatch(insn -> insn instanceof JumpInsnNode);
+            });
+        }
+
         /**
          * Gets a static field *that's part of this class*. It is up to the caller to handle inheritance of static fields
          */
@@ -916,6 +940,10 @@ public class VirtualMachine {
 
         public @InternalName String name() {
             return node.name;
+        }
+
+        public boolean hasInitted() {
+            return hasInitted;
         }
 
         @Override
