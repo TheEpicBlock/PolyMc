@@ -15,7 +15,6 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 import java.util.Arrays;
-import java.util.IdentityHashMap;
 import java.util.Objects;
 
 public class MethodExecutor {
@@ -70,7 +69,11 @@ public class MethodExecutor {
                 var continueExecution = this.execute(this.nextInstruction);
                 if (!continueExecution) return;
             } catch (Exception e) {
-                throw new VmException("Error executing code on line "+this.getLineNumber()+" of "+methodName, e);
+                if (VirtualMachine.VM_DEBUG_EXCEPTIONS) {
+                    throw new VmException("Error executing code on line "+this.getLineNumber()+" of "+methodName, e);
+                } else {
+                    throw new VmException("", null);
+                }
             }
         }
     }

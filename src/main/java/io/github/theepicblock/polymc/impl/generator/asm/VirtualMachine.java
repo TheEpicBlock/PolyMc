@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class VirtualMachine {
+    public final static boolean VM_DEBUG_EXCEPTIONS = false;
     private HashMap<@InternalName String, Clazz> classes = new HashMap<>();
     private final ClientClassLoader classResolver;
     private VmConfig config;
@@ -335,9 +336,12 @@ public class VirtualMachine {
             }
         }
 
-
-        throw new VmException("Can't find method " + inst.name + inst.desc + " in "
-                + rootClass.node.name + " (" + inst.getOpcode() + ", " + inst.owner + ")", null);
+        if (VM_DEBUG_EXCEPTIONS) {
+            throw new VmException("Can't find method " + inst.name + inst.desc + " in "
+                    + rootClass.node.name + " (" + inst.getOpcode() + ", " + inst.owner + ")", null);
+        } else {
+            throw new VmException("", null);
+        }
     }
 
     private static final @InternalName String LoggerFactory = Type.getInternalName(LoggerFactory.class);
