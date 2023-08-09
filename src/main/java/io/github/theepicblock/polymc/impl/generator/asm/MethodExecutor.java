@@ -563,7 +563,7 @@ public class MethodExecutor {
 
     public static class VmException extends Exception {
         public VmException(String message, Throwable cause) {
-            super(message, cause);
+            super(message, cause, VirtualMachine.VM_DEBUG_EXCEPTIONS, VirtualMachine.VM_DEBUG_EXCEPTIONS);
         }
 
         public String createFancyErrorMessage() {
