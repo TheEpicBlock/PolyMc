@@ -245,6 +245,8 @@ public class VirtualMachine {
             return o.type();
         } else if (entry instanceof MockedObject o) {
             return o.type();
+        } else if (entry instanceof MethodCall o) {
+            return getType(Type.getReturnType(o.inst().desc));
         } else if (entry instanceof KnownClass) {
             return this.getClass("java/lang/Class");
         } else if (entry instanceof KnownInteger) {
@@ -258,6 +260,17 @@ public class VirtualMachine {
         } else {
             return null;
         }
+    }
+
+    public Clazz getType(Type type) throws VmException {
+        return switch (type.getSort()) {
+            case Type.INT, Type.BOOLEAN, Type.SHORT, Type.CHAR, Type.BYTE -> this.getClass(_Integer);
+            case Type.LONG -> this.getClass(_Long);
+            case Type.FLOAT -> this.getClass(_Float);
+            case Type.DOUBLE -> this.getClass(_Double);
+            case Type.OBJECT -> this.getClass(type.getInternalName());
+            default -> null;
+        };
     }
 
     /**
@@ -294,6 +307,11 @@ public class VirtualMachine {
 
         if (rootClass == null)
             return null;
+
+        if (rootClass.name().equals("java/lang/Object") && objectRef instanceof MockedObject || objectRef instanceof MethodCall) {
+            // Workaround for generics
+            rootClass = getClass(inst.owner);
+        }
 
         // Step 2 of method resolution (done recursively for each superclass)
         // See https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-5.html#jvms-5.4.3.3

@@ -28,6 +28,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class EntityRendererAnalyzer {
@@ -167,7 +168,7 @@ public class EntityRendererAnalyzer {
         fakeEntity.setField(Entity$dimensions, StackEntry.known(entity.getDimensions()));
         var matrixStack = createMatrixStack();
 
-        var rendererVm = new VirtualMachine(new ClientClassLoader(), new RendererAnalyzerVmConfig(rootNode, this));
+        var rendererVm = new VirtualMachine(new ClientClassLoader(), new RendererAnalyzerVmConfig(rootNode, null, this));
         rendererVm.addMethodToStack(resolvedEntityRenderer$render, new StackEntry[] { renderer, fakeEntity, new UnknownValue("yaw"), new UnknownValue("tickDelta"), matrixStack, KnownObject.NULL, new UnknownValue("light") });
         rendererVm.runToCompletion();
         return rootNode;
@@ -209,8 +210,7 @@ public class EntityRendererAnalyzer {
                 inst.desc.equals(func.desc()));
     }
 
-    public record RendererAnalyzerVmConfig(ExecutionGraphNode node, EntityRendererAnalyzer root) implements VmConfig {
-
+    public record RendererAnalyzerVmConfig(ExecutionGraphNode node, @Nullable RendererAnalyzerVmConfig parent, EntityRendererAnalyzer root) implements VmConfig {
         @Override
         public @NotNull StackEntry loadStaticField(Context ctx, Clazz owner, String fieldName) throws VmException {
             if (!owner.hasInitted()) {
@@ -331,7 +331,55 @@ public class EntityRendererAnalyzer {
                 VmConfig.super.handleUnknownJump(ctx, compA, compB, opcode, target);
                 return;
             }
-            // We're going to clone the vm to create a parallel universe / continuation
+
+            // Let's check our parents to see if we already jumped on this variable.
+            // If so, we've already decided on the result of this comparison and we can just take that result
+            var config = this;
+            var previous = this;
+
+            while (config.parent != null) {
+                config = config.parent;
+
+                var cont = config.node.getContinuation();
+                assert cont != null; // This node is a parent, it should have children
+
+                // Normalize the opcodes
+                var thisOpcode = opcode;
+                var invert = false;
+                if (thisOpcode == Opcodes.IFNE) {
+                    thisOpcode = Opcodes.IFEQ;
+                    invert = true;
+                } // TODO there are more cases where this is relevant
+
+                var thatOpcode = cont.opcode();
+                if (thatOpcode == Opcodes.IFNE) {
+                    thatOpcode = Opcodes.IFEQ;
+                    invert = !invert;
+                } // TODO there are more cases where this is relevant
+
+                if (Objects.equals(cont.compA(), compA) &&
+                        Objects.equals(cont.compB(), compB) &&
+                        Objects.equals(thatOpcode, thisOpcode)) {
+                    var isTrue = previous.node() == cont.continuationIfTrue();
+                    if (invert) isTrue = !isTrue;
+
+                    if (isTrue) {
+                        // True, so we should take the jump
+                        ctx.machine().inspectRunningMethod().overrideNextInsn(target);
+                    } else {
+                        // False, so we should advance to the next instruction
+                        var currentMethod = ctx.machine().inspectRunningMethod();
+                        currentMethod.overrideNextInsn(currentMethod.inspectCurrentInsn().getNext());
+                    }
+
+                    return;
+                }
+
+                previous = config;
+            }
+
+            // We haven't decided on a value yet, so we must take both paths
+            // we're going to clone the vm to create a continuation
             // The clone will take the jump, and we won't
 
             root.branchCauses.add(ctx.machine().inspectRunningMethod().getName() + "-" + ctx.machine().inspectRunningMethod().getLineNumber());
@@ -345,8 +393,8 @@ public class EntityRendererAnalyzer {
             var vmNoJump = ctx.machine();
             var vmJump = ctx.machine().copy();
 
-            vmNoJump.changeConfig(new RendererAnalyzerVmConfig(continuationNoJump, root));
-            vmJump.changeConfig(new RendererAnalyzerVmConfig(continuationJump, root));
+            vmNoJump.changeConfig(new RendererAnalyzerVmConfig(continuationNoJump, this, root));
+            vmJump.changeConfig(new RendererAnalyzerVmConfig(continuationJump, this, root));
 
             var noJumpMeth = vmNoJump.inspectRunningMethod();
             noJumpMeth.overrideNextInsn(noJumpMeth.inspectCurrentInsn().getNext());

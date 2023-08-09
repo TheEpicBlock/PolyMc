@@ -25,6 +25,10 @@ public class ExecutionGraphNode {
         this.calls.add(call);
     }
 
+    public IfStatement getContinuation() {
+        return continuation;
+    }
+
     @Debug
     public Set<RenderCall> getUniqueCalls() {
         var set = new HashSet<RenderCall>();

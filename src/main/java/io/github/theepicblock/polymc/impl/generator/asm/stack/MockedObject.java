@@ -8,6 +8,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Clazz type, CowCapableMap<String> overrides) implements StackEntry {
     public MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Clazz type) {
@@ -29,22 +30,19 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
                 .findAny().orElse(null);
         if (field != null && type != null) {
             var vm = type.getLoader();
-            var type = switch (field.desc) {
-                case "I", "Z", "S", "C", "B" -> vm.getClass("java/lang/Integer");
-                case "J" -> vm.getClass("java/lang/Long");
-                case "F" -> vm.getClass("java/lang/Float");
-                case "D" -> vm.getClass("java/lang/Double");
-                default -> {
-                    if (field.desc.startsWith("L") && field.desc.endsWith(";")) {
-                        yield vm.getClass(field.desc.substring(1, field.desc.length()-1));
-                    }
-                    yield null;
-                }
-            };
+            var type = vm.getType(Type.getType(field.desc));
             return new MockedObject(new FieldAccess(this, name), type, new CowCapableMap<>());
         } else {
             return new MockedObject(new FieldAccess(this, name), null, new CowCapableMap<>());
         }
+    }
+
+    @Override
+    public int getWidth() {
+        if (type != null && ("java/lang/Double".equals(type.name()) || "java/lang/Long".equals(type.name()))) {
+            return 2;
+        }
+        return StackEntry.super.getWidth();
     }
 
     @Override
