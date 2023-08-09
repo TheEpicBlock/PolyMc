@@ -9,20 +9,20 @@ import org.apache.commons.lang3.function.ToBooleanBiFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
 public class CowCapableMap<T> {
     private static final ReferenceQueue<CowCapableMap<?>> GLOBAL_CLEANING_MAP = new ReferenceQueue<>();
     private @Nullable CowCapableMap<T> daddy = null;
     private @Nullable Map<T, @Nullable StackEntry> overrides = null;
-    private @Nullable HashSet<CowWeakReference<T>> children = null;
     private static int INVALID_KEYCODE;
     private int keyCode = INVALID_KEYCODE;
 
@@ -52,8 +52,6 @@ public class CowCapableMap<T> {
                 this.put(key, val.copy(copyCache));
             }
         });
-        if (daddy.children == null) daddy.children = new HashSet<>();
-        daddy.children.add(new CowWeakReference<>(this, GLOBAL_CLEANING_MAP));
     }
 
     public void clearAndCopy(@NotNull CowCapableMap<T> daddy, List<T> nonPrimitiveFields, @NotNull Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
@@ -67,8 +65,6 @@ public class CowCapableMap<T> {
 //                this.put(field, e.copy(copyCache));
 //            }
 //        }
-        if (daddy.children == null) daddy.children = new HashSet<>();
-        daddy.children.add(new CowWeakReference<>(this, GLOBAL_CLEANING_MAP));
     }
 
     public boolean isEmpty() {
@@ -113,14 +109,7 @@ public class CowCapableMap<T> {
     public StackEntry get(T key) {
         if (overrides != null) {
             if (overrides.containsKey(key)) {
-                var o = overrides.get(key);
-                if (o != null) {
-                    var copy = o.copy(); // Yeah, this copy is pretty useless, but it prevents some CME's when the map is recursive
-                    if (copy != o) {
-                        copyToChildren(key, copy);
-                    }
-                }
-                return o;
+                return overrides.get(key);
             }
         }
         var nextDad = this.getDaddyWithDifferentKeys();
@@ -131,7 +120,6 @@ public class CowCapableMap<T> {
                 if (copy != o) {
                     if (this.overrides == null) this.overrides = new HashMap<>();
                     this.overrides.put(key, copy);
-                    copyToChildren(key, copy);
                 }
                 return copy;
             }
@@ -160,43 +148,10 @@ public class CowCapableMap<T> {
         return getImmutable((T)key);
     }
 
-    @Nullable
-    public StackEntry put(T key, @NotNull StackEntry value) {
+    public void put(T key, @NotNull StackEntry value) {
         if (overrides == null) overrides = new HashMap<>();
         keyCode = INVALID_KEYCODE;
-        // If the children are null there's no reason to compute the previous value
-        var previous = children == null ? null : this.getImmutable(key);
         overrides.put(key, value);
-        copyToChildren(key, previous);
-        return previous;
-    }
-
-    private void copyToChildren(@NotNull T key, @Nullable StackEntry v) {
-        var c = children;
-        if (c != null) {
-            for (var weakReference : c) {
-                var child = weakReference.get();
-                if (child != null) {
-                    if (child.overrides == null) child.overrides = new Object2ObjectOpenHashMap<>();
-                    child.overrides.computeIfAbsent(key, (a) -> {
-                        child.keyCode = INVALID_KEYCODE;
-                        return v == null ? null : v.copy();
-                    });
-                }
-            }
-        }
-    }
-
-    private void iterChildren(Consumer<CowCapableMap<T>> childConsumer) {
-        var c = children;
-        if (c != null) {
-            for (var weakReference : c) {
-                var child = weakReference.get();
-                if (child != null) {
-                    childConsumer.accept(child);
-                }
-            }
-        }
     }
 
     public void putAll(@NotNull Map<? extends T,? extends StackEntry> m) {
@@ -323,46 +278,12 @@ public class CowCapableMap<T> {
         }
     }
 
-    private static void checkGlobalCleaningQueue() {
-        for (Reference<? extends CowCapableMap<?>> x; (x = GLOBAL_CLEANING_MAP.poll()) != null; ) {
-            var ref = (CowWeakReference<?>)x;
-            var children = ref.parent.children;
-            if (children != null) {
-                // Reïmplementation of `removeIf` to avoid allocations
-                for (var i = 0; i < children.size(); i++) {
-                    children.remove(ref);
-                }
-            }
-        }
-    }
-
     private static class CowWeakReference<T> extends WeakReference<CowCapableMap<T>> {
         @NotNull CowCapableMap<T> parent;
         public CowWeakReference(CowCapableMap<T> referent, ReferenceQueue<? super CowCapableMap<T>> q) {
             super(referent, q);
             assert referent.daddy != null;
             this.parent = referent.daddy;
-        }
-    }
-
-    public static CleanerThread spawnCleanerThread() {
-        var thread = new CleanerThread();
-        thread.setDaemon(true);
-        thread.setName("PolyMc Vm Cleaner");
-        thread.start();
-        return thread;
-    }
-
-    public static class CleanerThread extends Thread {
-        public boolean stopped = false;
-        @Override
-        public void run() {
-            while (!stopped) {
-                checkGlobalCleaningQueue();
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ignored) {}
-            }
         }
     }
 }

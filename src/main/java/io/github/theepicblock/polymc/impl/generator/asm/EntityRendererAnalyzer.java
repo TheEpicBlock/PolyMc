@@ -146,7 +146,6 @@ public class EntityRendererAnalyzer {
 
         if (rendererFactory == null) { return null; }
 
-        var cleanerThread = CowCapableMap.spawnCleanerThread();
         time = new StopWatch();
         time.start();
         // EntityRendererFactory.Context
@@ -174,7 +173,6 @@ public class EntityRendererAnalyzer {
         var rendererVm = new VirtualMachine(new ClientClassLoader(), new RendererAnalyzerVmConfig(rootNode, this));
         rendererVm.addMethodToStack(resolvedEntityRenderer$render, new StackEntry[] { renderer, fakeEntity, new UnknownValue("yaw"), new UnknownValue("tickDelta"), matrixStack, KnownObject.NULL, new UnknownValue("light") });
         rendererVm.runToCompletion();
-        cleanerThread.stopped = true;
         return rootNode;
     }
 
@@ -345,6 +343,7 @@ public class EntityRendererAnalyzer {
             var ifStmnt = new ExecutionGraphNode.IfStatement(compA, compB, opcode, continuationNoJump, continuationJump);
             this.node.setContinuation(ifStmnt);
 
+            // SAFETY: none of the objects in `vmNoJump` may be mutated until `vmJump` is disposed of
             var vmNoJump = ctx.machine();
             var vmJump = ctx.machine().copy();
 
@@ -357,7 +356,7 @@ public class EntityRendererAnalyzer {
             jumpMeth.overrideNextInsn(target);
 
             root.amountOfVmsTotal++;
-            if (root.amountOfVmsTotal % 1000 == 0) {
+            if (root.amountOfVmsTotal % 20000 == 0) {
                 PolyMc.LOGGER.info(root.amountOfVmsTotal+": "+root.time.formatTime());
                 root.time.reset();
                 root.time.start();

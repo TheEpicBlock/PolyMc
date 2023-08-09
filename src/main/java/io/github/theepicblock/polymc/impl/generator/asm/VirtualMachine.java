@@ -56,6 +56,9 @@ public class VirtualMachine {
         this.config = config;
     }
 
+    /**
+     * @apiNote The copied virtual machine *MUST* be disposed of before this virtual machine is used again
+     */
     public VirtualMachine copy() {
         var n = new VirtualMachine(this.classResolver, config, lastReturnedValue);
         var copyCache = new Reference2ReferenceOpenHashMap<StackEntry, StackEntry>();
