@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class VirtualMachine {
-    public final static boolean VM_DEBUG_EXCEPTIONS = false;
+    public final static boolean VM_DEBUG_EXCEPTIONS = true;
     private HashMap<@InternalName String, Clazz> classes = new HashMap<>();
     private final ClientClassLoader classResolver;
     private VmConfig config;

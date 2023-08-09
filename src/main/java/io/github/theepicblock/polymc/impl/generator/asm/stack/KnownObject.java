@@ -81,6 +81,17 @@ public record KnownObject(Object i, @NotNull HashMap<Object, StackEntry> mutatio
     }
 
     @Override
+    public StackEntry[] asKnownArray() {
+        if ((i instanceof int[] a && a.length == 0) ||
+            (i instanceof long[] b && b.length == 0) ||
+            (i instanceof double[] c && c.length == 0) ||
+            (i instanceof Object[] d && d.length == 0)) {
+            return new StackEntry[0];
+        }
+        return StackEntry.super.asKnownArray();
+    }
+
+    @Override
     public boolean isConcrete() {
         return true;
     }

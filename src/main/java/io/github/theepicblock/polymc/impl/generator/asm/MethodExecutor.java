@@ -614,13 +614,13 @@ public class MethodExecutor {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MethodExecutor that = (MethodExecutor)o;
-        return Arrays.equals(localVariables, that.localVariables) && Objects.equals(stack, that.stack) && Objects.equals(methodName, that.methodName) && Objects.equals(nextInstruction, that.nextInstruction);
+        return Arrays.deepEquals(localVariables, that.localVariables) && Objects.equals(stack, that.stack) && Objects.equals(methodName, that.methodName) && Objects.equals(nextInstruction, that.nextInstruction);
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hash(stack, methodName, nextInstruction);
-        result = 31 * result + Arrays.hashCode(localVariables);
+        result = 31 * result + Arrays.deepHashCode(localVariables);
         return result;
     }
 }

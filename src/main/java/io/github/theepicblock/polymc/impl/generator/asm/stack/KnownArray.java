@@ -78,6 +78,6 @@ public record KnownArray(@Nullable StackEntry[] data) implements StackEntry {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(data);
+        return Arrays.deepHashCode(data);
     }
 }

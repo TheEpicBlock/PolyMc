@@ -8,10 +8,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
@@ -180,7 +177,8 @@ public class EntityRendererAnalyzer {
         var fmapper = FabricLoader.getInstance().getMappingResolver();
         var matrixStackInt = "net.minecraft.class_4587";
         var matrixStackRun = fmapper.mapClassName("intermediary", matrixStackInt).replace(".", "/");
-        var matrixStack = AsmUtils.mockVmObjectRemap(factoryVm, "net.minecraft.class_4587");
+        var matrixStackClass = factoryVm.getClass(matrixStackRun);
+        var matrixStack = new KnownVmObject(matrixStackClass);
         // Create new state for the vm, so we can generate a matrixStack without ruining other things
         var vmState = factoryVm.switchStack(null);
         factoryVm.addMethodToStack(factoryVm.getClass(matrixStackRun), "<init>", "()V", new StackEntry[] { matrixStack });
@@ -336,7 +334,7 @@ public class EntityRendererAnalyzer {
             // We're going to clone the vm to create a parallel universe / continuation
             // The clone will take the jump, and we won't
 
-//            root.branchCauses.add(ctx.machine().inspectRunningMethod().getName() + "-" + ctx.machine().inspectRunningMethod().getLineNumber());
+            root.branchCauses.add(ctx.machine().inspectRunningMethod().getName() + "-" + ctx.machine().inspectRunningMethod().getLineNumber());
 
             var continuationNoJump = new ExecutionGraphNode();
             var continuationJump = new ExecutionGraphNode();
