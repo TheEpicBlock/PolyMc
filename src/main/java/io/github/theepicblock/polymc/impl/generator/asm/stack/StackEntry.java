@@ -5,12 +5,10 @@ import com.google.gson.JsonElement;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Type;
-
-import java.util.IdentityHashMap;
-import java.util.Map;
 
 public interface StackEntry {
     static final Gson GSON = new Gson();
@@ -84,7 +82,7 @@ public interface StackEntry {
     }
 
     default StackEntry simplify(VirtualMachine vm) throws VmException {
-        return simplify(vm, new IdentityHashMap<>());
+        return simplify(vm, new Reference2ReferenceOpenHashMap<>());
     }
 
     /**
@@ -93,7 +91,7 @@ public interface StackEntry {
      *                            This prevents infinite recursion when an entry contains a reference to itself.
      *                            This cache isn't used in most {@link StackEntry}'s, except {@link KnownVmObject}
      */
-    default StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws VmException {
+    default StackEntry simplify(VirtualMachine vm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) throws VmException {
         return this;
     }
 
@@ -120,10 +118,10 @@ public interface StackEntry {
     }
 
     default StackEntry copy() {
-        return copy(new IdentityHashMap<>());
+        return copy(new Reference2ReferenceOpenHashMap<>());
     }
 
-    default StackEntry copy(IdentityHashMap<StackEntry,StackEntry> simplificationCache) {
+    default StackEntry copy(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) {
         return this;
     }
 

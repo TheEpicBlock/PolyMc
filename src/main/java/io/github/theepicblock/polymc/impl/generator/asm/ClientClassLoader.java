@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 import com.google.common.collect.Streams;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.resource.ClientJarResourcesImpl;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassReader;
@@ -13,13 +14,13 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class ClientClassLoader extends URLClassLoader {
     private final TeensyRemapper remapper;
     public final Mapping runtimeToObf = Mapping.runtimeToObfFromClasspath();
-    private final HashMap<String, Object> cache = new HashMap<>();
+    private final Map<String, Object> cache = new Object2ObjectOpenHashMap<>();
 
     public ClientClassLoader() {
         super("PolyMc auto generated classloader", getUrls(), ClientClassLoader.getSystemClassLoader());

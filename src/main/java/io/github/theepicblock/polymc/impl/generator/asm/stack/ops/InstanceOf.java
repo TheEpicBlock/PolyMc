@@ -5,8 +5,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 
 public record InstanceOf(StackEntry entry, String toCheck) implements StackEntry {
     @Override
@@ -15,7 +14,7 @@ public record InstanceOf(StackEntry entry, String toCheck) implements StackEntry
     }
 
     @Override
-    public StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws VmException {
+    public StackEntry simplify(VirtualMachine vm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) throws VmException {
         StackEntry entry1 = entry;
         if (entry1.canBeSimplified()) entry1 = entry1.simplify(vm);
 

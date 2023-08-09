@@ -2,11 +2,11 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import com.google.gson.JsonElement;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
-import java.util.IdentityHashMap;
 
 public record KnownArray(@Nullable StackEntry[] data) implements StackEntry {
     @Override
@@ -50,7 +50,7 @@ public record KnownArray(@Nullable StackEntry[] data) implements StackEntry {
     }
 
     @Override
-    public StackEntry copy(IdentityHashMap<StackEntry,StackEntry> copyCache) {
+    public StackEntry copy(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         if (copyCache.containsKey(this)) return copyCache.get(this);
 
         var newArr = new StackEntry[this.data.length];

@@ -3,8 +3,7 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
-
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 
 public record Cast(StackEntry value, Type in, Type out) implements StackEntry {
     public enum Type {
@@ -21,7 +20,7 @@ public record Cast(StackEntry value, Type in, Type out) implements StackEntry {
 
     @SuppressWarnings("RedundantCast")
     @Override
-    public StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws VmException {
+    public StackEntry simplify(VirtualMachine vm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) throws VmException {
         var value = this.value;
         if (value.canBeSimplified()) {
             value = value.simplify(vm, simplificationCache);

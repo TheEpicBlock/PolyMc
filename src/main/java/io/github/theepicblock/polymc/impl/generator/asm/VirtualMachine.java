@@ -11,6 +11,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitrary
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +23,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 
 public class VirtualMachine {
     private HashMap<@InternalName String, Clazz> classes = new HashMap<>();
@@ -54,7 +58,7 @@ public class VirtualMachine {
 
     public VirtualMachine copy() {
         var n = new VirtualMachine(this.classResolver, config, lastReturnedValue);
-        var copyCache = new IdentityHashMap<StackEntry, StackEntry>();
+        var copyCache = new Reference2ReferenceOpenHashMap<StackEntry, StackEntry>();
         this.methodStack.forEach(meth -> {
             n.methodStack.add(meth.copy(n, copyCache));
         });

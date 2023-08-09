@@ -4,8 +4,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 
 public record ArrayLength(StackEntry array) implements StackEntry {
     @Override
@@ -14,7 +13,7 @@ public record ArrayLength(StackEntry array) implements StackEntry {
     }
 
     @Override
-    public StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws MethodExecutor.VmException {
+    public StackEntry simplify(VirtualMachine vm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) throws MethodExecutor.VmException {
         var array = this.array;
         if (array.canBeSimplified()) array = array.simplify(vm, simplificationCache);
 

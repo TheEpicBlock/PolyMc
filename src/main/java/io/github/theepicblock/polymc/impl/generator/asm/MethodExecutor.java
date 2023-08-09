@@ -5,6 +5,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.*;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +33,7 @@ public class MethodExecutor {
         this.methodName = methodName;
     }
 
-    public MethodExecutor copy(VirtualMachine newVm, IdentityHashMap<StackEntry,StackEntry> copyCache) {
+    public MethodExecutor copy(VirtualMachine newVm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         var n = new MethodExecutor(newVm, new StackEntry[this.localVariables.length], this.methodName);
         n.owner = this.owner;
         n.method = this.method;

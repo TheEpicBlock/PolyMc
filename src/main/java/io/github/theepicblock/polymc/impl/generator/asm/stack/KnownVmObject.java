@@ -7,11 +7,10 @@ import io.github.theepicblock.polymc.impl.generator.asm.CowCapableMap;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Opcodes;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull String> fields) implements StackEntry {
@@ -70,7 +69,7 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
     }
 
     @Override
-    public StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws VmException {
+    public StackEntry simplify(VirtualMachine vm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) throws VmException {
         if (simplificationCache.containsKey(this)) return simplificationCache.get(this);
         simplificationCache.put(this, this);
 //        this.fields.simplify(vm, simplificationCache);
@@ -83,7 +82,7 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
     }
 
     @Override
-    public StackEntry copy(IdentityHashMap<StackEntry,StackEntry> copyCache) {
+    public StackEntry copy(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         if (copyCache.containsKey(this)) return copyCache.get(this);
         var newMap = new CowCapableMap<String>();
         var newObj = new KnownVmObject(this.type, newMap);

@@ -3,6 +3,8 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownArray;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.apache.commons.lang3.function.ToBooleanBiFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,13 +21,13 @@ import java.util.function.Consumer;
 public class CowCapableMap<T> {
     private static final ReferenceQueue<CowCapableMap<?>> GLOBAL_CLEANING_MAP = new ReferenceQueue<>();
     private @Nullable CowCapableMap<T> daddy = null;
-    private @Nullable HashMap<T, @Nullable StackEntry> overrides = null;
+    private @Nullable Map<T, @Nullable StackEntry> overrides = null;
     private @Nullable HashSet<CowWeakReference<T>> children = null;
     private static int INVALID_KEYCODE;
     private int keyCode = INVALID_KEYCODE;
 
     public CowCapableMap() {
-        this.overrides = new HashMap<>();
+        this.overrides = new Object2ObjectOpenHashMap<>();
     }
 
     private CowCapableMap(@NotNull CowCapableMap<T> daddy) {
@@ -33,16 +35,16 @@ public class CowCapableMap<T> {
     }
 
     public CowCapableMap<T> createClone() {
-        return createClone(new IdentityHashMap<>());
+        return createClone(new Reference2ReferenceOpenHashMap<>());
     }
 
-    public CowCapableMap<T> createClone(IdentityHashMap<StackEntry,StackEntry> copyCache) {
+    public CowCapableMap<T> createClone(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         var child = new CowCapableMap<T>();
         child.clearAndCopy(this, copyCache);
         return child;
     }
 
-    public void clearAndCopy(@NotNull CowCapableMap<T> daddy, @NotNull IdentityHashMap<StackEntry,StackEntry> copyCache) {
+    public void clearAndCopy(@NotNull CowCapableMap<T> daddy, @NotNull Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         this.daddy = daddy;
         this.overrides = null;
         this.forEachImmutable((key,val) -> {
@@ -54,7 +56,7 @@ public class CowCapableMap<T> {
         daddy.children.add(new CowWeakReference<>(this, GLOBAL_CLEANING_MAP));
     }
 
-    public void clearAndCopy(@NotNull CowCapableMap<T> daddy, List<T> nonPrimitiveFields, @NotNull IdentityHashMap<StackEntry,StackEntry> copyCache) {
+    public void clearAndCopy(@NotNull CowCapableMap<T> daddy, List<T> nonPrimitiveFields, @NotNull Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         this.daddy = daddy;
         this.overrides = null;
 //        for (var field : nonPrimitiveFields) {
@@ -115,13 +117,7 @@ public class CowCapableMap<T> {
                 if (o != null) {
                     var copy = o.copy(); // Yeah, this copy is pretty useless, but it prevents some CME's when the map is recursive
                     if (copy != o) {
-                        iterChildren(child -> {
-                            if (child.overrides == null) child.overrides = new HashMap<>();
-                            if (!child.overrides.containsKey(key)) {
-                                child.keyCode = INVALID_KEYCODE;
-                                child.overrides.put(key, copy.copy()); // Just in case this one will be edited
-                            }
-                        });
+                        copyToChildren(key, copy);
                     }
                 }
                 return o;
@@ -135,13 +131,7 @@ public class CowCapableMap<T> {
                 if (copy != o) {
                     if (this.overrides == null) this.overrides = new HashMap<>();
                     this.overrides.put(key, copy);
-                    iterChildren(child -> {
-                        if (child.overrides == null) child.overrides = new HashMap<>();
-                        if (!child.overrides.containsKey(key)) {
-                            child.keyCode = INVALID_KEYCODE;
-                            child.overrides.put(key, o.copy()); // Just in case this one will be edited
-                        }
-                    });
+                    copyToChildren(key, copy);
                 }
                 return copy;
             }
@@ -177,14 +167,24 @@ public class CowCapableMap<T> {
         // If the children are null there's no reason to compute the previous value
         var previous = children == null ? null : this.getImmutable(key);
         overrides.put(key, value);
-        iterChildren(child -> {
-            if (child.overrides == null) child.overrides = new HashMap<>();
-            if (!child.overrides.containsKey(key)) {
-                child.keyCode = INVALID_KEYCODE;
-                child.overrides.put(key, previous); // Preserve the previous value in all the children :3
-            }
-        });
+        copyToChildren(key, previous);
         return previous;
+    }
+
+    private void copyToChildren(@NotNull T key, @Nullable StackEntry v) {
+        var c = children;
+        if (c != null) {
+            for (var weakReference : c) {
+                var child = weakReference.get();
+                if (child != null) {
+                    if (child.overrides == null) child.overrides = new Object2ObjectOpenHashMap<>();
+                    child.overrides.computeIfAbsent(key, (a) -> {
+                        child.keyCode = INVALID_KEYCODE;
+                        return v == null ? null : v.copy();
+                    });
+                }
+            }
+        }
     }
 
     private void iterChildren(Consumer<CowCapableMap<T>> childConsumer) {
@@ -203,7 +203,7 @@ public class CowCapableMap<T> {
         m.forEach(this::put);
     }
 
-    public void simplify(VirtualMachine vm, Map<StackEntry, StackEntry> simplificationCache) throws MethodExecutor.VmException {
+    public void simplify(VirtualMachine vm, Reference2ReferenceOpenHashMap<StackEntry, StackEntry> simplificationCache) throws MethodExecutor.VmException {
         if (this.overrides != null) {
             for (var entry : overrides.entrySet()) {
                 if (entry.getValue() == null) continue;

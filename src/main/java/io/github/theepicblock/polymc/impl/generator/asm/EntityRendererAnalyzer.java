@@ -15,6 +15,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -28,8 +29,8 @@ import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class EntityRendererAnalyzer {
@@ -223,7 +224,7 @@ public class EntityRendererAnalyzer {
             return new StaticFieldValue(owner.name(), fieldName);
         }
 
-        private static final HashMap<AsmUtils.MappedFunction, SpecialMethod> SPECIAL_METHODS = new HashMap<>();
+        private static final Map<AsmUtils.MappedFunction, SpecialMethod> SPECIAL_METHODS = new Object2ObjectOpenHashMap<>();
 
         @FunctionalInterface
         private interface SpecialMethod {
@@ -337,7 +338,7 @@ public class EntityRendererAnalyzer {
             // We're going to clone the vm to create a parallel universe / continuation
             // The clone will take the jump, and we won't
 
-            root.branchCauses.add(ctx.machine().inspectRunningMethod().getName() + "-" + ctx.machine().inspectRunningMethod().getLineNumber());
+//            root.branchCauses.add(ctx.machine().inspectRunningMethod().getName() + "-" + ctx.machine().inspectRunningMethod().getLineNumber());
 
             var continuationNoJump = new ExecutionGraphNode();
             var continuationJump = new ExecutionGraphNode();

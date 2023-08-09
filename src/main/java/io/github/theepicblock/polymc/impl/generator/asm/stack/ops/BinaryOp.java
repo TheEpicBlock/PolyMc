@@ -3,8 +3,7 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
-
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 
 public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements StackEntry {
     public boolean canBeSimplified() {
@@ -12,7 +11,7 @@ public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements 
     }
 
     @Override
-    public StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws MethodExecutor.VmException {
+    public StackEntry simplify(VirtualMachine vm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) throws MethodExecutor.VmException {
         var entryA = this.a;
         if (entryA.canBeSimplified()) entryA = entryA.simplify(vm, simplificationCache);
         var entryB = this.b;

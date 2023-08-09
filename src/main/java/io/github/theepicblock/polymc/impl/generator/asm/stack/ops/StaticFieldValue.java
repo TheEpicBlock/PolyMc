@@ -4,8 +4,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.InternalName;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 
 /**
  * @param owner should be the *actual* owner of the static field. This code won't deal with inheritance
@@ -17,7 +16,7 @@ public record StaticFieldValue(@InternalName String owner, String field) impleme
     }
 
     @Override
-    public StackEntry simplify(VirtualMachine vm, Map<StackEntry,StackEntry> simplificationCache) throws VmException {
+    public StackEntry simplify(VirtualMachine vm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) throws VmException {
         var clazz = vm.getClass(this.owner());
         vm.ensureClinit(clazz);
         return clazz.getStatic(this.field()).simplify(vm, simplificationCache);
