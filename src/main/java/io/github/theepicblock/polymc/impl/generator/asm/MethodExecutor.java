@@ -166,14 +166,19 @@ public class MethodExecutor {
             }
             case Opcodes.INVOKEDYNAMIC -> {
                 var inst = (InvokeDynamicInsnNode)instruction;
-                var descriptor = Type.getType(inst.desc);
-                int i = descriptor.getArgumentTypes().length;
-                var args = new StackEntry[i];
-                for (Type argumentType : descriptor.getArgumentTypes()) {
-                    i--;
-                    args[i] = stack.pop(); // pop all the arguments
+                if (inst.name.equals("makeConcatWithConstants")) {
+                    if (!inst.desc.equals("(Ljava/lang/String;)Ljava/lang/String;")) throw new VmException("Wierd concat", null);
+                    stack.push(new UnaryArbitraryOp(stack.pop(), (input) -> StackEntry.known(inst.bsmArgs[0].toString().replace("\u0001", input.extractAs(String.class)))).simplify(this.parent));
+                } else {
+                    var descriptor = Type.getType(inst.desc);
+                    int i = descriptor.getArgumentTypes().length;
+                    var args = new StackEntry[i];
+                    for (Type argumentType : descriptor.getArgumentTypes()) {
+                        i--;
+                        args[i] = stack.pop(); // pop all the arguments
+                    }
+                    stack.push(new Lambda((Handle)inst.bsmArgs[1], args));
                 }
-                stack.push(new Lambda((Handle)inst.bsmArgs[1], args));
             }
             case Opcodes.NEW -> {
                 var inst = (TypeInsnNode)instruction;
@@ -209,10 +214,10 @@ public class MethodExecutor {
                 var array = stack.pop();
                 if (array.canBeSimplified()) array = array.simplify(this.parent);
                 if (index.canBeSimplified()) index = index.simplify(this.parent);
-                if (index instanceof KnownInteger i) {
-                    stack.push(array.arrayAccess(i.i()));
+                if (index.isConcrete()) {
+                    stack.push(array.arrayAccess(index.extractAs(int.class)));
                 } else {
-                    throw new VmException("Tried to access array index of "+index, null);
+                    stack.push(new MockedObject(new MockedObject.ArrayAccess(array, index), null));
                 }
             }
             case Opcodes.AASTORE, Opcodes.BASTORE, Opcodes.CASTORE, Opcodes.DASTORE, Opcodes.FASTORE, Opcodes.IASTORE, Opcodes.LASTORE, Opcodes.SASTORE -> {

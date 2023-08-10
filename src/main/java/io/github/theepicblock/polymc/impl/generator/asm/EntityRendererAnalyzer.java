@@ -13,7 +13,6 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldVal
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.MathHelper;
@@ -37,6 +36,8 @@ public class EntityRendererAnalyzer {
     private final ClientInitializerAnalyzer initializerInfo;
 
     private final StackEntry cachedMinecraftClient;
+
+    private final static String RotationAxis = AsmUtils.mapClass("net.minecraft.class_7833");
     private final static AsmUtils.MappedFunction EntityModelLoader$getModelPart = AsmUtils.map("net.minecraft.class_5599", "method_32072", "(Lnet/minecraft/class_5601;)Lnet/minecraft/class_630;");
     private final static AsmUtils.MappedFunction ModelPart$Cuboid$renderCuboid = AsmUtils.map("net.minecraft.class_630$class_628", "method_32089", "(Lnet/minecraft/class_4587$class_4665;Lnet/minecraft/class_4588;IIFFFF)V");
     private final static AsmUtils.MappedFunction MobEntityRenderer$renderLeash = AsmUtils.map("net.minecraft.class_927", "method_4073", "(Lnet/minecraft/class_1308;FLnet/minecraft/class_4587;Lnet/minecraft/class_4597;Lnet/minecraft/class_1297;)V");
@@ -46,7 +47,7 @@ public class EntityRendererAnalyzer {
     private final static String Entity$dimensions = AsmUtils.mapField(Entity.class, "field_18065", "Lnet/minecraft/class_4048;");
     private final static String Entity$deathTime = AsmUtils.mapField(Entity.class, "deathTime", "I"); // TODO
     private final static AsmUtils.MappedFunction VertexConsumerProvider$getBuffer = AsmUtils.map("net.minecraft.class_4597", "getBuffer", "(Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588;");
-    private final static String MatrixStack = AsmUtils.mapClass("net.minecraft.client.util.math.MatrixStack");
+    private final static String MatrixStack = AsmUtils.mapClass("net.minecraft.class_4587");
 
     // Used to detect loops
     private final static AsmUtils.MappedFunction Iterator$hasNext = AsmUtils.map("java.util.Iterator", "hasNext", "()Z");
@@ -139,6 +140,7 @@ public class EntityRendererAnalyzer {
     public StopWatch time;
 
     public ExecutionGraphNode analyze(EntityType<?> entity) throws VmException {
+        if (true) return null;
         var rootNode = new ExecutionGraphNode();
         var rendererFactory = initializerInfo.getEntityRenderer(entity);
 
@@ -175,14 +177,11 @@ public class EntityRendererAnalyzer {
     }
 
     public StackEntry createMatrixStack() throws VmException {
-        var fmapper = FabricLoader.getInstance().getMappingResolver();
-        var matrixStackInt = "net.minecraft.class_4587";
-        var matrixStackRun = fmapper.mapClassName("intermediary", matrixStackInt).replace(".", "/");
-        var matrixStackClass = factoryVm.getClass(matrixStackRun);
+        var matrixStackClass = factoryVm.getClass(MatrixStack);
         var matrixStack = new KnownVmObject(matrixStackClass);
         // Create new state for the vm, so we can generate a matrixStack without ruining other things
         var vmState = factoryVm.switchStack(null);
-        factoryVm.addMethodToStack(factoryVm.getClass(matrixStackRun), "<init>", "()V", new StackEntry[] { matrixStack });
+        factoryVm.addMethodToStack(factoryVm.getClass(MatrixStack), "<init>", "()V", new StackEntry[] { matrixStack });
         factoryVm.runToCompletion();
         factoryVm.switchStack(vmState);
 
@@ -213,7 +212,7 @@ public class EntityRendererAnalyzer {
     public record RendererAnalyzerVmConfig(ExecutionGraphNode node, @Nullable RendererAnalyzerVmConfig parent, EntityRendererAnalyzer root) implements VmConfig {
         @Override
         public @NotNull StackEntry loadStaticField(Context ctx, Clazz owner, String fieldName) throws VmException {
-            if (!owner.hasInitted()) {
+            if (!owner.hasInitted() && !owner.name().equals(RotationAxis)) {
                 var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, owner.name(), fieldName);
                 if (fromEnvironment != null) return fromEnvironment;
             }

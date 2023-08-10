@@ -6,7 +6,6 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.MethodCall;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
@@ -245,8 +244,6 @@ public class VirtualMachine {
             return o.type();
         } else if (entry instanceof MockedObject o) {
             return o.type();
-        } else if (entry instanceof MethodCall o) {
-            return getType(Type.getReturnType(o.inst().desc));
         } else if (entry instanceof KnownClass) {
             return this.getClass("java/lang/Class");
         } else if (entry instanceof KnownInteger) {
@@ -308,7 +305,7 @@ public class VirtualMachine {
         if (rootClass == null)
             return null;
 
-        if (rootClass.name().equals("java/lang/Object") && objectRef instanceof MockedObject || objectRef instanceof MethodCall) {
+        if (rootClass.name().equals("java/lang/Object") && objectRef instanceof MockedObject) {
             // Workaround for generics
             rootClass = getClass(inst.owner);
         }
@@ -746,16 +743,21 @@ public class VirtualMachine {
 
         default void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments, @Nullable MethodRef methodRef) throws VmException {
             if (methodRef == null) {
+                if (inst.name.equals("hashCode") && Util.first(arguments) != null && !Util.first(arguments).isConcrete()) {
+                    // I'm sure this will cause no issues whatsoever
+                    ret(ctx, StackEntry.known(Util.first(arguments).hashCode()));
+                    return;
+                }
                 // Can't be resolved, return an unknown value
                 ret(ctx, Type.getReturnType(inst.desc) == Type.VOID_TYPE ? null
                         : new UnknownValue("Can't resolve "+inst.owner+"#"+inst.name+inst.desc+" because "+Util.first(arguments)+" has no type"));
                 return;
             }
 
-            if (Util.first(arguments) instanceof MockedObject) {
+            if (Util.first(arguments) instanceof MockedObject && !methodRef.desc().endsWith("V")) {
                 var clazz = methodRef.clazz;
                 if (clazz.isMethodComplicated(methodRef.name(), methodRef.desc())) {
-                    ret(ctx, new MethodCall(currentClass, inst, arguments));
+                    ret(ctx, MockedObject.methodCall(currentClass, inst, arguments));
                     return;
                 }
             }

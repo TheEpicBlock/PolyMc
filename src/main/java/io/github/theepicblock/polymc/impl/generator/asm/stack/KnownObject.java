@@ -46,8 +46,11 @@ public record KnownObject(Object i, @NotNull HashMap<Object, StackEntry> mutatio
             var clazz = i.getClass();
             var field = clazz.getDeclaredField(name);
             field.setAccessible(true);
-            return new KnownObject(field.get(i));
+            return StackEntry.known(field.get(i));
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            if (name.equals("ordinal") && i instanceof Enum<?> enumm) {
+                return StackEntry.known(enumm.ordinal());
+            }
             throw new VmException("Couldn't get field "+name, e);
         }
     }
@@ -70,8 +73,18 @@ public record KnownObject(Object i, @NotNull HashMap<Object, StackEntry> mutatio
                 return KnownObject.NULL;
             }
             return new KnownObject(arr[index]);
+        } else if (i instanceof int[] arr) {
+            if (mutations.containsKey(index)) {
+                return mutations.get(index);
+            }
+            return new KnownObject(arr[index]);
+        } else if (i instanceof long[] arr) {
+            if (mutations.containsKey(index)) {
+                return mutations.get(index);
+            }
+            return new KnownObject(arr[index]);
         } else {
-            throw new VmException("Attempted to use "+this+" as an array", null);
+            throw new VmException("Attempted to use "+this+" as an array "+this.getClass(), null);
         }
     }
 

@@ -130,7 +130,7 @@ public class AsmUtils {
         return result;
     }
 
-    public static MappedFunction map(MappingResolver resolver, String className, String methodName, String descriptor) {
+    public static MappedFunction map(MappingResolver resolver, @BinaryName String className, String methodName, String descriptor) {
         var newClassname = resolver.mapClassName("intermediary", className);
         var newMethodName = resolver.mapMethodName("intermediary", className, methodName, descriptor);
         var newDesc = Mapping.remapDescriptor(s -> resolver.mapClassName("intermediary", s), descriptor);
@@ -142,9 +142,9 @@ public class AsmUtils {
         return resolver.mapFieldName("intermediary", owner.getName(), intermediaryName, descriptor);
     }
 
-    public static String mapClass(@BinaryName String intermediaryName) {
+    public static @InternalName String mapClass(@BinaryName String intermediaryName) {
         var resolver = FabricLoader.getInstance().getMappingResolver();
-        return resolver.mapClassName("intermediary", intermediaryName);
+        return resolver.mapClassName("intermediary", intermediaryName).replace(".", "/");
     }
 
     public static void simplifyAll(Context ctx, @Nullable StackEntry[] entries) throws VmException {

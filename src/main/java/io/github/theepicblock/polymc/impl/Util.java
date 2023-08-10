@@ -31,6 +31,7 @@ import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -233,6 +234,7 @@ public class Util {
         }
     }
 
+    @Contract(pure = true)
     public static<T> @Nullable T first(T[] arr) {
         if (arr.length == 0) return null;
         return arr[0];
