@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.fabricmc.loader.api.FabricLoader;
 import org.apache.commons.lang3.function.ToBooleanBiFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,11 +19,14 @@ import java.util.function.BiConsumer;
 
 @SuppressWarnings("unused")
 public class CowCapableMap<T> {
+    private static final int INVALID_KEYCODE = 0;
     private static final ReferenceQueue<CowCapableMap<?>> GLOBAL_CLEANING_MAP = new ReferenceQueue<>();
+    private static final boolean DEBUG_MODIFICATIONS = FabricLoader.getInstance().isDevelopmentEnvironment();
     private @Nullable CowCapableMap<T> daddy = null;
     private @Nullable Map<T, @Nullable StackEntry> overrides;
-    private static int INVALID_KEYCODE;
     private int keyCode = INVALID_KEYCODE;
+    private ModificationData modDebugger;
+
     /**
      * Should be non-null if {@link #daddy} is non-null
      */
@@ -30,6 +34,9 @@ public class CowCapableMap<T> {
 
     public CowCapableMap() {
         this.overrides = new Object2ObjectOpenHashMap<>();
+        if (DEBUG_MODIFICATIONS) {
+            this.modDebugger = new ModificationData();
+        }
     }
 
     /**
@@ -56,6 +63,9 @@ public class CowCapableMap<T> {
         this.daddy = daddy;
         this.overrides = null;
         this.copyCache = copyCache;
+        if (DEBUG_MODIFICATIONS) {
+            this.modDebugger.parentExpected = daddy.modDebugger.modCount;
+        }
     }
 
     public boolean isEmpty() {
@@ -98,6 +108,7 @@ public class CowCapableMap<T> {
     }
 
     public StackEntry get(T key) {
+        checkParentForModifications();
         if (overrides != null) {
             if (overrides.containsKey(key)) {
                 return overrides.get(key);
@@ -107,6 +118,7 @@ public class CowCapableMap<T> {
         if (nextDad != null) {
             var o = nextDad.get(key);
             if (o != null) {
+                incrementModifications();
                 var copy = o.copy(this.copyCache);
                 if (copy != o) {
                     if (this.overrides == null) this.overrides = new HashMap<>();
@@ -123,6 +135,7 @@ public class CowCapableMap<T> {
     }
 
     private StackEntry getImmutable(T key) {
+        checkParentForModifications();
         if (overrides != null) {
             if (overrides.containsKey(key)) {
                 return overrides.get(key);
@@ -142,6 +155,8 @@ public class CowCapableMap<T> {
     public void put(T key, @NotNull StackEntry value) {
         if (overrides == null) overrides = new HashMap<>();
         keyCode = INVALID_KEYCODE;
+        incrementModifications();
+        checkParentForModifications();
         overrides.put(key, value);
     }
 
@@ -150,10 +165,11 @@ public class CowCapableMap<T> {
     }
 
     public void simplify(VirtualMachine vm, Reference2ReferenceOpenHashMap<StackEntry, StackEntry> simplificationCache) throws MethodExecutor.VmException {
+        checkParentForModifications();
         if (this.overrides != null) {
             for (var entry : overrides.entrySet()) {
                 if (entry.getValue() == null) continue;
-                // No need to notify children since a simplification shouldn't change the meaning of the value
+                incrementModifications();
                 overrides.put(entry.getKey(), entry.getValue().simplify(vm, simplificationCache));
             }
         }
@@ -165,6 +181,7 @@ public class CowCapableMap<T> {
     }
 
     public void forEachImmutable(BiConsumer<? super T,? super StackEntry> action) {
+        checkParentForModifications();
         if (this.overrides != null) {
             for (var entry : this.overrides.entrySet()) {
                 var k = entry.getKey();
@@ -189,6 +206,7 @@ public class CowCapableMap<T> {
     }
 
     public boolean findAny(ToBooleanBiFunction<? super T,? super StackEntry> filter) {
+        checkParentForModifications();
         if (this.overrides != null) {
             for (var entry : this.overrides.entrySet()) {
                 // Null indicates that this entry doesn't exist in the map. It shouldn't be exposed
@@ -275,6 +293,34 @@ public class CowCapableMap<T> {
             super(referent, q);
             assert referent.daddy != null;
             this.parent = referent.daddy;
+        }
+    }
+
+    private void incrementModifications() {
+        if (DEBUG_MODIFICATIONS) this.modDebugger.modCount++;
+    }
+
+    /**
+     * Do a best-effort check to see if the parent was changed since making the clone.
+     * If the parent changed, that could've also influenced this map
+     * @see #createClone(Reference2ReferenceOpenHashMap)
+     */
+    private void checkParentForModifications() {
+        if (DEBUG_MODIFICATIONS && this.daddy != null) {
+            if (this.modDebugger.parentExpected != daddy.modDebugger.modCount) {
+                throw new CowParentModification("Parent has been modified whilst clone was still in use. ("+this.modDebugger.parentExpected+" != "+daddy.modDebugger.modCount+")");
+            }
+        }
+    }
+
+    private static class ModificationData {
+        public int modCount;
+        public int parentExpected = -1;
+    }
+
+    public static class CowParentModification extends RuntimeException {
+        public CowParentModification(String message) {
+            super(message);
         }
     }
 }

@@ -77,6 +77,19 @@ public class CowAndHashcode implements FabricGameTest {
         assertEq(veryOrigin, new CowCapableMap<>());
         assertEq(veryOrigin.hashCode(), new CowCapableMap<>().hashCode());
 
+        // According to the safety requirements on `createClone()`
+        // you shouldn't modify the parent whilst the clone is still in use
+        assertThrows(
+                e -> e instanceof CowCapableMap.CowParentModification,
+                "According to the safety requirements on `createClone()`, you shouldn't modify the parent whilst the clone is still in use",
+                () -> {
+                    // Modify the parent
+                    origin.put("a", StackEntry.known(5));
+                    // But oh no! We're still accessing the clone!
+                    copy.get("d");
+                    // The safety mechanisms should've kicked in now and given us a warning :D
+                });
+
         ctx.complete();
     }
 
@@ -118,11 +131,11 @@ public class CowAndHashcode implements FabricGameTest {
         var TWO = StackEntry.known(2);
 
         var map = new CowCapableMap<String>();
-        var clone = map.createClone();
-
         map.put("a", ONE);
-        clone.put("b", ONE);
         map.put("c", ONE);
+
+        var clone = map.createClone();
+        clone.put("b", ONE);
         clone.put("c", TWO);
 
         var mapExpected = ImmutableMap.builder()
@@ -151,9 +164,9 @@ public class CowAndHashcode implements FabricGameTest {
 
         var map = new CowCapableMap<String>();
 
+        map.put("a", ONE);
         map.put("c", ONE);
         var clone = map.createClone();
-        map.put("a", ONE);
         clone.put("b", ONE);
         clone.put("c", TWO);
 

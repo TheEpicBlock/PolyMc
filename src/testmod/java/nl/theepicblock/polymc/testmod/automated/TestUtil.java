@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 
 public class TestUtil {
@@ -67,6 +68,21 @@ public class TestUtil {
             var line = Thread.currentThread().getStackTrace()[2].getLineNumber();
             throw new GameTestException("L"+line+" Assertion failed: "+a+" = "+b+" "+message);
         }
+    }
+
+    public static void assertThrows(Predicate<Throwable> check, String message, Runnable runnable) {
+        var line = Thread.currentThread().getStackTrace()[2].getLineNumber();
+
+        try {
+            runnable.run();
+        } catch (Throwable t) {
+            if (!check.test(t)) {
+                throw new GameTestException("L"+line+" Method threw invalid exception: "+t+" ("+message+")");
+            }
+            return;
+        }
+
+        throw new GameTestException("L"+line+" Method didn't throw exception: "+message);
     }
 
     public static TestBuilder testBuilder() {
