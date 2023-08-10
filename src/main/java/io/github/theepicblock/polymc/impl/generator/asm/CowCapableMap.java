@@ -116,7 +116,7 @@ public class CowCapableMap<T> {
         }
         var nextDad = this.getDaddyWithDifferentKeys();
         if (nextDad != null) {
-            var o = nextDad.get(key);
+            var o = nextDad.getImmutable(key);
             if (o != null) {
                 incrementModifications();
                 var copy = o.copy(this.copyCache);

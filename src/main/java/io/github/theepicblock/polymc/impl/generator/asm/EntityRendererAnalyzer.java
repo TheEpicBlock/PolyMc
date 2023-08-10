@@ -140,7 +140,7 @@ public class EntityRendererAnalyzer {
     public StopWatch time;
 
     public ExecutionGraphNode analyze(EntityType<?> entity) throws VmException {
-        if (true) return null;
+//        if (true) return null;
         var rootNode = new ExecutionGraphNode();
         var rendererFactory = initializerInfo.getEntityRenderer(entity);
 

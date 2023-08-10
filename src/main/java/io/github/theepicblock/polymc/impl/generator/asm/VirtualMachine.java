@@ -65,9 +65,11 @@ public class VirtualMachine {
         this.methodStack.forEach(meth -> {
             n.methodStack.add(meth.copy(n, copyCache));
         });
-        this.classes.forEach((name, clazz) -> {
-            n.classes.put(name, clazz.copy(n, copyCache));
-        });
+        n.classes = this.classes;
+        // TODO find an alternative for this that doesn't tank performance
+//        this.classes.forEach((name, clazz) -> {
+//            n.classes.put(name, clazz.copy(n, copyCache));
+//        });
 
         return n;
     }
