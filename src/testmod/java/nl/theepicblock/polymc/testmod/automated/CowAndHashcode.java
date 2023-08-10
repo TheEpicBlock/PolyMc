@@ -7,13 +7,11 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownArray;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
 import org.objectweb.asm.Type;
 import org.spongepowered.include.com.google.common.collect.ImmutableMap;
-import org.spongepowered.include.com.google.common.collect.Sets;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,31 +39,23 @@ public class CowAndHashcode implements FabricGameTest {
         assertEq(emptyHashcode, new CowCapableMap<String>().hashCode(), "two empty maps should have the same hashcode");
 
         origin.put("a", StackEntry.known(1));
-        origin.put("b", StackEntry.known(1));
-        origin.put("c", new KnownVmObject(TstType));
-        origin.put("d", new KnownVmObject(TstType));
+        origin.put("b", new KnownVmObject(TstType));
         assertEq(origin.get("a"), StackEntry.known(1));
-        assertEq(origin.get("b"), StackEntry.known(1));
-        assertEq(origin.get("c"), new KnownVmObject(TstType));
-        assertEq(origin.get("d"), new KnownVmObject(TstType));
+        assertEq(origin.get("b"), new KnownVmObject(TstType));
 
         assertDifferent(origin, new CowCapableMap<>(), "Filled map shouldn't equal empty one");
         assertDifferent(origin.createClone(), new CowCapableMap<>(), "Copied filled map shouldn't equal empty one");
 
         var originHash = origin.hashCode();
         assertDifferent(originHash, emptyHashcode, "Hashcode should change after something's added");
-        origin.put("b", StackEntry.known(1));
+        origin.put("a", StackEntry.known(1));
         assertEq(originHash, origin.hashCode(), "Hashcode shouldn't change after the exact same value is inserted");
 
         var copy = origin.createClone();
-        var copy2 = origin.createClone();
-        var copy3 = copy.createClone();
         // Check if everything's still equal
         assertEq(origin.get("a"), StackEntry.known(1));
-        assertEq(origin.get("b"), StackEntry.known(1));
         assertEq(originHash, origin.hashCode(), "Hashcode shouldn't change after copy is made");
         assertEq(copy.get("a"), StackEntry.known(1));
-        assertEq(copy.get("b"), StackEntry.known(1));
         assertEq(copy, origin);
         assertEq(copy.hashCode(), origin.hashCode(), "Copy should have same hashcode as original");
 
@@ -74,46 +64,10 @@ public class CowAndHashcode implements FabricGameTest {
         assertDifferent(copy, origin);
         assertDifferent(copy.hashCode(), origin.hashCode(), "Hashcode should change after something's changed");
 
-        copy.get("c").setField("yeet", StackEntry.known(1));
-        assertEq(origin.get("c"), new KnownVmObject(TstType), "Copy affecting original");
+        copy.get("b").setField("yeet", StackEntry.known(1));
+        assertEq(origin.get("b"), new KnownVmObject(TstType), "Copy affecting original");
         assertDifferent(copy, origin);
         assertDifferent(copy.hashCode(), origin.hashCode(), "Hashcode should change after something's changed");
-
-        var copyHash = copy.hashCode();
-        origin.put("b", StackEntry.known(2));
-        assertEq(copy.get("b"), StackEntry.known(1), "Original affecting copy");
-        assertEq(copyHash, copy.hashCode(), "Original affecting copy");
-
-        var copyHash2 = copy.hashCode();
-        origin.get("d").setField("beet", StackEntry.known(1));
-        assertEq(copy.get("d"), new KnownVmObject(TstType), "Original affecting copy");
-        assertEq(copyHash2, copy.hashCode(), "Original affecting copy");
-
-        // Check if copy2 and copy3 were completely unaffected by everything going on
-        assertEq(copy2.get("a"), StackEntry.known(1));
-        assertEq(copy2.get("b"), StackEntry.known(1));
-        assertEq(copy2.get("c"), new KnownVmObject(TstType));
-        assertEq(copy2.get("d"), new KnownVmObject(TstType));
-        assertEq(copy3.get("a"), StackEntry.known(1));
-        assertEq(copy3.get("b"), StackEntry.known(1));
-        assertEq(copy3.get("c"), new KnownVmObject(TstType));
-        assertEq(copy3.get("d"), new KnownVmObject(TstType));
-        assertEq(copy2, copy3);
-        assertEq(copy2.hashCode(), copy3.hashCode());
-
-        origin.put("c", StackEntry.known(69));
-        copy.put("b", StackEntry.known(71));
-
-        assertEq(copy2.get("a"), StackEntry.known(1));
-        assertEq(copy2.get("b"), StackEntry.known(1));
-        assertEq(copy2.get("c"), new KnownVmObject(TstType));
-        assertEq(copy2.get("d"), new KnownVmObject(TstType));
-        assertEq(copy3.get("a"), StackEntry.known(1));
-        assertEq(copy3.get("b"), StackEntry.known(1));
-        assertEq(copy3.get("c"), new KnownVmObject(TstType));
-        assertEq(copy3.get("d"), new KnownVmObject(TstType));
-        assertEq(copy2, copy3);
-        assertEq(copy2.hashCode(), copy3.hashCode());
 
         // This should still be empty
         assertEq(veryOrigin.get("a"), null);
@@ -122,15 +76,6 @@ public class CowAndHashcode implements FabricGameTest {
         assertEq(veryOrigin.get("d"), null);
         assertEq(veryOrigin, new CowCapableMap<>());
         assertEq(veryOrigin.hashCode(), new CowCapableMap<>().hashCode());
-
-        // Test iters
-        var set = Sets.newHashSet("a", "b", "c", "d");
-        var collector = new Object2IntOpenHashMap<String>();
-        copy2.forEachImmutable((key, val) -> collector.addTo(key, 1));
-        assertTrue(set.containsAll(collector.keySet()));
-        collector.forEach((key, val) -> {
-            assertEq(val, 1);
-        });
 
         ctx.complete();
     }

@@ -87,7 +87,7 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
         var newMap = new CowCapableMap<String>();
         var newObj = new KnownVmObject(this.type, newMap);
         copyCache.put(this, newObj);
-        newMap.clearAndCopy(this.fields, this.type.nonPrimitiveFields, copyCache);
+        newMap.clearAndCopy(this.fields, copyCache);
         return newObj;
     }
 

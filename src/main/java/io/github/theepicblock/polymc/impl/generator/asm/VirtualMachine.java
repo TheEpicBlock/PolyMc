@@ -65,10 +65,9 @@ public class VirtualMachine {
         this.methodStack.forEach(meth -> {
             n.methodStack.add(meth.copy(n, copyCache));
         });
-        n.classes = this.classes;
-//        this.classes.forEach((name, clazz) -> {
-//            n.classes.put(name, clazz.copy(n));
-//        });
+        this.classes.forEach((name, clazz) -> {
+            n.classes.put(name, clazz.copy(n, copyCache));
+        });
 
         return n;
     }
@@ -879,12 +878,12 @@ public class VirtualMachine {
             this.methodComplicatedCache = methodComplicatedCache;
         }
 
-        public Clazz copy(VirtualMachine newLoader) {
+        public Clazz copy(VirtualMachine newLoader, Reference2ReferenceOpenHashMap<StackEntry, StackEntry> copyCache) {
             return new Clazz(
                     node,
                     newLoader,
                     this.hasInitted,
-                    this.staticFields.createClone(),
+                    this.staticFields.createClone(copyCache),
                     this.methodLookupCache,
                     this.nonPrimitiveFields,
                     this.methodComplicatedCache

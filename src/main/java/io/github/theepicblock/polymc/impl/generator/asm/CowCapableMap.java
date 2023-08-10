@@ -6,11 +6,11 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.apache.commons.lang3.function.ToBooleanBiFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,23 +32,27 @@ public class CowCapableMap<T> {
         this.overrides = new Object2ObjectOpenHashMap<>();
     }
 
+    /**
+     * SAFETY: once a clone is made, the original shouldn't be interacted with until the clone is disposed off
+     */
+    @TestOnly
     public CowCapableMap<T> createClone() {
         return createClone(new Reference2ReferenceOpenHashMap<>());
     }
 
+    /**
+     * SAFETY: once a clone is made, the original shouldn't be interacted with until the clone is disposed off
+     */
     public CowCapableMap<T> createClone(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         var child = new CowCapableMap<T>();
         child.clearAndCopy(this, copyCache);
         return child;
     }
 
+    /**
+     * SAFETY: once a clone is made, the original shouldn't be interacted with until the clone is disposed off
+     */
     public void clearAndCopy(@NotNull CowCapableMap<T> daddy, @NotNull Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
-        this.daddy = daddy;
-        this.overrides = null;
-        this.copyCache = copyCache;
-    }
-
-    public void clearAndCopy(@NotNull CowCapableMap<T> daddy, List<T> nonPrimitiveFields, @NotNull Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         this.daddy = daddy;
         this.overrides = null;
         this.copyCache = copyCache;
