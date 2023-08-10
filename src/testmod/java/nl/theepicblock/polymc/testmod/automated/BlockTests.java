@@ -17,6 +17,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
+import static nl.theepicblock.polymc.testmod.automated.TestUtil.assertDifferent;
+import static nl.theepicblock.polymc.testmod.automated.TestUtil.assertEq;
+
 public class BlockTests implements FabricGameTest {
     @CustomTestProvider
     public Collection<TestFunction> testItem() {
@@ -52,9 +55,9 @@ public class BlockTests implements FabricGameTest {
         var originalState = block.getDefaultState();
         method.reserialize(originalState, packetCtx, newState -> {
             if (isBlockVanilla || useNopMap) {
-                ctx.assertTrue(newState == originalState, "Item shouldn't have been transformed by PolyMc. Result: "+newState);
+                assertEq(newState == originalState, "Item shouldn't have been transformed by PolyMc");
             } else {
-                ctx.assertTrue(newState != originalState, "Item should've been transformed by PolyMc. Result: "+newState);
+                assertDifferent(newState != originalState, "Item should've been transformed by PolyMc");
             }
 
             packetCtx.close();

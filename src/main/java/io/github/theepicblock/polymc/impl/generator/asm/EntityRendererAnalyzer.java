@@ -20,15 +20,12 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class EntityRendererAnalyzer {
     public static final SharedValuesKey<EntityRendererAnalyzer> KEY = new SharedValuesKey<>(EntityRendererAnalyzer::new, null);
@@ -45,7 +42,6 @@ public class EntityRendererAnalyzer {
     private final static AsmUtils.MappedFunction EntityRenderer$renderLabelIfPresent = AsmUtils.map("net.minecraft.class_897", "method_3926", "(Lnet/minecraft/class_1297;Lnet/minecraft/class_2561;Lnet/minecraft/class_4587;Lnet/minecraft/class_4597;I)V");
     private final static String Entity$type = AsmUtils.mapField(Entity.class, "field_5961", "Lnet/minecraft/class_1299;");
     private final static String Entity$dimensions = AsmUtils.mapField(Entity.class, "field_18065", "Lnet/minecraft/class_4048;");
-    private final static String Entity$deathTime = AsmUtils.mapField(Entity.class, "deathTime", "I"); // TODO
     private final static AsmUtils.MappedFunction VertexConsumerProvider$getBuffer = AsmUtils.map("net.minecraft.class_4597", "getBuffer", "(Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588;");
     private final static String MatrixStack = AsmUtils.mapClass("net.minecraft.class_4587");
 
@@ -58,13 +54,6 @@ public class EntityRendererAnalyzer {
 
     // We can consider these methods to just be properties of the entity
     // They're not executed in order to prevent jumps on unknown values
-    private final static AsmUtils.MappedFunction Entity$isFrozen = AsmUtils.map("net.minecraft.class_1297", "method_32314", "()Z");
-    private final static AsmUtils.MappedFunction Entity$getFlag = AsmUtils.map("net.minecraft.class_1297", "method_5795", "(I)Z");
-    private final static AsmUtils.MappedFunction Nameable$getName = AsmUtils.map("net.minecraft.class_1275", "method_5477", "()Lnet/minecraft/class_2561;");
-    private final static AsmUtils.MappedFunction Nameable$getDisplayName = AsmUtils.map("net.minecraft.class_1275", "method_5476", "()Lnet/minecraft/class_2561;");
-    private final static AsmUtils.MappedFunction Nameable$getCustomName = AsmUtils.map("net.minecraft.class_1275", "method_5797", "()Lnet/minecraft/class_2561;");
-    private final static AsmUtils.MappedFunction LivingEntity$isUsingRiptide = AsmUtils.map("net.minecraft.class_1309", "method_6123", "()Z");
-    private final static AsmUtils.MappedFunction LivingEntity$getHandSwingProgress = AsmUtils.map("net.minecraft.class_1309", "method_6055", "(F)F");
     private final static AsmUtils.MappedFunction LivingEntityRenderer$hasLabel = AsmUtils.map("net.minecraft.class_922", "method_4055", "(Lnet/minecraft/class_1309;)Z");
     private final static AsmUtils.MappedFunction MobEntityRenderer$hasLabel = AsmUtils.map("net.minecraft.class_927", "method_4071", "(Lnet/minecraft/class_1308;)Z");
     private final static AsmUtils.MappedFunction DataTracker$getEntry = AsmUtils.map("net.minecraft.class_2945", "method_12783", "(Lnet/minecraft/class_2940;)Lnet/minecraft/class_2945$class_2946;");
@@ -75,9 +64,6 @@ public class EntityRendererAnalyzer {
     private final static AsmUtils.MappedFunction MathHelper$wrapDegreesI = AsmUtils.map("net.minecraft.class_3532", "method_15392", "(I)I");
     private final static AsmUtils.MappedFunction MathHelper$wrapDegreesF = AsmUtils.map("net.minecraft.class_3532", "method_15393", "(F)F");
     private final static AsmUtils.MappedFunction MathHelper$wrapDegreesD = AsmUtils.map("net.minecraft.class_3532", "method_15338", "(D)D");
-    private final static AsmUtils.MappedFunction Entity$removeClickEvents = AsmUtils.map("net.minecraft.class_1297", "method_5856", "(Lnet/minecraft/class_2561;)Lnet/minecraft/class_2561;");
-    private final static AsmUtils.MappedFunction Entity$isInPose = AsmUtils.map("net.minecraft.class_1297", "method_41328", "(Lnet/minecraft/class_4050;)Z");
-    private final static AsmUtils.MappedFunction Entity$visitFormatted = AsmUtils.map("net.minecraft.class_1297", "method_41328", "(Lnet/minecraft/class_4050;)Z");
 
     /**
      * Vm for invoking the factory
@@ -117,7 +103,7 @@ public class EntityRendererAnalyzer {
 
         @Override
         public StackEntry onVmError(String method, boolean returnsVoid, VmException e) throws VmException {
-            PolyMc.LOGGER.error("Couldn't run "+method+": "+e.createFancyErrorMessage());
+//            PolyMc.LOGGER.error("Couldn't run "+method+": "+e.createFancyErrorMessage());
             if (returnsVoid) {
                 return null;
             }
@@ -140,7 +126,6 @@ public class EntityRendererAnalyzer {
     public StopWatch time;
 
     public ExecutionGraphNode analyze(EntityType<?> entity) throws VmException {
-//        if (true) return null;
         var rootNode = new ExecutionGraphNode();
         var rendererFactory = initializerInfo.getEntityRenderer(entity);
 
@@ -252,18 +237,6 @@ public class EntityRendererAnalyzer {
             SPECIAL_METHODS.put(MinecraftClient$hasOutline, (arguments, config) -> {
                 return new KnownInteger(false); // Let's… not deal with that now
             });
-//            SPECIAL_METHODS.put(Entity$getFlag, (arguments, config) -> {
-//                return new UnknownValue("getFlag");
-//            });
-//            SPECIAL_METHODS.put(Nameable$getName, (arguments, config) -> {
-//                return new UnknownValue("getName");
-//            });
-//            SPECIAL_METHODS.put(Nameable$getDisplayName, (arguments, config) -> {
-//                return new UnknownValue("getDisplayName");
-//            });
-//            SPECIAL_METHODS.put(Nameable$getCustomName, (arguments, config) -> {
-//                return new UnknownValue("getCustomName");
-//            });
             SPECIAL_METHODS.put(LivingEntityRenderer$hasLabel, (arguments, config) -> {
                 return new UnknownValue("hasLabel");
             });
@@ -421,50 +394,6 @@ public class EntityRendererAnalyzer {
                 return null;
             }
             return new UnknownValue("Error executing " + method + ": " + e.createFancyErrorMessage());
-        }
-
-        @SuppressWarnings({"DuplicateBranchesInSwitch", "RedundantIfStatement"})
-        private boolean isSseEligible(AbstractInsnNode currentInstr, LabelNode target) {
-            // Check if the two branches converge back somewhere in the next 50 insns
-            var insnJumpedOver = AsmUtils.insnStream(currentInstr)
-                    .limit(50)
-                    .takeWhile(i -> i != target)
-                    .collect(Collectors.toSet());
-
-            if (insnJumpedOver.size() == 50) {
-                return false;
-            }
-            return insnJumpedOver
-                    .stream()
-                    .noneMatch(insn -> {
-                        // Jumps are fine only if they are within the jumped over area
-                        // This ensures that they too are sse-eligible
-                        if (insn instanceof JumpInsnNode jump) {
-                            return !insnJumpedOver.contains(jump.label) && jump.label != target;
-                        }
-                        switch (insn.getOpcode()) {
-                            // I don't want to deal with these
-                            case Opcodes.GOTO, Opcodes.RET, Opcodes.LOOKUPSWITCH, Opcodes.TABLESWITCH -> {
-                                return true;
-                            }
-                            // If the branch returns it causes the same issues as a method call
-                            case Opcodes.RETURN, Opcodes.ARETURN, Opcodes.DRETURN, Opcodes.FRETURN, Opcodes.IRETURN, Opcodes.LRETURN -> {
-                                return true;
-                            }
-                        }
-                        // Calling functions means that a whole load of other code will get executed.
-                        // These could call stuff that can't be SSE'd, such as rendering calls
-                        if (insn instanceof MethodInsnNode method) {
-                            // Math is fine though
-                            if (method.owner.equals("java/lang/Math")) return false;
-                            // Matrix ops too
-                            if (method.owner.equals(MatrixStack)) return false;
-                            return true;
-                        }
-
-                        // This instruction is fine
-                        return false;
-                    });
         }
     }
 }

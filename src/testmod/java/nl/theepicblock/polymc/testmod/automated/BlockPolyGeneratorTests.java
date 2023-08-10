@@ -11,6 +11,8 @@ import nl.theepicblock.polymc.testmod.Testmod;
 
 import java.util.function.Predicate;
 
+import static nl.theepicblock.polymc.testmod.automated.TestUtil.assertTrue;
+
 public class BlockPolyGeneratorTests implements FabricGameTest {
     @GameTest(templateName = EMPTY_STRUCTURE)
     public void testDoor(TestContext ctx) {
@@ -49,7 +51,7 @@ public class BlockPolyGeneratorTests implements FabricGameTest {
     public static void assertPoly(TestContext ctx, Block a, Predicate<BlockState> check, String message) {
         var poly = TestUtil.getMap().getBlockPoly(a);
         var polied = poly.getClientBlock(a.getDefaultState());
-        ctx.assertTrue(check.test(polied), Registries.BLOCK.getId(a)+" didn't get polied correctly: "+message+ " found "+polied+" instead");
+        assertTrue(check.test(polied), Registries.BLOCK.getId(a)+" didn't get polied correctly: "+message+ " found "+polied+" instead");
     }
 
     public static boolean opensAfterRightClick(TestContext ctx, BlockState a) {

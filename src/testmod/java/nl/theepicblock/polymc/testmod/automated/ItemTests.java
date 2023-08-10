@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Objects;
 
+import static nl.theepicblock.polymc.testmod.automated.TestUtil.assertTrue;
+
 public class ItemTests implements FabricGameTest {
     @CustomTestProvider
     public Collection<TestFunction> testItem() {
@@ -58,13 +60,13 @@ public class ItemTests implements FabricGameTest {
         var newStack = method.reserialize(originalStack, packetCtx);
 
         if (isItemVanilla || useNopMap) {
-            ctx.assertTrue(newStack.getItem() == originalStack.getItem(), "Item shouldn't have been transformed by PolyMc. Result: "+newStack);
+            assertTrue(newStack.getItem() == originalStack.getItem(), "Item shouldn't have been transformed by PolyMc. Result: "+newStack);
         } else {
-            ctx.assertTrue(newStack.getItem() != originalStack.getItem(), "Item should've been transformed by PolyMc. Result: "+newStack);
+            assertTrue(newStack.getItem() != originalStack.getItem(), "Item should've been transformed by PolyMc. Result: "+newStack);
         }
-        ctx.assertTrue(newStack.getCount() == 5, "PolyMc shouldn't affect itemcount");
-        ctx.assertTrue(ItemStack.areItemsEqual(originalStack, copyOfOriginal), "PolyMc shouldn't affect the original item");
-        ctx.assertTrue(Objects.equals(originalStack.getNbt(), copyOfOriginal.getNbt()), "PolyMc shouldn't affect the original item's nbt");
+        assertTrue(newStack.getCount() == 5, "PolyMc shouldn't affect itemcount");
+        assertTrue(ItemStack.areItemsEqual(originalStack, copyOfOriginal), "PolyMc shouldn't affect the original item");
+        assertTrue(Objects.equals(originalStack.getNbt(), copyOfOriginal.getNbt()), "PolyMc shouldn't affect the original item's nbt");
 
         packetCtx.close();
         ctx.complete();
@@ -82,7 +84,7 @@ public class ItemTests implements FabricGameTest {
             ctx.getTestContext().getWorld().spawnEntity(entity);
         });
 
-        ctx.getTestContext().assertTrue(trackerPacket.trackedValues().size() == 1, "Weird tracker update");
+        assertTrue(trackerPacket.trackedValues().size() == 1, "Weird tracker update");
 
         return (ItemStack)trackerPacket.trackedValues().get(0).value();
     }

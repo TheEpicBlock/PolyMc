@@ -25,8 +25,8 @@ import java.util.*;
 public class ClientInitializerAnalyzer {
     public static final SharedValuesKey<ClientInitializerAnalyzer> KEY = new SharedValuesKey<ClientInitializerAnalyzer>(ClientInitializerAnalyzer::new, null);
 
-    private Map<EntityType<?>, Lambda> entityRendererRegistry = new HashMap<>();
-    private Map<EntityModelLayer, Lambda> entityModelLayerRegistry = new HashMap<>();
+    private final Map<EntityType<?>, Lambda> entityRendererRegistry = new HashMap<>();
+    private final Map<EntityModelLayer, Lambda> entityModelLayerRegistry = new HashMap<>();
 
     public ClientInitializerAnalyzer(PolyRegistry registry) {
         this();
@@ -102,7 +102,7 @@ public class ClientInitializerAnalyzer {
 
             @Override
             public StackEntry onVmError(String method, boolean returnsVoid, VmException e) throws VmException {
-                PolyMc.LOGGER.error("Couldn't run "+method+": "+e.createFancyErrorMessage());
+//                PolyMc.LOGGER.error("Couldn't run "+method+": "+e.createFancyErrorMessage());
                 if (returnsVoid) {
                     return null;
                 }

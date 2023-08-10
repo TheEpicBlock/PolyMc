@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static nl.theepicblock.polymc.testmod.automated.TestUtil.assertTrue;
+
 public class PacketTester implements Closeable {
     private final ServerPlayerEntity playerEntity;
     private final FakeNetworkHandler fakeNetworkHandler;
@@ -51,7 +53,7 @@ public class PacketTester implements Closeable {
                 .filter(packet -> packet.getClass() == packetType)
                 .map(packet -> (T)packet)
                 .toList();
-        this.context.assertTrue(packets.size() == 1, String.format("Expected one packet of type %s, found %d", packetType, packets.size()));
+        assertTrue(packets.size() == 1, String.format("Expected one packet of type %s, found %d", packetType, packets.size()));
         return packets.get(0);
     }
 
@@ -71,7 +73,7 @@ public class PacketTester implements Closeable {
     }
 
     public void assertReceived(Packet<?> packet, String message) {
-        this.context.assertTrue(this.fakeNetworkHandler.sentPackets.contains(packet), message);
+        assertTrue(this.fakeNetworkHandler.sentPackets.contains(packet), message);
     }
 
     public TestContext getTestContext() {

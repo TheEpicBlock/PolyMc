@@ -18,14 +18,11 @@ import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 public class VirtualMachine {
     public final static boolean VM_DEBUG_EXCEPTIONS = true;
@@ -212,10 +209,6 @@ public class VirtualMachine {
         return config;
     }
 
-    public ClientClassLoader getClassResolver() {
-        return classResolver;
-    }
-
     public void ensureClinit(Clazz node) throws VmException {
         // This isn't spec-compliant
         if (!node.hasInitted) {
@@ -360,20 +353,10 @@ public class VirtualMachine {
         }
     }
 
-    private static final @InternalName String LoggerFactory = Type.getInternalName(LoggerFactory.class);
     private static final @InternalName String _String = Type.getInternalName(String.class);
-    private static final @InternalName String Objects = Type.getInternalName(Objects.class);
-    private static final @InternalName String _Array = Type.getInternalName(Array.class);
-    private static final @InternalName String _StrictMath = Type.getInternalName(StrictMath.class);
     private static final @InternalName String _Float = Type.getInternalName(Float.class);
     private static final @InternalName String _Double = Type.getInternalName(Double.class);
-    private static final @InternalName String _VM = "jdk/internal/misc/VM";
-    private static final @InternalName String _Class = Type.getInternalName(Class.class);
     private static final @InternalName String _System = Type.getInternalName(System.class);
-    private static final @InternalName String _Runtime = Type.getInternalName(Runtime.class);
-    private static final @InternalName String _Unsafe = "jdk/internal/misc/Unsafe";
-    private static final @InternalName String _CDS = "jdk/internal/misc/CDS";
-    private static final @InternalName String _Reflection = "jdk/internal/reflect/Reflection";
     private static final @InternalName String _Integer = Type.getInternalName(Integer.class);
     private static final @InternalName String _Long = Type.getInternalName(Long.class);
 
@@ -840,7 +823,7 @@ public class VirtualMachine {
         public String desc() {
             return meth.desc;
         }
-    };
+    }
 
     public static class Clazz {
         private final VirtualMachine loader;

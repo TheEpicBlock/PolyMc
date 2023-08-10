@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 
 /**
- * Represents and object that exists outside of the vm
+ * Represents and object that exists outside the vm
  */
 public record KnownObject(Object i, @NotNull HashMap<Object, StackEntry> mutations) implements StackEntry {
     public static KnownObject NULL = new KnownObject(null, new HashMap<>());

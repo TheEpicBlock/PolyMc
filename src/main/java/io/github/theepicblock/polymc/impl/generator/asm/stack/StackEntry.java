@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Type;
 
 public interface StackEntry {
-    static final Gson GSON = new Gson();
+    Gson GSON = new Gson();
 
     static @NotNull StackEntry known(Object o) {
         if (o instanceof Integer i) {
@@ -97,7 +97,7 @@ public interface StackEntry {
 
     default JsonElement toJson() {
         throw new NotImplementedException();
-    };
+    }
 
     /**
      * @return Whether this stack value represents a concrete value that's ready to be extracted

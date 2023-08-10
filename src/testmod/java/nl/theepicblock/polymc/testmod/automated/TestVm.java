@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import static nl.theepicblock.polymc.testmod.automated.TestUtil.assertTrue;
+
 @SuppressWarnings("ConstantValue")
 public class TestVm implements FabricGameTest {
     /**
@@ -98,7 +100,7 @@ public class TestVm implements FabricGameTest {
     }
 
     private static void assertContains(TestContext ctx, MethodExecutor.VmException e, String contains, String msg) {
-        ctx.assertTrue(e.createFancyErrorMessage().contains(contains), msg+" ("+e.createFancyErrorMessage()+")");
+        assertTrue(e.createFancyErrorMessage().contains(contains), msg+" ("+e.createFancyErrorMessage()+")");
     }
 
     @GameTest(templateName = EMPTY_STRUCTURE)
