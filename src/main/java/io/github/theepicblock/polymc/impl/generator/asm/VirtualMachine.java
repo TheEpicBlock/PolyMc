@@ -7,10 +7,7 @@ import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
-import it.unimi.dsi.fastutil.objects.AbstractObjectList;
-import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.*;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +20,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class VirtualMachine {
     public final static boolean VM_DEBUG_EXCEPTIONS = true;
@@ -304,6 +302,12 @@ public class VirtualMachine {
             rootClass = getClass(inst.owner);
         }
 
+        var cacheKey = new MethodResolutionKey(inst.name, inst.desc, inst.getOpcode() == Opcodes.INVOKEINTERFACE || inst.getOpcode() == Opcodes.INVOKEVIRTUAL);
+        var cachedResult = rootClass.methodResolutionCache.get(cacheKey);
+        if (cachedResult != null) {
+            return cachedResult;
+        }
+
         // Step 2 of method resolution (done recursively for each superclass)
         // See https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-5.html#jvms-5.4.3.3
         var clazz = rootClass;
@@ -318,7 +322,9 @@ public class VirtualMachine {
                     throw new VmException("Method " + inst.name + inst.desc + " in "
                             + rootClass + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to an abstract method", null);
                 }
-                return new MethodRef(clazz, method);
+                var ref = new MethodRef(clazz, method);
+                rootClass.methodResolutionCache.put(cacheKey, ref);
+                return ref;
             } else {
                 // Check super class
                 if (clazz.node.superName == null) break;
@@ -339,7 +345,10 @@ public class VirtualMachine {
                         return new MethodRef(interfaceClass, defaultMethod);
                     return null;
                 });
-                if (method != null) return method;
+                if (method != null) {
+                    rootClass.methodResolutionCache.put(cacheKey, method);
+                    return method;
+                }
                 if (clazz.node.superName == null) break;
                 clazz = this.getClass(clazz.node.superName);
             }
@@ -833,6 +842,7 @@ public class VirtualMachine {
         private final ImmutableMap<@NotNull String, @NotNull MethodNode> methodLookupCache;
         public final List<String> nonPrimitiveFields;
         public final Object2BooleanOpenHashMap<@NotNull String> methodComplicatedCache;
+        public final Map<MethodResolutionKey, @NotNull MethodRef> methodResolutionCache;
 
         public Clazz(ClassNode node, VirtualMachine loader) {
             this.node = node;
@@ -851,9 +861,10 @@ public class VirtualMachine {
                     .map(f -> f.name)
                     .toList();
             this.methodComplicatedCache = new Object2BooleanOpenHashMap<>();
+            this.methodResolutionCache = new Object2ObjectOpenHashMap<>();
         }
 
-        private Clazz(ClassNode node, VirtualMachine loader, boolean hasInitted, CowCapableMap<@NotNull String> staticFields, ImmutableMap<String, @NotNull MethodNode> preComputedCache, List<String> nonPrimitiveFields, Object2BooleanOpenHashMap<@NotNull String> methodComplicatedCache) {
+        private Clazz(ClassNode node, VirtualMachine loader, boolean hasInitted, CowCapableMap<@NotNull String> staticFields, ImmutableMap<String, @NotNull MethodNode> preComputedCache, List<String> nonPrimitiveFields, Object2BooleanOpenHashMap<@NotNull String> methodComplicatedCache, Map<MethodResolutionKey, @NotNull MethodRef> methodResolutionCache) {
             this.node = node;
             this.loader = loader;
             this.hasInitted = hasInitted;
@@ -861,6 +872,7 @@ public class VirtualMachine {
             this.methodLookupCache = preComputedCache;
             this.nonPrimitiveFields = nonPrimitiveFields;
             this.methodComplicatedCache = methodComplicatedCache;
+            this.methodResolutionCache = methodResolutionCache;
         }
 
         public Clazz copy(VirtualMachine newLoader, Reference2ReferenceOpenHashMap<StackEntry, StackEntry> copyCache) {
@@ -871,7 +883,8 @@ public class VirtualMachine {
                     this.staticFields.createClone(copyCache),
                     this.methodLookupCache,
                     this.nonPrimitiveFields,
-                    this.methodComplicatedCache
+                    this.methodComplicatedCache,
+                    this.methodResolutionCache
             );
         }
 
@@ -969,6 +982,10 @@ public class VirtualMachine {
         public ClassNode getNode() {
             return node;
         }
+    }
+
+    private record MethodResolutionKey(String name, String desc, boolean checkInterfaces) {
+
     }
 
     @Override
