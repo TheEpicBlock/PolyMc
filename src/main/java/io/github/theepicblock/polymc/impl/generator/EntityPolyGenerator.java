@@ -3,7 +3,7 @@ package io.github.theepicblock.polymc.impl.generator;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.generator.asm.EntityRendererAnalyzer;
+import io.github.theepicblock.polymc.impl.generator.asm.CachedEntityRendererAnalyzer;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
 import io.github.theepicblock.polymc.impl.poly.entity.DefaultedEntityPoly;
@@ -37,7 +37,7 @@ public class EntityPolyGenerator {
             return (info, entity) -> null; // Compatibility with Taterzens
         }
 
-        var rendererAnalysis = builder.getSharedValues(EntityRendererAnalyzer.KEY);
+        var rendererAnalysis = builder.getSharedValues(CachedEntityRendererAnalyzer.KEY);
         try {
             rendererAnalysis.analyze(entityType);
         } catch (VmException e) {
