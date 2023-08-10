@@ -1,7 +1,5 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownArray;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
@@ -22,16 +20,16 @@ import java.util.function.BiConsumer;
 public class CowCapableMap<T> {
     private static final ReferenceQueue<CowCapableMap<?>> GLOBAL_CLEANING_MAP = new ReferenceQueue<>();
     private @Nullable CowCapableMap<T> daddy = null;
-    private @Nullable Map<T, @Nullable StackEntry> overrides = null;
+    private @Nullable Map<T, @Nullable StackEntry> overrides;
     private static int INVALID_KEYCODE;
     private int keyCode = INVALID_KEYCODE;
+    /**
+     * Should be non-null if {@link #daddy} is non-null
+     */
+    private Reference2ReferenceOpenHashMap<StackEntry, StackEntry> copyCache;
 
     public CowCapableMap() {
         this.overrides = new Object2ObjectOpenHashMap<>();
-    }
-
-    private CowCapableMap(@NotNull CowCapableMap<T> daddy) {
-        this.daddy = daddy;
     }
 
     public CowCapableMap<T> createClone() {
@@ -47,24 +45,13 @@ public class CowCapableMap<T> {
     public void clearAndCopy(@NotNull CowCapableMap<T> daddy, @NotNull Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         this.daddy = daddy;
         this.overrides = null;
-        this.forEachImmutable((key,val) -> {
-            if (val instanceof KnownVmObject || val instanceof KnownArray) {
-                this.put(key, val.copy(copyCache));
-            }
-        });
+        this.copyCache = copyCache;
     }
 
     public void clearAndCopy(@NotNull CowCapableMap<T> daddy, List<T> nonPrimitiveFields, @NotNull Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         this.daddy = daddy;
         this.overrides = null;
-//        for (var field : nonPrimitiveFields) {
-//            var e = daddy.getImmutable(field);
-//            if (e != null) {
-//                var copy = e.copy(copyCache);
-//                if (copy == e) continue; // This is an immutable value
-//                this.put(field, e.copy(copyCache));
-//            }
-//        }
+        this.copyCache = copyCache;
     }
 
     public boolean isEmpty() {
@@ -116,7 +103,7 @@ public class CowCapableMap<T> {
         if (nextDad != null) {
             var o = nextDad.get(key);
             if (o != null) {
-                var copy = o.copy();
+                var copy = o.copy(this.copyCache);
                 if (copy != o) {
                     if (this.overrides == null) this.overrides = new HashMap<>();
                     this.overrides.put(key, copy);
