@@ -60,6 +60,7 @@
     "tag.SynchronizeTagsMixin",
     "wizards.EntityAccessor",
     "wizards.FallingBlockEntityMixin",
+    "wizards.InteractionEntityAccessor",
     "wizards.ItemEntityAccessor",
     "wizards.ItemFrameEntityAccessor",
     "wizards.MixinPistonBlockEntity",

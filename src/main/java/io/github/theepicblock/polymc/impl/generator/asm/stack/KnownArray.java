@@ -1,6 +1,8 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.network.PacketByteBuf;
@@ -12,7 +14,11 @@ import java.util.Arrays;
 public record KnownArray(@Nullable StackEntry[] data) implements StackEntry {
     @Override
     public JsonElement toJson() {
-        return StackEntry.GSON.toJsonTree(data);
+        var array = new JsonArray();
+        for (var elem : data) {
+            array.add(elem == null ? JsonNull.INSTANCE : elem.toJson());
+        }
+        return array;
     }
 
     public static KnownArray withLength(int length) {

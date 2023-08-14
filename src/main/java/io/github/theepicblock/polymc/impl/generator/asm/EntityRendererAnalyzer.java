@@ -215,6 +215,7 @@ public class EntityRendererAnalyzer {
             SPECIAL_METHODS.put(ModelPart$Cuboid$renderCuboid, (arguments, config) -> {
                 var cuboid = arguments[0];
                 var matrix = arguments[1].getField("positionMatrix"); // TODO mappings
+                // TODO check which texture is being used (should be somewhere in the vertex buffer?)
                 config.node.addCall(new ExecutionGraphNode.RenderCall(cuboid, matrix));
                 return null;
             });

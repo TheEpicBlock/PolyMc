@@ -50,9 +50,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.JsonHelper;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -218,6 +216,16 @@ public class PolyMapImpl implements PolyMap {
                 blockPoly.addToResourcePack(block, moddedResources, pack, logger);
             } catch (Exception e) {
                 logger.warn("Exception whilst generating resources for " + block.getTranslationKey());
+                e.printStackTrace();
+            }
+        });
+
+        // Hooks for all entitypolys
+        this.entityPolys.forEach((entity, entityPoly) -> {
+            try {
+                entityPoly.addToResourcePack(entity, moddedResources, pack, logger);
+            } catch (Exception e) {
+                logger.warn("Exception whilst generating resources for " + entity.getTranslationKey());
                 e.printStackTrace();
             }
         });

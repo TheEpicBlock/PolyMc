@@ -2,7 +2,9 @@ package io.github.theepicblock.polymc.impl.generator;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
+import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.generator.asm.AsmEntityPoly;
 import io.github.theepicblock.polymc.impl.generator.asm.CachedEntityRendererAnalyzer;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
@@ -40,9 +42,12 @@ public class EntityPolyGenerator {
         var rendererAnalysis = builder.getSharedValues(CachedEntityRendererAnalyzer.KEY);
         try {
             var graph = rendererAnalysis.analyze(entityType);
-            graph.simplify();
+            if (graph != null) {
+                graph.simplify();
+                return new AsmEntityPoly<>(graph, entityType, builder.getSharedValues(CustomModelDataManager.KEY));
+            }
         } catch (VmException e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
         
         // Get the class of the entity

@@ -10,7 +10,17 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.UUID;
+
 public class VItemFrame extends AbstractVirtualEntity {
+    public VItemFrame() {
+        super();
+    }
+
+    public VItemFrame(UUID uuid, int id) {
+        super(uuid, id);
+    }
+
     public void spawn(PacketConsumer player, Vec3d pos, Direction facing) {
         player.sendPacket(new EntitySpawnS2CPacket(
                 id,

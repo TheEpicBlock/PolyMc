@@ -101,6 +101,13 @@ public class CustomModelDataManager {
     public final static Item[] BLOCK_ITEMS = {
             Items.STRUCTURE_VOID
     };
+    public final static Item[] GENERATED_MODEL_ITEMS = {
+            Items.CANDLE,
+            Items.CYAN_CANDLE,
+            Items.RED_CANDLE,
+            Items.YELLOW_CANDLE,
+            Items.BLUE_CANDLE,
+    };
 
     private final Object2IntMap<Item> customModelDataCounter = new Object2IntOpenHashMap<>();
     private int roundRobin = 0;

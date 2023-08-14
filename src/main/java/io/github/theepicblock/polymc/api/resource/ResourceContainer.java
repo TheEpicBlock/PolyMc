@@ -8,6 +8,8 @@ import io.github.theepicblock.polymc.impl.resource.json.JBlockStateImpl;
 import io.github.theepicblock.polymc.impl.resource.json.JModelImpl;
 import io.github.theepicblock.polymc.impl.resource.json.JSoundEventRegistryImpl;
 import net.minecraft.resource.InputSupplier;
+import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -67,4 +69,21 @@ public interface ResourceContainer {
     }
 
     boolean containsAsset(String namespace, String path);
+
+    @ApiStatus.Experimental
+    default PolyMcAsset getAsset(String namespace, String path) {
+        if (path.startsWith(ResourceConstants.TEXTURES) && path.endsWith(".png")) {
+            return getTexture(namespace, path.substring(ResourceConstants.TEXTURES.length(), path.length()-4));
+        }
+        if (path.startsWith(ResourceConstants.SOUNDS) && path.endsWith(".ogg")) {
+            return getSound(namespace, path.substring(ResourceConstants.SOUNDS.length(), path.length()-4));
+        }
+        if (path.startsWith(ResourceConstants.BLOCKSTATES) && path.endsWith(".json")) {
+            return getBlockState(namespace, path.substring(ResourceConstants.BLOCKSTATES.length(), path.length()-5));
+        }
+        if (path.startsWith(ResourceConstants.MODELS) && path.endsWith(".json")) {
+            return getModel(namespace, path.substring(ResourceConstants.MODELS.length(), path.length()-5));
+        }
+        throw new NotImplementedException();
+    }
 }

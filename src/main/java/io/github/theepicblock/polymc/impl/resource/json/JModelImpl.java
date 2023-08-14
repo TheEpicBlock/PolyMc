@@ -17,6 +17,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.*;
 
+@ApiStatus.Internal
 public class JModelImpl implements JModel {
     /**
      * If there's a credit field, keep it. We don't want to erase attribution
