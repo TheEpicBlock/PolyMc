@@ -39,7 +39,8 @@ public class EntityPolyGenerator {
 
         var rendererAnalysis = builder.getSharedValues(CachedEntityRendererAnalyzer.KEY);
         try {
-            rendererAnalysis.analyze(entityType);
+            var graph = rendererAnalysis.analyze(entityType);
+            graph.simplify();
         } catch (VmException e) {
             System.out.println(e);
         }

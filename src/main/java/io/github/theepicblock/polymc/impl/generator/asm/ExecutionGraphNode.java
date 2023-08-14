@@ -58,6 +58,41 @@ public class ExecutionGraphNode {
         }
     }
 
+    public void simplify() {
+        if (this.continuation == null) return;
+        var ifTrue = this.continuation.continuationIfTrue;
+        var ifFalse = this.continuation.continuationIfFalse;
+
+        ifTrue.simplify();
+        ifFalse.simplify();
+
+        if (ifTrue.calls == null || ifTrue.calls.isEmpty()) {
+            return;
+        }
+        if (ifFalse.calls == null || ifFalse.calls.isEmpty()) {
+            return;
+        }
+
+        var callSet = new HashSet<>(ifTrue.calls);
+
+        var duplicateCalls = new ArrayList<RenderCall>();
+
+        ifFalse.calls.forEach(call -> {
+            if (callSet.contains(call)) {
+                duplicateCalls.add(call);
+            }
+        });
+
+        if (!duplicateCalls.isEmpty()) {
+            ifTrue.calls.removeAll(duplicateCalls);
+            ifFalse.calls.removeAll(duplicateCalls);
+            if (this.calls == null) this.calls = new ArrayList<>();
+            this.calls.addAll(duplicateCalls);
+        }
+
+        this.tryMerge();
+    }
+
     /**
      * Frees up memory
      */
