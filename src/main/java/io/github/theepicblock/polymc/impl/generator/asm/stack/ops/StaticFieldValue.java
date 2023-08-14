@@ -5,6 +5,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.network.PacketByteBuf;
 
 /**
  * @param owner should be the *actual* owner of the static field. This code won't deal with inheritance
@@ -20,5 +21,15 @@ public record StaticFieldValue(@InternalName String owner, String field) impleme
         var clazz = vm.getClass(this.owner());
         vm.ensureClinit(clazz);
         return clazz.getStatic(this.field()).simplify(vm, simplificationCache);
+    }
+
+    @Override
+    public void write(PacketByteBuf buf) {
+        buf.writeString(owner);
+        buf.writeString(field);
+    }
+
+    public static StackEntry read(PacketByteBuf buf) {
+        return new StaticFieldValue(buf.readString(), buf.readString());
     }
 }

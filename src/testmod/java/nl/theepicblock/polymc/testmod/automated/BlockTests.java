@@ -55,9 +55,9 @@ public class BlockTests implements FabricGameTest {
         var originalState = block.getDefaultState();
         method.reserialize(originalState, packetCtx, newState -> {
             if (isBlockVanilla || useNopMap) {
-                assertEq(newState == originalState, "Item shouldn't have been transformed by PolyMc");
+                assertEq(newState, originalState, "Block shouldn't have been transformed by PolyMc");
             } else {
-                assertDifferent(newState != originalState, "Item should've been transformed by PolyMc");
+                assertDifferent(newState, originalState, "Block should've been transformed by PolyMc");
             }
 
             packetCtx.close();

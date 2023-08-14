@@ -34,6 +34,24 @@ repositories {
 			includeGroupByRegex("org\\.quiltmc.*")
 		}
 	}
+	maven {
+		name = "Modrinth"
+		url = "https://api.modrinth.com/maven"
+		content {
+			includeGroup("maven.modrinth")
+		}
+	}
+}
+
+sourceSets {
+	testmod {
+		runtimeClasspath += main.runtimeClasspath + main.output
+		compileClasspath += main.compileClasspath + main.output
+	}
+	datagen {
+		runtimeClasspath += main.runtimeClasspath
+		compileClasspath += main.compileClasspath
+	}
 }
 
 dependencies {
@@ -71,17 +89,6 @@ dependencies {
 	}
 }
 
-sourceSets {
-	testmod {
-		runtimeClasspath += main.runtimeClasspath + main.output
-		compileClasspath += main.compileClasspath + main.output
-	}
-	datagen {
-		runtimeClasspath += main.runtimeClasspath
-		compileClasspath += main.compileClasspath
-	}
-}
-
 loom {
 	runs {
 		testmodClient {
@@ -101,6 +108,7 @@ loom {
 			name "Game Test"
 			vmArg "-Dfabric-api.gametest"
 			vmArg "-Dfabric-api.gametest.report-file=${project.buildDir}/junit.xml"
+			vmArg "-Xverify:none"
 			runDir "build/gametest"
 			source sourceSets.testmod
 		}

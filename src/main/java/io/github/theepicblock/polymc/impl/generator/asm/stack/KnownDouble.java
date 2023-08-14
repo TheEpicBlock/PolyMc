@@ -2,6 +2,7 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import net.minecraft.network.PacketByteBuf;
 
 public record KnownDouble(double d) implements StackEntry {
     @Override
@@ -15,6 +16,15 @@ public record KnownDouble(double d) implements StackEntry {
             return (T)(Double)d;
         }
         return StackEntry.super.extractAs(type);
+    }
+
+    @Override
+    public void write(PacketByteBuf buf) {
+        buf.writeDouble(this.d);
+    }
+
+    public static StackEntry read(PacketByteBuf buf) {
+        return new KnownDouble(buf.readDouble());
     }
 
     @Override

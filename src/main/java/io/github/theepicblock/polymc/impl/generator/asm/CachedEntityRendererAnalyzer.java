@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.SharedValuesKey;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
@@ -21,26 +22,33 @@ public class CachedEntityRendererAnalyzer {
         this.rendererAnalyzer = registry.getSharedValues(EntityRendererAnalyzer.KEY);
         var gameDir = FabricLoader.getInstance().getGameDir();
         this.cacheRoot = gameDir.resolve(".cache").resolve(PolyMc.MODID).resolve("entity_asm");
-        var success = this.cacheRoot.toFile().mkdirs();
-        if (!success) {
+        try {
+            Files.createDirectories(this.cacheRoot);
+        } catch (IOException e) {
             PolyMc.LOGGER.warn("Failed to create asm cache dir ("+cacheRoot+"). May lead to further errors down the line");
+            e.printStackTrace();
         }
     }
 
     public ExecutionGraphNode analyze(EntityType<?> entity) throws MethodExecutor.VmException {
-        // Don't worry, this code is temporary™
+        if (entity.getTranslationKey().contains("snail")) return null;
+
         var entityCacheFile = getFile(entity);
         if (Files.exists(entityCacheFile)) {
-            try (var stream = new ObjectInputStream(new FileInputStream(entityCacheFile.toFile()))) {
-                return (ExecutionGraphNode)stream.readObject();
-            } catch (IOException | ClassNotFoundException e) {
+            try (var stream = new BufferedInputStream(new FileInputStream(entityCacheFile.toFile()))) {
+                var buf = PacketByteBufs.create();
+                buf.writeBytes(stream.readAllBytes());
+                return ExecutionGraphNode.read(buf);
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
         var executionResults = rendererAnalyzer.analyze(entity);
         try (var stream = new ObjectOutputStream(new FileOutputStream(entityCacheFile.toFile()))) {
-            stream.writeObject(executionResults);
+            var buf = PacketByteBufs.create();
+            buf.readBytes(stream, buf.readableBytes());
+            stream.write(buf.array());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -49,6 +57,6 @@ public class CachedEntityRendererAnalyzer {
 
     public Path getFile(EntityType<?> entity) {
         var id = Registries.ENTITY_TYPE.getId(entity);
-        return cacheRoot.resolve(id.toUnderscoreSeparatedString()+".bin");
+        return cacheRoot.resolve(id.toUnderscoreSeparatedString()+".par");
     }
 }

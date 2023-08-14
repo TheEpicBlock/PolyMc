@@ -2,6 +2,7 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import net.minecraft.network.PacketByteBuf;
 
 public record KnownInteger(int i) implements StackEntry {
     public KnownInteger(boolean b) {
@@ -23,6 +24,15 @@ public record KnownInteger(int i) implements StackEntry {
             return (T)(Integer)i;
         }
         return StackEntry.super.extractAs(type);
+    }
+
+    @Override
+    public void write(PacketByteBuf buf) {
+        buf.writeVarInt(this.i);
+    }
+
+    public static StackEntry read(PacketByteBuf buf) {
+        return new KnownInteger(buf.readVarInt());
     }
 
     @Override

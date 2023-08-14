@@ -5,6 +5,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.network.PacketByteBuf;
 
 public record ArrayLength(StackEntry array) implements StackEntry {
     @Override
@@ -22,5 +23,14 @@ public record ArrayLength(StackEntry array) implements StackEntry {
         } else {
             return new ArrayLength(array);
         }
+    }
+
+    @Override
+    public void write(PacketByteBuf buf) {
+        array.writeWithTag(buf);
+    }
+
+    public static StackEntry read(PacketByteBuf buf) {
+        return new ArrayLength(StackEntry.readWithTag(buf));
     }
 }

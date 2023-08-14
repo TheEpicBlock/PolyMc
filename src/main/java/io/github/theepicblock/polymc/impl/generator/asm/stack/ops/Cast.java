@@ -4,6 +4,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.network.PacketByteBuf;
 
 public record Cast(StackEntry value, Type in, Type out) implements StackEntry {
     public enum Type {
@@ -63,5 +64,16 @@ public record Cast(StackEntry value, Type in, Type out) implements StackEntry {
         } else {
             return new Cast(value, in, out);
         }
+    }
+
+    @Override
+    public void write(PacketByteBuf buf) {
+        value.writeWithTag(buf);
+        buf.writeEnumConstant(in);
+        buf.writeEnumConstant(out);
+    }
+
+    public static StackEntry read(PacketByteBuf buf) {
+        return new Cast(StackEntry.readWithTag(buf), buf.readEnumConstant(Type.class), buf.readEnumConstant(Type.class));
     }
 }

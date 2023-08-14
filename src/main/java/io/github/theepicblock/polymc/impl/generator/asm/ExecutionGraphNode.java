@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.annotation.Debug;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -85,12 +86,53 @@ public class ExecutionGraphNode {
         return Objects.hash(calls, continuation);
     }
 
+    public void write(PacketByteBuf byteBuf) {
+        byteBuf.writeCollection(this.calls == null ? List.of() : this.calls, (buf, call) -> call.write(byteBuf));
+        byteBuf.writeNullable(this.continuation, (buf, stmnt) -> stmnt.write(buf));
+    }
+
+    public static ExecutionGraphNode read(PacketByteBuf byteBuf) {
+        var node = new ExecutionGraphNode();
+        node.calls = byteBuf.readList(buf -> RenderCall.read(byteBuf));
+        node.continuation = byteBuf.readNullable(IfStatement::read);
+        return node;
+    }
+
     /**
      * Represents a comparison between two elements (which might not have a concrete value),
      * and the paths that are taken due to it
      */
     public record IfStatement(StackEntry compA, @Nullable StackEntry compB, int opcode, @NotNull ExecutionGraphNode continuationIfFalse, @NotNull ExecutionGraphNode continuationIfTrue) {
+        public void write(PacketByteBuf byteBuf) {
+            compA.writeWithTag(byteBuf);
+            byteBuf.writeNullable(compB, (buf2, obj2) -> obj2.writeWithTag(buf2));
+            byteBuf.writeVarInt(opcode);
+            continuationIfFalse.write(byteBuf);
+            continuationIfTrue.write(byteBuf);
+        }
+
+        public static IfStatement read(PacketByteBuf byteBuf) {
+            return new IfStatement(
+                    StackEntry.readWithTag(byteBuf),
+                    byteBuf.readNullable(StackEntry::readWithTag),
+                    byteBuf.readVarInt(),
+                    ExecutionGraphNode.read(byteBuf),
+                    ExecutionGraphNode.read(byteBuf)
+            );
+        }
     }
 
-    public record RenderCall(StackEntry cuboid, StackEntry matrix) {}
+    public record RenderCall(StackEntry cuboid, StackEntry matrix) {
+        public void write(PacketByteBuf byteBuf) {
+            cuboid.writeWithTag(byteBuf);
+            matrix.writeWithTag(byteBuf);
+        }
+
+        public static RenderCall read(PacketByteBuf byteBuf) {
+            return new RenderCall(
+                    StackEntry.readWithTag(byteBuf),
+                    StackEntry.readWithTag(byteBuf)
+            );
+        }
+    }
 }

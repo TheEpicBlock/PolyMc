@@ -162,7 +162,7 @@ public class AsmUtils {
     }
 
     public static StackEntry mockVmObject(VirtualMachine vm, @InternalName String className) throws VmException {
-        return new MockedObject(new MockedObject.Root(), vm.getClass(className));
+        return new MockedObject(new MockedObject.Root("entity"), vm.getClass(className));
 //        return mockVmObject(vm, className, 4);
     }
     public static Stream<AbstractInsnNode> insnStream(AbstractInsnNode start) {

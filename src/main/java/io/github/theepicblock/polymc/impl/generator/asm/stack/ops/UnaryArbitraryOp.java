@@ -4,6 +4,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.network.PacketByteBuf;
 
 import java.util.function.Function;
 
@@ -26,5 +27,15 @@ public record UnaryArbitraryOp(StackEntry inner, Function<StackEntry, StackEntry
             return result;
         }
         return new UnaryArbitraryOp(entryinner, arbitraryFunction);
+    }
+
+    @Override
+    public void write(PacketByteBuf buf) {
+        inner.writeWithTag(buf);
+        // TODO
+    }
+
+    public static StackEntry read(PacketByteBuf buf) {
+        return new UnaryArbitraryOp(StackEntry.readWithTag(buf), null);
     }
 }

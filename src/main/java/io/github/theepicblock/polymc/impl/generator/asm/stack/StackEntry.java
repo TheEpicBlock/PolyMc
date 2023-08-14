@@ -6,11 +6,15 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmExcepti
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.network.PacketByteBuf;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Type;
 
-public interface StackEntry {
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+
+public interface StackEntry extends Serializable {
     Gson GSON = new Gson();
 
     static @NotNull StackEntry known(Object o) {
@@ -124,6 +128,25 @@ public interface StackEntry {
     default StackEntry copy(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) {
         return this;
     }
+
+    default void writeWithTag(PacketByteBuf buf) {
+        buf.writeString(this.getClass().getName());
+        write(buf);
+    }
+
+    static StackEntry readWithTag(PacketByteBuf byteBuf) {
+        var className = byteBuf.readString();
+        try {
+            // This is so I can iterate on this code a bit faster without having to worry too much
+            var clazz = Class.forName(className);
+            var method = clazz.getDeclaredMethod("read", PacketByteBuf.class);
+            return (StackEntry)method.invoke(null, byteBuf);
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    void write(PacketByteBuf buf);
 
     /**
      * Equivalent to the computational type category as defined in

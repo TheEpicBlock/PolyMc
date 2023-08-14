@@ -4,6 +4,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.network.PacketByteBuf;
 
 public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements StackEntry {
     public boolean canBeSimplified() {
@@ -113,6 +114,18 @@ public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements 
     @Override
     public <T> T extractAs(Class<T> type) {
         throw new UnsupportedOperationException("Tried extracting a binOp as a "+type);
+    }
+
+    @Override
+    public void write(PacketByteBuf buf) {
+        a.writeWithTag(buf);
+        b.writeWithTag(buf);
+        buf.writeEnumConstant(op);
+        buf.writeEnumConstant(type);
+    }
+
+    public static StackEntry read(PacketByteBuf buf) {
+        return new BinaryOp(StackEntry.readWithTag(buf), StackEntry.readWithTag(buf), buf.readEnumConstant(Op.class), buf.readEnumConstant(Type.class));
     }
 
     @Override

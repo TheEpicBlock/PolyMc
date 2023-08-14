@@ -1,9 +1,7 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
-import io.github.theepicblock.polymc.impl.generator.asm.AsmUtils;
-import io.github.theepicblock.polymc.impl.generator.asm.CowCapableMap;
-import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
-import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
+import io.github.theepicblock.polymc.impl.generator.asm.*;
+import net.minecraft.network.PacketByteBuf;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,15 +52,73 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
         throw new NotImplementedException("Can't cast a mocked object of type "+this.type+" to "+type);
     }
 
+    @Override
+    public void write(PacketByteBuf buf) {
+        if (this.origin instanceof Root root) {
+            buf.writeString("Root");
+            buf.writeString(root.name);
+        } else if (this.origin instanceof FieldAccess fieldAccess) {
+            buf.writeString("FieldAccess");
+            fieldAccess.root.writeWithTag(buf);
+            buf.writeString(fieldAccess.fieldName());
+        } else if (this.origin instanceof MethodCall methodCall) {
+            buf.writeString("MethodCall");
+            buf.writeString(methodCall.currentClass().name());
+            buf.writeVarInt(methodCall.inst.getOpcode());
+            buf.writeString(methodCall.inst.owner);
+            buf.writeString(methodCall.inst.name);
+            buf.writeString(methodCall.inst.desc);
+            buf.writeVarInt(methodCall.arguments.length);
+            for (var entry : methodCall.arguments) {
+                buf.writeNullable(entry, (buf2, e) -> e.writeWithTag(buf2));
+            }
+        }
+        buf.writeNullable(this.type, (buf2, obj2) -> buf2.writeString(obj2.name()));
+        overrides.write(buf, PacketByteBuf::writeString);
+    }
+
+    public static VirtualMachine hehe = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {}); // TODO
+    public static StackEntry read(PacketByteBuf buf) {
+        var originType = buf.readString();
+        Origin origin = switch (originType) {
+            case "Root" -> new Root(buf.readString());
+            case "FieldAccess" -> new FieldAccess(StackEntry.readWithTag(buf), buf.readString());
+            case "MethodCall" -> {
+                try {
+                    var currentClazz = hehe.getClass(buf.readString());
+                    var methodInsn = new MethodInsnNode(buf.readVarInt(), buf.readString(), buf.readString(), buf.readString());
+                    var length = buf.readVarInt();
+                    var args = new StackEntry[length];
+                    for(int i = 0; i < length; i++) {
+                        args[i] = buf.readNullable(StackEntry::readWithTag);
+                    }
+                    yield new MethodCall(currentClazz, methodInsn, args);
+                } catch (MethodExecutor.VmException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            default -> throw new RuntimeException("wdfiow");
+        };
+        var type = buf.readNullable((buf2) -> {
+            try {
+                return hehe.getClass(buf.readString());
+            } catch (MethodExecutor.VmException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        var overrides = CowCapableMap.readFromByteBuf(buf, PacketByteBuf::readString);
+        return new MockedObject(origin, type, overrides);
+    }
+
     public interface Origin {
 
     }
 
-    public record Root() implements Origin {
+    public record Root(String name) implements Origin {
 
     }
 
-    public record FieldAccess(StackEntry root, String fieldName) implements Origin {
+    public record FieldAccess(@NotNull StackEntry root, String fieldName) implements Origin {
 
     }
 

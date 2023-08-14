@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 import com.google.gson.JsonElement;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.network.PacketByteBuf;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,6 +63,23 @@ public record KnownArray(@Nullable StackEntry[] data) implements StackEntry {
         var ret = new KnownArray(newArr);
         copyCache.put(this, ret);
         return ret;
+    }
+
+    @Override
+    public void write(PacketByteBuf buf) {
+        buf.writeVarInt(this.data().length);
+        for (var entry : this.data()) {
+            buf.writeNullable(entry, (buf2, e) -> e.writeWithTag(buf2));
+        }
+    }
+
+    public static StackEntry read(PacketByteBuf buf) {
+        var length = buf.readVarInt();
+        var entry = KnownArray.withLength(length);
+        for(int i = 0; i < length; i++) {
+            entry.data[i] = buf.readNullable(StackEntry::readWithTag);
+        }
+        return entry;
     }
 
     public StackEntry shallowCopy() {

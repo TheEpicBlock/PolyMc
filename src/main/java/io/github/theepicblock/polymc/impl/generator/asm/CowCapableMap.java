@@ -3,7 +3,7 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.network.PacketByteBuf;
 import org.apache.commons.lang3.function.ToBooleanBiFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +21,7 @@ import java.util.function.BiConsumer;
 public class CowCapableMap<T> {
     private static final int INVALID_KEYCODE = 0;
     private static final ReferenceQueue<CowCapableMap<?>> GLOBAL_CLEANING_MAP = new ReferenceQueue<>();
-    private static final boolean DEBUG_MODIFICATIONS = FabricLoader.getInstance().isDevelopmentEnvironment();
+    private static final boolean DEBUG_MODIFICATIONS = false;//FabricLoader.getInstance().isDevelopmentEnvironment();
     private @Nullable CowCapableMap<T> daddy = null;
     private @Nullable Map<T, @Nullable StackEntry> overrides;
     private int keyCode = INVALID_KEYCODE;
@@ -180,6 +180,29 @@ public class CowCapableMap<T> {
         }
     }
 
+    public Map<T, StackEntry> copyToRegularMap() {
+        var map = new HashMap<T, StackEntry>();
+        this.forEachImmutable(map::put);
+        return map;
+    }
+
+    public void write(PacketByteBuf buf, PacketByteBuf.PacketWriter<T> keyWriter) {
+        buf.writeMap(this.copyToRegularMap(),
+                keyWriter,
+                (buf2, val) -> val.writeWithTag(buf2));
+    }
+
+    public static <T> CowCapableMap<T> readFromByteBuf(PacketByteBuf buf, PacketByteBuf.PacketReader<T> keyReader) {
+        int size = buf.readVarInt();
+        var map = new CowCapableMap<T>();
+
+        for(int i = 0; i < size; ++i) {
+            map.put(keyReader.apply(buf), StackEntry.readWithTag(buf));
+        }
+
+        return map;
+    }
+
     public void forEachImmutable(BiConsumer<? super T,? super StackEntry> action) {
         checkParentForModifications();
         if (this.overrides != null) {
@@ -240,7 +263,7 @@ public class CowCapableMap<T> {
         }
     }
 
-    public int getKeyHashCode() {
+    private int getKeyHashCode() {
         if (this.keyCode == INVALID_KEYCODE) {
             if (this.overrides != null) {
                 int result = 1;

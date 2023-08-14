@@ -1,13 +1,15 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 
+import io.github.theepicblock.polymc.impl.generator.asm.InternalName;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.network.PacketByteBuf;
 
-public record InstanceOf(StackEntry entry, String toCheck) implements StackEntry {
+public record InstanceOf(StackEntry entry, @InternalName String toCheck) implements StackEntry {
     @Override
     public boolean canBeSimplified() {
         return entry.canBeSimplified() || entry.isConcrete();
@@ -25,7 +27,7 @@ public record InstanceOf(StackEntry entry, String toCheck) implements StackEntry
         if (type == null) {
             return new InstanceOf(entry1, toCheck);
         } else {
-            return StackEntry.known(type.getNode().name.equals(toCheck));
+            return StackEntry.known(type.name().equals(toCheck));
         }
     }
 
@@ -44,5 +46,15 @@ public record InstanceOf(StackEntry entry, String toCheck) implements StackEntry
             }
         }
         throw new VmException("Can't find instance of "+entry, null);
+    }
+
+    @Override
+    public void write(PacketByteBuf buf) {
+        entry.writeWithTag(buf);
+        buf.writeString(toCheck);
+    }
+
+    public static StackEntry read(PacketByteBuf buf) {
+        return new InstanceOf(StackEntry.readWithTag(buf), buf.readString());
     }
 }
