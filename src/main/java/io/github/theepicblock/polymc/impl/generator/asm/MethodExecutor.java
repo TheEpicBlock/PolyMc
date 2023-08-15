@@ -548,7 +548,7 @@ public class MethodExecutor {
         return true;
     }
 
-    private static boolean stackEntryIdentityEqual(StackEntry a, StackEntry b) {
+    public static boolean stackEntryIdentityEqual(StackEntry a, StackEntry b) {
         if (a == b) return true;
         if (a instanceof KnownClass clA && b instanceof KnownClass clB) {
             return clA.type().equals(clB.type());

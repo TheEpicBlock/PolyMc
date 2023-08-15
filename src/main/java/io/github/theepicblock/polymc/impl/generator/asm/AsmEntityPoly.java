@@ -1,39 +1,47 @@
 package io.github.theepicblock.polymc.impl.generator.asm;
 
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.entity.EntityPoly;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.api.resource.json.*;
-import io.github.theepicblock.polymc.api.wizard.PacketConsumer;
-import io.github.theepicblock.polymc.api.wizard.VInteraction;
-import io.github.theepicblock.polymc.api.wizard.Wizard;
-import io.github.theepicblock.polymc.api.wizard.WizardInfo;
+import io.github.theepicblock.polymc.api.wizard.*;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.MockedObject;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.UnknownValue;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
+import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.poly.entity.EntityWizard;
 import io.github.theepicblock.polymc.impl.resource.ResourceConstants;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
+import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
+import org.objectweb.asm.Opcodes;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
     private final ExecutionGraphNode graph;
     private final EntityType<T> sourceType;
     private final Map<ExecutionGraphNode.RenderCall, ItemStack> cmdItems;
+    private final Class<?> entityClass;
 
     public AsmEntityPoly(ExecutionGraphNode graph, EntityType<T> sourceType, CustomModelDataManager cmd) {
         this.graph = graph;
         this.sourceType = sourceType;
         this.cmdItems = new HashMap<>();
+        this.entityClass = InternalEntityHelpers.getEntityClass(sourceType);
 
         var calls = this.graph.getUniqueCalls();
         calls.forEach(call -> {
@@ -111,13 +119,27 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
     }
 
     public static class AsmEntityWizard<T extends Entity> extends EntityWizard<T> {
-        private final ExecutionGraphNode graph;
+        private final AsmEntityPoly<T> poly;
+        private final VirtualMachine hehe = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {
+            @Override
+            public @NotNull StackEntry loadStaticField(VirtualMachine.Context ctx, VirtualMachine.Clazz owner, String fieldName) throws MethodExecutor.VmException {
+                var fromEnvironment = AsmUtils.tryGetStaticFieldFromEnvironment(ctx, owner.name(), fieldName);
+                if (fromEnvironment != null) return fromEnvironment;
+                return new StaticFieldValue(owner.name(), fieldName).simplify(hehe);
+            }
+
+            @Override
+            public StackEntry onVmError(String method, boolean returnsVoid, MethodExecutor.VmException e) throws MethodExecutor.VmException {
+                if (returnsVoid) return null;
+                return new UnknownValue("Error executing " + method + ": " + e.createFancyErrorMessage());
+            }
+        });
+        private final HashMap<ExecutionGraphNode.RenderCall,VItemDisplay> calls = new HashMap<>();
         private final VInteraction mainEntity;
-        private final VirtualMachine hehe = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {});
 
         public AsmEntityWizard(WizardInfo info, T entity, AsmEntityPoly<T> parent) {
             super(info, entity);
-            this.graph = parent.graph;
+            this.poly = parent;
 
             this.mainEntity = new VInteraction(entity.getUuid(), entity.getId());
         }
@@ -136,6 +158,83 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
 
         @Override
         public void onTick(PacketConsumer players) {
+            try {
+                var cache = new Reference2ReferenceOpenHashMap<StackEntry, StackEntry>();
+
+                MockedObject.MOCKED_RESOLVERS.put("entity", StackEntry.known(this.getEntity()));
+                MockedObject.MOCKED_RESOLVERS.put("hasLabel", StackEntry.known(true));
+                MockedObject.MOCKED_RESOLVERS.put("yaw", StackEntry.known(this.getEntity().getYaw()));
+                MockedObject.MOCKED_RESOLVERS.put("tickDelta", StackEntry.known(0F));
+                MockedObject.MOCKED_RESOLVERS.put("light", StackEntry.known(0));
+
+                var node = this.poly.graph;
+                HashSet<ExecutionGraphNode.RenderCall> newCalls = new HashSet<>();
+                while (true) {
+                    if (node.getCalls() != null) {
+                        newCalls.addAll(node.getCalls());
+                    }
+
+                    var cont = node.getContinuation();
+                    if (cont == null) break;
+
+                    var compA = cont.compA();
+                    var compB = cont.compB();
+
+                    compA = compA.simplify(hehe, cache);
+                    if (compB != null) compB = compB.simplify(hehe, cache);
+
+                    if (!compA.isConcrete() || compB == null || !compB.isConcrete()) {
+                        PolyMc.LOGGER.warn("Error ticking entity "+this.getEntity().getType()+" non-concrete value");
+                        break;
+                    }
+
+                    var isSucc = switch (cont.opcode()) {
+                        case Opcodes.IF_ACMPEQ -> MethodExecutor.stackEntryIdentityEqual(compA, compB);
+                        case Opcodes.IF_ACMPNE -> !MethodExecutor.stackEntryIdentityEqual(compA, compB);
+                        case Opcodes.IFNULL -> compA instanceof KnownObject o && o.i() == null;
+                        case Opcodes.IFNONNULL -> !(compA instanceof KnownObject o && o.i() == null);
+                        case Opcodes.IF_ICMPEQ -> Objects.equals(compA.extractAs(int.class), compB.extractAs(int.class));
+                        case Opcodes.IF_ICMPNE -> !Objects.equals(compA.extractAs(int.class), compB.extractAs(int.class));
+                        case Opcodes.IF_ICMPLT -> compA.extractAs(int.class) < compB.extractAs(int.class);
+                        case Opcodes.IF_ICMPLE -> compA.extractAs(int.class) <= compB.extractAs(int.class);
+                        case Opcodes.IF_ICMPGT -> compA.extractAs(int.class) > compB.extractAs(int.class);
+                        case Opcodes.IF_ICMPGE -> compA.extractAs(int.class) >= compB.extractAs(int.class);
+                        case Opcodes.IFEQ -> compA.extractAs(int.class) == 0;
+                        case Opcodes.IFNE -> compA.extractAs(int.class) != 0;
+                        case Opcodes.IFLT -> compA.extractAs(int.class) < 0;
+                        case Opcodes.IFLE -> compA.extractAs(int.class) <= 0;
+                        case Opcodes.IFGT -> compA.extractAs(int.class) > 0;
+                        case Opcodes.IFGE -> compA.extractAs(int.class) >= 0;
+                        default -> throw new NotImplementedException("Can't compare "+cont.opcode());
+                    };
+
+                    if (isSucc) {
+                        node = cont.continuationIfTrue();
+                    } else {
+                        node = cont.continuationIfFalse();
+                    }
+                }
+
+                calls.forEach((call, display) -> {
+                    if (!newCalls.contains(call)) {
+                        display.remove(players);
+                    } else {
+                        display.move(players, this.getPosition(), 0, 0, false);
+                    }
+                });
+                newCalls.forEach(call -> {
+                    if (!calls.containsKey(call)) {
+                        var display = new VItemDisplay();
+                        display.spawn(players, this.getPosition());
+                        display.sendItem(players, poly.cmdItems.get(call));
+                        // TODO matrices!
+                        calls.put(call, display);
+                    }
+                });
+            } catch (MethodExecutor.VmException e) {
+                PolyMc.LOGGER.warn("exception ticking entity "+this.getEntity().getType()+" "+e.createFancyErrorMessage());
+            }
+
             super.onTick(players);
         }
 

@@ -20,6 +20,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
@@ -114,7 +115,7 @@ public class EntityRendererAnalyzer {
     public EntityRendererAnalyzer(PolyRegistry registry) {
         this.initializerInfo = registry.getSharedValues(ClientInitializerAnalyzer.KEY);
         try {
-            this.cachedMinecraftClient = AsmUtils.mockVmObjectRemap(factoryVm, "net.minecraft.class_310");
+            this.cachedMinecraftClient = AsmUtils.mockVmObjectRemap(factoryVm, "net.minecraft.class_310", "minecraftClient");
         } catch (VmException e) {
             throw new RuntimeException(e);
         }
@@ -134,7 +135,7 @@ public class EntityRendererAnalyzer {
         time = new StopWatch();
         time.start();
         // EntityRendererFactory.Context
-        var ctx = AsmUtils.mockVmObjectRemap(factoryVm, "net.minecraft.class_5617$class_5618");
+        var ctx = AsmUtils.mockVmObjectRemap(factoryVm, "net.minecraft.class_5617$class_5618", "context");
 
         var renderer = factoryVm.runLambda(rendererFactory, new StackEntry[]{ ctx });
 
@@ -149,14 +150,17 @@ public class EntityRendererAnalyzer {
 
         var entityClass = InternalEntityHelpers.getEntityClass(entity);
         entityClass = entityClass == null ? Entity.class : entityClass;
-        var fakeEntity = AsmUtils.mockVmObject(factoryVm, entityClass.getName().replace(".", "/"));
+        var fakeEntity = AsmUtils.mockVmObject(factoryVm, entityClass.getName().replace(".", "/"), "entity");
         fakeEntity.setField(Entity$type, StackEntry.known(entity));
         // The dimension technically could've changed in the constructor, this doesn't handle that
         fakeEntity.setField(Entity$dimensions, StackEntry.known(entity.getDimensions()));
         var matrixStack = createMatrixStack();
 
         var rendererVm = new VirtualMachine(new ClientClassLoader(), new RendererAnalyzerVmConfig(rootNode, null, this));
-        rendererVm.addMethodToStack(resolvedEntityRenderer$render, new StackEntry[] { renderer, fakeEntity, new UnknownValue("yaw"), new UnknownValue("tickDelta"), matrixStack, KnownObject.NULL, new UnknownValue("light") });
+        var yaw = new MockedObject(new MockedObject.Root("yaw"), rendererVm.getType(Type.FLOAT_TYPE));
+        var tickDelta = new MockedObject(new MockedObject.Root("tickDelta"), rendererVm.getType(Type.FLOAT_TYPE));
+        var light = new MockedObject(new MockedObject.Root("light"), rendererVm.getType(Type.INT_TYPE));
+        rendererVm.addMethodToStack(resolvedEntityRenderer$render, new StackEntry[] { renderer, fakeEntity, yaw, tickDelta, matrixStack, KnownObject.NULL, light });
         rendererVm.runToCompletion();
         return rootNode;
     }
@@ -239,13 +243,14 @@ public class EntityRendererAnalyzer {
                 return new KnownInteger(false); // Let's… not deal with that now
             });
             SPECIAL_METHODS.put(LivingEntityRenderer$hasLabel, (arguments, config) -> {
-                return new UnknownValue("hasLabel");
+                return new MockedObject(new MockedObject.Root("hasLabel"), config.root.factoryVm.getType(Type.BOOLEAN_TYPE));
             });
             SPECIAL_METHODS.put(MobEntityRenderer$hasLabel, (arguments, config) -> {
-                return new UnknownValue("hasLabel");
+                return new MockedObject(new MockedObject.Root("hasLabel"), config.root.factoryVm.getType(Type.BOOLEAN_TYPE));
             });
             SPECIAL_METHODS.put(DataTracker$getEntry, (arguments, config) -> {
-                return AsmUtils.mockVmObjectRemap(config.root.factoryVm, "net.minecraft.class_2945$class_2946");
+                // TODO is this still needed?
+                return AsmUtils.mockVmObjectRemap(config.root.factoryVm, "net.minecraft.class_2945$class_2946", "datatrackerEntity");
             });
             SPECIAL_METHODS.put(LivingEntityRenderer$shouldFlipUpsideDown, (arguments, config) -> {
                 return new UnaryArbitraryOp(arguments[0], stackEntry -> new KnownInteger(1)); //TODO

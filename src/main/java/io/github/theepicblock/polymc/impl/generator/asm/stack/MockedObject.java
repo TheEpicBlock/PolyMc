@@ -1,6 +1,8 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
+import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.*;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.network.PacketByteBuf;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
@@ -10,9 +12,12 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.MethodInsnNode;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Objects;
 
 public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Clazz type, CowCapableMap<String> overrides) implements StackEntry {
+    public static final HashMap<String, StackEntry> MOCKED_RESOLVERS = new HashMap<>();
+
     public MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Clazz type) {
         this(origin, type, new CowCapableMap<>());
     }
@@ -20,6 +25,63 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
     @Override
     public void setField(String name, StackEntry e) throws MethodExecutor.VmException {
         this.overrides.put(name, e);
+    }
+
+    @Override
+    public boolean canBeSimplified() {
+        if (this.origin instanceof Root) {
+            return true;
+        } else if (this.origin instanceof FieldAccess f) {
+            return (f.root.canBeSimplified() || f.root.isConcrete());
+        } else if (this.origin instanceof ArrayAccess a) {
+            return (a.root.canBeSimplified() || a.root.isConcrete()) && (a.index.canBeSimplified() || a.index.isConcrete());
+        } else if (this.origin instanceof MethodCall m) {
+            return true;
+        }
+
+        throw new RuntimeException();
+    }
+
+    @Override
+    public StackEntry simplify(VirtualMachine vm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) throws MethodExecutor.VmException {
+        if (this.origin instanceof Root r) {
+            if (MOCKED_RESOLVERS.containsKey(r.name)) return MOCKED_RESOLVERS.get(r.name);
+        } else if (this.origin instanceof FieldAccess f) {
+            if (simplificationCache.containsKey(this)) return simplificationCache.get(this);
+            var root = f.root;
+            if (root.canBeSimplified()) root = root.simplify(vm, simplificationCache);
+
+            if (root.isConcrete()) {
+                return root.getField(f.fieldName);
+            }
+        } else if (this.origin instanceof ArrayAccess a) {
+            if (simplificationCache.containsKey(this)) return simplificationCache.get(this);
+            var root = a.root;
+            if (root.canBeSimplified()) root = root.simplify(vm, simplificationCache);
+            var i = a.index;
+            if (i.canBeSimplified()) i = i.simplify(vm, simplificationCache);
+
+            if (root.isConcrete() && i.isConcrete()) {
+                return i.arrayAccess(i.extractAs(int.class));
+            }
+        } else if (this.origin instanceof MethodCall m) {
+            if (simplificationCache.containsKey(this)) return simplificationCache.get(this);
+            for (var i = 0; i < m.arguments.length; i++) {
+                if (m.arguments[i] != null && m.arguments[i].canBeSimplified()) m.arguments[i] = m.arguments[i].simplify(vm, simplificationCache);
+            }
+
+            var a = Util.first(m.arguments);
+            if (a != null && a.isConcrete()) {
+                var state = vm.switchStack(null);
+                try {
+                    vm.getConfig().invoke(new VirtualMachine.Context(vm), m.currentClass, m.inst, m.arguments);
+                    return vm.runToCompletion();
+                } catch (MethodExecutor.VmException ignored) {}
+                vm.switchStack(state);
+            }
+        }
+
+        return this;
     }
 
     @Override

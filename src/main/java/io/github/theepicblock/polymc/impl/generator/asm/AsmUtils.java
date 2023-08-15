@@ -7,6 +7,7 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.MockedObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -14,6 +15,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -82,24 +84,26 @@ public class AsmUtils {
         return null;
     }
 
+    @Contract(pure = true)
+    public static @NotNull Field getFieldRecursive(@NotNull Class<?> root, @NotNull String name) throws NoSuchFieldException {
+        try {
+            return root.getDeclaredField(name);
+        } catch (NoSuchFieldException e) {
+            if (root == Object.class) throw e;
+            return getFieldRecursive(root.getSuperclass(), name);
+        }
+    }
+
     /**
      * Checks the *actual* jvm to see if the static field referenced by {@code inst} is already loaded
      */
     public static @Nullable StackEntry tryGetStaticFieldFromEnvironment(Context ctx, @NotNull @InternalName String className, @NotNull String fieldName) {
         try {
-            /*
-            // Only if the class is already loaded
-            var m = AsmUtils.class.getClassLoader().getClass().getDeclaredMethod("findLoadedClassFwd", new Class[] { String.class });
-            m.setAccessible(true);
-            ClassLoader cl = AsmUtils.class.getClassLoader();
-            var clazz = m.invoke(cl, inst.owner.replace("/", "."));
-            if (clazz != null) {
-                return new KnownObject(((Class<?>)clazz).getField(inst.name).get(null));
-            }
-            */
+            var clazz = Class.forName(className.replace("/", "."));
+            var field = clazz.getDeclaredField(fieldName);
+            field.setAccessible(true);
 
-            // Will error if this class can't be loaded from the environment
-            return StackEntry.known(Class.forName(className.replace("/", ".")).getField(fieldName).get(null));
+            return StackEntry.known(field.get(null));
         } catch (Throwable e) {}
         return null;
     }
@@ -156,13 +160,13 @@ public class AsmUtils {
     public record MappedFunction(@InternalName String clazz, String method, String desc) {
     }
 
-    public static StackEntry mockVmObjectRemap(VirtualMachine vm, @BinaryName String className) throws VmException {
+    public static StackEntry mockVmObjectRemap(VirtualMachine vm, @BinaryName String className, String name) throws VmException {
         var runtimeName = FabricLoader.getInstance().getMappingResolver().mapClassName("intermediary", className);
-        return mockVmObject(vm, runtimeName.replace(".", "/"));
+        return mockVmObject(vm, runtimeName.replace(".", "/"), name);
     }
 
-    public static StackEntry mockVmObject(VirtualMachine vm, @InternalName String className) throws VmException {
-        return new MockedObject(new MockedObject.Root("entity"), vm.getClass(className));
+    public static StackEntry mockVmObject(VirtualMachine vm, @InternalName String className, String name) throws VmException {
+        return new MockedObject(new MockedObject.Root(name), vm.getClass(className));
 //        return mockVmObject(vm, className, 4);
     }
     public static Stream<AbstractInsnNode> insnStream(AbstractInsnNode start) {

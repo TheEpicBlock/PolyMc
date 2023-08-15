@@ -50,6 +50,10 @@ public class ExecutionGraphNode {
         return counter.get();
     }
 
+    public List<RenderCall> getCalls() {
+        return this.calls;
+    }
+
     private void visitContinuation(Consumer<ExecutionGraphNode> consumer) {
         consumer.accept(this);
         if (this.continuation != null) {
@@ -169,5 +173,10 @@ public class ExecutionGraphNode {
                     StackEntry.readWithTag(byteBuf)
             );
         }
+    }
+
+    @Override
+    public String toString() {
+        return "graphnode ["+(this.getCalls() == null ? null : this.getCalls().size())+"]";
     }
 }

@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import com.google.gson.JsonElement;
+import io.github.theepicblock.polymc.impl.generator.asm.AsmUtils;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import net.minecraft.network.PacketByteBuf;
 import org.apache.commons.lang3.NotImplementedException;
@@ -45,13 +46,10 @@ public record KnownObject(Object i, @NotNull HashMap<Object, StackEntry> mutatio
         }
         try {
             var clazz = i.getClass();
-            var field = clazz.getDeclaredField(name);
+            var field = AsmUtils.getFieldRecursive(clazz, name);
             field.setAccessible(true);
             return StackEntry.known(field.get(i));
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
-            if (name.equals("ordinal") && i instanceof Enum<?> enumm) {
-                return StackEntry.known(enumm.ordinal());
-            }
             throw new VmException("Couldn't get field "+name, e);
         }
     }
