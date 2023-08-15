@@ -8,7 +8,9 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -50,15 +52,16 @@ public class CachedEntityRendererAnalyzer {
         }
 
         var executionResults = rendererAnalyzer.analyze(entity);
-        try (var stream = new ObjectOutputStream(new FileOutputStream(entityCacheFile.toFile()))) {
-            var buf = PacketByteBufs.create();
-            executionResults.write(buf);
-            buf.readBytes(stream, buf.readableBytes());
-        } catch (IOException e) {
-            //noinspection ResultOfMethodCallIgnored
-            entityCacheFile.toFile().delete();
-            throw new RuntimeException(e);
-        }
+        // Writing code disabled until I can write it properly
+//        try (var stream = new ObjectOutputStream(new FileOutputStream(entityCacheFile.toFile()))) {
+//            var buf = PacketByteBufs.create();
+//            executionResults.write(buf);
+//            buf.readBytes(stream, buf.readableBytes());
+//        } catch (IOException e) {
+//            //noinspection ResultOfMethodCallIgnored
+//            entityCacheFile.toFile().delete();
+//            throw new RuntimeException(e);
+//        }
         return executionResults;
     }
 
