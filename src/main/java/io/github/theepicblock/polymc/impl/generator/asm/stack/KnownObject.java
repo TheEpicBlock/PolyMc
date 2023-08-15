@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import com.google.gson.JsonElement;
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.generator.asm.AsmUtils;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import net.minecraft.network.PacketByteBuf;
@@ -118,7 +119,12 @@ public record KnownObject(Object i, @NotNull HashMap<Object, StackEntry> mutatio
                 (buf2, entry) -> entry.writeWithTag(buf2));
         buf.writeNullable(i, (buf2, obj2) -> {
             buf2.writeString(obj2.getClass().getName());
-            buf2.writeString(GSON.toJson(i));
+            try {
+                buf2.writeString(GSON.toJson(i));
+            } catch (Throwable t) {
+                buf2.writeString("{}");
+                PolyMc.LOGGER.warn("(KnownObject) Failed to serialize "+i.getClass());
+            }
         });
     }
 

@@ -40,16 +40,23 @@ public class CachedEntityRendererAnalyzer {
                 buf.writeBytes(stream.readAllBytes());
                 return ExecutionGraphNode.read(buf);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                PolyMc.LOGGER.warn("Couldn't read "+entityCacheFile);
+                e.printStackTrace();
+            } catch (Throwable t) {
+                PolyMc.LOGGER.warn("Couldn't read "+entityCacheFile+", trying to delete it");
+                entityCacheFile.toFile().delete();
+                t.printStackTrace();
             }
         }
 
         var executionResults = rendererAnalyzer.analyze(entity);
         try (var stream = new ObjectOutputStream(new FileOutputStream(entityCacheFile.toFile()))) {
             var buf = PacketByteBufs.create();
+            executionResults.write(buf);
             buf.readBytes(stream, buf.readableBytes());
-            stream.write(buf.array());
         } catch (IOException e) {
+            //noinspection ResultOfMethodCallIgnored
+            entityCacheFile.toFile().delete();
             throw new RuntimeException(e);
         }
         return executionResults;
