@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc.mixins.wizards;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.decoration.DisplayEntity;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
@@ -50,6 +51,21 @@ public interface DisplayEntityAccessor {
 
     @Accessor
     static TrackedData<Integer> getGLOW_COLOR_OVERRIDE() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Accessor
+    static TrackedData<Vector3f> getTRANSLATION() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Accessor
+    static TrackedData<Vector3f> getSCALE() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Accessor
+    static TrackedData<Quaternionf> getLEFT_ROTATION() {
         throw new UnsupportedOperationException();
     }
 }

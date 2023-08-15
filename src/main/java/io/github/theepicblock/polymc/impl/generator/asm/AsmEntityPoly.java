@@ -22,9 +22,12 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.AffineTransformation;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.RotationAxis;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.objectweb.asm.Opcodes;
 
@@ -74,10 +77,10 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
                             },
                             side -> new JElementFace(
                                     new double[]{
-                                            Arrays.stream(side.vertices).map(p -> p.u).min(Float::compareTo).orElse(0F)* texWidth,
-                                            Arrays.stream(side.vertices).map(p -> p.v).min(Float::compareTo).orElse(0F) * texHeight,
-                                            Arrays.stream(side.vertices).map(p -> p.u).max(Float::compareTo).orElse(16F)* texWidth,
-                                            Arrays.stream(side.vertices).map(p -> p.v).max(Float::compareTo).orElse(16F) * texHeight},
+                                            Arrays.stream(side.vertices).map(p -> p.u).min(Float::compareTo).orElse(0F)* texWidth % texWidth,
+                                            Arrays.stream(side.vertices).map(p -> p.v).min(Float::compareTo).orElse(0F) * texHeight % texHeight,
+                                            Arrays.stream(side.vertices).map(p -> p.u).max(Float::compareTo).orElse(16F)* texWidth % texWidth,
+                                            Arrays.stream(side.vertices).map(p -> p.v).max(Float::compareTo).orElse(16F) * texHeight % texHeight},
                                     "tex1",
                                     null,
                                     0,
@@ -186,7 +189,7 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
                     if (compB != null) compB = compB.simplify(hehe, cache);
 
                     if (!compA.isConcrete() || compB == null || !compB.isConcrete()) {
-                        PolyMc.LOGGER.warn("Error ticking entity "+this.getEntity().getType()+" non-concrete value");
+//                        PolyMc.LOGGER.warn("Error ticking entity "+this.getEntity().getType()+" non-concrete value");
                         break;
                     }
 
@@ -217,25 +220,43 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
                     }
                 }
 
-                calls.forEach((call, display) -> {
-                    if (!newCalls.contains(call)) {
-                        display.remove(players);
+                var iterator = calls.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    var entry = iterator.next();
+                    var key = entry.getKey();
+                    var value = entry.getValue();
+                    if (!newCalls.contains(key)) {
+                        value.remove(players);
+                        iterator.remove();
                     } else {
-                        display.move(players, this.getPosition(), 0, 0, false);
+                        value.move(players, this.getPosition(), 0, 0, false);
+                        try {
+                            var matrixEntry = key.matrix().simplify(hehe, cache);
+                            var matrix = matrixEntry.extractAs(Matrix4f.class);
+
+                            // To counter-act the transformations that the item and displayentity renderers do
+                            matrix.translate(0.5f, 0f, 0.5f); // TODO, investigate why the model is rendered 0.5 too high
+                            matrix.rotate(RotationAxis.POSITIVE_Y.rotation((float) Math.PI));
+
+                            value.setupTransforms(players, new AffineTransformation(matrix));
+                        } catch (MethodExecutor.VmException e) {
+                            PolyMc.LOGGER.warn("exception calculating matrix for entity "+this.getEntity().getType()+" "+e.createFancyErrorMessage());
+                        }
                     }
-                });
+                }
+
                 newCalls.forEach(call -> {
                     if (!calls.containsKey(call)) {
                         var display = new VItemDisplay();
+                        calls.put(call, display);
                         display.spawn(players, this.getPosition());
                         display.sendItem(players, poly.cmdItems.get(call));
-                        // TODO matrices!
-                        calls.put(call, display);
                     }
                 });
             } catch (MethodExecutor.VmException e) {
                 PolyMc.LOGGER.warn("exception ticking entity "+this.getEntity().getType()+" "+e.createFancyErrorMessage());
             }
+            MockedObject.MOCKED_RESOLVERS.clear();
 
             super.onTick(players);
         }
