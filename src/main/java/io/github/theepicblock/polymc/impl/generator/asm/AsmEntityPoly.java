@@ -57,6 +57,8 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
     public void addToResourcePack(EntityType<?> entityType, ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
         var entityId = Registries.ENTITY_TYPE.getId(entityType);
         var texture = new Identifier("polymc-testmod", "textures/entity/asm_entity.png");
+        var texWidth = 16;
+        var texHeight = 16;
         copy(moddedResources, pack, texture);
         this.cmdItems.forEach((call, item) -> {
             var generatedModelLocation = new Identifier("poly-asm", entityId.getPath()+"-"+call.hashCode());
@@ -72,10 +74,10 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
                             },
                             side -> new JElementFace(
                                     new double[]{
-                                            Arrays.stream(side.vertices).map(p -> p.u).min(Float::compareTo).orElse(0F),
-                                            Arrays.stream(side.vertices).map(p -> p.v).min(Float::compareTo).orElse(0F),
-                                            Arrays.stream(side.vertices).map(p -> p.u).max(Float::compareTo).orElse(16F),
-                                            Arrays.stream(side.vertices).map(p -> p.v).max(Float::compareTo).orElse(16F)},
+                                            Arrays.stream(side.vertices).map(p -> p.u).min(Float::compareTo).orElse(0F)* texWidth,
+                                            Arrays.stream(side.vertices).map(p -> p.v).min(Float::compareTo).orElse(0F) * texHeight,
+                                            Arrays.stream(side.vertices).map(p -> p.u).max(Float::compareTo).orElse(16F)* texWidth,
+                                            Arrays.stream(side.vertices).map(p -> p.v).max(Float::compareTo).orElse(16F) * texHeight},
                                     "tex1",
                                     null,
                                     0,
