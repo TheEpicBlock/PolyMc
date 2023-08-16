@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
+import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import net.minecraft.network.PacketByteBuf;
 
 /**
@@ -9,11 +10,11 @@ import net.minecraft.network.PacketByteBuf;
 public record UnsafeFieldReference(String fieldName) implements StackEntry {
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void write(PacketByteBuf buf, StackEntryTable table) {
         buf.writeString(fieldName);
     }
 
-    public static StackEntry read(PacketByteBuf buf) {
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
         return new UnsafeFieldReference(buf.readString());
     }
 }

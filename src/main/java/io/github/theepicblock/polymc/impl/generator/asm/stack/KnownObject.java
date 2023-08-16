@@ -1,9 +1,11 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.generator.asm.AsmUtils;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import net.minecraft.network.PacketByteBuf;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
@@ -105,7 +107,16 @@ public record KnownObject(Object i, @NotNull HashMap<Object, StackEntry> mutatio
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void write(PacketByteBuf buf, StackEntryTable table) {
+        buf.writeNullable(i, (buf2, obj2) -> {
+            buf2.writeString(obj2.getClass().getName());
+            try {
+                buf2.writeString(GSON.toJson(i));
+            } catch (Throwable t) {
+                buf2.writeString("{}");
+                PolyMc.LOGGER.warn("(KnownObject) Failed to serialize "+i.getClass());
+            }
+        });
         buf.writeMap(mutations,
                 (buf2, key) -> {
                     if (key instanceof Integer integer) {
@@ -116,21 +127,31 @@ public record KnownObject(Object i, @NotNull HashMap<Object, StackEntry> mutatio
                         buf.writeString((String)key);
                     }
                 },
-                (buf2, entry) -> entry.writeWithTag(buf2));
-        buf.writeNullable(i, (buf2, obj2) -> {
-            buf2.writeString(obj2.getClass().getName());
-            try {
-                buf2.writeString(GSON.toJson(i));
-            } catch (Throwable t) {
-                buf2.writeString("{}");
-                PolyMc.LOGGER.warn("(KnownObject) Failed to serialize "+i.getClass());
-            }
-        });
+                table::writeEntry);
     }
 
-    public static StackEntry read(PacketByteBuf buf) {
-        var mutations = buf.<Object, StackEntry, HashMap<Object, StackEntry>>readMap(
-                HashMap::new,
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
+        var i = buf.readNullable(buf2 -> {
+            var className = buf.readString();
+            try {
+                var clazz = Class.forName(className);
+                return GSON.fromJson(buf.readString(), clazz);
+            } catch (JsonIOException e) {
+                PolyMc.LOGGER.error("Error reading "+className);
+                e.printStackTrace();
+                return KnownObject.NULL;
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("Type not found when deserializing object", e);
+            }
+        });
+        var mutations = new HashMap<Object, StackEntry>();
+        return new KnownObject(i, mutations);
+    }
+
+    @Override
+    public void finalizeRead(PacketByteBuf buf, StackEntryTable table) {
+        buf.readMap(
+                (v) -> this.mutations,
                 (buf2) -> {
                     if (buf2.readBoolean()) {
                         return buf2.readVarInt();
@@ -138,17 +159,8 @@ public record KnownObject(Object i, @NotNull HashMap<Object, StackEntry> mutatio
                         return buf2.readString();
                     }
                 },
-                StackEntry::readWithTag
+                table::readEntry
         );
-        var i = buf.readNullable(buf2 -> {
-            try {
-                var clazz = Class.forName(buf.readString());
-                return GSON.fromJson(buf.readString(), clazz);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Type not found when deserializing object", e);
-            }
-        });
-        return new KnownObject(i, mutations);
     }
 
     @Override

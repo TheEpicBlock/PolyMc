@@ -8,9 +8,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -38,9 +36,14 @@ public class CachedEntityRendererAnalyzer {
         var entityCacheFile = getFile(entity);
         if (Files.exists(entityCacheFile)) {
             try (var stream = new BufferedInputStream(new FileInputStream(entityCacheFile.toFile()))) {
+                var table = StackEntryTable.readTable(stream);
                 var buf = PacketByteBufs.create();
                 buf.writeBytes(stream.readAllBytes());
-                return ExecutionGraphNode.read(buf);
+                return ExecutionGraphNode.read(buf, table);
+            } catch (EOFException e) {
+                PolyMc.LOGGER.warn("Couldn't read "+entityCacheFile+", trying to delete it");
+                entityCacheFile.toFile().delete();
+                e.printStackTrace();
             } catch (IOException e) {
                 PolyMc.LOGGER.warn("Couldn't read "+entityCacheFile);
                 e.printStackTrace();
@@ -52,16 +55,20 @@ public class CachedEntityRendererAnalyzer {
         }
 
         var executionResults = rendererAnalyzer.analyze(entity);
-        // Writing code disabled until I can write it properly
-//        try (var stream = new ObjectOutputStream(new FileOutputStream(entityCacheFile.toFile()))) {
-//            var buf = PacketByteBufs.create();
-//            executionResults.write(buf);
-//            buf.readBytes(stream, buf.readableBytes());
-//        } catch (IOException e) {
-//            //noinspection ResultOfMethodCallIgnored
-//            entityCacheFile.toFile().delete();
-//            throw new RuntimeException(e);
-//        }
+        if (executionResults == null) return null;
+        executionResults.simplify();
+        try (var stream = new BufferedOutputStream(new FileOutputStream(entityCacheFile.toFile()))) {
+            var buf = PacketByteBufs.create();
+            var table = new StackEntryTable();
+            executionResults.write(buf, table);
+
+            table.writeTable(stream);
+            buf.readBytes(stream, buf.readableBytes());
+        } catch (IOException e) {
+            //noinspection ResultOfMethodCallIgnored
+            entityCacheFile.toFile().delete();
+            throw new RuntimeException(e);
+        }
         return executionResults;
     }
 
@@ -69,4 +76,5 @@ public class CachedEntityRendererAnalyzer {
         var id = Registries.ENTITY_TYPE.getId(entity);
         return cacheRoot.resolve(id.toUnderscoreSeparatedString()+".par");
     }
+
 }

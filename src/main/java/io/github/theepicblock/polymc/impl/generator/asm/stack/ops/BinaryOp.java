@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
+import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
@@ -117,15 +118,15 @@ public record BinaryOp(StackEntry a, StackEntry b, Op op, Type type) implements 
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
-        a.writeWithTag(buf);
-        b.writeWithTag(buf);
+    public void write(PacketByteBuf buf, StackEntryTable table) {
+        a.writeWithTag(buf, table);
+        b.writeWithTag(buf, table);
         buf.writeEnumConstant(op);
         buf.writeEnumConstant(type);
     }
 
-    public static StackEntry read(PacketByteBuf buf) {
-        return new BinaryOp(StackEntry.readWithTag(buf), StackEntry.readWithTag(buf), buf.readEnumConstant(Op.class), buf.readEnumConstant(Type.class));
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
+        return new BinaryOp(StackEntry.readWithTag(buf, table), StackEntry.readWithTag(buf, table), buf.readEnumConstant(Op.class), buf.readEnumConstant(Type.class));
     }
 
     @Override

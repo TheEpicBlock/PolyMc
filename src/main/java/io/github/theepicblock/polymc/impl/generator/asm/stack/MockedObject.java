@@ -117,13 +117,13 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void write(PacketByteBuf buf, StackEntryTable table) {
         if (this.origin instanceof Root root) {
             buf.writeString("Root");
             buf.writeString(root.name);
         } else if (this.origin instanceof FieldAccess fieldAccess) {
             buf.writeString("FieldAccess");
-            fieldAccess.root.writeWithTag(buf);
+            fieldAccess.root.writeWithTag(buf, table);
             buf.writeString(fieldAccess.fieldName());
         } else if (this.origin instanceof MethodCall methodCall) {
             buf.writeString("MethodCall");
@@ -134,19 +134,19 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
             buf.writeString(methodCall.inst.desc);
             buf.writeVarInt(methodCall.arguments.length);
             for (var entry : methodCall.arguments) {
-                buf.writeNullable(entry, (buf2, e) -> e.writeWithTag(buf2));
+                buf.writeNullable(entry, (buf2, e) -> e.writeWithTag(buf2, table));
             }
         }
         buf.writeNullable(this.type, (buf2, obj2) -> buf2.writeString(obj2.name()));
-        overrides.write(buf, PacketByteBuf::writeString);
+        overrides.write(buf, PacketByteBuf::writeString, table::writeEntry);
     }
 
     public static VirtualMachine hehe = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {}); // TODO
-    public static StackEntry read(PacketByteBuf buf) {
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
         var originType = buf.readString();
         Origin origin = switch (originType) {
             case "Root" -> new Root(buf.readString());
-            case "FieldAccess" -> new FieldAccess(StackEntry.readWithTag(buf), buf.readString());
+            case "FieldAccess" -> new FieldAccess(StackEntry.readWithTag(buf, table), buf.readString());
             case "MethodCall" -> {
                 try {
                     var currentClazz = hehe.getClass(buf.readString());
@@ -154,7 +154,7 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
                     var length = buf.readVarInt();
                     var args = new StackEntry[length];
                     for(int i = 0; i < length; i++) {
-                        args[i] = buf.readNullable(StackEntry::readWithTag);
+                        args[i] = buf.readNullable(buf2 -> StackEntry.readWithTag(buf2, table));
                     }
                     yield new MethodCall(currentClazz, methodInsn, args);
                 } catch (MethodExecutor.VmException e) {
@@ -170,8 +170,13 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
                 throw new RuntimeException(e);
             }
         });
-        var overrides = CowCapableMap.readFromByteBuf(buf, PacketByteBuf::readString);
+        var overrides = new CowCapableMap<String>();
         return new MockedObject(origin, type, overrides);
+    }
+
+    @Override
+    public void finalizeRead(PacketByteBuf buf, StackEntryTable table) {
+        overrides.readFromByteBuf(buf, PacketByteBuf::readString, table::readEntry);
     }
 
     public interface Origin {

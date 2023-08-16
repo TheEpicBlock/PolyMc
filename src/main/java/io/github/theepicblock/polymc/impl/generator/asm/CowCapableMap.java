@@ -186,21 +186,18 @@ public class CowCapableMap<T> {
         return map;
     }
 
-    public void write(PacketByteBuf buf, PacketByteBuf.PacketWriter<T> keyWriter) {
-        buf.writeMap(this.copyToRegularMap(),
-                keyWriter,
-                (buf2, val) -> val.writeWithTag(buf2));
+    public void write(PacketByteBuf buf, PacketByteBuf.PacketWriter<T> keyWriter, PacketByteBuf.PacketWriter<StackEntry> valueWriter) {
+        buf.writeMap(this.copyToRegularMap(), keyWriter, valueWriter);
     }
 
-    public static <T> CowCapableMap<T> readFromByteBuf(PacketByteBuf buf, PacketByteBuf.PacketReader<T> keyReader) {
+    public CowCapableMap<T> readFromByteBuf(PacketByteBuf buf, PacketByteBuf.PacketReader<T> keyReader, PacketByteBuf.PacketReader<StackEntry> valueReader) {
         int size = buf.readVarInt();
-        var map = new CowCapableMap<T>();
 
         for(int i = 0; i < size; ++i) {
-            map.put(keyReader.apply(buf), StackEntry.readWithTag(buf));
+            this.put(keyReader.apply(buf), valueReader.apply(buf));
         }
 
-        return map;
+        return this;
     }
 
     public void forEachImmutable(BiConsumer<? super T,? super StackEntry> action) {

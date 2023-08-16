@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.network.PacketByteBuf;
 import org.jetbrains.annotations.NotNull;
@@ -72,20 +73,23 @@ public record KnownArray(@Nullable StackEntry[] data) implements StackEntry {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void write(PacketByteBuf buf, StackEntryTable table) {
         buf.writeVarInt(this.data().length);
         for (var entry : this.data()) {
-            buf.writeNullable(entry, (buf2, e) -> e.writeWithTag(buf2));
+            buf.writeNullable(entry, table::writeEntry);
         }
     }
 
-    public static StackEntry read(PacketByteBuf buf) {
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
         var length = buf.readVarInt();
-        var entry = KnownArray.withLength(length);
-        for(int i = 0; i < length; i++) {
-            entry.data[i] = buf.readNullable(StackEntry::readWithTag);
+        return KnownArray.withLength(length);
+    }
+
+    @Override
+    public void finalizeRead(PacketByteBuf buf, StackEntryTable table) {
+        for(int i = 0; i < data.length; i++) {
+            data[i] = buf.readNullable(table::readEntry);
         }
-        return entry;
     }
 
     public StackEntry shallowCopy() {

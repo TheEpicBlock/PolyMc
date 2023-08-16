@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
+import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
@@ -32,13 +33,13 @@ public record BinaryArbitraryOp(StackEntry inner, StackEntry inner2, BiFunction<
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
-        inner.writeWithTag(buf);
-        inner2.writeWithTag(buf);
+    public void write(PacketByteBuf buf, StackEntryTable table) {
+        inner.writeWithTag(buf, table);
+        inner2.writeWithTag(buf, table);
         // TODO
     }
 
-    public static StackEntry read(PacketByteBuf buf) {
-        return new BinaryArbitraryOp(StackEntry.readWithTag(buf), StackEntry.readWithTag(buf), null);
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
+        return new BinaryArbitraryOp(StackEntry.readWithTag(buf, table), StackEntry.readWithTag(buf, table), null);
     }
 }

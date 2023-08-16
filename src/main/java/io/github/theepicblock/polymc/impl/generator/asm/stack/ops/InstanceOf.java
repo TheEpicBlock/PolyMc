@@ -2,6 +2,7 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 
 import io.github.theepicblock.polymc.impl.generator.asm.InternalName;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownObject;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownVmObject;
@@ -49,12 +50,12 @@ public record InstanceOf(StackEntry entry, @InternalName String toCheck) impleme
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
-        entry.writeWithTag(buf);
+    public void write(PacketByteBuf buf, StackEntryTable table) {
+        entry.writeWithTag(buf, table);
         buf.writeString(toCheck);
     }
 
-    public static StackEntry read(PacketByteBuf buf) {
-        return new InstanceOf(StackEntry.readWithTag(buf), buf.readString());
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
+        return new InstanceOf(StackEntry.readWithTag(buf, table), buf.readString());
     }
 }

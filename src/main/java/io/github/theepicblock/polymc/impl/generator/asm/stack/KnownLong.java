@@ -2,6 +2,7 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import net.minecraft.network.PacketByteBuf;
 
 public record KnownLong(long i) implements StackEntry {
@@ -19,11 +20,11 @@ public record KnownLong(long i) implements StackEntry {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void write(PacketByteBuf buf, StackEntryTable table) {
         buf.writeVarLong(this.i);
     }
 
-    public static StackEntry read(PacketByteBuf buf) {
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
         return new KnownLong(buf.readVarLong());
     }
 

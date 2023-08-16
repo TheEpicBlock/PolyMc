@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
+import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.KnownInteger;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
@@ -26,11 +27,11 @@ public record ArrayLength(StackEntry array) implements StackEntry {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
-        array.writeWithTag(buf);
+    public void write(PacketByteBuf buf, StackEntryTable table) {
+        array.writeWithTag(buf, table);
     }
 
-    public static StackEntry read(PacketByteBuf buf) {
-        return new ArrayLength(StackEntry.readWithTag(buf));
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
+        return new ArrayLength(StackEntry.readWithTag(buf, table));
     }
 }

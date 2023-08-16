@@ -125,15 +125,15 @@ public class ExecutionGraphNode {
         return Objects.hash(calls, continuation);
     }
 
-    public void write(PacketByteBuf byteBuf) {
-        byteBuf.writeCollection(this.calls == null ? List.of() : this.calls, (buf, call) -> call.write(byteBuf));
-        byteBuf.writeNullable(this.continuation, (buf, stmnt) -> stmnt.write(buf));
+    public void write(PacketByteBuf byteBuf, StackEntryTable table) {
+        byteBuf.writeCollection(this.calls == null ? List.of() : this.calls, (buf, call) -> call.write(byteBuf, table));
+        byteBuf.writeNullable(this.continuation, (buf, stmnt) -> stmnt.write(buf, table));
     }
 
-    public static ExecutionGraphNode read(PacketByteBuf byteBuf) {
+    public static ExecutionGraphNode read(PacketByteBuf byteBuf, StackEntryTable table) {
         var node = new ExecutionGraphNode();
-        node.calls = byteBuf.readList(buf -> RenderCall.read(byteBuf));
-        node.continuation = byteBuf.readNullable(IfStatement::read);
+        node.calls = byteBuf.readList(buf -> RenderCall.read(byteBuf, table));
+        node.continuation = byteBuf.readNullable(buf -> IfStatement.read(byteBuf, table));
         return node;
     }
 
@@ -142,35 +142,35 @@ public class ExecutionGraphNode {
      * and the paths that are taken due to it
      */
     public record IfStatement(StackEntry compA, @Nullable StackEntry compB, int opcode, @NotNull ExecutionGraphNode continuationIfFalse, @NotNull ExecutionGraphNode continuationIfTrue) {
-        public void write(PacketByteBuf byteBuf) {
-            compA.writeWithTag(byteBuf);
-            byteBuf.writeNullable(compB, (buf2, obj2) -> obj2.writeWithTag(buf2));
+        public void write(PacketByteBuf byteBuf, StackEntryTable table) {
+            table.writeEntry(byteBuf, compA);
+            byteBuf.writeNullable(compB, table::writeEntry);
             byteBuf.writeVarInt(opcode);
-            continuationIfFalse.write(byteBuf);
-            continuationIfTrue.write(byteBuf);
+            continuationIfFalse.write(byteBuf, table);
+            continuationIfTrue.write(byteBuf, table);
         }
 
-        public static IfStatement read(PacketByteBuf byteBuf) {
+        public static IfStatement read(PacketByteBuf byteBuf, StackEntryTable table) {
             return new IfStatement(
-                    StackEntry.readWithTag(byteBuf),
-                    byteBuf.readNullable(StackEntry::readWithTag),
+                    table.readEntry(byteBuf),
+                    byteBuf.readNullable(table::readEntry),
                     byteBuf.readVarInt(),
-                    ExecutionGraphNode.read(byteBuf),
-                    ExecutionGraphNode.read(byteBuf)
+                    ExecutionGraphNode.read(byteBuf, table),
+                    ExecutionGraphNode.read(byteBuf, table)
             );
         }
     }
 
     public record RenderCall(StackEntry cuboid, StackEntry matrix) {
-        public void write(PacketByteBuf byteBuf) {
-            cuboid.writeWithTag(byteBuf);
-            matrix.writeWithTag(byteBuf);
+        public void write(PacketByteBuf byteBuf, StackEntryTable table) {
+            table.writeEntry(byteBuf, cuboid);
+            table.writeEntry(byteBuf, matrix);
         }
 
-        public static RenderCall read(PacketByteBuf byteBuf) {
+        public static RenderCall read(PacketByteBuf byteBuf, StackEntryTable table) {
             return new RenderCall(
-                    StackEntry.readWithTag(byteBuf),
-                    StackEntry.readWithTag(byteBuf)
+                    table.readEntry(byteBuf),
+                    table.readEntry(byteBuf)
             );
         }
     }

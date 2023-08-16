@@ -3,15 +3,15 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import io.github.theepicblock.polymc.impl.generator.asm.*;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
-import io.github.theepicblock.polymc.impl.generator.asm.OptionalTypeAdapter;
-import io.github.theepicblock.polymc.impl.generator.asm.RegistryEntryJsonSerializer;
-import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.entity.EntityType;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.entry.RegistryEntry;
 import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Type;
 
@@ -24,6 +24,7 @@ public interface StackEntry extends Serializable {
             .registerTypeAdapter(Optional.class, new OptionalTypeAdapter<>())
             .registerTypeAdapter(RegistryEntry.Reference.class, new RegistryEntryJsonSerializer<>())
             .registerTypeAdapter(RegistryEntry.Direct.class, new RegistryEntryJsonSerializer<>())
+            .registerTypeHierarchyAdapter(EntityType.class, new EntityTypeJsonSerializer<>())
             .disableInnerClassSerialization()
             .disableHtmlEscaping()
             .create();
@@ -140,24 +141,36 @@ public interface StackEntry extends Serializable {
         return this;
     }
 
-    default void writeWithTag(PacketByteBuf buf) {
+    /**
+     * @implNote this must not recurse. If recursive writing is needed, use {@link StackEntryTable#writeEntry(PacketByteBuf, StackEntry)}. You should also read {@link StackEntryTable#readEntry(PacketByteBuf)}
+     */
+    default void writeWithTag(PacketByteBuf buf, StackEntryTable table) {
         buf.writeString(this.getClass().getName());
-        write(buf);
+        write(buf, table);
     }
 
-    static StackEntry readWithTag(PacketByteBuf byteBuf) {
+    @Contract("_, _ -> new")
+    static StackEntry readWithTag(PacketByteBuf byteBuf, StackEntryTable table) {
+        var entry = readWithTagInner(byteBuf, table);
+        entry.finalizeRead(byteBuf, table);
+        return entry;
+    }
+
+    static StackEntry readWithTagInner(PacketByteBuf byteBuf, StackEntryTable table) {
         var className = byteBuf.readString();
         try {
             // This is so I can iterate on this code a bit faster without having to worry too much
             var clazz = Class.forName(className);
-            var method = clazz.getDeclaredMethod("read", PacketByteBuf.class);
-            return (StackEntry)method.invoke(null, byteBuf);
+            var method = clazz.getDeclaredMethod("read", PacketByteBuf.class, StackEntryTable.class);
+            return (StackEntry)method.invoke(null, byteBuf, table);
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
-    void write(PacketByteBuf buf);
+    void write(PacketByteBuf buf, StackEntryTable table);
+
+    default void finalizeRead(PacketByteBuf buf, StackEntryTable table) {}
 
     /**
      * Equivalent to the computational type category as defined in

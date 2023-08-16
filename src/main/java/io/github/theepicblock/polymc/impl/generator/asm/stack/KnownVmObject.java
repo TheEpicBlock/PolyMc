@@ -2,11 +2,8 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import io.github.theepicblock.polymc.impl.generator.asm.AsmUtils;
-import io.github.theepicblock.polymc.impl.generator.asm.ClientClassLoader;
-import io.github.theepicblock.polymc.impl.generator.asm.CowCapableMap;
+import io.github.theepicblock.polymc.impl.generator.asm.*;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
-import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.network.PacketByteBuf;
@@ -62,15 +59,15 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void write(PacketByteBuf buf, StackEntryTable table) {
         buf.writeString(this.type.name());
-        this.fields.write(buf, PacketByteBuf::writeString);
+        this.fields.write(buf, PacketByteBuf::writeString, table::writeEntry);
     }
 
     public static VirtualMachine hehe = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() {}); // TODO
-    public static StackEntry read(PacketByteBuf buf) {
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
         var name = buf.readString();
-        var fields = CowCapableMap.readFromByteBuf(buf, PacketByteBuf::readString);
+        var fields = new CowCapableMap<String>();
         try {
             return new KnownVmObject(hehe.getClass(name), fields);
         } catch (VmException e) {
@@ -78,6 +75,10 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
         }
     }
 
+    @Override
+    public void finalizeRead(PacketByteBuf buf, StackEntryTable table) {
+        this.fields.readFromByteBuf(buf, PacketByteBuf::readString, table::readEntry);
+    }
 
     @Override
     public JsonElement toJson() {

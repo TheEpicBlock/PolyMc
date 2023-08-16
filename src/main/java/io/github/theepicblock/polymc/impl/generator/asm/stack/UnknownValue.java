@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
+import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import net.minecraft.network.PacketByteBuf;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.Nullable;
@@ -19,10 +20,10 @@ public record UnknownValue(@Nullable Object reason) implements StackEntry {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void write(PacketByteBuf buf, StackEntryTable table) {
     }
 
-    public static StackEntry read(PacketByteBuf buf) {
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
         return new UnknownValue("<deserialized>");
     }
 }

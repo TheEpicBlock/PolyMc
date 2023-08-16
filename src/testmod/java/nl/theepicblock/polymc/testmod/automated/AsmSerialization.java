@@ -1,6 +1,7 @@
 package nl.theepicblock.polymc.testmod.automated;
 
 import io.github.theepicblock.polymc.impl.generator.asm.ExecutionGraphNode;
+import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.*;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
@@ -10,6 +11,7 @@ import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
 import org.objectweb.asm.Type;
 
+import static nl.theepicblock.polymc.testmod.automated.TestUtil.assertEq;
 import static nl.theepicblock.polymc.testmod.automated.TestUtil.assertTrue;
 
 public class AsmSerialization implements FabricGameTest {
@@ -132,20 +134,24 @@ public class AsmSerialization implements FabricGameTest {
     @GameTest(templateName = EMPTY_STRUCTURE)
     public void testRenderCall(TestContext ctx) {
         var node = new ExecutionGraphNode.RenderCall(MOCK, MOCK);
-        tstSerialization(node, (buf, obj) -> obj.write(buf), ExecutionGraphNode.RenderCall::read);
+        var table = new StackEntryTable();
+        tstSerialization(node, (buf, obj) -> obj.write(buf, table), buf -> ExecutionGraphNode.RenderCall.read(buf, table));
         ctx.complete();
     }
 
     private <T> void tstSerialization(StackEntry entry) {
-        tstSerialization(entry, (buf, obj) -> obj.writeWithTag(buf), StackEntry::readWithTag);
+        var table = new StackEntryTable();
+        tstSerialization(entry, table::writeEntry, table::readEntry);
     }
 
     private <T> void tstSerialization(T obj, PacketByteBuf.PacketWriter<T> writer, PacketByteBuf.PacketReader<T> reader) {
         var buf = PacketByteBufs.create();
         writer.accept(buf, obj);
 
-        assertTrue(buf.array().length > 0, "Writer should've written at least one byte");
+        assertTrue(buf.readableBytes() > 0, "Writer should've written at least one byte");
 
         var reserialized = reader.apply(buf);
+
+        assertEq(reserialized, obj);
     }
 }

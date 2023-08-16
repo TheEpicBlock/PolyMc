@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
+import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import net.minecraft.network.PacketByteBuf;
 import org.apache.commons.lang3.NotImplementedException;
@@ -18,11 +19,11 @@ public record KnownClass(@NotNull Type type) implements StackEntry {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void write(PacketByteBuf buf, StackEntryTable table) {
         buf.writeString(type.getDescriptor());
     }
 
-    public static StackEntry read(PacketByteBuf buf) {
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
         return new KnownClass(Type.getType(buf.readString()));
     }
 

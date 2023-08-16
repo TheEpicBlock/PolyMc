@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack.ops;
 
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
@@ -67,13 +68,13 @@ public record Cast(StackEntry value, Type in, Type out) implements StackEntry {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
-        value.writeWithTag(buf);
+    public void write(PacketByteBuf buf, StackEntryTable table) {
+        value.writeWithTag(buf, table);
         buf.writeEnumConstant(in);
         buf.writeEnumConstant(out);
     }
 
-    public static StackEntry read(PacketByteBuf buf) {
-        return new Cast(StackEntry.readWithTag(buf), buf.readEnumConstant(Type.class), buf.readEnumConstant(Type.class));
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
+        return new Cast(StackEntry.readWithTag(buf, table), buf.readEnumConstant(Type.class), buf.readEnumConstant(Type.class));
     }
 }

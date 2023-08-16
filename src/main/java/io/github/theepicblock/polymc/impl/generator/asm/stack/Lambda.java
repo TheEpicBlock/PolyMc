@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import com.google.gson.JsonElement;
+import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import net.minecraft.network.PacketByteBuf;
 import org.objectweb.asm.Handle;
 
@@ -19,7 +20,7 @@ public record Lambda(Handle method, StackEntry[] extraArguments) implements Stac
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void write(PacketByteBuf buf, StackEntryTable table) {
         buf.writeVarInt(method.getTag());
         buf.writeString(method.getOwner());
         buf.writeString(method.getName());
@@ -27,11 +28,11 @@ public record Lambda(Handle method, StackEntry[] extraArguments) implements Stac
         buf.writeBoolean(method.isInterface());
         buf.writeVarInt(extraArguments.length);
         for (var entry : extraArguments) {
-            buf.writeNullable(entry, (buf2, e) -> e.writeWithTag(buf2));
+            buf.writeNullable(entry, (buf2, e) -> e.writeWithTag(buf2, table));
         }
     }
 
-    public static StackEntry read(PacketByteBuf buf) {
+    public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
         var handle = new Handle(
                 buf.readVarInt(),
                 buf.readString(),
@@ -42,7 +43,7 @@ public record Lambda(Handle method, StackEntry[] extraArguments) implements Stac
         var length = buf.readVarInt();
         var extraArguments = new StackEntry[length];
         for(int i = 0; i < length; i++) {
-            extraArguments[i] = buf.readNullable(StackEntry::readWithTag);
+            extraArguments[i] = buf.readNullable(buf2 -> StackEntry.readWithTag(buf2, table));
         }
         return new Lambda(handle, extraArguments);
     }
