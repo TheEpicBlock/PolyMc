@@ -315,14 +315,6 @@ public class VirtualMachine {
         while (true) {
             var method = clazz.getMethod(inst.name, inst.desc);
             if (method != null) {
-                if (AsmUtils.hasFlag(method, Opcodes.ACC_NATIVE)) {
-                    throw new VmException("Method " + inst.name + inst.desc + " in "
-                            + rootClass + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to a native method", null);
-                }
-                if (AsmUtils.hasFlag(method, Opcodes.ACC_ABSTRACT)) {
-                    throw new VmException("Method " + inst.name + inst.desc + " in "
-                            + rootClass + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to an abstract method", null);
-                }
                 var ref = new MethodRef(clazz, method);
                 rootClass.methodResolutionCache.put(cacheKey, ref);
                 return ref;
@@ -711,37 +703,32 @@ public class VirtualMachine {
 
             // I'm pretty sure we're supposed to run clinit at this point, but let's delay
             // it as much as possible
-            try {
-                var method = ctx.machine().resolveMethod(currentClass, inst, Util.first(arguments));
-                invoke(ctx, currentClass, inst, arguments, method);
-            } catch (VmException e) {
-                // This method is part of Object and wouldn't be found otherwise
-                if (inst.name.equals("hashCode") && inst.desc.equals("()I")) {
-                    if (Util.first(arguments) instanceof KnownObject obj) {
-                        ret(ctx, new KnownInteger(System.identityHashCode(obj.i()))); // It's no problem to do this in the outer vm
-                        return;
-                    }
-                    if (Util.first(arguments) instanceof KnownVmObject obj) {
-                        ret(ctx, new KnownInteger(System.identityHashCode(obj))); // It's no problem to do this in the outer vm
-                        return;
-                    }
-                    if (Util.first(arguments) instanceof KnownClass cl) {
-                        ret(ctx, new KnownInteger(cl.type().hashCode())); // It's no problem to do this in the outer vm
-                        return;
-                    }
-                }
-
-                throw e;
-            }
+            var method = ctx.machine().resolveMethod(currentClass, inst, Util.first(arguments));
+            invoke(ctx, currentClass, inst, arguments, method);
         }
 
         default void invoke(Context ctx, Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments, @Nullable MethodRef methodRef) throws VmException {
-            if (methodRef == null) {
-                if (inst.name.equals("hashCode") && Util.first(arguments) != null && !Util.first(arguments).isConcrete()) {
-                    // I'm sure this will cause no issues whatsoever
-                    ret(ctx, StackEntry.known(Util.first(arguments).hashCode()));
+            if (inst.name.equals("hashCode") && inst.desc.equals("()I") && arguments.length == 1) {
+                if (arguments[0] instanceof KnownObject obj) {
+                    ret(ctx, new KnownInteger(System.identityHashCode(obj.i()))); // It's no problem to do this in the outer vm
                     return;
                 }
+                if (arguments[0] instanceof KnownVmObject obj) {
+                    ret(ctx, new KnownInteger(System.identityHashCode(obj))); // It's no problem to do this in the outer vm
+                    return;
+                }
+                if (arguments[0] instanceof KnownClass cl) {
+                    ret(ctx, new KnownInteger(cl.type().hashCode())); // It's no problem to do this in the outer vm
+                    return;
+                }
+                if (!arguments[0].isConcrete()) {
+                    // I'm sure this will cause no issues whatsoever
+                    ret(ctx, StackEntry.known(arguments[0].hashCode()));
+                    return;
+                }
+            }
+
+            if (methodRef == null) {
                 // Can't be resolved, return an unknown value
                 ret(ctx, Type.getReturnType(inst.desc) == Type.VOID_TYPE ? null
                         : new UnknownValue("Can't resolve "+inst.owner+"#"+inst.name+inst.desc+" because "+Util.first(arguments)+" has no type"));
@@ -791,6 +778,10 @@ public class VirtualMachine {
                     }
                 }
             }
+
+            if (methodRef.isAbstract()) {
+                throw new VmException("Method " + inst.name + inst.desc + " in " + " (" + inst.getOpcode() + ", " + inst.owner + ") resolved to a native method: "+methodRef, null);
+            }
             ctx.machine.addMethodToStack(methodRef, arguments);
         }
 
@@ -832,6 +823,10 @@ public class VirtualMachine {
 
         public String desc() {
             return meth.desc;
+        }
+
+        public boolean isAbstract() {
+            return AsmUtils.hasFlag(meth, Opcodes.ACC_NATIVE) || AsmUtils.hasFlag(meth, Opcodes.ACC_ABSTRACT);
         }
     }
 

@@ -91,7 +91,7 @@ public class EntityRendererAnalyzer {
                 var texturedModelData = factoryVm.runLambda(texturedModelDataProvider, new StackEntry[0]);
                 var texturedModelData$createModel = AsmUtils.map("net.minecraft.class_5607", "method_32109", "()Lnet/minecraft/class_630;");
                 var createModelFunc = factoryVm.resolveMethod(null, new MethodInsnNode(Opcodes.INVOKEVIRTUAL, texturedModelData$createModel.clazz(), texturedModelData$createModel.method(), texturedModelData$createModel.desc(), false), texturedModelData);
-                if (createModelFunc == null) throw new RuntimeException("PolyMc: Couldn't find model creation function");
+                if (createModelFunc == null || createModelFunc.isAbstract()) throw new RuntimeException("PolyMc: Couldn't find model creation function");
                 factoryVm.addMethodToStack(createModelFunc, new StackEntry[]{ texturedModelData });
                 var ret = factoryVm.runToCompletion();
                 factoryVm.switchStack(state); // Restore state
@@ -143,7 +143,7 @@ public class EntityRendererAnalyzer {
         var entityRenderer$render = AsmUtils.map("net.minecraft.class_897", "method_3936", "(Lnet/minecraft/class_1297;FFLnet/minecraft/class_4587;Lnet/minecraft/class_4597;I)V");
         var inst = new MethodInsnNode(Opcodes.INVOKEINTERFACE, entityRenderer$render.clazz(), entityRenderer$render.method(), entityRenderer$render.desc(), false);
         var resolvedEntityRenderer$render = factoryVm.resolveMethod(null, inst, renderer);
-        if (resolvedEntityRenderer$render == null) {
+        if (resolvedEntityRenderer$render == null || resolvedEntityRenderer$render.isAbstract()) {
             PolyMc.LOGGER.error("Failed to find render method for "+entity.getTranslationKey());
             return null;
         }
