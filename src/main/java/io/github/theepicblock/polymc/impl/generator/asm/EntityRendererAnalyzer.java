@@ -10,7 +10,6 @@ import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Context;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.VmConfig;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -56,14 +55,6 @@ public class EntityRendererAnalyzer {
     // They're not executed in order to prevent jumps on unknown values
     private final static AsmUtils.MappedFunction LivingEntityRenderer$hasLabel = AsmUtils.map("net.minecraft.class_922", "method_4055", "(Lnet/minecraft/class_1309;)Z");
     private final static AsmUtils.MappedFunction MobEntityRenderer$hasLabel = AsmUtils.map("net.minecraft.class_927", "method_4071", "(Lnet/minecraft/class_1308;)Z");
-    private final static AsmUtils.MappedFunction DataTracker$getEntry = AsmUtils.map("net.minecraft.class_2945", "method_12783", "(Lnet/minecraft/class_2940;)Lnet/minecraft/class_2945$class_2946;");
-
-    // These methods are functional and have no side effects.
-    // They're executed lazily in order to prevent jumps on unknown values
-    private final static AsmUtils.MappedFunction LivingEntityRenderer$shouldFlipUpsideDown = AsmUtils.map("net.minecraft.class_922", "method_38563", "(Lnet/minecraft/class_1309;)Z");
-    private final static AsmUtils.MappedFunction MathHelper$wrapDegreesI = AsmUtils.map("net.minecraft.class_3532", "method_15392", "(I)I");
-    private final static AsmUtils.MappedFunction MathHelper$wrapDegreesF = AsmUtils.map("net.minecraft.class_3532", "method_15393", "(F)F");
-    private final static AsmUtils.MappedFunction MathHelper$wrapDegreesD = AsmUtils.map("net.minecraft.class_3532", "method_15338", "(D)D");
 
     /**
      * Vm for invoking the factory
@@ -246,9 +237,6 @@ public class EntityRendererAnalyzer {
             });
             SPECIAL_METHODS.put(MobEntityRenderer$hasLabel, (arguments, config) -> {
                 return new MockedObject(new MockedObject.Root("hasLabel"), config.root.factoryVm.getType(Type.BOOLEAN_TYPE));
-            });
-            SPECIAL_METHODS.put(LivingEntityRenderer$shouldFlipUpsideDown, (arguments, config) -> {
-                return new UnaryArbitraryOp(arguments[0], stackEntry -> new KnownInteger(1)); //TODO
             });
         }
 

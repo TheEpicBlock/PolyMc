@@ -6,7 +6,9 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
-import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.ConcatWithConstants;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.MathOp;
+import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.RawBitOp;
 import it.unimi.dsi.fastutil.objects.*;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.ApiStatus;
@@ -245,8 +247,10 @@ public class VirtualMachine {
             return this.getClass(_Long);
         } else if (entry instanceof KnownFloat) {
             return this.getClass(_Float);
-        } else if (entry instanceof KnownDouble) {
+        } else if (entry instanceof KnownDouble || entry instanceof MathOp) {
             return this.getClass(_Double);
+        } else if (entry instanceof ConcatWithConstants) {
+            return this.getClass("java/lang/String");
         } else {
             return null;
         }
@@ -424,59 +428,59 @@ public class VirtualMachine {
                 case "java/lang/StrictMath" -> {
                     // These are native methods. They need to be hardcoded
                     if (inst.name.equals("cos") && inst.desc.equals("(D)D")) {
-                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.cos(entry.extractAs(double.class)))));
+                        ret(ctx, new MathOp(arguments[0], MathOp.Op.COS));
                         return;
                     }
                     if (inst.name.equals("acos") && inst.desc.equals("(D)D")) {
-                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.acos(entry.extractAs(double.class)))));
+                        ret(ctx, new MathOp(arguments[0], MathOp.Op.ACOS));
                         return;
                     }
                     if (inst.name.equals("sin") && inst.desc.equals("(D)D")) {
-                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sin(entry.extractAs(double.class)))));
+                        ret(ctx, new MathOp(arguments[0], MathOp.Op.SIN));
                         return;
                     }
                     if (inst.name.equals("asin") && inst.desc.equals("(D)D")) {
-                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.asin(entry.extractAs(double.class)))));
+                        ret(ctx, new MathOp(arguments[0], MathOp.Op.ASIN));
                         return;
                     }
                     if (inst.name.equals("tan") && inst.desc.equals("(D)D")) {
-                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.tan(entry.extractAs(double.class)))));
+                        ret(ctx, new MathOp(arguments[0], MathOp.Op.TAN));
                         return;
                     }
                     if (inst.name.equals("atan") && inst.desc.equals("(D)D")) {
-                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.atan(entry.extractAs(double.class)))));
+                        ret(ctx, new MathOp(arguments[0], MathOp.Op.ATAN));
                         return;
                     }
                     if (inst.name.equals("log") && inst.desc.equals("(D)D")) {
-                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log(entry.extractAs(double.class)))));
+                        ret(ctx, new MathOp(arguments[0], MathOp.Op.LOG));
                         return;
                     }
                     if (inst.name.equals("log10") && inst.desc.equals("(D)D")) {
-                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.log10(entry.extractAs(double.class)))));
+                        ret(ctx, new MathOp(arguments[0], MathOp.Op.LOG10));
                         return;
                     }
                     if (inst.name.equals("sqrt") && inst.desc.equals("(D)D")) {
-                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(StrictMath.sqrt(entry.extractAs(double.class)))));
+                        ret(ctx, new MathOp(arguments[0], MathOp.Op.SQRT));
                         return;
                     }
                 }
                 case "java/lang/Float" -> {
                     if (inst.name.equals("floatToRawIntBits")) {
-                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.floatToRawIntBits(entry.extractAs(float.class)))));
+                        ret(ctx, new RawBitOp(arguments[0], RawBitOp.Op.Float2Int));
                         return;
                     }
                     if (inst.name.equals("intBitsToFloat")) {
-                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Float.intBitsToFloat(entry.extractAs(int.class)))));
+                        ret(ctx, new RawBitOp(arguments[0], RawBitOp.Op.Int2Float));
                         return;
                     }
                 }
                 case "java/lang/Double" -> {
                     if (inst.name.equals("doubleToRawLongBits")) {
-                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.doubleToRawLongBits(entry.extractAs(double.class)))));
+                        ret(ctx, new RawBitOp(arguments[0], RawBitOp.Op.Double2Long));
                         return;
                     }
                     if (inst.name.equals("longBitsToDouble")) {
-                        ret(ctx, new UnaryArbitraryOp(arguments[0], entry -> StackEntry.known(Double.longBitsToDouble(entry.extractAs(long.class)))));
+                        ret(ctx, new RawBitOp(arguments[0], RawBitOp.Op.Long2Double));
                         return;
                     }
                 }

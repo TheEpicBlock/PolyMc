@@ -169,7 +169,7 @@ public class MethodExecutor {
                 var inst = (InvokeDynamicInsnNode)instruction;
                 if (inst.name.equals("makeConcatWithConstants")) {
                     if (!inst.desc.equals("(Ljava/lang/String;)Ljava/lang/String;")) throw new VmException("Wierd concat", null);
-                    stack.push(new UnaryArbitraryOp(stack.pop(), (input) -> StackEntry.known(inst.bsmArgs[0].toString().replace("\u0001", input.extractAs(String.class)))).simplify(this.parent));
+                    stack.push(new ConcatWithConstants(stack.pop(), inst.bsmArgs[0].toString()));
                 } else {
                     var descriptor = Type.getType(inst.desc);
                     int i = descriptor.getArgumentTypes().length;
@@ -187,7 +187,7 @@ public class MethodExecutor {
             }
             case Opcodes.ANEWARRAY, Opcodes.NEWARRAY -> {
                 var length = stack.pop();
-                StackEntry result = new UnaryArbitraryOp(length, l -> KnownArray.withLength(l.extractAs(int.class)));
+                StackEntry result = new NewArray(length);
                 if (result.canBeSimplified()) result = result.simplify(this.parent);
                 stack.push(result);
             }

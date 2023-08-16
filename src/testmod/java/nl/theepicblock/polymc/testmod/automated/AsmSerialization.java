@@ -89,13 +89,6 @@ public class AsmSerialization implements FabricGameTest {
         ctx.complete();
     }
 
-    @GameTest(templateName = EMPTY_STRUCTURE, required = false)
-    public void testBinaryArbitraryOp(TestContext ctx) {
-        var e = new BinaryArbitraryOp(MOCK, MOCK, (a, b) -> a);
-        tstSerialization(e);
-        ctx.complete();
-    }
-
     @GameTest(templateName = EMPTY_STRUCTURE)
     public void testBinaryOp(TestContext ctx) {
         var e = new BinaryOp(MOCK, MOCK, BinaryOp.Op.ADD, BinaryOp.Type.INT);
@@ -111,6 +104,13 @@ public class AsmSerialization implements FabricGameTest {
     }
 
     @GameTest(templateName = EMPTY_STRUCTURE)
+    public void testConcatWithConstant(TestContext ctx) {
+        var e = new ConcatWithConstants(MOCK, "constant");
+        tstSerialization(e);
+        ctx.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
     public void testInstanceOf(TestContext ctx) {
         var e = new InstanceOf(MOCK, "java/lang/String");
         tstSerialization(e);
@@ -118,15 +118,29 @@ public class AsmSerialization implements FabricGameTest {
     }
 
     @GameTest(templateName = EMPTY_STRUCTURE)
-    public void testStaticFieldValue(TestContext ctx) {
-        var e = new StaticFieldValue("java/lang/String", "SomeField");
+    public void testMathOp(TestContext ctx) {
+        var e = new MathOp(MOCK, MathOp.Op.COS);
         tstSerialization(e);
         ctx.complete();
     }
 
-    @GameTest(templateName = EMPTY_STRUCTURE, required = false)
-    public void testUnaryArbitraryOp(TestContext ctx) {
-        var e = new UnaryArbitraryOp(MOCK, (a) -> a);
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void testNewArray(TestContext ctx) {
+        var e = new NewArray(MOCK);
+        tstSerialization(e);
+        ctx.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void testRawBitOp(TestContext ctx) {
+        var e = new RawBitOp(MOCK, RawBitOp.Op.Float2Int);
+        tstSerialization(e);
+        ctx.complete();
+    }
+
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void testStaticFieldValue(TestContext ctx) {
+        var e = new StaticFieldValue("java/lang/String", "SomeField");
         tstSerialization(e);
         ctx.complete();
     }
