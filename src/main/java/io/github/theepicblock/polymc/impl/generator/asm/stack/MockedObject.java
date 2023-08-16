@@ -29,6 +29,7 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
 
     @Override
     public boolean canBeSimplified() {
+        if (MOCKED_RESOLVERS.isEmpty()) return false;
         if (this.origin instanceof Root) {
             return true;
         } else if (this.origin instanceof FieldAccess f) {
@@ -44,6 +45,7 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
 
     @Override
     public StackEntry simplify(VirtualMachine vm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) throws MethodExecutor.VmException {
+        if (MOCKED_RESOLVERS.isEmpty()) return this;
         if (this.origin instanceof Root r) {
             if (MOCKED_RESOLVERS.containsKey(r.name)) return MOCKED_RESOLVERS.get(r.name);
         } else if (this.origin instanceof FieldAccess f) {
