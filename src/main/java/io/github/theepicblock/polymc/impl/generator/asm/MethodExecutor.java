@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class MethodExecutor {
-    private final AbstractObjectList<@NotNull StackEntry> stack = new ObjectArrayList<>();
+    private final AbstractObjectList<@NotNull StackEntry> stack;
     private final VirtualMachine parent;
     private final StackEntry[] localVariables;
     private final String methodName;
@@ -26,14 +26,15 @@ public class MethodExecutor {
     private InsnList method;
     private Clazz owner;
 
-    public MethodExecutor(VirtualMachine parent, StackEntry[] localVariables, String methodName) {
+    public MethodExecutor(VirtualMachine parent, StackEntry[] localVariables, String methodName, int stacksize) {
         this.parent = parent;
         this.localVariables = localVariables;
         this.methodName = methodName;
+        this.stack = new ObjectArrayList<>(stacksize);
     }
 
     public MethodExecutor copy(VirtualMachine newVm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
-        var n = new MethodExecutor(newVm, new StackEntry[this.localVariables.length], this.methodName);
+        var n = new MethodExecutor(newVm, new StackEntry[this.localVariables.length], this.methodName, this.stack.size());
         n.owner = this.owner;
         n.method = this.method;
         n.nextInstruction = this.nextInstruction;

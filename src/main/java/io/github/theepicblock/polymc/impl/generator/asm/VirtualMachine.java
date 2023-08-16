@@ -164,7 +164,8 @@ public class VirtualMachine {
         }
 
         var executor = new MethodExecutor(this, localVariables,
-                methRef.clazz().node.name + "#" + meth.name + meth.desc);
+                methRef.clazz().node.name + "#" + meth.name + meth.desc,
+                meth.maxStack);
         methodStack.push(executor);
         executor.setMethod(meth.instructions, methRef.clazz());
     }
@@ -812,7 +813,7 @@ public class VirtualMachine {
          */
         default void ret(Context ctx, StackEntry e) {
             // We're going to create a "method" and act like that one returned the value
-            ctx.machine.methodStack.push(new MethodExecutor(ctx.machine(), new StackEntry[0], "Fake method"));
+            ctx.machine.methodStack.push(new MethodExecutor(ctx.machine(), new StackEntry[0], "Fake method", 0));
             ctx.machine.onMethodReturn(e);
         }
     }
