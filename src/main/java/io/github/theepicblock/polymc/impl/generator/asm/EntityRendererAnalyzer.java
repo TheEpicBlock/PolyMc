@@ -12,10 +12,8 @@ import io.github.theepicblock.polymc.impl.generator.asm.stack.*;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.UnaryArbitraryOp;
 import io.github.theepicblock.polymc.impl.misc.InternalEntityHelpers;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +22,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -208,7 +207,7 @@ public class EntityRendererAnalyzer {
             return new StaticFieldValue(owner.name(), fieldName);
         }
 
-        private static final Map<AsmUtils.MappedFunction, SpecialMethod> SPECIAL_METHODS = new Object2ObjectOpenHashMap<>();
+        private static final Map<AsmUtils.MappedFunction, SpecialMethod> SPECIAL_METHODS = new HashMap<>();
 
         @FunctionalInterface
         private interface SpecialMethod {
@@ -248,21 +247,8 @@ public class EntityRendererAnalyzer {
             SPECIAL_METHODS.put(MobEntityRenderer$hasLabel, (arguments, config) -> {
                 return new MockedObject(new MockedObject.Root("hasLabel"), config.root.factoryVm.getType(Type.BOOLEAN_TYPE));
             });
-            SPECIAL_METHODS.put(DataTracker$getEntry, (arguments, config) -> {
-                // TODO is this still needed?
-                return AsmUtils.mockVmObjectRemap(config.root.factoryVm, "net.minecraft.class_2945$class_2946", "datatrackerEntity");
-            });
             SPECIAL_METHODS.put(LivingEntityRenderer$shouldFlipUpsideDown, (arguments, config) -> {
                 return new UnaryArbitraryOp(arguments[0], stackEntry -> new KnownInteger(1)); //TODO
-            });
-            SPECIAL_METHODS.put(MathHelper$wrapDegreesI, (arguments, config) -> {
-                return new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(int.class))));
-            });
-            SPECIAL_METHODS.put(MathHelper$wrapDegreesF, (arguments, config) -> {
-                return new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(float.class))));
-            });
-            SPECIAL_METHODS.put(MathHelper$wrapDegreesD, (arguments, config) -> {
-                return new UnaryArbitraryOp(arguments[0], stackEntry -> StackEntry.known(MathHelper.wrapDegrees(stackEntry.extractAs(double.class))));
             });
         }
 

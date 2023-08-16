@@ -676,9 +676,8 @@ public class VirtualMachine {
                 return;
             }
 
-            if (inst.getOpcode() != Opcodes.INVOKESTATIC) {
-                // TODO figure out what to do with this
-                if (arguments[0].canBeSimplified()) arguments[0] = arguments[0].simplify(ctx.machine());
+            if (arguments.length > 0 && arguments[0].canBeSimplified()) {
+                arguments[0] = arguments[0].simplify(ctx.machine());
             }
 
             if (Util.first(arguments) instanceof Lambda lambda && inst.getOpcode() != Opcodes.INVOKESPECIAL && inst.getOpcode() != Opcodes.INVOKESTATIC) {
@@ -735,7 +734,7 @@ public class VirtualMachine {
                 return;
             }
 
-            if (Util.first(arguments) instanceof MockedObject && !methodRef.desc().endsWith("V")) {
+            if (arguments.length >= 1 && !arguments[0].isConcrete() && !methodRef.desc().endsWith("V")) {
                 var clazz = methodRef.clazz;
                 if (clazz.isMethodComplicated(methodRef.name(), methodRef.desc())) {
                     ret(ctx, MockedObject.methodCall(currentClass, inst, arguments));
