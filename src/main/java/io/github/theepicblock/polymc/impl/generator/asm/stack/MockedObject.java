@@ -125,6 +125,10 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
             buf.writeString("FieldAccess");
             fieldAccess.root.writeWithTag(buf, table);
             buf.writeString(fieldAccess.fieldName());
+        } else if (this.origin instanceof ArrayAccess arrayAccess) {
+            buf.writeString("ArrayAccess");
+            arrayAccess.root.writeWithTag(buf, table);
+            arrayAccess.index.writeWithTag(buf, table);
         } else if (this.origin instanceof MethodCall methodCall) {
             buf.writeString("MethodCall");
             buf.writeString(methodCall.currentClass().name());
@@ -147,6 +151,7 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
         Origin origin = switch (originType) {
             case "Root" -> new Root(buf.readString());
             case "FieldAccess" -> new FieldAccess(StackEntry.readWithTag(buf, table), buf.readString());
+            case "ArrayAccess" -> new ArrayAccess(StackEntry.readWithTag(buf, table), StackEntry.readWithTag(buf, table));
             case "MethodCall" -> {
                 try {
                     var currentClazz = hehe.getClass(buf.readString());
@@ -161,7 +166,7 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
                     throw new RuntimeException(e);
                 }
             }
-            default -> throw new RuntimeException("wdfiow");
+            default -> throw new RuntimeException("Unknown origin type "+originType);
         };
         var type = buf.readNullable((buf2) -> {
             try {

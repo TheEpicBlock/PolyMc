@@ -3,12 +3,14 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import io.github.theepicblock.polymc.impl.generator.asm.*;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
+import io.github.theepicblock.polymc.impl.generator.asm.*;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.ops.StaticFieldValue;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.Contract;
@@ -24,7 +26,8 @@ public interface StackEntry extends Serializable {
             .registerTypeAdapter(Optional.class, new OptionalTypeAdapter<>())
             .registerTypeAdapter(RegistryEntry.Reference.class, new RegistryEntryJsonSerializer<>())
             .registerTypeAdapter(RegistryEntry.Direct.class, new RegistryEntryJsonSerializer<>())
-            .registerTypeHierarchyAdapter(EntityType.class, new EntityTypeJsonSerializer<>())
+            .registerTypeHierarchyAdapter(EntityType.class, new RegisterAbleJsonHandler<>(Registries.ENTITY_TYPE))
+            .registerTypeHierarchyAdapter(TrackedDataHandler.class, new TrackedDataHandlerJsonHandler())
             .disableInnerClassSerialization()
             .disableHtmlEscaping()
             .create();

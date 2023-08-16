@@ -31,8 +31,6 @@ public class CachedEntityRendererAnalyzer {
     }
 
     public ExecutionGraphNode analyze(EntityType<?> entity) throws MethodExecutor.VmException {
-        if (entity.getTranslationKey().contains("snail")) return null;
-
         var entityCacheFile = getFile(entity);
         if (Files.exists(entityCacheFile)) {
             try (var stream = new BufferedInputStream(new FileInputStream(entityCacheFile.toFile()))) {
