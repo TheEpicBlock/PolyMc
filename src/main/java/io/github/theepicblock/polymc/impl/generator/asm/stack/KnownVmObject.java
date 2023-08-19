@@ -103,7 +103,7 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
     }
 
     @Override
-    public StackEntry copy(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
+    public StackEntry copyTmp(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         if (copyCache.containsKey(this)) return copyCache.get(this);
         var newMap = new CowCapableMap<String>();
         var newObj = new KnownVmObject(this.type, newMap);

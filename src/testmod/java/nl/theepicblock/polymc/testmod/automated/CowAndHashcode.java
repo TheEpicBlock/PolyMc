@@ -34,7 +34,7 @@ public class CowAndHashcode implements FabricGameTest {
     @GameTest(templateName = EMPTY_STRUCTURE)
     public void testCowMap(TestContext ctx) throws MethodExecutor.VmException {
         var veryOrigin = new CowCapableMap<String>();
-        var origin = veryOrigin.createClone();
+        var origin = veryOrigin.copyTmp();
         var emptyHashcode = origin.hashCode();
         assertEq(emptyHashcode, new CowCapableMap<String>().hashCode(), "two empty maps should have the same hashcode");
 
@@ -44,14 +44,14 @@ public class CowAndHashcode implements FabricGameTest {
         assertEq(origin.get("b"), new KnownVmObject(TstType));
 
         assertDifferent(origin, new CowCapableMap<>(), "Filled map shouldn't equal empty one");
-        assertDifferent(origin.createClone(), new CowCapableMap<>(), "Copied filled map shouldn't equal empty one");
+        assertDifferent(origin.copyTmp(), new CowCapableMap<>(), "Copied filled map shouldn't equal empty one");
 
         var originHash = origin.hashCode();
         assertDifferent(originHash, emptyHashcode, "Hashcode should change after something's added");
         origin.put("a", StackEntry.known(1));
         assertEq(originHash, origin.hashCode(), "Hashcode shouldn't change after the exact same value is inserted");
 
-        var copy = origin.createClone();
+        var copy = origin.copyTmp();
         // Check if everything's still equal
         assertEq(origin.get("a"), StackEntry.known(1));
         assertEq(originHash, origin.hashCode(), "Hashcode shouldn't change after copy is made");
@@ -100,7 +100,7 @@ public class CowAndHashcode implements FabricGameTest {
         assertEq(obj.getField("a"), obj);
 
         var prevHash = obj.hashCode();
-        var copy = obj.copy();
+        var copy = obj.copyTmp();
         assertEq(obj, copy);
         assertEq(obj.hashCode(), copy.hashCode());
 
@@ -120,8 +120,8 @@ public class CowAndHashcode implements FabricGameTest {
         b.setField("myA", a);
         a.setField("myB", b);
 
-        assertEq(a, a.copy());
-        assertEq(a.hashCode(), a.copy().hashCode());
+        assertEq(a, a.copyTmp());
+        assertEq(a.hashCode(), a.copyTmp().hashCode());
 
         ctx.complete();
     }
@@ -134,7 +134,7 @@ public class CowAndHashcode implements FabricGameTest {
         map.put("a", ONE);
         map.put("c", ONE);
 
-        var clone = map.createClone();
+        var clone = map.copyTmp();
         clone.put("b", ONE);
         clone.put("c", TWO);
 
@@ -166,7 +166,7 @@ public class CowAndHashcode implements FabricGameTest {
 
         map.put("a", ONE);
         map.put("c", ONE);
-        var clone = map.createClone();
+        var clone = map.copyTmp();
         clone.put("b", ONE);
         clone.put("c", TWO);
 
@@ -186,8 +186,8 @@ public class CowAndHashcode implements FabricGameTest {
     public void testKnownArray(TestContext ctx) throws MethodExecutor.VmException {
         var arr = KnownArray.withLength(2);
         arr.arraySet(0, StackEntry.known(1));
-        assertEq(arr, arr.copy());
-        assertEq(arr.hashCode(), arr.copy().hashCode());
+        assertEq(arr, arr.copyTmp());
+        assertEq(arr.hashCode(), arr.copyTmp().hashCode());
 
         ctx.complete();
     }
@@ -196,7 +196,7 @@ public class CowAndHashcode implements FabricGameTest {
     public void vmHash(TestContext ctx) throws MethodExecutor.VmException {
         var vm = new VirtualMachine(new ClientClassLoader(), new VirtualMachine.VmConfig() { });
         var vmHash = vm.hashCode();
-        var copy = vm.copy();
+        var copy = vm.copyTmp();
         assertEq(vm, copy);
         assertEq(vm.hashCode(), copy.hashCode());
 

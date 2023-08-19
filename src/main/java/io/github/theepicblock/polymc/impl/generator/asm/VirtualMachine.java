@@ -54,13 +54,16 @@ public class VirtualMachine {
     }
 
     /**
-     * @apiNote The copied virtual machine *MUST* be disposed of before this virtual machine is used again
+     * Creates a copy of this object. This copy is meant to only be temporary.
+     * SAFETY: once a copy is made, the original should not be interacted with until the copy is disposed off:
+     * any operations done on the original may affect the copy,
+     * but any operations done on the copy will not affect the original
      */
-    public VirtualMachine copy() {
+    public VirtualMachine copyTmp() {
         var n = new VirtualMachine(this.classResolver, config, lastReturnedValue);
         var copyCache = new Reference2ReferenceOpenHashMap<StackEntry, StackEntry>();
         this.methodStack.forEach(meth -> {
-            n.methodStack.add(meth.copy(n, copyCache));
+            n.methodStack.add(meth.copyTmp(n, copyCache));
         });
         n.classes = this.classes;
         // TODO find an alternative for this that doesn't tank performance
@@ -675,7 +678,7 @@ public class VirtualMachine {
                 if (arguments[0] instanceof KnownArray array) {
                     ret(ctx, array.shallowCopy());
                 } else {
-                    ret(ctx, arguments[0].copy());
+                    ret(ctx, arguments[0].copyTmp());
                 }
                 return;
             }
@@ -874,12 +877,18 @@ public class VirtualMachine {
             this.methodResolutionCache = methodResolutionCache;
         }
 
-        public Clazz copy(VirtualMachine newLoader, Reference2ReferenceOpenHashMap<StackEntry, StackEntry> copyCache) {
+        /**
+         * Creates a copy of this object. This copy is meant to only be temporary.
+         * SAFETY: once a copy is made, the original should not be interacted with until the copy is disposed off:
+         * any operations done on the original may affect the copy,
+         * but any operations done on the copy will not affect the original
+         */
+        public Clazz copyTmp(VirtualMachine newLoader, Reference2ReferenceOpenHashMap<StackEntry, StackEntry> copyCache) {
             return new Clazz(
                     node,
                     newLoader,
                     this.hasInitted,
-                    this.staticFields.createClone(copyCache),
+                    this.staticFields.copyTmp(copyCache),
                     this.methodLookupCache,
                     this.nonPrimitiveFields,
                     this.methodComplicatedCache,

@@ -40,17 +40,23 @@ public class CowCapableMap<T> {
     }
 
     /**
-     * SAFETY: once a clone is made, the original shouldn't be interacted with until the clone is disposed off
+     * Creates a copy of this object. This copy is meant to only be temporary.
+     * SAFETY: once a copy is made, the original should not be interacted with until the copy is disposed off:
+     * any operations done on the original may affect the copy,
+     * but any operations done on the copy will not affect the original
      */
     @TestOnly
-    public CowCapableMap<T> createClone() {
-        return createClone(new Reference2ReferenceOpenHashMap<>());
+    public CowCapableMap<T> copyTmp() {
+        return copyTmp(new Reference2ReferenceOpenHashMap<>());
     }
 
     /**
-     * SAFETY: once a clone is made, the original shouldn't be interacted with until the clone is disposed off
+     * Creates a copy of this object. This copy is meant to only be temporary.
+     * SAFETY: once a copy is made, the original should not be interacted with until the copy is disposed off:
+     * any operations done on the original may affect the copy,
+     * but any operations done on the copy will not affect the original
      */
-    public CowCapableMap<T> createClone(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
+    public CowCapableMap<T> copyTmp(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         var child = new CowCapableMap<T>();
         child.clearAndCopy(this, copyCache);
         return child;
@@ -119,7 +125,7 @@ public class CowCapableMap<T> {
             var o = nextDad.getImmutable(key);
             if (o != null) {
                 incrementModifications();
-                var copy = o.copy(this.copyCache);
+                var copy = o.copyTmp(this.copyCache);
                 if (copy != o) {
                     if (this.overrides == null) this.overrides = new HashMap<>();
                     this.overrides.put(key, copy);
@@ -323,7 +329,7 @@ public class CowCapableMap<T> {
     /**
      * Do a best-effort check to see if the parent was changed since making the clone.
      * If the parent changed, that could've also influenced this map
-     * @see #createClone(Reference2ReferenceOpenHashMap)
+     * @see #copyTmp(Reference2ReferenceOpenHashMap)
      */
     private void checkParentForModifications() {
         if (DEBUG_MODIFICATIONS && this.daddy != null) {

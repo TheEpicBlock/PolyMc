@@ -33,19 +33,25 @@ public class MethodExecutor {
         this.stack = new ObjectArrayList<>(stacksize);
     }
 
-    public MethodExecutor copy(VirtualMachine newVm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
+    /**
+     * Creates a copy of this object. This copy is meant to only be temporary.
+     * SAFETY: once a copy is made, the original should not be interacted with until the copy is disposed off:
+     * any operations done on the original may affect the copy,
+     * but any operations done on the copy will not affect the original
+     */
+    public MethodExecutor copyTmp(VirtualMachine newVm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         var n = new MethodExecutor(newVm, new StackEntry[this.localVariables.length], this.methodName, this.stack.size());
         n.owner = this.owner;
         n.method = this.method;
         n.nextInstruction = this.nextInstruction;
         int i = 0;
         for (var var : this.localVariables) {
-            if (var != null) n.localVariables[i] = var.copy(copyCache);
+            if (var != null) n.localVariables[i] = var.copyTmp(copyCache);
             i++;
         }
 
         for (var entry : this.stack) {
-            n.stack.push(entry.copy(copyCache));
+            n.stack.push(entry.copyTmp(copyCache));
         }
         return n;
     }

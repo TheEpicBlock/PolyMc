@@ -136,11 +136,23 @@ public interface StackEntry extends Serializable {
         throw new NotImplementedException(this+" is not an array");
     }
 
-    default StackEntry copy() {
-        return copy(new Reference2ReferenceOpenHashMap<>());
+    /**
+     * Creates a copy of this object. This copy is meant to only be temporary.
+     * SAFETY: once a copy is made, the original should not be interacted with until the copy is disposed off:
+     * any operations done on the original may affect the copy,
+     * but any operations done on the copy will not affect the original
+     */
+    default StackEntry copyTmp() {
+        return copyTmp(new Reference2ReferenceOpenHashMap<>());
     }
 
-    default StackEntry copy(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) {
+    /**
+     * Creates a copy of this object. This copy is meant to only be temporary.
+     * SAFETY: once a copy is made, the original should not be interacted with until the copy is disposed off:
+     * any operations done on the original may affect the copy,
+     * but any operations done on the copy will not affect the original
+     */
+    default StackEntry copyTmp(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) {
         return this;
     }
 

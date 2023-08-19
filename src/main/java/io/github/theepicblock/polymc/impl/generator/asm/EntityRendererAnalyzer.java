@@ -343,7 +343,7 @@ public class EntityRendererAnalyzer {
 
             // SAFETY: none of the objects in `vmNoJump` may be mutated until `vmJump` is disposed of
             var vmNoJump = ctx.machine();
-            var vmJump = ctx.machine().copy();
+            var vmJump = ctx.machine().copyTmp();
 
             vmNoJump.changeConfig(new RendererAnalyzerVmConfig(continuationNoJump, this, root));
             vmJump.changeConfig(new RendererAnalyzerVmConfig(continuationJump, this, root));
