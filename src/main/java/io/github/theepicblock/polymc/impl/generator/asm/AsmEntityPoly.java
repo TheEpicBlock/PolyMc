@@ -188,7 +188,7 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
                     compA = compA.simplify(hehe, cache);
                     if (compB != null) compB = compB.simplify(hehe, cache);
 
-                    if (!compA.isConcrete() || compB == null || !compB.isConcrete()) {
+                    if (!compA.isConcrete() || (compB != null && !compB.isConcrete())) {
 //                        PolyMc.LOGGER.warn("Error ticking entity "+this.getEntity().getType()+" non-concrete value");
                         break;
                     }
