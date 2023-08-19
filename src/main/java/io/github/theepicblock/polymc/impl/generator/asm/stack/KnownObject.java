@@ -11,6 +11,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 /**
  * Represents and object that exists outside the vm
@@ -46,6 +47,9 @@ public record KnownObject(Object i, @NotNull HashMap<Object, StackEntry> mutatio
     public @NotNull StackEntry getField(String name) throws VmException {
         if (mutations.containsKey(name)) {
             return mutations.get(name);
+        }
+        if (i instanceof Optional<?> optional && name.equals("value")) {
+            return StackEntry.known(optional.orElse(null));
         }
         try {
             var clazz = i.getClass();
