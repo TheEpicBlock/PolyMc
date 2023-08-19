@@ -98,6 +98,8 @@ public class PacketCountManager {
             var player = listener.getPlayer();
             if (PolyMapProvider.getPolyMap(player) == map) {
                 var info = playerTrackers.get(player);
+                // The player might've been unloaded, despite still being a listener for this entity
+                if (info == null) continue;
                 if (info.shouldSend(player.getPos(), pos, true, tick, seed+(pSeed++), this.watchRadius)) {
                     reusableConsumer.addListener(listener, info);
                 }
@@ -117,6 +119,8 @@ public class PacketCountManager {
             if (TACSAccessor.callIsWithinDistance(player.getChunkPos().x, player.getChunkPos().z, pos.x, pos.z, this.watchDistance) &&
                     PolyMapProvider.getPolyMap(player) == map) {
                 var info = playerTrackers.get(player);
+                // Just in case the player was unloaded but not yet removed from the world
+                if (info == null) continue;
                 if (info.shouldSend(player.getPos(), chunkPos, false, tick, seed+(pSeed++), this.watchRadius)) {
                     reusableConsumer.addListener(player.networkHandler, info);
                 }
