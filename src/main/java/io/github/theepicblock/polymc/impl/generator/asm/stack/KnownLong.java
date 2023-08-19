@@ -2,8 +2,10 @@ package io.github.theepicblock.polymc.impl.generator.asm.stack;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor;
 import io.github.theepicblock.polymc.impl.generator.asm.StackEntryTable;
 import net.minecraft.network.PacketByteBuf;
+import org.jetbrains.annotations.NotNull;
 
 public record KnownLong(long i) implements StackEntry {
     @Override
@@ -26,6 +28,12 @@ public record KnownLong(long i) implements StackEntry {
 
     public static StackEntry read(PacketByteBuf buf, StackEntryTable table) {
         return new KnownLong(buf.readVarLong());
+    }
+
+    @Override
+    public @NotNull StackEntry getField(String name) throws MethodExecutor.VmException {
+        if (name.equals("value")) return this; // I like dealing with boxing in dumb ways
+        return StackEntry.super.getField(name);
     }
 
     @Override
