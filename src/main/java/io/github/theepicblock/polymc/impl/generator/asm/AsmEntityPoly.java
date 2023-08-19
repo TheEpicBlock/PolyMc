@@ -27,9 +27,12 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.MethodInsnNode;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -67,6 +70,12 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
             var generatedModelLocation = new Identifier("poly-asm", entityId.getPath()+"-"+call.hashCode());
             var cube = call.cuboid().extractAs(Cuboid.class);
 
+            cube.sides[0].direction.set(Direction.DOWN.getUnitVector());
+            cube.sides[1].direction.set(Direction.UP.getUnitVector());
+            cube.sides[2].direction.set(Direction.WEST.getUnitVector());
+            cube.sides[3].direction.set(Direction.NORTH.getUnitVector());
+            cube.sides[4].direction.set(Direction.EAST.getUnitVector());
+            cube.sides[5].direction.set(Direction.SOUTH.getUnitVector());
             var faces = Arrays.stream(cube.sides)
                     .collect(Collectors.toMap(
                             side -> {
@@ -85,7 +94,8 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
                                     null,
                                     0,
                                     0
-                            )
+                            ),
+                            (side1, side2) -> side2
                     ));
 
             var model = JModel.create();
@@ -138,6 +148,36 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
                 if (returnsVoid) return null;
                 return new UnknownValue("Error executing " + method + ": " + e.createFancyErrorMessage());
             }
+
+            @Override
+            public void invoke(VirtualMachine.Context ctx, VirtualMachine.Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments, VirtualMachine.@Nullable MethodRef meth) throws MethodExecutor.VmException {
+                if (meth != null) {
+                    // Try executing in the real vm
+                    try {
+                        if (AsmUtils.isAllConcrete(arguments)) {
+                            var clazz = Class.forName(meth.className().replace("/", "."));
+
+                            var argTypes = Type.getArgumentTypes(meth.desc());
+                            var types = new Class<?>[argTypes.length];
+                            var args = new Object[argTypes.length];
+                            for (int i = 0; i < argTypes.length; i++) {
+                                types[i] = Class.forName(argTypes[i].getClassName());
+                            }
+                            for (int i = 0; i < argTypes.length; i++) {
+                                args[i] = arguments[i + inst.getOpcode() == Opcodes.INVOKESTATIC ? 0 : 1].extractAs(types[i]);
+                            }
+
+                            var jMeth = clazz.getDeclaredMethod(meth.name(), types);
+                            ret(ctx, StackEntry.known(jMeth.invoke(inst.getOpcode() == Opcodes.INVOKESTATIC ? null : arguments[0].extractAs(clazz), args)));
+                            return;
+                        }
+                    } catch (Throwable ignored) {}
+
+
+                }
+
+                VirtualMachine.VmConfig.super.invoke(ctx, currentClass, inst, arguments, meth);
+            }
         });
         private final HashMap<ExecutionGraphNode.RenderCall,VItemDisplay> calls = new HashMap<>();
         private final VInteraction mainEntity;
@@ -185,8 +225,8 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
                     var compA = cont.compA();
                     var compB = cont.compB();
 
-                    compA = compA.simplify(hehe, cache);
-                    if (compB != null) compB = compB.simplify(hehe, cache);
+                    compA = compA.copyTmp().simplify(hehe, cache);
+                    if (compB != null) compB = compB.copyTmp().simplify(hehe, cache);
 
                     if (!compA.isConcrete() || (compB != null && !compB.isConcrete())) {
 //                        PolyMc.LOGGER.warn("Error ticking entity "+this.getEntity().getType()+" non-concrete value");
@@ -231,7 +271,7 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
                     } else {
                         value.move(players, this.getPosition(), 0, 0, false);
                         try {
-                            var matrixEntry = key.matrix().simplify(hehe, cache);
+                            var matrixEntry = key.matrix().copyTmp().simplify(hehe, cache);
                             var matrix = matrixEntry.extractAs(Matrix4f.class);
 
                             // To counter-act the transformations that the item and displayentity renderers do

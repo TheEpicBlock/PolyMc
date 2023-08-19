@@ -157,6 +157,20 @@ public interface StackEntry extends Serializable {
     }
 
     /**
+     * Creates a copy of this object
+     */
+    default StackEntry copy() {
+        return copyTmp(new Reference2ReferenceOpenHashMap<>());
+    }
+
+    /**
+     * Creates a copy of this object
+     */
+    default StackEntry copy(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) {
+        return this;
+    }
+
+    /**
      * @implNote this must not recurse. If recursive writing is needed, use {@link StackEntryTable#writeEntry(PacketByteBuf, StackEntry)}. You should also read {@link StackEntryTable#readEntry(PacketByteBuf)}
      */
     default void writeWithTag(PacketByteBuf buf, StackEntryTable table) {

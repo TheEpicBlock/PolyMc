@@ -68,15 +68,16 @@ public record MockedObject(@NotNull Origin origin, @Nullable VirtualMachine.Claz
             }
         } else if (this.origin instanceof MethodCall m) {
             if (simplificationCache.containsKey(this)) return simplificationCache.get(this);
+            var newArgs = new StackEntry[m.arguments.length];
             for (var i = 0; i < m.arguments.length; i++) {
-                if (m.arguments[i] != null && m.arguments[i].canBeSimplified()) m.arguments[i] = m.arguments[i].simplify(vm, simplificationCache);
+                if (m.arguments[i] != null) newArgs[i] = m.arguments[i].simplify(vm, simplificationCache);
             }
 
-            var a = Util.first(m.arguments);
+            var a = Util.first(newArgs);
             if (a != null && a.isConcrete()) {
                 var state = vm.switchStack(null);
                 try {
-                    vm.getConfig().invoke(new VirtualMachine.Context(vm), m.currentClass, m.inst, m.arguments);
+                    vm.getConfig().invoke(new VirtualMachine.Context(vm), m.currentClass, m.inst, newArgs);
                     return vm.runToCompletion();
                 } catch (MethodExecutor.VmException ignored) {}
                 vm.switchStack(state);

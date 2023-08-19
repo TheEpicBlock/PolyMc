@@ -157,6 +157,13 @@ public class AsmUtils {
         }
     }
 
+    public static boolean isAllConcrete(StackEntry[] args) {
+        for (var i : args) {
+            if (!i.isConcrete()) return false;
+        }
+        return true;
+    }
+
     public record MappedFunction(@InternalName String clazz, String method, String desc) {
     }
 

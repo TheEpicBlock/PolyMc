@@ -819,7 +819,7 @@ public class VirtualMachine {
     }
 
     public record MethodRef(@NotNull Clazz clazz, @NotNull MethodNode meth) {
-        public String className() {
+        public @InternalName String className() {
             return clazz.node.name;
         }
 

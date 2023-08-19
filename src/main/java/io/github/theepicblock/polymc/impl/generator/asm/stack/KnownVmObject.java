@@ -112,6 +112,18 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
         return newObj;
     }
 
+    @Override
+    public StackEntry copy(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
+        if (copyCache.containsKey(this)) return copyCache.get(this);
+        var newMap = new CowCapableMap<String>();
+        var newObj = new KnownVmObject(this.type, newMap);
+        copyCache.put(this, newObj);
+        newMap.forEachImmutable((key, value) -> {
+            newMap.put(key, value.copy(copyCache));
+        });
+        return newObj;
+    }
+
     // We're overriding these because the type shouldn't really matter
     @Override
     public boolean equals(Object o) {

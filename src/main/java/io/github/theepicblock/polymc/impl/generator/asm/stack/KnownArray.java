@@ -59,12 +59,21 @@ public record KnownArray(@Nullable StackEntry[] data) implements StackEntry {
 
     @Override
     public StackEntry copyTmp(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
+        return this.copy(true, copyCache);
+    }
+
+    @Override
+    public StackEntry copy(Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
+        return this.copy(false, copyCache);
+    }
+
+    public StackEntry copy(boolean tmp, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> copyCache) {
         if (copyCache.containsKey(this)) return copyCache.get(this);
 
         var newArr = new StackEntry[this.data.length];
         int i = 0;
         for (var v : this.data) {
-            if (v != null) newArr[i] = v.copyTmp(copyCache);
+            if (v != null) newArr[i] = tmp ? v.copyTmp(copyCache) : v.copy(copyCache);
             i++;
         }
         var ret = new KnownArray(newArr);
