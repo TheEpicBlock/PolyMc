@@ -24,7 +24,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.AffineTransformation;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.RotationAxis;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -280,8 +279,8 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
                             var matrix = matrixEntry.extractAs(Matrix4f.class);
 
                             // To counter-act the transformations that the item and displayentity renderers do
-                            matrix.translate(0.5f, 0f, 0.5f); // TODO, investigate why the model is rendered 0.5 too high
-                            matrix.rotate(RotationAxis.POSITIVE_Y.rotation((float) Math.PI));
+//                            matrix.translate(0.5f, 0f, 0.5f); // TODO, investigate why the model is rendered 0.5 too high
+//                            matrix.rotate(RotationAxis.POSITIVE_Y.rotation((float) Math.PI));
 
                             value.setupTransforms(players, new AffineTransformation(matrix));
                         } catch (MethodExecutor.VmException e) {

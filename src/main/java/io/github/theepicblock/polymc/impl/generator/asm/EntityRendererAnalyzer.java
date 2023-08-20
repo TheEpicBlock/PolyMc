@@ -112,6 +112,7 @@ public class EntityRendererAnalyzer {
     }
 
     private final HashSet<String> branchCauses = new HashSet<>();
+    private final HashSet<String> errorCauses = new HashSet<>();
     public int amountOfVmsTotal = 1;
     public int amountOfVms = 1;
     public StopWatch time;
@@ -122,6 +123,8 @@ public class EntityRendererAnalyzer {
 
         if (rendererFactory == null) { return null; }
 
+        branchCauses.clear();
+        errorCauses.clear();
         time = new StopWatch();
         time.start();
         // EntityRendererFactory.Context
@@ -152,6 +155,13 @@ public class EntityRendererAnalyzer {
         var light = new MockedObject(new MockedObject.Root("light"), rendererVm.getType(Type.INT_TYPE));
         rendererVm.addMethodToStack(resolvedEntityRenderer$render, new StackEntry[] { renderer, fakeEntity, yaw, tickDelta, matrixStack, KnownObject.NULL, light });
         rendererVm.runToCompletion();
+
+        PolyMc.LOGGER.info("Finished analysing "+entity.getTranslationKey());
+        PolyMc.LOGGER.info("Branch causes");
+        branchCauses.forEach(cause -> PolyMc.LOGGER.info(" - "+cause));
+        PolyMc.LOGGER.info("Error causes");
+        errorCauses.forEach(cause -> PolyMc.LOGGER.info(" - "+cause));
+
         return rootNode;
     }
 
@@ -369,7 +379,7 @@ public class EntityRendererAnalyzer {
 
         @Override
         public StackEntry onVmError(String method, boolean returnsVoid, VmException e) throws VmException {
-//            PolyMc.LOGGER.error("Couldn't run "+method+": "+e.createFancyErrorMessage());
+            root.errorCauses.add(method);
             if (returnsVoid) {
                 return null;
             }
