@@ -54,7 +54,6 @@ public class CachedEntityRendererAnalyzer {
 
         var executionResults = rendererAnalyzer.analyze(entity);
         if (executionResults == null) return null;
-        executionResults.simplify();
         try (var stream = new BufferedOutputStream(new FileOutputStream(entityCacheFile.toFile()))) {
             var buf = PacketByteBufs.create();
             var table = new StackEntryTable();

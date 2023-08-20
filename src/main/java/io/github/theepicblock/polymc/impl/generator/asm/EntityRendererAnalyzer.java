@@ -362,7 +362,7 @@ public class EntityRendererAnalyzer {
             root.amountOfVms++;
             // This vm was cloned, and needs to restarted
             vmJump.runToCompletion();
-            continuationJump.tryMerge();
+            continuationJump.simplify();
             root.amountOfVms--;
             // The other vm will continue after this call
         }

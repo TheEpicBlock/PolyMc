@@ -127,6 +127,7 @@ public class CowCapableMap<T> {
                 incrementModifications();
                 var copy = o.copyTmp(this.copyCache);
                 if (copy != o) {
+                    keyCode = INVALID_KEYCODE;
                     if (this.overrides == null) this.overrides = new HashMap<>();
                     this.overrides.put(key, copy);
                 }
@@ -175,6 +176,7 @@ public class CowCapableMap<T> {
         if (this.overrides != null) {
             for (var entry : overrides.entrySet()) {
                 if (entry.getValue() == null) continue;
+                keyCode = INVALID_KEYCODE;
                 incrementModifications();
                 overrides.put(entry.getKey(), entry.getValue().simplify(vm, simplificationCache));
             }

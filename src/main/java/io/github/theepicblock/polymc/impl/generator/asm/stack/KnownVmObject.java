@@ -118,7 +118,7 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
         var newMap = new CowCapableMap<String>();
         var newObj = new KnownVmObject(this.type, newMap);
         copyCache.put(this, newObj);
-        newMap.forEachImmutable((key, value) -> {
+        this.fields.forEachImmutable((key, value) -> {
             newMap.put(key, value.copy(copyCache));
         });
         return newObj;

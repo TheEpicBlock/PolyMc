@@ -43,7 +43,6 @@ public class EntityPolyGenerator {
         try {
             var graph = rendererAnalysis.analyze(entityType);
             if (graph != null) {
-                graph.simplify();
                 return new AsmEntityPoly<>(graph, entityType, builder.getSharedValues(CustomModelDataManager.KEY));
             }
         } catch (VmException e) {

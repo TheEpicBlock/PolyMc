@@ -67,9 +67,6 @@ public class ExecutionGraphNode {
         var ifTrue = this.continuation.continuationIfTrue;
         var ifFalse = this.continuation.continuationIfFalse;
 
-        ifTrue.simplify();
-        ifFalse.simplify();
-
         if (ifTrue.calls == null || ifTrue.calls.isEmpty()) {
             return;
         }
@@ -77,7 +74,7 @@ public class ExecutionGraphNode {
             return;
         }
 
-        var callSet = new HashSet<>(ifTrue.calls);
+        var callSet = new ArrayList<>(ifTrue.calls);
 
         var duplicateCalls = new ArrayList<RenderCall>();
 
