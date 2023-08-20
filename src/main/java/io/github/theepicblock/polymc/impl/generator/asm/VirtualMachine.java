@@ -805,6 +805,10 @@ public class VirtualMachine {
             throw new VmException("Jump on unknown value(s) ("+compA+", "+compB+")", null);
         }
 
+        default boolean shouldSimplifyVmObjects() {
+            return false;
+        }
+
         /**
          * Just a convenience method. Probably shouldn't override this one since it doesn't receive all returns
          */

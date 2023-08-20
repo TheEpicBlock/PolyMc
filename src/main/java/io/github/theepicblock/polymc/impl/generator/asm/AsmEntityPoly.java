@@ -150,6 +150,11 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
             }
 
             @Override
+            public boolean shouldSimplifyVmObjects() {
+                return true;
+            }
+
+            @Override
             public void invoke(VirtualMachine.Context ctx, VirtualMachine.Clazz currentClass, MethodInsnNode inst, StackEntry[] arguments, VirtualMachine.@Nullable MethodRef meth) throws MethodExecutor.VmException {
                 if (meth != null) {
                     // Try executing in the real vm

@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import io.github.theepicblock.polymc.impl.generator.asm.*;
 import io.github.theepicblock.polymc.impl.generator.asm.MethodExecutor.VmException;
 import io.github.theepicblock.polymc.impl.generator.asm.VirtualMachine.Clazz;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.network.PacketByteBuf;
 import org.jetbrains.annotations.NotNull;
@@ -91,9 +92,17 @@ public record KnownVmObject(@NotNull Clazz type, @NotNull CowCapableMap<@NotNull
 
     @Override
     public StackEntry simplify(VirtualMachine vm, Reference2ReferenceOpenHashMap<StackEntry,StackEntry> simplificationCache) throws VmException {
+        if (!vm.getConfig().shouldSimplifyVmObjects()) return this;
+
         if (simplificationCache.containsKey(this)) return simplificationCache.get(this);
         simplificationCache.put(this, this);
-//        this.fields.simplify(vm, simplificationCache);
+        var tmpMap = new Object2ObjectOpenHashMap<String, StackEntry>();
+        this.fields.forEachImmutable((field, val) -> {
+            try {
+                tmpMap.put(field, val.simplify(vm, simplificationCache));
+            } catch (VmException ignored) {}
+        });
+        this.fields.putAll(tmpMap);
         return this;
     }
 
