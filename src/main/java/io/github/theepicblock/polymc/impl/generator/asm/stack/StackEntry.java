@@ -160,7 +160,7 @@ public interface StackEntry extends Serializable {
      * Creates a copy of this object
      */
     default StackEntry copy() {
-        return copyTmp(new Reference2ReferenceOpenHashMap<>());
+        return copy(new Reference2ReferenceOpenHashMap<>());
     }
 
     /**
