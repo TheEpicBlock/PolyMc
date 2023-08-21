@@ -184,7 +184,7 @@ public class MethodExecutor {
                         i--;
                         args[i] = stack.pop(); // pop all the arguments
                     }
-                    stack.push(new Lambda((Handle)inst.bsmArgs[1], args));
+                    stack.push(new Lambda((Handle)inst.bsmArgs[1], inst.name, descriptor.getReturnType().getInternalName(), args));
                 }
             }
             case Opcodes.NEW -> {

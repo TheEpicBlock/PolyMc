@@ -254,6 +254,8 @@ public class VirtualMachine {
             return this.getClass(_Double);
         } else if (entry instanceof ConcatWithConstants) {
             return this.getClass("java/lang/String");
+        } else if (entry instanceof Lambda l) {
+            return this.getClass(l.type());
         } else {
             return null;
         }
@@ -687,7 +689,7 @@ public class VirtualMachine {
                 arguments[0] = arguments[0].simplify(ctx.machine());
             }
 
-            if (Util.first(arguments) instanceof Lambda lambda && inst.getOpcode() != Opcodes.INVOKESPECIAL && inst.getOpcode() != Opcodes.INVOKESTATIC) {
+            if (Util.first(arguments) instanceof Lambda lambda && lambda.name().equals(inst.name) && inst.getOpcode() != Opcodes.INVOKESPECIAL) {
                 // This might break, it was only designed to deal with one specific type of lambda and idk if all lambda's act the same
                 var method = lambda.method();
                 var clazz = ctx.machine().getClass(method.getOwner());

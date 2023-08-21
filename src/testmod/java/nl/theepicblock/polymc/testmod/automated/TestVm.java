@@ -178,6 +178,7 @@ public class TestVm implements FabricGameTest {
         return "abcdef".length();
     }
 
+    //
     @VmTest(expected = 7)
     public static int checkCast() {
         var myGetter = new IntProvider() {
@@ -193,7 +194,9 @@ public class TestVm implements FabricGameTest {
     private interface IntProvider {
         int gimme();
     }
+    //
 
+    //
     @VmTest(expected = 546)
     public static int interfaceDefault() {
         var myRecord = new RecordImplementingDefaultInterface();
@@ -207,6 +210,23 @@ public class TestVm implements FabricGameTest {
             return 546;
         }
     }
+    //
+
+    //
+    @VmTest(expected = 5)
+    public static int invokeDynamicWithDefault() {
+        InvokeDynamicInterface intf = () -> 2;
+        return intf.getIntAdd();
+    }
+
+    private interface InvokeDynamicInterface {
+        int getInt();
+
+        default int getIntAdd() {
+            return getInt() + 3;
+        }
+    }
+    //
 
     @VmTest(expected = 35)
     public static int streamCollectMap() {
@@ -279,6 +299,7 @@ public class TestVm implements FabricGameTest {
         return StaticB.MyNumA + StaticB.MyNumB;
     }
 
+    //
     @VmTest(expected = 12+19)
     public static int staticMethodInheritance() {
         return StaticB.methA() + StaticB.methB();
@@ -304,6 +325,7 @@ public class TestVm implements FabricGameTest {
             return 19;
         }
     }
+    //
 
     @VmTest(expected = 5)
     public static int intToString() {
