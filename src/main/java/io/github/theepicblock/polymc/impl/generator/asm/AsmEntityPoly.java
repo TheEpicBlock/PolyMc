@@ -40,13 +40,13 @@ import java.util.stream.Collectors;
 public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
     private final ExecutionGraphNode graph;
     private final EntityType<T> sourceType;
-    private final Map<StackEntry, ItemStack> cmdItems;
+    private final LinkedHashMap<StackEntry, ItemStack> cmdItems;
     private final Class<?> entityClass;
 
     public AsmEntityPoly(ExecutionGraphNode graph, EntityType<T> sourceType, CustomModelDataManager cmd) {
         this.graph = graph;
         this.sourceType = sourceType;
-        this.cmdItems = new HashMap<>();
+        this.cmdItems = new LinkedHashMap<>();
         this.entityClass = InternalEntityHelpers.getEntityClass(sourceType);
 
         this.graph.forEachCall(renderCall -> {
