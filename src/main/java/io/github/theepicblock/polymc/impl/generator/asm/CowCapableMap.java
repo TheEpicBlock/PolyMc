@@ -261,7 +261,7 @@ public class CowCapableMap<T> {
             if (d == null) return null;
             var cSize = c.overrides == null ? 0 : c.overrides.size();
             var dSize = d.overrides == null ? 0 : d.overrides.size();
-            if (cSize != dSize && c.getKeyHashCode() != d.getKeyHashCode()) {
+            if (cSize != dSize || c.getKeyHashCode() != d.getKeyHashCode()) {
                 return d;
             }
             c = d;
