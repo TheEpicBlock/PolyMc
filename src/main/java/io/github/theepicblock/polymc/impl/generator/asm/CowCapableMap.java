@@ -293,11 +293,39 @@ public class CowCapableMap<T> {
         if (isBeingCompared) return 0;
         // Is this a good order independent hash? Probable not
         isBeingCompared = true;
-        AtomicLong hash = new AtomicLong();
-        this.forEachImmutable((key, value) -> hash.addAndGet(Objects.hash(key, value)));
-        long longHash = hash.get();
+        long hash = 0;
+
+        /// copy of forEachImmutable
+        checkParentForModifications();
+        if (this.overrides != null) {
+            for (var entry : this.overrides.entrySet()) {
+                var k = entry.getKey();
+                var value = entry.getValue();
+                // Null indicates that this entry doesn't exist in the map. It shouldn't be exposed
+                if (value != null) {
+                    hash += Objects.hash(k, value);
+                }
+            }
+            // If the dad has the same keys then it won't affect this map anyway, so we can skip those
+            var nextDad = this.getDaddyWithDifferentKeys();
+            if (nextDad != null) {
+                AtomicLong tmpHash = new AtomicLong();
+                nextDad.forEachImmutable((key, val) -> {
+                    if (!overrides.containsKey(key)) {
+                        tmpHash.addAndGet(Objects.hash(key, val));
+                    }
+                });
+                hash += tmpHash.get();
+            }
+        } else if (this.daddy != null) {
+            AtomicLong tmpHash = new AtomicLong();
+            this.daddy.forEachImmutable((key, val) -> tmpHash.addAndGet(Objects.hash(key, val)));
+            hash += tmpHash.get();
+        }
+        ///
+
         isBeingCompared = false;
-        return (int)(longHash >> Long.numberOfTrailingZeros(longHash));
+        return (int)(hash >> Long.numberOfTrailingZeros(hash));
     }
 
     @Override
