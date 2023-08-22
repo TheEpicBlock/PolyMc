@@ -3,22 +3,19 @@ package io.github.theepicblock.polymc.impl.generator.asm;
 import io.github.theepicblock.polymc.impl.generator.asm.stack.StackEntry;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2IntMap;
-import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
 
 import java.io.*;
 
 public class StackEntryTable {
-    private final Reference2IntMap<StackEntry> hashCodeCache = new Reference2IntOpenHashMap<>();
     private final Int2ObjectMap<PacketByteBuf> table = new Int2ObjectOpenHashMap<>();
     private final Int2ObjectMap<StackEntry> readCache = new Int2ObjectOpenHashMap<>();
     private boolean closed = false;
 
     public void writeEntry(PacketByteBuf buf, StackEntry e) {
         if (closed) throw new UnsupportedOperationException();
-        var hashcode = hashCodeCache.computeIfAbsent(e, Object::hashCode);
+        var hashcode = e.hashCode();
 
         // Write the actual entry into the table (might cause more entries to be written)
         if (!table.containsKey(hashcode)) {
