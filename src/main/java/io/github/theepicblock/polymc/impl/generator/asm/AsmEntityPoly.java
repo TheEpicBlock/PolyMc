@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
     private final ExecutionGraphNode graph;
     private final EntityType<T> sourceType;
-    private final Map<ExecutionGraphNode.RenderCall, ItemStack> cmdItems;
+    private final Map<StackEntry, ItemStack> cmdItems;
     private final Class<?> entityClass;
 
     public AsmEntityPoly(ExecutionGraphNode graph, EntityType<T> sourceType, CustomModelDataManager cmd) {
@@ -49,13 +49,14 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
         this.cmdItems = new HashMap<>();
         this.entityClass = InternalEntityHelpers.getEntityClass(sourceType);
 
-        var calls = this.graph.getUniqueCalls();
-        calls.forEach(call -> {
-            var itemInfo = cmd.requestCMD(CustomModelDataManager.GENERATED_MODEL_ITEMS);
-            var stack = new ItemStack(itemInfo.getLeft());
-            stack.getOrCreateNbt().putInt("CustomModelData", itemInfo.getRight());
+        this.graph.forEachCall(renderCall -> {
+            if (!cmdItems.containsKey(renderCall.cuboid())) {
+                var itemInfo = cmd.requestCMD(CustomModelDataManager.GENERATED_MODEL_ITEMS);
+                var stack = new ItemStack(itemInfo.getLeft());
+                stack.getOrCreateNbt().putInt("CustomModelData", itemInfo.getRight());
 
-            cmdItems.put(call, stack);
+                cmdItems.put(renderCall.cuboid(), stack);
+            }
         });
     }
 
@@ -66,9 +67,9 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
         var texWidth = 16;
         var texHeight = 16;
         copy(moddedResources, pack, texture);
-        this.cmdItems.forEach((call, item) -> {
-            var generatedModelLocation = new Identifier("poly-asm", entityId.getPath()+"-"+call.hashCode());
-            var cube = call.cuboid().extractAs(Cuboid.class);
+        this.cmdItems.forEach((cubeEntry, item) -> {
+            var cube = cubeEntry.extractAs(Cuboid.class);
+            var generatedModelLocation = new Identifier("poly-asm", entityId.getPath()+"-"+cube.hashCode());
 
             cube.sides[0].direction.set(Direction.DOWN.getUnitVector());
             cube.sides[1].direction.set(Direction.UP.getUnitVector());
@@ -295,7 +296,7 @@ public class AsmEntityPoly<T extends Entity> implements EntityPoly<T> {
                         var display = new VItemDisplay();
                         calls.put(call, display);
                         display.spawn(players, this.getPosition());
-                        display.sendItem(players, poly.cmdItems.get(call));
+                        display.sendItem(players, poly.cmdItems.get(call.cuboid()));
                     }
                 });
             } catch (MethodExecutor.VmException e) {

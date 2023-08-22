@@ -39,6 +39,14 @@ public class ExecutionGraphNode {
         return set;
     }
 
+    public void forEachCall(Consumer<RenderCall> consumer) {
+        visitContinuation(node -> {
+            if (node.calls != null) {
+                node.calls.forEach(consumer);
+            }
+        });
+    }
+
     private int countForks() {
         AtomicInteger counter = new AtomicInteger();
         visitContinuation(cont -> {
