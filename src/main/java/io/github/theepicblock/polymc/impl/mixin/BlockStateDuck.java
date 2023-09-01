@@ -8,7 +8,7 @@ public interface BlockStateDuck {
     boolean polymc$getVanilla();
 
     static boolean isMaybeVanilla(BlockState state) {
-        return !ConfigManager.getConfig().forceBlockIdIntControl || ((BlockStateDuck) state).polymc$getVanilla();
+        return !ConfigManager.getConfig().remapVanillaBlockIds || ((BlockStateDuck) state).polymc$getVanilla();
     }
 
     static void markVanilla(BlockState state) {

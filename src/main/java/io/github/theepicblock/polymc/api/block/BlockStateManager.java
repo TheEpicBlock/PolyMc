@@ -75,14 +75,14 @@ public class BlockStateManager {
         for (var block : searchSpace) {
             var availableStates = availableBlockStates.computeIfAbsent(block, (b) -> {
                 onFirstRegister.accept(b, this.polyRegistry);
-                return new LinkedList<>(b.getStateManager().getStates());
+                return new LinkedList<>(b.getStateManager().getStates().stream().filter(BlockStateDuck::isMaybeVanilla).toList());
             });
 
             // Return first block state that matches `blockStatePredicate`
             var iterator = availableStates.iterator();
             while (iterator.hasNext()) {
                 BlockState next = iterator.next();
-                if (blockStatePredicate.test(next) && BlockStateDuck.isMaybeVanilla(next)) {
+                if (blockStatePredicate.test(next)) {
                     iterator.remove();
 
                     if (modelId != null) {

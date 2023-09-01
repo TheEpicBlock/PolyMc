@@ -25,6 +25,7 @@ import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import io.github.theepicblock.polymc.impl.mixin.BlockStateDuck;
 import io.github.theepicblock.polymc.mixins.entity.EntityAttributesFilteringMixin;
 import io.github.theepicblock.polymc.mixins.gui.GuiPolyImplementation;
 import io.github.theepicblock.polymc.mixins.item.CreativeItemStackFix;
@@ -131,5 +132,13 @@ public interface PolyMap {
      */
     default boolean canReceiveEntityAttribute(EntityAttribute attribute) {
         return Util.isVanilla(Registries.ATTRIBUTE.getId(attribute));
+    }
+
+    /**
+     * Used for filtering out attributes unsupported by client.
+     * @see EntityAttributesFilteringMixin
+     */
+    default boolean isClientCompatibleState(BlockState state) {
+        return BlockStateDuck.isMaybeVanilla(state) && Util.isVanilla(Registries.BLOCK.getId(state.getBlock()));
     }
 }
