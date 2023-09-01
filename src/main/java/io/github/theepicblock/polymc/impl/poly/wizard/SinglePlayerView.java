@@ -1,6 +1,6 @@
 package io.github.theepicblock.polymc.impl.poly.wizard;
 
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public class SinglePlayerView extends AbstractPacketConsumer {

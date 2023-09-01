@@ -18,7 +18,7 @@ import net.minecraft.entity.passive.FishEntity;
 import net.minecraft.entity.passive.GolemEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +31,10 @@ public class EntityPolyGenerator {
      * Generates the most suitable {@link EntityPoly} for a given {@link EntityType}
      */
     public static <T extends Entity> EntityPoly<T> generatePoly(EntityType<T> entityType, PolyRegistry builder) {
+        if (Registries.ENTITY_TYPE.getId(entityType).getNamespace().equals("taterzens")) {
+            return (info, entity) -> null; // Compatibility with Taterzens
+        }
+
         // Get the class of the entity
         var baseClass = InternalEntityHelpers.getEntityClass(entityType);
 
@@ -38,18 +42,18 @@ public class EntityPolyGenerator {
 
         // Iterate over all vanilla entities to see if any are assignable
         var possible = new ArrayList<EntityType<?>>();
-        for (var possibleType : Registry.ENTITY_TYPE) {
-            var id = Registry.ENTITY_TYPE.getId(possibleType);
+        for (var possibleType : Registries.ENTITY_TYPE) {
+            var id = Registries.ENTITY_TYPE.getId(possibleType);
             if (Util.isVanilla(id)) {
                 Class<?> vanillaEntityClass = InternalEntityHelpers.getEntityClass(possibleType);
 
-                if (vanillaEntityClass.isAssignableFrom(baseClass)) {
+                if (vanillaEntityClass != null && vanillaEntityClass.isAssignableFrom(baseClass)) {
                     possible.add(possibleType);
                 }
             }
         }
 
-        // Players are blacklist, we shouldn't spawn any players.
+        // Players are blacklisted, we shouldn't spawn any players.
         possible.removeIf(clazz -> clazz == EntityType.PLAYER);
 
         // Sort the list of entities that match by the highest type

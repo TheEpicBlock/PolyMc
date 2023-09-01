@@ -1,38 +1,50 @@
 package io.github.theepicblock.polymc.impl.misc;
 
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.mixins.ReferenceAccessor;
 import io.github.theepicblock.polymc.mixins.WorldAccessor;
 import io.netty.util.internal.shaded.org.jctools.util.UnsafeAccess;
 import it.unimi.dsi.fastutil.objects.ObjectIterators;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.damage.DamageScaling;
+import net.minecraft.entity.damage.DamageSources;
+import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.map.MapState;
 import net.minecraft.recipe.RecipeManager;
+import net.minecraft.registry.*;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryEntryOwner;
+import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.resource.featuretoggle.FeatureFlags;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypeFilter;
+import net.minecraft.util.function.LazyIterationConsumer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.profiler.ProfilerSystem;
-import net.minecraft.util.registry.*;
 import net.minecraft.world.*;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.border.WorldBorder;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkManager;
 import net.minecraft.world.chunk.ChunkProvider;
 import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.chunk.light.ChunkSkyLight;
+import net.minecraft.world.chunk.light.LightSourceView;
 import net.minecraft.world.chunk.light.LightingProvider;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.dimension.DimensionTypes;
@@ -43,23 +55,49 @@ import net.minecraft.world.tick.QueryableTickScheduler;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
+import java.util.stream.Stream;
 
 // Copy of Polymer's FakeWorld class
+
+@SuppressWarnings({"rawtypes", "unchecked"})
 @ApiStatus.Internal
-public final class FakeWorld extends World {
+public final class FakeWorld extends World implements LightSourceView {
     public static final World INSTANCE;
+
+    public static final World INSTANCE_UNSAFE;
+    public static final World INSTANCE_REGULAR;
     static final Scoreboard SCOREBOARD = new Scoreboard();
-    static final DynamicRegistryManager REGISTRY_MANAGER = DynamicRegistryManager.createAndLoad();
+    static final DynamicRegistryManager REGISTRY_MANAGER = new DynamicRegistryManager.Immutable() {
+        private FakeRegistry<DamageType> damageTypes = new FakeRegistry<>(RegistryKeys.DAMAGE_TYPE, new Identifier("polymer","fake_damage"),
+                new DamageType("", DamageScaling.NEVER, 0));
+
+        @Override
+        public Optional<Registry> getOptional(RegistryKey key) {
+            var x = Registries.REGISTRIES.get(key);
+            if (x != null) {
+                return Optional.of(x);
+            }
+
+            if (RegistryKeys.DAMAGE_TYPE.equals(key)) {
+                return Optional.of(damageTypes);
+            }
+
+            return Optional.empty();
+        }
+
+        @Override
+        public Stream<Entry<?>> streamAllRegistries() {
+            return Stream.empty();
+        }
+    };
     static final RecipeManager RECIPE_MANAGER = new RecipeManager();
-    static final ChunkManager CHUNK_MANAGER = new ChunkManager() {
+    private static final FeatureSet FEATURES = FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+    final ChunkManager chunkManager = new ChunkManager() {
         private LightingProvider lightingProvider = null;
 
         @Nullable
@@ -89,13 +127,13 @@ public final class FakeWorld extends World {
                 this.lightingProvider = new LightingProvider(new ChunkProvider() {
                     @Nullable
                     @Override
-                    public BlockView getChunk(int chunkX, int chunkZ) {
-                        return null;
+                    public LightSourceView getChunk(int chunkX, int chunkZ) {
+                        return FakeWorld.this;
                     }
 
                     @Override
                     public BlockView getWorld() {
-                        return INSTANCE;
+                        return FakeWorld.this;
                     }
                 }, false, false);
             }
@@ -105,7 +143,7 @@ public final class FakeWorld extends World {
 
         @Override
         public BlockView getWorld() {
-            return INSTANCE;
+            return FakeWorld.this;
         }
     };
     private static final EntityLookup<Entity> ENTITY_LOOKUP = new EntityLookup<>() {
@@ -127,7 +165,7 @@ public final class FakeWorld extends World {
         }
 
         @Override
-        public <U extends Entity> void forEach(TypeFilter<Entity, U> filter, Consumer<U> action) {
+        public <U extends Entity> void forEach(TypeFilter<Entity, U> filter, LazyIterationConsumer<U> consumer) {
 
         }
 
@@ -137,9 +175,10 @@ public final class FakeWorld extends World {
         }
 
         @Override
-        public <U extends Entity> void forEachIntersects(TypeFilter<Entity, U> filter, Box box, Consumer<U> action) {
+        public <U extends Entity> void forEachIntersects(TypeFilter<Entity, U> filter, Box box, LazyIterationConsumer<U> consumer) {
 
         }
+
     };
     private static final QueryableTickScheduler<?> FAKE_SCHEDULER = new QueryableTickScheduler<Object>() {
         @Override
@@ -164,51 +203,63 @@ public final class FakeWorld extends World {
     };
 
     static {
-        World world;
+        World worldUnsafe, worldDefault;
+
+        var dimType = RegistryEntry.Reference.intrusive(new RegistryEntryOwner<>() {}, new DimensionType(OptionalLong.empty(), true, false, false, true, 1.0D, true, false, -64, 384, 384, BlockTags.INFINIBURN_OVERWORLD, DimensionTypes.OVERWORLD_ID, 0.0F, new DimensionType.MonsterSettings(false, true, UniformIntProvider.create(0, 7), 0)));
+        ((ReferenceAccessor) dimType).callSetRegistryKey(RegistryKey.of(RegistryKeys.DIMENSION_TYPE, new Identifier("overworld")));
+        try {
+            worldUnsafe = (FakeWorld) UnsafeAccess.UNSAFE.allocateInstance(FakeWorld.class);
+            var accessor = (WorldAccessor) worldUnsafe;
+            accessor.polymc$setBiomeAccess(new BiomeAccess(worldUnsafe, 1l));
+            accessor.polymc$setBorder(new WorldBorder());
+            accessor.polymc$setDebugWorld(true);
+            accessor.polymc$setProfiler(() -> new ProfilerSystem(() -> 0l, () -> 0, false));
+            accessor.polymc$setProperties(new FakeWorldProperties());
+            accessor.polymc$setRegistryKey(RegistryKey.of(RegistryKeys.WORLD, new Identifier("polymer","fake_world")));
+            accessor.polymc$setDimensionKey(DimensionTypes.OVERWORLD);
+            accessor.polymc$setDimensionEntry(dimType);
+            accessor.polymc$setThread(Thread.currentThread());
+            accessor.polymc$setRandom(Random.create());
+            accessor.polymc$setAsyncRandom(Random.createThreadSafe());
+            accessor.polymc$setBlockEntityTickers(new ArrayList<>());
+            accessor.polymc$setPendingBlockEntityTickers(new ArrayList<>());
+            try {
+                accessor.polymc$setDamageSources(new DamageSources(REGISTRY_MANAGER));
+            } catch (Throwable e) {
+
+            }
+
+        } catch (Throwable e) {
+            PolyMc.LOGGER.error("Creating fake world with unsafe failed...");
+            e.printStackTrace();
+            worldUnsafe = null;
+        }
 
         try {
-            try {
-                world = (FakeWorld) UnsafeAccess.UNSAFE.allocateInstance(FakeWorld.class);
-                var accessor = (WorldAccessor) world;
-                accessor.setBiomeAccess(new BiomeAccess(world, 1l));
-                accessor.setBorder(new WorldBorder());
-                accessor.setDebugWorld(true);
-                accessor.setProfiler(() -> new ProfilerSystem(() -> 0l, () -> 0, false));
-                accessor.setProperties(new FakeWorldProperties());
-                accessor.setRegistryKey(RegistryKey.of(Registry.WORLD_KEY, new Identifier("polymc", "fake_world")));
-                accessor.setDimension(DimensionTypes.OVERWORLD);
-                accessor.setDimensionEntry(BuiltinRegistries.DIMENSION_TYPE.entryOf(DimensionTypes.OVERWORLD));
-                accessor.setThread(Thread.currentThread());
-                accessor.setRandom(Random.create());
-                accessor.setThreadSafeRandom(Random.createThreadSafe());
-                accessor.setBlockEntityTickers(new ArrayList<>());
-                accessor.setPendingBlockEntityTickers(new ArrayList<>());
-
-            } catch (Throwable e) {
-                PolyMc.LOGGER.error("Creating fake world with unsafe failed... Time for plan B");
-                PolyMc.LOGGER.error(e);
-                world = new FakeWorld(
-                        new FakeWorldProperties(),
-                        RegistryKey.of(Registry.WORLD_KEY, new Identifier("polymc","fake_world")),
-                        BuiltinRegistries.DIMENSION_TYPE.entryOf(DimensionTypes.OVERWORLD),
-                        () -> new ProfilerSystem(() -> 0l, () -> 0, false),
-                        false,
-                        true,
-                        1
-                );
-            }
+            worldDefault = new FakeWorld(
+                    new FakeWorldProperties(),
+                    RegistryKey.of(RegistryKeys.WORLD, new Identifier("polymer", "fake_world")),
+                    dimType,
+                    () -> new ProfilerSystem(() -> 0L, () -> 0, false),
+                    false,
+                    true,
+                    1
+            );
         } catch (Throwable e) {
-            PolyMc.LOGGER.error("And it failed again... some mod is really angry at this stuff... setting it to null for now, hopefully it will pass enough");
-            PolyMc.LOGGER.error(e);
-            world = null;
+            PolyMc.LOGGER.error("Creating fake world in regular way failed...");
+            e.printStackTrace();
+            worldDefault = null;
         }
 
 
-        INSTANCE = world;
+        INSTANCE_UNSAFE = worldUnsafe;
+        INSTANCE_REGULAR = worldDefault;
+
+        INSTANCE = worldUnsafe != null ? worldUnsafe : worldDefault;
     }
 
-    protected FakeWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> dimensionType, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed) {
-        super(properties, registryRef, dimensionType, profiler, isClient, debugWorld, seed, 0);
+    private FakeWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> dimensionType, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed) {
+        super(properties, registryRef, REGISTRY_MANAGER, dimensionType, profiler, isClient, debugWorld, seed, 0);
     }
 
     @Override
@@ -217,12 +268,12 @@ public final class FakeWorld extends World {
     }
 
     @Override
-    public void playSound(@Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) {
+    public void playSound(@Nullable PlayerEntity except, double x, double y, double z, RegistryEntry<SoundEvent> registryEntry, SoundCategory category, float volume, float pitch, long seed) {
 
     }
 
     @Override
-    public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) {
+    public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, RegistryEntry<SoundEvent> registryEntry, SoundCategory category, float volume, float pitch, long seed) {
 
     }
 
@@ -295,7 +346,7 @@ public final class FakeWorld extends World {
 
     @Override
     public ChunkManager getChunkManager() {
-        return CHUNK_MANAGER;
+        return chunkManager;
     }
 
     @Override
@@ -319,6 +370,11 @@ public final class FakeWorld extends World {
     }
 
     @Override
+    public FeatureSet getEnabledFeatures() {
+        return FEATURES;
+    }
+
+    @Override
     public float getBrightness(Direction direction, boolean shaded) {
         return 0;
     }
@@ -330,7 +386,17 @@ public final class FakeWorld extends World {
 
     @Override
     public RegistryEntry<Biome> getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) {
-        return BuiltinRegistries.BIOME.getEntry(BiomeKeys.THE_VOID).get();
+        return null;//BuiltinRegistries.BIOME.getEntry(BiomeKeys.THE_VOID).get();
+    }
+
+    @Override
+    public void forEachLightSource(BiConsumer<BlockPos, BlockState> callback) {
+
+    }
+
+    @Override
+    public ChunkSkyLight getChunkSkyLight() {
+        return null;
     }
 
 

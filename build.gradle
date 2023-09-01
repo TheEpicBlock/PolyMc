@@ -1,12 +1,11 @@
 plugins {
-	id 'fabric-loom' version '0.12-SNAPSHOT'
+	id 'org.quiltmc.loom' version '1.2.3'
 	id 'maven-publish'
-	id 'io.github.juuxel.loom-quiltflower' version '1.7.1'
 	id 'org.ajoberstar.grgit' version '4.1.0'
 }
 
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
 version = "${project.mod_version}${getVersionMetadata()}+${project.minecraft_version}"
@@ -41,24 +40,33 @@ dependencies {
 	//to change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modImplementation "org.quiltmc:quilt-loader:${project.loader_version}"
+	modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
+		exclude group: 'net.fabricmc', module: 'fabric-loader'
+	}
 
 	modCompileOnly("org.quiltmc.qsl.core:registry:${project.qsl_version}") {
 		transitive(false)
 	}
 
-	modImplementation include("nl.theepicblock:resource-locator-api:${project.resource_locator_api_version}")
-	modImplementation include("xyz.nucleoid:packet-tweaker:${project.packet_tweaker_version}")
+	modImplementation include("nl.theepicblock:resource-locator-api:${project.resource_locator_api_version}") {
+		exclude group: 'net.fabricmc', module: 'fabric-loader'
+	}
+	modImplementation include("xyz.nucleoid:packet-tweaker:${project.packet_tweaker_version}") {
+		exclude group: 'net.fabricmc', module: 'fabric-loader'
+	}
 
 	// Compat
 	modCompileOnly("com.github.CaffeineMC.lithium-fabric:lithium:${project.lithium_version}") {
+		exclude group: 'net.fabricmc', module: 'fabric-loader'
 		transitive(false)
 	}
-	modCompileOnly("com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:${project.immersive_portals_version}") {
+	modCompileOnly("com.github.iPortalTeam.ImmersivePortalsMod:imm_ptl_core:${project.immersive_portals_version}") {
+		exclude group: 'net.fabricmc', module: 'fabric-loader'
 		transitive(false)
 	}
-	modCompileOnly("com.github.qouteall.ImmersivePortalsMod:q_misc_util:${project.immersive_portals_version}") {
+	modCompileOnly("com.github.iPortalTeam.ImmersivePortalsMod:q_misc_util:${project.immersive_portals_version}") {
+		exclude group: 'net.fabricmc', module: 'fabric-loader'
 		transitive(false)
 	}
 }
@@ -88,6 +96,14 @@ loom {
 			name = "Test Mod Server"
 			source sourceSets.testmod
 		}
+		gametest {
+			server()
+			name "Game Test"
+			vmArg "-Dfabric-api.gametest"
+			vmArg "-Dfabric-api.gametest.report-file=${project.buildDir}/junit.xml"
+			runDir "build/gametest"
+			source sourceSets.testmod
+		}
 		datagen {
 			server()
 			ideConfigGenerated false
@@ -99,14 +115,12 @@ loom {
 }
 
 task testmodJar(type: Jar) {
-	classifier "testmod-dev"
-
+	archiveClassifier = "testmod-dev"
 	from sourceSets.testmod.output
 }
 
 task remapTestmodJar(type: net.fabricmc.loom.task.RemapJarTask, dependsOn: testmodJar) {
-	classifier "testmod"
-
+	archiveClassifier = "testmod"
 	input = testmodJar.archiveFile.get().asFile
 	addNestedDependencies = false
 }

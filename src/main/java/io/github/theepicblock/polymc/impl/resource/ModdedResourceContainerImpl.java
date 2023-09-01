@@ -3,7 +3,9 @@ package io.github.theepicblock.polymc.impl.resource;
 import io.github.theepicblock.polymc.api.resource.ClientJarResources;
 import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
+import net.minecraft.resource.InputSupplier;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import nl.theepicblock.resourcelocatorapi.ResourceLocatorApi;
 import nl.theepicblock.resourcelocatorapi.api.AssetContainer;
 import org.jetbrains.annotations.NotNull;
@@ -11,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -20,21 +21,13 @@ public class ModdedResourceContainerImpl implements ModdedResources {
     private ClientJarResourcesImpl clientJar = null;
 
     @Override
-    public @Nullable InputStream getInputStream(String namespace, String path) {
-        try {
-            return inner.getAsset(namespace, path);
-        } catch (IOException e) {
-            return null;
-        }
+    public @Nullable InputSupplier<InputStream> getInputStreamSupplier(String namespace, String path) {
+        return inner.getAsset(namespace, path);
     }
 
     @Override
-    public @NotNull List<InputStream> getInputStreams(String namespace, String path) {
-        try {
-            return inner.getAllAssets(namespace, path);
-        } catch (IOException e) {
-            return Collections.emptyList();
-        }
+    public @NotNull List<InputSupplier<InputStream>> getInputStreams(String namespace, String path) {
+        return inner.getAllAssets(namespace, path);
     }
 
     @Override
@@ -43,7 +36,7 @@ public class ModdedResourceContainerImpl implements ModdedResources {
     }
 
     @Override
-    public @NotNull Set<Identifier> locateLanguageFiles() {
+    public @NotNull Set<Pair<Identifier,InputSupplier<InputStream>>> locateLanguageFiles() {
         return inner.locateLanguageFiles();
     }
 

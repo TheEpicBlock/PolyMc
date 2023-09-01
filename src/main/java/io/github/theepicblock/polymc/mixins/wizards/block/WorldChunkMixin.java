@@ -15,13 +15,13 @@ import io.github.theepicblock.polymc.impl.poly.wizard.PlacedWizardInfo;
 import io.github.theepicblock.polymc.impl.poly.wizard.PolyMapFilteredPlayerView;
 import io.github.theepicblock.polymc.impl.poly.wizard.SinglePlayerView;
 import net.minecraft.block.BlockState;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.util.collection.PaletteStorage;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -63,14 +63,21 @@ public abstract class WorldChunkMixin extends Chunk implements WatchListener, Wi
         if (!map.hasBlockWizards())
             return ret;
 
-        for (ChunkSection section : this.sectionArray) {
-            if (section == null) continue;
+        // Get the lowest Y level of the world
+        int sectionBottomY = this.world.getBottomY();
 
-            PalettedContainer<BlockState> container = section.getBlockStateContainer();
-            var data = ((PalettedContainerAccessor<BlockState>)container).getData();
-            var palette = data.palette();
-            var paletteData = data.storage();
-            processWizards(map, palette, paletteData, section.getYOffset(), ret);
+        for (ChunkSection section : this.sectionArray) {
+
+            if (section != null) {
+                PalettedContainer<BlockState> container = section.getBlockStateContainer();
+
+                var data = ((PalettedContainerAccessor<BlockState>)container).getData();
+                var palette = data.palette();
+                var paletteData = data.storage();
+                processWizards(map, palette, paletteData, sectionBottomY, ret);
+            }
+
+            sectionBottomY += 16;
         }
 
         return ret;

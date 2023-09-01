@@ -4,8 +4,10 @@ import io.github.theepicblock.polymc.api.resource.ClientJarResources;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.resource.InputSupplier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.Nullable;
@@ -15,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.jar.JarFile;
@@ -23,8 +24,8 @@ import java.util.jar.JarFile;
 public class ClientJarResourcesImpl implements ClientJarResources {
     // Retrievable by using the getClientSha1 gradle task
     // Or you can look around https://launchermeta.mojang.com/mc/game/version_manifest_v2.json
-    private final static String CLIENT_SHA1 = "90d438c3e432add8848a9f9f368ce5a52f6bc4a7";
-    private final static String CLIENT_URL = "https://launcher.mojang.com/v1/objects/" + CLIENT_SHA1 + "/client.jar";
+    private final static String CLIENT_SHA1 = "e575a48efda46cf88111ba05b624ef90c520eef1";
+    private final static String CLIENT_URL = "https://piston-data.mojang.com/v1/objects/" + CLIENT_SHA1 + "/client.jar";
 
     private final JarFile clientJar;
 
@@ -37,7 +38,16 @@ public class ClientJarResourcesImpl implements ClientJarResources {
     }
 
     @Override
-    public @Nullable InputStream getInputStream(String namespace, String path) {
+    public @Nullable InputSupplier<InputStream> getInputStreamSupplier(String namespace, String path) {
+        if (containsAsset(namespace, path)) {
+            return () -> getInputStream(namespace, path);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public InputStream getInputStream(String namespace, String path) {
         var entry = clientJar.getEntry(ResourceConstants.ASSETS+namespace+"/"+path);
         if (entry == null) return null;
         try {
@@ -52,7 +62,7 @@ public class ClientJarResourcesImpl implements ClientJarResources {
     }
 
     @Override
-    public Set<Identifier> locateLanguageFiles() {
+    public Set<Pair<Identifier,InputSupplier<InputStream>>> locateLanguageFiles() {
         throw new NotImplementedException();
     }
 
@@ -72,14 +82,8 @@ public class ClientJarResourcesImpl implements ClientJarResources {
             } catch (URISyntaxException ignored) {}
         }
 
-        // We used to store our jars in this directory
-        var oldLocation = loader.getGameDir().resolve("polymer_cache/client_jars/" + CLIENT_SHA1 + ".jar");
-        if (Files.exists(oldLocation)) {
-            return oldLocation;
-        }
-
         // We are using the same location as polymer uses, this ensures that the jar isn't downloaded twice
-        return loader.getGameDir().resolve("polymer_cache/cached_client_jars/" + CLIENT_SHA1 + ".jar");
+        return loader.getGameDir().resolve("polymer/cached_client_jars/" + CLIENT_SHA1 + ".jar");
     }
 
     @Override

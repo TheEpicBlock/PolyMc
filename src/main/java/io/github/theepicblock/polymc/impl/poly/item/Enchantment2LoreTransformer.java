@@ -11,9 +11,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -63,7 +63,7 @@ public class Enchantment2LoreTransformer implements ItemTransformer {
 
             var id = EnchantmentHelper.getIdFromNbt(enchantmentCompound);
             if (!Util.isVanilla(id)) {
-                Registry.ENCHANTMENT.getOrEmpty(id).ifPresent((enchantment) -> {
+                Registries.ENCHANTMENT.getOrEmpty(id).ifPresent((enchantment) -> {
                     var name = enchantment.getName(EnchantmentHelper.getLevelFromNbt(enchantmentCompound)).copy();
                     name.setStyle(name.getStyle().withItalic(name.getStyle().isItalic()));
                     if (atBeginning) {

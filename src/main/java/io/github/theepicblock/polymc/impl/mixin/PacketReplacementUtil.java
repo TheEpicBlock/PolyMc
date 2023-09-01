@@ -21,10 +21,10 @@ import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 
 import java.util.function.Consumer;
@@ -41,7 +41,7 @@ public class PacketReplacementUtil {
     public static void sendToAround(PlayerManager manager, PlayerEntity exception, double x, double y, double z, double distance, RegistryKey<World> worldKey, Consumer<ServerPlayerEntity> consumer) {
         for (int i = 0; i < manager.getPlayerList().size(); ++i) {
             ServerPlayerEntity serverPlayerEntity = manager.getPlayerList().get(i);
-            if (serverPlayerEntity != exception && serverPlayerEntity.world.getRegistryKey() == worldKey) {
+            if (serverPlayerEntity != exception && serverPlayerEntity.getWorld().getRegistryKey() == worldKey) {
                 double d = x - serverPlayerEntity.getX();
                 double e = y - serverPlayerEntity.getY();
                 double f = z - serverPlayerEntity.getZ();
