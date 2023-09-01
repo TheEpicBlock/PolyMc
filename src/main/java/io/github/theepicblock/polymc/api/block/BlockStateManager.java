@@ -19,7 +19,7 @@ package io.github.theepicblock.polymc.api.block;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.SharedValuesKey;
-import io.github.theepicblock.polymc.impl.mixin.BlockStateDuck;
+import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import org.jetbrains.annotations.ApiStatus;
@@ -75,7 +75,7 @@ public class BlockStateManager {
         for (var block : searchSpace) {
             var availableStates = availableBlockStates.computeIfAbsent(block, (b) -> {
                 onFirstRegister.accept(b, this.polyRegistry);
-                return new LinkedList<>(b.getStateManager().getStates().stream().filter(BlockStateDuck::isMaybeVanilla).toList());
+                return new LinkedList<>(b.getStateManager().getStates().stream().filter(Util::isVanilla).toList());
             });
 
             // Return first block state that matches `blockStatePredicate`

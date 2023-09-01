@@ -25,7 +25,6 @@ import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
-import io.github.theepicblock.polymc.impl.mixin.BlockStateDuck;
 import io.github.theepicblock.polymc.mixins.entity.EntityAttributesFilteringMixin;
 import io.github.theepicblock.polymc.mixins.gui.GuiPolyImplementation;
 import io.github.theepicblock.polymc.mixins.item.CreativeItemStackFix;
@@ -40,9 +39,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -132,13 +129,5 @@ public interface PolyMap {
      */
     default boolean canReceiveEntityAttribute(EntityAttribute attribute) {
         return Util.isVanilla(Registries.ATTRIBUTE.getId(attribute));
-    }
-
-    /**
-     * Used for filtering out attributes unsupported by client.
-     * @see EntityAttributesFilteringMixin
-     */
-    default boolean isClientCompatibleState(BlockState state) {
-        return BlockStateDuck.isMaybeVanilla(state) && Util.isVanilla(Registries.BLOCK.getId(state.getBlock()));
     }
 }
