@@ -28,18 +28,17 @@ import io.github.theepicblock.polymc.impl.misc.BooleanContainer;
 import io.github.theepicblock.polymc.impl.poly.block.FunctionBlockStatePoly;
 import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
 import io.github.theepicblock.polymc.impl.resource.ModdedResourceContainerImpl;
-import io.github.theepicblock.polymc.mixins.block.MaterialAccessor;
 import io.github.theepicblock.polymc.mixins.block.SlabBlockAccessor;
 import io.github.theepicblock.polymc.mixins.block.TrapdoorBlockAccessor;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.FluidState;
+import net.minecraft.registry.Registries;
 import net.minecraft.state.property.Properties;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
@@ -66,7 +65,7 @@ public class BlockPolyGenerator {
         var moddedBlock = moddedState.getBlock();
         var fakeWorld = new FakedWorld(moddedState);
 
-        var blockId = Registry.BLOCK.getId(moddedBlock);
+        var blockId = Registries.BLOCK.getId(moddedBlock);
         var res = RESOUCES.getBlockState(blockId.getNamespace(), blockId.getPath());
 
 
@@ -146,7 +145,7 @@ public class BlockPolyGenerator {
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState((isIronLike ? BlockStateProfile.METAL_DOOR_PROFILE : BlockStateProfile.DOOR_PROFILE)
-                        .and((state) -> propertyMatches(state, moddedState, DoorBlock.OPEN, DoorBlock.FACING, DoorBlock.HINGE, DoorBlock.HALF)));
+                        .and((state) -> propertyMatches(state, moddedState, DoorBlock.OPEN, DoorBlock.FACING, DoorBlock.HINGE, DoorBlock.HALF)), modelId);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
         if (moddedBlock instanceof TrapdoorBlock trapdoorBlock) {
@@ -154,7 +153,7 @@ public class BlockPolyGenerator {
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState((isIronLike ? BlockStateProfile.METAL_TRAPDOOR_PROFILE : BlockStateProfile.TRAPDOOR_PROFILE)
-                        .and((state) -> propertyMatches(state, moddedState, TrapdoorBlock.OPEN, TrapdoorBlock.FACING, TrapdoorBlock.HALF, TrapdoorBlock.WATERLOGGED)));
+                        .and((state) -> propertyMatches(state, moddedState, TrapdoorBlock.OPEN, TrapdoorBlock.FACING, TrapdoorBlock.HALF, TrapdoorBlock.WATERLOGGED)), modelId);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 

@@ -46,15 +46,13 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.JsonHelper;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
-import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -301,17 +299,11 @@ public class PolyMapImpl implements PolyMap {
                     addDebugProviderToDump(builder, block, block.getTranslationKey(), poly);
         });
 
-        builder.append("####################\n## BLOCKS (USAGE) ##\n####################\n");
+        builder.append("####################\n## BLOCKS (STATE LEFT) ##\n####################\n");
 
         for (var entry : this.blockStateManager.getAvailableBlockStateMap().entrySet()) {
             builder.append("- ");
-            builder.append(Registry.BLOCK.getId(entry.getKey()));
-            builder.append(" - Used: ");
-            builder.append(entry.getKey().getStateManager().getStates().size() - entry.getValue().size());
-            builder.append(", Left: ");
-            builder.append(entry.getValue().size());
-            builder.append(", Total: ");
-            builder.append(entry.getKey().getStateManager().getStates().size());
+            builder.append(Registries.BLOCK.getId(entry.getKey())).append(" - ").append(entry.getValue().size());
             builder.append("\n");
 
         }

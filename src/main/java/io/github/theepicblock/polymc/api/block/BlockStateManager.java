@@ -19,6 +19,7 @@ package io.github.theepicblock.polymc.api.block;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.SharedValuesKey;
+import io.github.theepicblock.polymc.impl.mixin.BlockStateDuck;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import org.jetbrains.annotations.ApiStatus;
@@ -81,7 +82,7 @@ public class BlockStateManager {
             var iterator = availableStates.iterator();
             while (iterator.hasNext()) {
                 BlockState next = iterator.next();
-                if (blockStatePredicate.test(next)) {
+                if (blockStatePredicate.test(next) && BlockStateDuck.isMaybeVanilla(next)) {
                     iterator.remove();
 
                     if (modelId != null) {
