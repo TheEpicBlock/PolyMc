@@ -1,7 +1,6 @@
 package io.github.theepicblock.polymc.impl.misc;
 
 import io.github.theepicblock.polymc.PolyMc;
-import io.github.theepicblock.polymc.impl.ConfigManager;
 import io.github.theepicblock.polymc.impl.mixin.BlockStateDuck;
 import io.github.theepicblock.polymc.mixins.block.IdListAccessor;
 import io.netty.buffer.Unpooled;
@@ -11,22 +10,12 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
-import net.minecraft.registry.Registry;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BlockIdRemapper {
-    private static boolean notRemapped = true;
-
-    public static void checkAndRemapFromInternalList() {
-        if (ConfigManager.getConfig().remapVanillaBlockIds && notRemapped) {
-            notRemapped = false;
-            BlockIdRemapper.remapFromInternalList();
-        }
-    }
-
     public static void remapFromInternalList() {
         try {
             var list = readInternalList();

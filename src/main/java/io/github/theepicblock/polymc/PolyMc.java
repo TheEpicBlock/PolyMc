@@ -108,7 +108,9 @@ public class PolyMc implements ModInitializer {
             ((PolyMapProvider)(handler.player)).refreshUsedPolyMap();
         });
 
-        BlockIdRemapper.checkAndRemapFromInternalList();
+        if (ConfigManager.getConfig().remapVanillaBlockIds) {
+            BlockIdRemapper.remapFromInternalList();
+        }
 
         if (FabricLoader.getInstance().isModLoaded("imm_ptl_core")) {
             LOGGER.warn("PolyMc detected immersive portals. Keep in mind that the compat with IP is really quite janky. You're on your own");
