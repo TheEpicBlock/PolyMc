@@ -19,9 +19,13 @@ package io.github.theepicblock.polymc.api.block;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.SharedValuesKey;
+import io.github.theepicblock.polymc.api.resource.ModdedResources;
+import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.registry.Registries;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +37,7 @@ import java.util.function.Predicate;
  * Manages which blockstates are allocated to which polys.
  */
 public class BlockStateManager {
-    public static final SharedValuesKey<BlockStateManager> KEY = new SharedValuesKey<>(BlockStateManager::new, null);
+    public static final SharedValuesKey<BlockStateManager> KEY = new SharedValuesKey<>(BlockStateManager::new, ResourceContainer::new);
 
     private final Map<Block, List<BlockState>> availableBlockStates = new HashMap<>();
     private final Map<String, List<BlockState>> modelIds = new HashMap<>();
@@ -94,6 +98,30 @@ public class BlockStateManager {
             }
         }
         throw new StateLimitReachedException("No states found in " + Arrays.toString(searchSpace));
+    }
+
+    private static class ResourceContainer implements SharedValuesKey.ResourceContainer {
+        private final Map<Block, List<BlockState>> availableBlockStates;
+
+        private ResourceContainer(BlockStateManager manager) {
+            this.availableBlockStates = manager.availableBlockStates;
+        }
+
+        @Override
+        public void addToResourcePack(ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger) {
+
+        }
+
+        @Override
+        public List<SharedValuesKey.DebugDumpSection> addDebugSections() {
+            return List.of(new SharedValuesKey.DebugDumpSection("BLOCKS (STATE LEFT)", builder -> {
+                for (var entry : availableBlockStates.entrySet()) {
+                    builder.append("- ");
+                    builder.append(Registries.BLOCK.getId(entry.getKey())).append(" - ").append(entry.getValue().size());
+                    builder.append("\n");
+                }
+            }));
+        }
     }
 
 

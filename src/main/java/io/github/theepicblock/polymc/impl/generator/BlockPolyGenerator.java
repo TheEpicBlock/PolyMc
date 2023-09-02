@@ -34,8 +34,8 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.registry.Registries;
-import net.minecraft.state.property.Properties;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -48,7 +48,7 @@ import org.jetbrains.annotations.Nullable;
  * Class to automatically generate {@link BlockPoly}s for {@link Block}s
  */
 public class BlockPolyGenerator {
-    private static ModdedResources RESOUCES = new ModdedResourceContainerImpl();
+    private static final ModdedResources RESOURCES = new ModdedResourceContainerImpl();
 
     /**
      * Generates the most suitable {@link BlockPoly} for a given {@link Block}
@@ -66,10 +66,10 @@ public class BlockPolyGenerator {
         var fakeWorld = new FakedWorld(moddedState);
 
         var blockId = Registries.BLOCK.getId(moddedBlock);
-        var res = RESOUCES.getBlockState(blockId.getNamespace(), blockId.getPath());
+        var blockStateDef = RESOURCES.getBlockState(blockId.getNamespace(), blockId.getPath());
 
 
-        var modelId = res != null ? blockId + "[" + res.getVariantId(moddedState) + "]" : null;
+        var modelId = blockStateDef != null ? blockId + "[" + blockStateDef.getVariantId(moddedState) + "]" : null;
 
         //Get the state's collision shape.
         VoxelShape collisionShape;
