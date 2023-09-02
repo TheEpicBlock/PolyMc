@@ -33,6 +33,6 @@ public class ServerStartMixin {
      */
     @Inject(method = "createWorlds(Lnet/minecraft/server/WorldGenerationProgressListener;)V", at = @At("HEAD"))
     public void createWorlds(WorldGenerationProgressListener worldGenerationProgressListener, CallbackInfo ci) {
-        PolyMc.generatePolyMap();
+        PolyMc.onRegistryClosed();
     }
 }

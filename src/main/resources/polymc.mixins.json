@@ -17,7 +17,6 @@
     "TACSAccessor",
     "WorldAccessor",
     "block.BlockBreakingPatch",
-    "block.BlocksMixin",
     "block.FixLighting",
     "block.FixNoteblockParticles",
     "block.IdListAccessor",
