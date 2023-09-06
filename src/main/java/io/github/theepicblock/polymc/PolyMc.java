@@ -47,13 +47,19 @@ public class PolyMc implements ModInitializer {
     private static PolyMap map;
 
     /**
-     * Builds the poly map, this should only be run when all blocks/items have been registered.
-     * This will be called by PolyMc when the worlds are generated.
-     * @deprecated this is an internal method you shouldn't call.
+     * Called when the registries are definitely final (eg, on world start).
+     * This is needed because PolyMc allocates things for each block/item and needs to do this in a predictable order,
+     * so it can't really support dynamic registration unless you want to regenerate your resource pack constantly.
      */
-    @SuppressWarnings("DeprecatedIsStillUsed")
-    @Deprecated
-    public static void generatePolyMap() {
+    @ApiStatus.Internal
+    public static void onRegistryClosed() {
+        if (ConfigManager.getConfig().remapVanillaBlockIds) {
+            BlockIdRemapper.remapFromInternalList();
+        }
+        generatePolyMap();
+    }
+
+    private static void generatePolyMap() {
         var stopwatch = Stopwatch.createStarted();
         PolyRegistry registry = new PolyRegistry();
 

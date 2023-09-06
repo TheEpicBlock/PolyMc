@@ -1,6 +1,7 @@
 package io.github.theepicblock.polymc.impl.misc;
 
 import io.github.theepicblock.polymc.PolyMc;
+import io.github.theepicblock.polymc.impl.mixin.BlockStateDuck;
 import io.github.theepicblock.polymc.mixins.block.IdListAccessor;
 import io.netty.buffer.Unpooled;
 import net.minecraft.block.Block;
@@ -9,7 +10,6 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
-import net.minecraft.registry.Registry;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,6 +19,7 @@ public class BlockIdRemapper {
     public static void remapFromInternalList() {
         try {
             var list = readInternalList();
+            list.forEach(BlockStateDuck::markVanilla);
             remapBlocks(list);
             PolyMc.LOGGER.info("Successfully remapped "+list.size()+" vanilla blocks");
         } catch (Exception e) {
@@ -81,7 +82,6 @@ public class BlockIdRemapper {
         var idMap = accessor.getIdMap();
 
         var blockListCopy = List.copyOf(blockList);
-
         blockList.clear();
         blockList.addAll(vanillaBlocks);
 

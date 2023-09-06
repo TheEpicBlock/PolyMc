@@ -26,6 +26,7 @@
     "block.SlabBlockAccessor",
     "block.TrapdoorBlockAccessor",
     "block.implementations.BedBlockImplementation",
+    "block.implementations.BlockStateMixin",
     "block.implementations.BreakParticleImplementation",
     "block.implementations.ChunkDataPlayerProvider",
     "block.implementations.FallingBlockEntityImplementation",

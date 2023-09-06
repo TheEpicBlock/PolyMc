@@ -50,9 +50,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.JsonHelper;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -274,7 +272,8 @@ public class PolyMapImpl implements PolyMap {
     @Override
     public String dumpDebugInfo() {
         StringBuilder builder = new StringBuilder();
-        builder.append("###########\n## ITEMS ##\n###########\n");
+
+        writeHeader(builder, "ITEMS");
         this.itemPolys
                 .entrySet()
                 .stream()
@@ -284,7 +283,8 @@ public class PolyMapImpl implements PolyMap {
                     var poly = entry.getValue();
                     addDebugProviderToDump(builder, item, item.getTranslationKey(), poly);
         });
-        builder.append("############\n## BLOCKS ##\n############\n");
+
+        writeHeader(builder, "BLOCKS");
         this.blockPolys
                 .entrySet()
                 .stream()
@@ -294,7 +294,8 @@ public class PolyMapImpl implements PolyMap {
                     var poly = entry.getValue();
                     addDebugProviderToDump(builder, block, block.getTranslationKey(), poly);
         });
-        builder.append("############\n## ENTITIES ##\n############\n");
+
+        writeHeader(builder, "ENTITIES");
         this.entityPolys
                 .entrySet()
                 .stream()
@@ -304,7 +305,29 @@ public class PolyMapImpl implements PolyMap {
                     var poly = entry.getValue();
                     addDebugProviderToDump(builder, entity, entity.getTranslationKey(), poly);
                 });
+
+        this.sharedValueResources.stream()
+                .flatMap(sharedValue -> sharedValue.addDebugSections().stream())
+                .forEach(debugSection -> {
+                    writeHeader(builder, debugSection.name());
+                    debugSection.writer().accept(builder);
+                });
+
         return builder.toString();
+    }
+
+    private static void writeHeader(StringBuilder builder, String n) {
+        var middleLine = "## " + n + " ##";
+
+        // First line
+        middleLine.chars().forEach(i -> builder.append("#"));
+        builder.append("\n");
+        // Middle line
+        builder.append(middleLine);
+        builder.append("\n");
+        // Last line
+        middleLine.chars().forEach(i -> builder.append("#"));
+        builder.append("\n");
     }
 
     private static <T> void addDebugProviderToDump(StringBuilder b, T object, String key, DebugInfoProvider<T> poly) {

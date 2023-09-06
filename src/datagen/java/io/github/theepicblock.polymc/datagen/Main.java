@@ -55,7 +55,10 @@ public class Main implements ModInitializer {
 
     private static void writeBlock(Block block, PropertyLookupTable table, PacketByteBuf buf) {
         Identifier id = Registries.BLOCK.getId(block);
-        assert id.getNamespace().equals("minecraft"); // This is supposed to be a list with vanilla ids, no modded allowed
+        if (!id.getNamespace().equals("minecraft")) {
+            // This is supposed to be a list with vanilla ids, no modded allowed
+            throw new AssertionError("Non-mc block detected: "+id);
+        }
 
         // Write block id
         buf.writeString(id.getPath());

@@ -64,7 +64,7 @@ public class PolyRegistry {
     /**
      * Registers a global item poly. This {@link ItemTransformer#transform(ItemStack, ServerPlayerEntity, ItemLocation)} shall be called for all items.
      * <p>
-     * The order is dependant on the registration order. If it is registered earlier it'll be called earlier.
+     * The order is dependent on the registration order. If it is registered earlier it'll be called earlier.
      * @param poly poly to register.
      */
     public void registerGlobalItemPoly(ItemTransformer poly) {
@@ -157,7 +157,7 @@ public class PolyRegistry {
     }
 
     /**
-     * Creates an immutable {@link PolyMap} containing all of the registered polys
+     * Creates an immutable {@link PolyMap} containing all the registered polys
      */
     public PolyMap build() {
         return new PolyMapImpl(
@@ -166,6 +166,7 @@ public class PolyRegistry {
                 ImmutableMap.copyOf(blockPolys),
                 ImmutableMap.copyOf(guiPolys),
                 ImmutableMap.copyOf(entityPolys),
-                ImmutableList.copyOf(sharedValues.entrySet().stream().map((entry) -> entry.getKey().createResources(entry.getValue())).filter(Objects::nonNull).iterator()));
+                ImmutableList.copyOf(sharedValues.entrySet().stream().map((entry) -> entry.getKey().createResources(entry.getValue())).filter(Objects::nonNull).iterator())
+        );
     }
 }

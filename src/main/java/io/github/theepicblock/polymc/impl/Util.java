@@ -22,10 +22,12 @@ import com.google.gson.Gson;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import io.github.theepicblock.polymc.impl.mixin.BlockStateDuck;
 import io.github.theepicblock.polymc.mixins.ItemStackAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
@@ -47,6 +49,14 @@ public class Util {
     public static final String MC_NAMESPACE = "minecraft";
     private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
     private static boolean HAS_LOGGED_POLYMAP_ERROR = false;
+
+    public static boolean isVanilla(BlockState state) {
+        if (ConfigManager.getConfig().remapVanillaBlockIds) {
+            return ((BlockStateDuck)state).polymc$getVanilla();
+        }
+
+        return Util.isVanilla(Registries.BLOCK.getId(state.getBlock()));
+    }
 
     /**
      * Returns true if this identifier is in the minecraft namespace

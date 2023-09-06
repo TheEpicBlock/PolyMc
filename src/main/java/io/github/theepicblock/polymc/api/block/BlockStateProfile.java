@@ -111,7 +111,7 @@ public class BlockStateProfile {
     private static final Predicate<BlockState> LEAVES_FILTER = (blockState) ->
             // We choose the persistent states as the ones we don't mess with because that's the default placement state
             blockState != blockState.getBlock().getDefaultState().with(LeavesBlock.PERSISTENT, true) &&
-            blockState != blockState.getBlock().getDefaultState().with(LeavesBlock.PERSISTENT, true).with(LeavesBlock.WATERLOGGED, true);
+            !blockState.get(LeavesBlock.WATERLOGGED);
     private static final Predicate<BlockState> WALL_FILTER = (blockState) ->
             blockState.get(WallBlock.NORTH_SHAPE) == WallShape.NONE &&
             blockState.get(WallBlock.WEST_SHAPE) == WallShape.NONE &&

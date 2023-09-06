@@ -22,16 +22,20 @@ import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.api.block.BlockStateManager;
 import io.github.theepicblock.polymc.api.block.BlockStateProfile;
+import io.github.theepicblock.polymc.api.resource.ModdedResources;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.BooleanContainer;
 import io.github.theepicblock.polymc.impl.poly.block.FunctionBlockStatePoly;
 import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
+import io.github.theepicblock.polymc.impl.resource.ModdedResourceContainerImpl;
 import io.github.theepicblock.polymc.mixins.block.SlabBlockAccessor;
 import io.github.theepicblock.polymc.mixins.block.TrapdoorBlockAccessor;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.FluidState;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -44,6 +48,8 @@ import org.jetbrains.annotations.Nullable;
  * Class to automatically generate {@link BlockPoly}s for {@link Block}s
  */
 public class BlockPolyGenerator {
+    private static final ModdedResources RESOURCES = new ModdedResourceContainerImpl();
+
     /**
      * Generates the most suitable {@link BlockPoly} for a given {@link Block}
      */
@@ -58,6 +64,12 @@ public class BlockPolyGenerator {
     public static BlockState registerClientState(BlockState moddedState, BooleanContainer isUniqueCallback, BlockStateManager manager) {
         var moddedBlock = moddedState.getBlock();
         var fakeWorld = new FakedWorld(moddedState);
+
+        var blockId = Registries.BLOCK.getId(moddedBlock);
+        var blockStateDef = RESOURCES.getBlockState(blockId.getNamespace(), blockId.getPath());
+
+
+        var modelId = blockStateDef != null ? blockId + "[" + blockStateDef.getVariantId(moddedState) + "]" : null;
 
         //Get the state's collision shape.
         VoxelShape collisionShape;
@@ -112,7 +124,9 @@ public class BlockPolyGenerator {
         if (moddedBlock instanceof LeavesBlock || moddedState.isIn(BlockTags.LEAVES)) { //TODO I don't like that leaves can be set tags in datapacks, it might cause issues. However, as not every leaf block extends LeavesBlock I can't see much of a better option. Except to maybe check the id if it ends on "_leaves"
             try {
                 isUniqueCallback.set(true);
-                return manager.requestBlockState(BlockStateProfile.LEAVES_PROFILE);
+
+                var state = manager.requestBlockState(BlockStateProfile.LEAVES_PROFILE, modelId);
+                return moddedState.contains(Properties.WATERLOGGED) ? state.with(Properties.WATERLOGGED, moddedState.get(Properties.WATERLOGGED)) : state;
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
@@ -121,7 +135,7 @@ public class BlockPolyGenerator {
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState((moddedState.get(FenceGateBlock.OPEN) ? BlockStateProfile.OPEN_FENCE_GATE_PROFILE : BlockStateProfile.FENCE_GATE_PROFILE)
-                        .and(state -> propertyMatches(state, moddedState, FenceGateBlock.IN_WALL, HorizontalFacingBlock.FACING)));
+                        .and(state -> propertyMatches(state, moddedState, FenceGateBlock.IN_WALL, HorizontalFacingBlock.FACING)), modelId);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
@@ -131,7 +145,7 @@ public class BlockPolyGenerator {
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState((isIronLike ? BlockStateProfile.METAL_DOOR_PROFILE : BlockStateProfile.DOOR_PROFILE)
-                        .and((state) -> propertyMatches(state, moddedState, DoorBlock.OPEN, DoorBlock.FACING, DoorBlock.HINGE, DoorBlock.HALF)));
+                        .and((state) -> propertyMatches(state, moddedState, DoorBlock.OPEN, DoorBlock.FACING, DoorBlock.HINGE, DoorBlock.HALF)), modelId);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
         if (moddedBlock instanceof TrapdoorBlock trapdoorBlock) {
@@ -139,7 +153,7 @@ public class BlockPolyGenerator {
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState((isIronLike ? BlockStateProfile.METAL_TRAPDOOR_PROFILE : BlockStateProfile.TRAPDOOR_PROFILE)
-                        .and((state) -> propertyMatches(state, moddedState, TrapdoorBlock.OPEN, TrapdoorBlock.FACING, TrapdoorBlock.HALF, TrapdoorBlock.WATERLOGGED)));
+                        .and((state) -> propertyMatches(state, moddedState, TrapdoorBlock.OPEN, TrapdoorBlock.FACING, TrapdoorBlock.HALF, TrapdoorBlock.WATERLOGGED)), modelId);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
@@ -149,7 +163,7 @@ public class BlockPolyGenerator {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.SLAB_PROFILE.and(
                         state -> propertyMatches(state, moddedState, SlabBlock.WATERLOGGED, SlabBlock.TYPE)
-                ));
+                ), modelId);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
@@ -158,7 +172,7 @@ public class BlockPolyGenerator {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.SCULK_SENSOR_PROFILE.and(
                         state -> moddedState.getFluidState().equals(state.getFluidState())
-                ));
+                ), modelId);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
@@ -168,7 +182,7 @@ public class BlockPolyGenerator {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.WAXED_COPPER_STAIR_PROFILE.and(
                         state -> propertyMatches(state, moddedState, StairsBlock.FACING, StairsBlock.HALF, StairsBlock.WATERLOGGED, StairsBlock.SHAPE)
-                ));
+                ), modelId);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
@@ -181,20 +195,20 @@ public class BlockPolyGenerator {
                 // There are only 4 available states to reuse though
                 try {
                     isUniqueCallback.set(true);
-                    return manager.requestBlockState(BlockStateProfile.CHORUS_FLOWER_BLOCK_PROFILE);
+                    return manager.requestBlockState(BlockStateProfile.CHORUS_FLOWER_BLOCK_PROFILE, modelId);
                 } catch (BlockStateManager.StateLimitReachedException ignored) {}
 
                 // Each chorus plant state has a slightly different collision box.
                 // But it's roughly a full cube (it's the corners that miss a few pixels of collision)
                 try {
                     isUniqueCallback.set(true);
-                    return manager.requestBlockState(BlockStateProfile.CHORUS_PLANT_BLOCK_PROFILE);
+                    return manager.requestBlockState(BlockStateProfile.CHORUS_PLANT_BLOCK_PROFILE, modelId);
                 } catch (BlockStateManager.StateLimitReachedException ignored) {}
             }
 
             try {
                 isUniqueCallback.set(true);
-                return manager.requestBlockState(BlockStateProfile.FULL_BLOCK_PROFILE);
+                return manager.requestBlockState(BlockStateProfile.FULL_BLOCK_PROFILE, modelId);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
@@ -204,7 +218,7 @@ public class BlockPolyGenerator {
             try {
                 if (moddedState.isIn(BlockTags.CLIMBABLE)) {
                     isUniqueCallback.set(true);
-                    return manager.requestBlockState(BlockStateProfile.CLIMBABLE_PROFILE);
+                    return manager.requestBlockState(BlockStateProfile.CLIMBABLE_PROFILE, modelId);
                 }
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
 
@@ -215,7 +229,7 @@ public class BlockPolyGenerator {
                     isUniqueCallback.set(true);
                     return manager.requestBlockState(BlockStateProfile.NO_COLLISION_WALL_PROFILE.and(
                             state -> moddedState.getFluidState().equals(state.getFluidState())
-                    ));
+                    ), modelId);
                 } catch (BlockStateManager.StateLimitReachedException ignored) {}
             }
 
@@ -224,7 +238,7 @@ public class BlockPolyGenerator {
                     isUniqueCallback.set(true);
                     return manager.requestBlockState(BlockStateProfile.PRESSURE_PLATE_PROFILE.and(
                             state -> moddedState.getFluidState().equals(state.getFluidState())
-                    ));
+                    ), modelId);
                 } catch (BlockStateManager.StateLimitReachedException ignored) {}
             }
 
@@ -232,7 +246,7 @@ public class BlockPolyGenerator {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.NO_COLLISION_PROFILE.and(
                         state -> moddedState.getFluidState().equals(state.getFluidState())
-                ));
+                ), modelId);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
@@ -240,7 +254,7 @@ public class BlockPolyGenerator {
         if (Util.areEqual(collisionShape, Blocks.FARMLAND.getCollisionShape(Blocks.FARMLAND.getDefaultState(), fakeWorld, BlockPos.ORIGIN, ShapeContext.absent()))) {
             try {
                 isUniqueCallback.set(true);
-                return manager.requestBlockState(BlockStateProfile.FARMLAND_PROFILE);
+                return manager.requestBlockState(BlockStateProfile.FARMLAND_PROFILE, modelId);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 
@@ -248,7 +262,7 @@ public class BlockPolyGenerator {
         if (Util.areEqual(collisionShape, Blocks.CACTUS.getCollisionShape(Blocks.CACTUS.getDefaultState(), fakeWorld, BlockPos.ORIGIN, ShapeContext.absent()))) {
             try {
                 isUniqueCallback.set(true);
-                return manager.requestBlockState(BlockStateProfile.CACTUS_PROFILE);
+                return manager.requestBlockState(BlockStateProfile.CACTUS_PROFILE, modelId);
             } catch (BlockStateManager.StateLimitReachedException ignored) {}
         }
 

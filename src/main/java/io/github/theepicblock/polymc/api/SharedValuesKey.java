@@ -6,6 +6,9 @@ import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 public final class SharedValuesKey<T> {
     private final SharedValueFactory<T> factory;
     private final @Nullable ResourceContainerFactory<T> resourceContainerFactory;
@@ -46,8 +49,16 @@ public final class SharedValuesKey<T> {
         ResourceContainer create(T sharedValues);
     }
 
-    @FunctionalInterface
     public interface ResourceContainer {
         void addToResourcePack(ModdedResources moddedResources, PolyMcResourcePack pack, SimpleLogger logger);
+
+        default List<DebugDumpSection> addDebugSections() {
+            return List.of();
+        }
     }
+
+    /**
+     * Represents a section of a polydump
+     */
+    public record DebugDumpSection(String name, Consumer<StringBuilder> writer) {}
 }
