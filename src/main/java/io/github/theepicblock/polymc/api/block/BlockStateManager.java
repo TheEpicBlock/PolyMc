@@ -55,6 +55,7 @@ public class BlockStateManager {
         }
     }
 
+    @ApiStatus.Internal // This method will likely be replaced in a rewrite
     public BlockState requestBlockState(BlockStateProfile profile, @Nullable String modelId) throws StateLimitReachedException {
         try {
             return requestBlockState(profile.filter, profile.blocks, profile.onFirstRegister, modelId);
@@ -67,6 +68,7 @@ public class BlockStateManager {
         return requestBlockState(blockStatePredicate, searchSpace, onFirstRegister, null);
     }
 
+    @ApiStatus.Internal // This method will likely be replaced in a rewrite
     public BlockState requestBlockState(Predicate<BlockState> blockStatePredicate, Block[] searchSpace, BiConsumer<Block,PolyRegistry> onFirstRegister, @Nullable String modelId) throws StateLimitReachedException {
         if (modelId != null && modelIds.containsKey(modelId)) {
             for (var possibleState : modelIds.get(modelId)) {
