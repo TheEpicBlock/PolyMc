@@ -26,6 +26,7 @@ import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.registry.Registries;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,9 +71,10 @@ public class BlockStateManager {
 
     @ApiStatus.Internal // This method will likely be replaced in a rewrite
     public BlockState requestBlockState(Predicate<BlockState> blockStatePredicate, Block[] searchSpace, BiConsumer<Block,PolyRegistry> onFirstRegister, @Nullable String modelId) throws StateLimitReachedException {
+        // Deduplicate blocks using the same model id
         if (modelId != null && modelIds.containsKey(modelId)) {
             for (var possibleState : modelIds.get(modelId)) {
-                if (blockStatePredicate.test(possibleState)) {
+                if (ArrayUtils.contains(searchSpace, possibleState.getBlock()) && blockStatePredicate.test(possibleState)) {
                     return possibleState;
                 }
             }
