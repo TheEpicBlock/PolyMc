@@ -68,7 +68,8 @@ public class BlockPolyGenerator {
         var blockId = Registries.BLOCK.getId(moddedBlock);
         var blockStateDef = RESOURCES.getBlockState(blockId.getNamespace(), blockId.getPath());
 
-
+        // This following line works because it gets the best matching variant from the definition itself
+        // The effect is that all states which match up to the same entry get deduplicated
         var modelId = blockStateDef != null ? blockId + "[" + blockStateDef.getVariantId(moddedState) + "]" : null;
 
         //Get the state's collision shape.
