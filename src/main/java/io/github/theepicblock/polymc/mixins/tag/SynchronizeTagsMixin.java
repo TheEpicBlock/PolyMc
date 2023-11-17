@@ -1,7 +1,7 @@
 package io.github.theepicblock.polymc.mixins.tag;
 
 import io.github.theepicblock.polymc.impl.Util;
-import net.minecraft.network.packet.s2c.play.SynchronizeTagsS2CPacket;
+import net.minecraft.network.packet.s2c.common.SynchronizeTagsS2CPacket;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.TagPacketSerializer;

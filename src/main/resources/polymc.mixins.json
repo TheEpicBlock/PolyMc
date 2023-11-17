@@ -6,7 +6,6 @@
   "plugin": "io.github.theepicblock.polymc.mixins.MixinConfigPlugin",
   "mixins": [
     "CommandSuggestionFix",
-    "CustomPacketAccessor",
     "CustomPacketDisabler",
     "DisableCustomParticles",
     "ItemStackAccessor",
@@ -42,7 +41,6 @@
     "compat.FabricRegistrySyncDisabler",
     "compat.QuiltFabricRegistrySyncDisabler",
     "compat.QuiltRegistrySyncDisabler",
-    "compat.immersive_portals.ChunkDataSyncManagerMixin",
     "entity.DisableCustomEntities",
     "entity.EntityAttributesFilteringMixin",
     "entity.EntityTrackerAccessor",

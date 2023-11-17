@@ -21,7 +21,7 @@ public abstract class EntityAttributesFilteringMixin {
         var map = Util.tryGetPolyMap(PacketContext.get().getTarget());
         List<EntityAttributesS2CPacket.Entry> list = new ArrayList<>();
         for (EntityAttributesS2CPacket.Entry entry : value) {
-            if (map.canReceiveEntityAttribute(entry.getId())) {
+            if (map.canReceiveEntityAttribute(entry.getAttribute())) {
                 list.add(entry);
             }
         }

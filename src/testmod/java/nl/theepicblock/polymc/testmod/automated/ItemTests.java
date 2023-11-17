@@ -72,7 +72,7 @@ public class ItemTests implements FabricGameTest {
     }
 
     public ItemStack reencodeMethod(ItemStack stack, PacketTester ctx) {
-        return ctx.reencode(new ScreenHandlerSlotUpdateS2CPacket(0,0,0, stack)).getItemStack();
+        return ctx.reencode(new ScreenHandlerSlotUpdateS2CPacket(0,0,0, stack)).getStack();
     }
 
     public ItemStack itemEntityMethod(ItemStack stack, PacketTester ctx) {

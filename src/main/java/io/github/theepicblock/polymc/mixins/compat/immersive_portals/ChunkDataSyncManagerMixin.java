@@ -1,5 +1,5 @@
 package io.github.theepicblock.polymc.mixins.compat.immersive_portals;
-
+/*
 import io.github.theepicblock.polymc.impl.misc.WatchListener;
 import io.github.theepicblock.polymc.impl.mixin.ChunkPacketStaticHack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,6 +18,7 @@ import qouteall.imm_ptl.core.ducks.IEThreadedAnvilChunkStorage;
 /**
  * Replaces {@link io.github.theepicblock.polymc.mixins.block.implementations.ChunkDataPlayerProvider} and {@link io.github.theepicblock.polymc.mixins.wizards.block.WatchProviderMixin} when immersive portals is active
  */
+/*
 @Mixin(ChunkDataSyncManager.class)
 public abstract class ChunkDataSyncManagerMixin {
     @Shadow protected abstract void sendChunkDataPacketNow(ServerPlayerEntity player, DimensionalChunkPos chunkPos, IEThreadedAnvilChunkStorage ieStorage);
@@ -66,3 +67,4 @@ public abstract class ChunkDataSyncManagerMixin {
         ci.cancel();
     }
 }
+*/

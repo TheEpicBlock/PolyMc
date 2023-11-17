@@ -19,7 +19,7 @@ package io.github.theepicblock.polymc.mixins.item;
 
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
-import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.registry.Registries;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,6 +27,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -40,13 +41,13 @@ public class CustomRecipeFix {
      * Modifies the recipes to remove custom serializers (which will crash vanilla clients).
      */
     @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeCollection(Ljava/util/Collection;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V"))
-    public Collection<Recipe<?>> modifyRecipes(Collection<Recipe<?>> input) {
+    public Collection<RecipeEntry<?>> modifyRecipes(Collection<RecipeEntry<?>> input) {
         if (!Util.isPolyMapVanillaLike(PacketContext.get().getTarget())) {
             return input;
         }
 
         return input.stream() // Remove non-vanilla serializers using streams. TODO can be done more efficiently, maybe with a custom iterator
-                .filter(recipe -> Util.isVanilla(Registries.RECIPE_SERIALIZER.getId(recipe.getSerializer())))
+                .filter(recipe -> Util.isVanilla(Registries.RECIPE_SERIALIZER.getId(recipe.value().getSerializer())))
                 .collect(Collectors.toList());
     }
 }

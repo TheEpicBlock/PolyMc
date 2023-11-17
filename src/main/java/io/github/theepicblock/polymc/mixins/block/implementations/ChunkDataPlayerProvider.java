@@ -19,7 +19,10 @@ package io.github.theepicblock.polymc.mixins.block.implementations;
 
 import io.github.theepicblock.polymc.impl.mixin.ChunkPacketStaticHack;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
+import net.minecraft.server.network.ChunkDataSender;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.world.chunk.WorldChunk;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -29,26 +32,18 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
+@Mixin(ChunkDataSender.class)
 public class ChunkDataPlayerProvider {
-    /**
-     * This makes the first call to {@link MutableObject#getValue()} always return null. This makes it always recalculate the cached value
-     */
-    @Redirect(method = "sendChunkDataPackets(Lnet/minecraft/server/network/ServerPlayerEntity;Lorg/apache/commons/lang3/mutable/MutableObject;Lnet/minecraft/world/chunk/WorldChunk;)V",
-            at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/mutable/MutableObject;getValue()Ljava/lang/Object;", ordinal = 0))
-    public <T> T neutralizeCache(MutableObject<T> instance) {
-        return null;
+
+    @Inject(method = "sendChunkData",
+            at = @At("HEAD"))
+    private static void setPlayerContext(ServerPlayNetworkHandler handler, ServerWorld world, WorldChunk chunk, CallbackInfo ci) {
+        ChunkPacketStaticHack.player.set(handler.player);
     }
 
-    @Inject(method = "sendChunkDataPackets(Lnet/minecraft/server/network/ServerPlayerEntity;Lorg/apache/commons/lang3/mutable/MutableObject;Lnet/minecraft/world/chunk/WorldChunk;)V",
-            at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/network/packet/s2c/play/ChunkDataS2CPacket;<init>(Lnet/minecraft/world/chunk/WorldChunk;Lnet/minecraft/world/chunk/light/LightingProvider;Ljava/util/BitSet;Ljava/util/BitSet;)V"))
-    public void chunkDataPacketInitInject(ServerPlayerEntity player, MutableObject<ChunkDataS2CPacket> cachedDataPacket, WorldChunk chunk, CallbackInfo ci) {
-        ChunkPacketStaticHack.player.set(player);
-    }
-
-    @Inject(method = "sendChunkDataPackets(Lnet/minecraft/server/network/ServerPlayerEntity;Lorg/apache/commons/lang3/mutable/MutableObject;Lnet/minecraft/world/chunk/WorldChunk;)V",
-            at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/network/packet/s2c/play/ChunkDataS2CPacket;<init>(Lnet/minecraft/world/chunk/WorldChunk;Lnet/minecraft/world/chunk/light/LightingProvider;Ljava/util/BitSet;Ljava/util/BitSet;)V"))
-    public void chunkDataPacketInitPostInject(ServerPlayerEntity player, MutableObject<ChunkDataS2CPacket> cachedDataPacket, WorldChunk chunk, CallbackInfo ci) {
+    @Inject(method = "sendChunkData",
+            at = @At("HEAD"))
+    private static void clearPlayerContext(ServerPlayNetworkHandler handler, ServerWorld world, WorldChunk chunk, CallbackInfo ci) {
         ChunkPacketStaticHack.player.set(null);
     }
 }

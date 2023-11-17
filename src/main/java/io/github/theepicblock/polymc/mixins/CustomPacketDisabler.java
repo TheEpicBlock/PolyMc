@@ -20,7 +20,9 @@ package io.github.theepicblock.polymc.mixins;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.PacketCallbacks;
-import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
+import net.minecraft.server.network.PlayerAssociatedNetworkHandler;
+import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -30,14 +32,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ServerPlayNetworkHandler.class)
+@Mixin(ServerCommonNetworkHandler.class)
 public class CustomPacketDisabler {
-    @Shadow public ServerPlayerEntity player;
 
-    @Inject(method = "sendPacket(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "send", at = @At("HEAD"), cancellable = true)
     public void sendPacketInject(Packet<?> packet, PacketCallbacks callbacks, CallbackInfo ci) {
-        if (packet instanceof CustomPayloadS2CPacket && Util.isPolyMapVanillaLike(this.player)) {
-            Identifier channel = ((CustomPacketAccessor)packet).getChannel();
+        if (this instanceof PlayerAssociatedNetworkHandler player
+                && packet instanceof CustomPayloadS2CPacket && Util.isPolyMapVanillaLike(player.getPlayer())) {
+            Identifier channel = ((CustomPayloadS2CPacket) packet).payload().id();
             if (!Util.isVanilla(channel)) {
                 ci.cancel();
             }

@@ -41,8 +41,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class CreativeItemStackFix {
     @Shadow public ServerPlayerEntity player;
 
-    @Redirect(method = "onCreativeInventoryAction(Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;getItemStack()Lnet/minecraft/item/ItemStack;"))
+    @Redirect(method = "onCreativeInventoryAction(Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;getStack()Lnet/minecraft/item/ItemStack;"))
     public ItemStack creativemodeSetSlotRedirect(CreativeInventoryActionC2SPacket packet) {
-        return PolyMapProvider.getPolyMap(player).reverseClientItem(packet.getItemStack());
+        return PolyMapProvider.getPolyMap(player).reverseClientItem(packet.getStack());
     }
 }
