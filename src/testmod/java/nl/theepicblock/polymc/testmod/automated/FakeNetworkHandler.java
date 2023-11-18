@@ -5,6 +5,7 @@ import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.PacketCallbacks;
+import net.minecraft.network.listener.PacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.server.MinecraftServer;
@@ -14,14 +15,13 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class FakeNetworkHandler extends ServerPlayNetworkHandler {
     public ArrayList<Packet<?>> sentPackets = new ArrayList<>();
 
     public FakeNetworkHandler(MinecraftServer server, ServerPlayerEntity player) {
-        super(server, new ClientConnection(NetworkSide.CLIENTBOUND), player, ConnectedClientData.createDefault(player.getGameProfile()));
+        super(server, new FakeClientConnection(), player, ConnectedClientData.createDefault(player.getGameProfile()));
     }
 
     @Override
@@ -43,9 +43,12 @@ public class FakeNetworkHandler extends ServerPlayNetworkHandler {
         }
 
         var bytebuf = PacketByteBufs.create();
+        // TODO not use internal stuff here
+        PacketContext.setContext(this.connection, packet);
         PacketContext.runWithContext(this, packet, () -> {
             packet.write(bytebuf);
         });
+        PacketContext.clearContext();
         var id = NetworkState.PLAY.getHandler(NetworkSide.CLIENTBOUND).getId(packet);
         if (id == -1) {
             throw new UnsupportedOperationException("Can't find packet id of "+packet.getClass() + ". Is it not clientbound?");
@@ -53,5 +56,15 @@ public class FakeNetworkHandler extends ServerPlayNetworkHandler {
         var reconstructedPacket = NetworkState.PLAY.getHandler(NetworkSide.CLIENTBOUND).createPacket(id, bytebuf);
 
         return (T)reconstructedPacket;
+    }
+
+    private static final class FakeClientConnection extends ClientConnection {
+        private FakeClientConnection() {
+            super(NetworkSide.CLIENTBOUND);
+        }
+
+        @Override
+        public void setPacketListener(PacketListener packetListener) {
+        }
     }
 }

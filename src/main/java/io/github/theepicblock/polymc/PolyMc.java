@@ -109,8 +109,7 @@ public class PolyMc implements ModInitializer {
     public void onInitialize() {
         PolyMcCommands.registerCommands();
         ServerConfigurationConnectionEvents.BEFORE_CONFIGURE.register((handler, server) -> {
-            // Updates the PolyMap that the player uses as soon as the network handler is initialized
-            // see ServerPlayNetworkHandler.<init>
+            // Ensures the connection has a polymap
             PolyMapProvider.get(handler).refreshUsedPolyMap();
         });
 

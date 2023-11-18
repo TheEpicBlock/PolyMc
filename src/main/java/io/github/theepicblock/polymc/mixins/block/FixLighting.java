@@ -28,26 +28,32 @@ public abstract class FixLighting {
      * This mixin forces lighting packets to be sent regardless, to make sure vanilla clients are kept in sync.
      */
     @Redirect(method = "flushUpdates", at = @At(value="INVOKE", target = "Lnet/minecraft/server/world/ChunkHolder$PlayersWatchingChunkProvider;getPlayersWatchingChunk(Lnet/minecraft/util/math/ChunkPos;Z)Ljava/util/List;"))
-    private List<ServerPlayerEntity> onGetPlayersWatchingChunk(ChunkHolder.PlayersWatchingChunkProvider chunkHolder, ChunkPos chunkPos, boolean onlyOnWatchDistanceEdge) {
+    private List<ServerPlayerEntity> onGetPlayersWatchingChunk(ChunkHolder.PlayersWatchingChunkProvider watchProvider, ChunkPos chunkPos, boolean onlyOnWatchDistanceEdge) {
 
         // Get all the watchers anyway
-        List<ServerPlayerEntity> watchers = this.playersWatchingChunkProvider.getPlayersWatchingChunk(this.pos, false);
+        List<ServerPlayerEntity> watchers = watchProvider.getPlayersWatchingChunk(this.pos, false);
 
         if (onlyOnWatchDistanceEdge == false) {
             // This will be sent to everyone regardless. Just use the normal method
             return watchers;
         }
 
-        var watchDistance = ((TACSAccessor)this.playersWatchingChunkProvider).getWatchDistance();
+        if (!(watchProvider instanceof TACSAccessor accessor)) {
+            // Safety in case someone replaces the provider (TODO: should probably warn)
+            return watchers;
+        }
 
         return watchers.stream()
                 .filter(watcher -> {
                     var polymap = Util.tryGetPolyMap(watcher);
-                    var isVanilla = polymap.isVanillaLikeMap();
+                    if (polymap.isVanillaLikeMap()) {
+                        // Always update vanilla clients
+                        return true;
+                    }
 
                     var isOnEdge = watcher.getChunkFilter().isWithinDistance(pos) && !watcher.getChunkFilter().isWithinDistanceExcludingEdge(pos.x, pos.z);
 
-                    return isVanilla || isOnEdge;
+                    return isOnEdge;
                 })
                 .toList();
     }

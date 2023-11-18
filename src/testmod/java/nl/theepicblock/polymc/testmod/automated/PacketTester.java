@@ -6,8 +6,11 @@ import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
+import net.minecraft.server.network.ChunkFilter;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.test.TestContext;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.io.Closeable;
@@ -22,13 +25,20 @@ public class PacketTester implements Closeable {
 
     public PacketTester(TestContext context) {
         var world = context.getWorld();
-        this.playerEntity = new ServerPlayerEntity(world.getServer(), world, new GameProfile(UUID.randomUUID(), "Fake packet receiver"), SyncedClientOptions.createDefault());
+        // Mock a player entity
+        var profile = new GameProfile(UUID.randomUUID(), "Fake packet receiver");
+        this.playerEntity = new ServerPlayerEntity(world.getServer(), world, profile, SyncedClientOptions.createDefault());
+        this.playerEntity.setChunkFilter(new ChunkFilter.Cylindrical(new ChunkPos(context.getAbsolutePos(BlockPos.ORIGIN)), 5));
         this.fakeNetworkHandler = new FakeNetworkHandler(world.getServer(), this.playerEntity);
         this.context = context;
 
-        this.playerEntity.setPosition(context.getAbsolute(Vec3d.ZERO));
+        // Since the regular fabric events don't get called on this
+        PolyMapProvider.get(fakeNetworkHandler).refreshUsedPolyMap();
 
         world.spawnEntity(playerEntity);
+        world.getChunkManager().threadedAnvilChunkStorage.updatePosition(playerEntity);
+        this.playerEntity.setPosition(context.getAbsolute(Vec3d.ZERO));
+        world.getChunkManager().threadedAnvilChunkStorage.updatePosition(playerEntity);
     }
 
     public <T extends Packet<?>> T reencode(T packet) {

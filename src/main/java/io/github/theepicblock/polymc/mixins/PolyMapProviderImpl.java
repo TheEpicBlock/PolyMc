@@ -17,8 +17,10 @@
  */
 package io.github.theepicblock.polymc.mixins;
 
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.ClientConnection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -29,6 +31,10 @@ public class PolyMapProviderImpl implements PolyMapProvider {
 
     @Override
     public PolyMap getPolyMap() {
+        if (FabricLoader.getInstance().isDevelopmentEnvironment() && polyMap == null) {
+            PolyMc.LOGGER.error("Warning! Uninitialized client connection is being used! This shouldn't happen");
+            Thread.dumpStack();
+        }
         return polyMap;
     }
 

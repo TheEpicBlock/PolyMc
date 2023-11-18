@@ -23,6 +23,7 @@ import io.github.theepicblock.polymc.mixins.SCNetworkHandlerAccessor;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 public interface PolyMapProvider {
@@ -80,14 +81,14 @@ public interface PolyMapProvider {
      * @param map map to use
      * @deprecated this method should <em>not</em> be used directly! Please create an entry in {@link #EVENT} instead.
      */
-    @Deprecated
+    @ApiStatus.Internal
     void setPolyMap(PolyMap map);
 
     /**
      * Refreshes the map used by this player. It will call {@link #EVENT} again.
      * <p>
      * Warning: whilst this method allows you to refresh the {@link PolyMap} on the fly it is *not* recommended.
-     * This function won't affect new packets!
+     * This function won't resend any old packets!
      * </p>
      */
     default void refreshUsedPolyMap() {

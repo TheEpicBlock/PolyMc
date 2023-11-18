@@ -15,7 +15,6 @@ import java.util.List;
 @Mixin(EntityAttributesS2CPacket.class)
 public abstract class EntityAttributesFilteringMixin {
 
-    @SuppressWarnings("unchecked")
     @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeCollection(Ljava/util/Collection;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V", ordinal = 0))
     private Collection<EntityAttributesS2CPacket.Entry> removeUnsupportedAttributes(Collection<EntityAttributesS2CPacket.Entry> value) {
         var map = Util.tryGetPolyMap(PacketContext.get().getClientConnection());
