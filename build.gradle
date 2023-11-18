@@ -69,6 +69,8 @@ dependencies {
 		exclude group: 'net.fabricmc', module: 'fabric-loader'
 		transitive(false)
 	}
+
+	include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.2.0")))
 }
 
 sourceSets {

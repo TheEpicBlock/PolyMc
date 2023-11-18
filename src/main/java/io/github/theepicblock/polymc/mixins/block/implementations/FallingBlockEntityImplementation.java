@@ -23,7 +23,7 @@ public class FallingBlockEntityImplementation {
     private void redirectEntityData(PacketByteBuf buf, CallbackInfo ci) {
         if (this.entityType == EntityType.FALLING_BLOCK) {
             var block = Block.getStateFromRawId(this.entityData);
-            this.entityData = Util.getPolydRawIdFromState(block, PacketContext.get().getTarget());
+            this.entityData = Util.getPolydRawIdFromState(block, PacketContext.get());
         }
     }
 }

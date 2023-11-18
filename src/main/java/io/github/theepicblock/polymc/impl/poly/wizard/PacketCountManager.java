@@ -9,8 +9,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
+import net.minecraft.server.network.PlayerAssociatedNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.EntityTrackingListener;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -89,7 +89,7 @@ public class PacketCountManager {
         return (watchDistance+3)*16;
     }
 
-    public PacketConsumer getView(Set<EntityTrackingListener> listeners, PolyMap map, Vec3d pos, int tick, int seed) {
+    public PacketConsumer getView(Set<PlayerAssociatedNetworkHandler> listeners, PolyMap map, Vec3d pos, int tick, int seed) {
         var reusableConsumer = this.reusableConsumer.get();
         reusableConsumer.reset(this.cursor);
 
@@ -116,7 +116,8 @@ public class PacketCountManager {
 
         int pSeed = 0;
         for (var player : PlayerLookup.world(world)) {
-            if (TACSAccessor.callIsWithinDistance(player.getChunkPos().x, player.getChunkPos().z, pos.x, pos.z, this.watchDistance) &&
+
+            if (player.getChunkFilter().isWithinDistance(pos) &&
                     PolyMapProvider.getPolyMap(player) == map) {
                 var info = playerTrackers.get(player);
                 // Just in case the player was unloaded but not yet removed from the world
@@ -262,7 +263,7 @@ public class PacketCountManager {
     }
 
     public static class TrackingPacketConsumer implements PacketConsumer {
-        private final ArrayList<EntityTrackingListener> listeners = new ArrayList<>();
+        private final ArrayList<PlayerAssociatedNetworkHandler> listeners = new ArrayList<>();
         private final ArrayList<PlayerInfo> trackers = new ArrayList<>();
         private int cursor = 0;
 
@@ -272,7 +273,7 @@ public class PacketCountManager {
             trackers.clear();
         }
 
-        public void addListener(EntityTrackingListener listener, PlayerInfo tracker) {
+        public void addListener(PlayerAssociatedNetworkHandler listener, PlayerInfo tracker) {
             this.listeners.add(listener);
             this.trackers.add(tracker);
         }

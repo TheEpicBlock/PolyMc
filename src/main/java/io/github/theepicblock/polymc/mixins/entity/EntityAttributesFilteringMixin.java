@@ -17,11 +17,11 @@ public abstract class EntityAttributesFilteringMixin {
 
     @SuppressWarnings("unchecked")
     @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeCollection(Ljava/util/Collection;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V", ordinal = 0))
-    private Collection<EntityAttributesS2CPacket.Entry> polymer_replaceWithPolymer(Collection<EntityAttributesS2CPacket.Entry> value) {
-        var map = Util.tryGetPolyMap(PacketContext.get().getTarget());
+    private Collection<EntityAttributesS2CPacket.Entry> removeUnsupportedAttributes(Collection<EntityAttributesS2CPacket.Entry> value) {
+        var map = Util.tryGetPolyMap(PacketContext.get().getClientConnection());
         List<EntityAttributesS2CPacket.Entry> list = new ArrayList<>();
         for (EntityAttributesS2CPacket.Entry entry : value) {
-            if (map.canReceiveEntityAttribute(entry.getId())) {
+            if (map.canReceiveEntityAttribute(entry.getAttribute())) {
                 list.add(entry);
             }
         }

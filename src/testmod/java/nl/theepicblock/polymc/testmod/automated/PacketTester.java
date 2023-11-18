@@ -5,6 +5,7 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.test.TestContext;
 import net.minecraft.util.math.Vec3d;
@@ -21,7 +22,7 @@ public class PacketTester implements Closeable {
 
     public PacketTester(TestContext context) {
         var world = context.getWorld();
-        this.playerEntity = new ServerPlayerEntity(world.getServer(), world, new GameProfile(UUID.randomUUID(), "Fake packet receiver"));
+        this.playerEntity = new ServerPlayerEntity(world.getServer(), world, new GameProfile(UUID.randomUUID(), "Fake packet receiver"), SyncedClientOptions.createDefault());
         this.fakeNetworkHandler = new FakeNetworkHandler(world.getServer(), this.playerEntity);
         this.context = context;
 
@@ -35,7 +36,7 @@ public class PacketTester implements Closeable {
     }
 
     public void setMap(PolyMap map) {
-        ((PolyMapProvider)this.playerEntity).setPolyMap(map);
+        PolyMapProvider.get(this.playerEntity).setPolyMap(map);
     }
 
     public void clearPackets() {

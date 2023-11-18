@@ -27,13 +27,16 @@ import io.github.theepicblock.polymc.mixins.ItemStackAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.registry.Registries;
+import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -197,6 +200,30 @@ public class Util {
         return PolyMapProvider.getPolyMap(player);
     }
 
+    public static PolyMap tryGetPolyMap(@Nullable ServerCommonNetworkHandler handler) {
+        if (handler == null) {
+            if (!HAS_LOGGED_POLYMAP_ERROR) {
+                PolyMc.LOGGER.error("Tried to get polymap but there's no packet handler context. PolyMc will use the default PolyMap. If PolyMc is transforming things it shouldn't, this is why. Further errors of this kind will be silenced. Have a thread dump: ");
+                Thread.dumpStack();
+                HAS_LOGGED_POLYMAP_ERROR = true;
+            }
+            return PolyMc.getMainMap();
+        }
+        return PolyMapProvider.getPolyMap(handler);
+    }
+
+    public static PolyMap tryGetPolyMap(@Nullable ClientConnection handler) {
+        if (handler == null) {
+            if (!HAS_LOGGED_POLYMAP_ERROR) {
+                PolyMc.LOGGER.error("Tried to get polymap but there's no connection context. PolyMc will use the default PolyMap. If PolyMc is transforming things it shouldn't, this is why. Further errors of this kind will be silenced. Have a thread dump: ");
+                Thread.dumpStack();
+                HAS_LOGGED_POLYMAP_ERROR = true;
+            }
+            return PolyMc.getMainMap();
+        }
+        return PolyMapProvider.getPolyMap(handler);
+    }
+
     /**
      * Utility method to get the polyd raw id.
      * PolyMc also redirects {@link Block#getRawIdFromState(BlockState)} but that doesn't respect the player's {@link PolyMap}.
@@ -210,6 +237,11 @@ public class Util {
         return map.getClientStateRawId(state, playerEntity);
     }
 
+    public static int getPolydRawIdFromState(BlockState state, PacketContext context) {
+        PolyMap map = Util.tryGetPolyMap(context.getClientConnection());
+        return map.getClientStateRawId(state, context.getPlayer());
+    }
+
     /**
      * Returns whether the client provided is vanilla-like. As defined in {@link PolyMap#isVanillaLikeMap()}
      * @param client the client who is being checked
@@ -217,6 +249,14 @@ public class Util {
      * @see PolyMap#isVanillaLikeMap()
      */
     public static boolean isPolyMapVanillaLike(ServerPlayerEntity client) {
+        return tryGetPolyMap(client).isVanillaLikeMap();
+    }
+
+    public static boolean isPolyMapVanillaLike(ServerCommonNetworkHandler client) {
+        return tryGetPolyMap(client).isVanillaLikeMap();
+    }
+
+    public static boolean isPolyMapVanillaLike(ClientConnection client) {
         return tryGetPolyMap(client).isVanillaLikeMap();
     }
 

@@ -11,7 +11,7 @@ import xyz.nucleoid.packettweaker.PacketContext;
 public class TrackedDataImplementation {
     @ModifyArg(method = "write(Lnet/minecraft/network/PacketByteBuf;Ljava/util/Optional;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getRawIdFromState(Lnet/minecraft/block/BlockState;)I"))
     private BlockState redirectGetRawId(BlockState state) {
-        var player = PacketContext.get().getTarget();
+        var player = PacketContext.get().getPlayer();
         var map = Util.tryGetPolyMap(player);
 
         return map.getClientState(state, player);

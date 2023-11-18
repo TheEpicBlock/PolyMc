@@ -33,7 +33,7 @@ import io.github.theepicblock.polymc.impl.poly.wizard.PacketCountManager;
 import io.github.theepicblock.polymc.impl.poly.wizard.RegularWizardUpdater;
 import io.github.theepicblock.polymc.impl.poly.wizard.ThreadedWizardUpdater;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.logging.log4j.LogManager;
@@ -108,10 +108,10 @@ public class PolyMc implements ModInitializer {
     @Override
     public void onInitialize() {
         PolyMcCommands.registerCommands();
-        ServerPlayConnectionEvents.INIT.register((handler, server) -> {
+        ServerConfigurationConnectionEvents.BEFORE_CONFIGURE.register((handler, server) -> {
             // Updates the PolyMap that the player uses as soon as the network handler is initialized
             // see ServerPlayNetworkHandler.<init>
-            ((PolyMapProvider)(handler.player)).refreshUsedPolyMap();
+            PolyMapProvider.get(handler).refreshUsedPolyMap();
         });
 
         if (ConfigManager.getConfig().remapVanillaBlockIds) {

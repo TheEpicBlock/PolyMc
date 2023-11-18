@@ -11,16 +11,6 @@ public interface TACSAccessor {
     @Accessor
     int getWatchDistance();
 
-    @Invoker
-    static boolean callIsOnDistanceEdge(int sourceChunkX, int sourceChunkZ, int playerChunkX, int playerChunkZ, int watchDistance) {
-        throw new IllegalStateException();
-    }
-
-    @Invoker
-    static boolean callIsWithinDistance(int sourceChunkX, int sourceChunkZ, int playerChunkX, int playerChunkZ, int watchDistance) {
-        throw new IllegalStateException();
-    }
-
     @Accessor
     Int2ObjectMap<ThreadedAnvilChunkStorage.EntityTracker> getEntityTrackers();
 }

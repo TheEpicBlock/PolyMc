@@ -19,6 +19,9 @@ package io.github.theepicblock.polymc.api.misc;
 
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
+import io.github.theepicblock.polymc.mixins.SCNetworkHandlerAccessor;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,8 +31,43 @@ public interface PolyMapProvider {
     /**
      * @return the {@link PolyMap} that is used for this player.
      */
+    static PolyMapProvider get(@NotNull ServerPlayerEntity player) {
+        return get(player.networkHandler);
+    }
+
+    /**
+     * @return the {@link PolyMap} that is used for this packet handler.
+     */
+    static PolyMapProvider get(@NotNull ServerCommonNetworkHandler handler) {
+        return get(((SCNetworkHandlerAccessor) handler).getConnection());
+    }
+
+    /**
+     * @return the {@link PolyMap} that is used for this client connection.
+     */
+    static PolyMapProvider get(@NotNull ClientConnection connection) {
+        return ((PolyMapProvider)connection);
+    }
+
+    /**
+     * @return the {@link PolyMap} that is used for this player.
+     */
     static PolyMap getPolyMap(@NotNull ServerPlayerEntity player) {
-        return ((PolyMapProvider)player).getPolyMap();
+        return getPolyMap(player.networkHandler);
+    }
+
+    /**
+     * @return the {@link PolyMap} that is used for this packet handler.
+     */
+    static PolyMap getPolyMap(@NotNull ServerCommonNetworkHandler handler) {
+        return getPolyMap(((SCNetworkHandlerAccessor) handler).getConnection());
+    }
+
+    /**
+     * @return the {@link PolyMap} that is used for this client connection.
+     */
+    static PolyMap getPolyMap(@NotNull ClientConnection connection) {
+        return get(connection).getPolyMap();
     }
 
     /**
@@ -53,19 +91,19 @@ public interface PolyMapProvider {
      * </p>
      */
     default void refreshUsedPolyMap() {
-        this.setPolyMap(EVENT.invoke((ServerPlayerEntity)this));
+        this.setPolyMap(EVENT.invoke((ClientConnection) this));
     }
 
     /**
      * Represents an entry in {@link #EVENT}
-     * {@link #getMap(ServerPlayerEntity)} should return {@code null} to pass through to the next entry.
+     * {@link #getMap(ClientConnection)} should return {@code null} to pass through to the next entry.
      */
     interface PolyMapGetter {
         /**
          * Returns a PolyMap for this entry. Returns `null` when unspecified.
          * @return the map that should be used for this player.
          */
-        PolyMap getMap(ServerPlayerEntity player);
+        PolyMap getMap(ClientConnection connection);
     }
 
     class PolyMapProviderEvent extends Event<PolyMapGetter> {
@@ -73,10 +111,10 @@ public interface PolyMapProvider {
             super(new PolyMapGetter[]{});
         }
 
-        public PolyMap invoke(ServerPlayerEntity playerEntity) {
+        public PolyMap invoke(ClientConnection connection) {
             for (int i = handlers.length - 1; i >= 0; i--) {
                 PolyMapGetter handler = handlers[i];
-                PolyMap map = handler.getMap(playerEntity);
+                PolyMap map = handler.getMap(connection);
                 if (map != null) return map;
             }
             return PolyMc.getGeneratedMap();

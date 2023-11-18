@@ -44,9 +44,8 @@ public abstract class FixLighting {
                 .filter(watcher -> {
                     var polymap = Util.tryGetPolyMap(watcher);
                     var isVanilla = polymap.isVanillaLikeMap();
-                    var watcherChunk = watcher.getWatchedSection();
 
-                    var isOnEdge = TACSAccessor.callIsOnDistanceEdge(this.getPos().x, this.getPos().z, watcherChunk.getSectionX(), watcherChunk.getSectionZ(), watchDistance);
+                    var isOnEdge = watcher.getChunkFilter().isWithinDistance(pos) && !watcher.getChunkFilter().isWithinDistanceExcludingEdge(pos.x, pos.z);
 
                     return isVanilla || isOnEdge;
                 })

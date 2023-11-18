@@ -192,7 +192,7 @@ public class PolyMapImpl implements PolyMap {
         var moddedResources = new ModdedResourceContainerImpl();
         var pack = new ResourcePackImplementation();
 
-        PolyMc.LOGGER.info("Using: "+moddedResources);
+        PolyMc.LOGGER.info("Using: " + moddedResources);
 
         //Let mods register resources via the api
         List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("polymc", PolyMcEntrypoint.class);
@@ -204,7 +204,7 @@ public class PolyMapImpl implements PolyMap {
         this.itemPolys.forEach((item, itemPoly) -> {
             try {
                 itemPoly.addToResourcePack(item, moddedResources, pack, logger);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 logger.warn("Exception whilst generating resources for " + item.getTranslationKey());
                 e.printStackTrace();
             }
@@ -214,7 +214,7 @@ public class PolyMapImpl implements PolyMap {
         this.blockPolys.forEach((block, blockPoly) -> {
             try {
                 blockPoly.addToResourcePack(block, moddedResources, pack, logger);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 logger.warn("Exception whilst generating resources for " + block.getTranslationKey());
                 e.printStackTrace();
             }
@@ -224,7 +224,7 @@ public class PolyMapImpl implements PolyMap {
         sharedValueResources.forEach((sharedValueResourceContainer) -> {
             try {
                 sharedValueResourceContainer.addToResourcePack(moddedResources, pack, logger);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 logger.warn("Exception whilst generating resources for shared values: " + sharedValueResourceContainer);
                 e.printStackTrace();
             }
@@ -240,7 +240,7 @@ public class PolyMapImpl implements PolyMap {
                 var languageObject = pack.getGson().fromJson(streamReader, JsonObject.class);
                 var mainLangMap = languageKeys.computeIfAbsent(lang.getLeft().getPath(), (key) -> new TreeMap<>());
                 languageObject.entrySet().forEach(entry -> mainLangMap.put(entry.getKey(), JsonHelper.asString(entry.getValue(), entry.getKey())));
-            } catch (JsonParseException | IOException e) {
+            } catch (Throwable e) {
                 logger.error("Couldn't parse lang file "+lang);
                 e.printStackTrace();
             }
@@ -254,10 +254,16 @@ public class PolyMapImpl implements PolyMap {
 
         // Import sounds
         for (var namespace : moddedResources.getAllNamespaces()) {
-            var soundsRegistry = moddedResources.getSoundRegistry(namespace, "sounds.json");
-            if (soundsRegistry == null) continue;
-            pack.setSoundRegistry(namespace, "sounds.json", soundsRegistry);
-            pack.importRequirements(moddedResources, soundsRegistry, logger);
+            try {
+                var soundsRegistry = moddedResources.getSoundRegistry(namespace, "sounds.json");
+                if (soundsRegistry == null) continue;
+                pack.setSoundRegistry(namespace, "sounds.json", soundsRegistry);
+                pack.importRequirements(moddedResources, soundsRegistry, logger);
+            } catch (Throwable e) {
+                logger.error("Couldn't parse sounds file " + namespace);
+                e.printStackTrace();
+            }
+
         }
 
         try {

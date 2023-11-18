@@ -16,9 +16,9 @@ public class WriteRegistryValueImplementation {
     @ModifyVariable(method = "writeRegistryValue", at = @At("HEAD"), argsOnly = true)
     private <T> T redirectBlock(T original, IndexedIterable<T> registry) {
         if (registry == Block.STATE_IDS) {
-            var player = PacketContext.get().getTarget();
-            var polymap = Util.tryGetPolyMap(player);
-            return (T)polymap.getClientState((BlockState)original, player);
+            var ctx = PacketContext.get();
+            var polymap = Util.tryGetPolyMap(ctx.getClientConnection());
+            return (T)polymap.getClientState((BlockState)original, ctx.getPlayer());
         }
         return original;
     }

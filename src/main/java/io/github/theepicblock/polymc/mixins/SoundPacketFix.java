@@ -19,7 +19,7 @@ import xyz.nucleoid.packettweaker.PacketContext;
 public class SoundPacketFix {
     @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeRegistryEntry(Lnet/minecraft/util/collection/IndexedIterable;Lnet/minecraft/registry/entry/RegistryEntry;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V"))
     private RegistryEntry<SoundEvent> replaceSound(RegistryEntry<SoundEvent> entry) {
-        if (entry.getType() == RegistryEntry.Type.REFERENCE&& Util.isPolyMapVanillaLike(PacketContext.get().getTarget()) && !Util.isVanilla(entry.getKey().get().getValue())) {
+        if (entry.getType() == RegistryEntry.Type.REFERENCE&& Util.isPolyMapVanillaLike(PacketContext.get().getClientConnection()) && !Util.isVanilla(entry.getKey().get().getValue())) {
             return RegistryEntry.of(entry.value());
         }
         return entry;
