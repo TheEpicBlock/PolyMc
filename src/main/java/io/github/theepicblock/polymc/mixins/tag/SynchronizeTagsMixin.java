@@ -17,8 +17,7 @@ import java.util.Map;
 public class SynchronizeTagsMixin {
     @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeMap(Ljava/util/Map;Lnet/minecraft/network/PacketByteBuf$PacketWriter;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V"))
     public Map<RegistryKey<? extends Registry<?>>, TagPacketSerializer.Serialized> editTagMap(Map<RegistryKey<? extends Registry<?>>, TagPacketSerializer.Serialized> in) {
-        var player = PacketContext.get().getTarget();
-        if (Util.isPolyMapVanillaLike(player)) {
+        if (Util.isPolyMapVanillaLike(PacketContext.get().getClientConnection())) {
             // Vanilla doesn't like it if it receives tags for registries that don't exist
             var newMap = new HashMap<RegistryKey<? extends Registry<?>>, TagPacketSerializer.Serialized>();
             in.forEach((key, tags) -> {

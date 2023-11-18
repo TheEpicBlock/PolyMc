@@ -15,9 +15,9 @@ public class WriteRegistryValueImplementation {
     @Redirect(method = "writeRegistryValue", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IndexedIterable;getRawId(Ljava/lang/Object;)I"))
     private <T> int redirectBlock(IndexedIterable<T> instance, T t) {
         if (instance == Block.STATE_IDS) {
-            var player = PacketContext.get().getTarget();
-            var polymap = Util.tryGetPolyMap(player);
-            return polymap.getClientStateRawId((BlockState)t, player);
+            var ctx = PacketContext.get();
+            var polymap = Util.tryGetPolyMap(ctx.getClientConnection());
+            return polymap.getClientStateRawId((BlockState)t, ctx.getPlayer());
         }
         return instance.getRawId(t);
     }

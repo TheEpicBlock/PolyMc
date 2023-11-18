@@ -34,8 +34,8 @@ import xyz.nucleoid.packettweaker.PacketContext;
 public class ItemPolyImplementation {
     @ModifyVariable(method = "writeItemStack(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/network/PacketByteBuf;", at = @At("HEAD"), argsOnly = true)
     public ItemStack writeItemStackHook(ItemStack itemStack) {
-        ServerPlayerEntity player = PacketContext.get().getTarget();
-        var map = Util.tryGetPolyMap(player);
-        return map.getClientItem(itemStack, player, ItemLocationStaticHack.location.get());
+        var ctx = PacketContext.get();
+        var map = Util.tryGetPolyMap(ctx.getClientConnection());
+        return map.getClientItem(itemStack, ctx.getPlayer(), ItemLocationStaticHack.location.get());
     }
 }

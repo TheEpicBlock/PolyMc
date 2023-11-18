@@ -42,7 +42,7 @@ public class CustomRecipeFix {
      */
     @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeCollection(Ljava/util/Collection;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V"))
     public Collection<RecipeEntry<?>> modifyRecipes(Collection<RecipeEntry<?>> input) {
-        if (!Util.isPolyMapVanillaLike(PacketContext.get().getTarget())) {
+        if (!Util.isPolyMapVanillaLike(PacketContext.get().getClientConnection())) {
             return input;
         }
 

@@ -19,15 +19,12 @@ package io.github.theepicblock.polymc.mixins;
 
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.network.ClientConnection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ServerPlayerEntity.class)
-public class RefreshPolyMapOnCopy implements PolyMapProvider {
+@Mixin(ClientConnection.class)
+public class PolyMapProviderImpl implements PolyMapProvider {
     @Unique private PolyMap polyMap;
 
     @Override
@@ -38,10 +35,5 @@ public class RefreshPolyMapOnCopy implements PolyMapProvider {
     @Override
     public void setPolyMap(PolyMap map) {
         polyMap = map;
-    }
-
-    @Inject(method = "copyFrom", at = @At("RETURN"))
-    private void copyInject(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
-        this.refreshUsedPolyMap();
     }
 }

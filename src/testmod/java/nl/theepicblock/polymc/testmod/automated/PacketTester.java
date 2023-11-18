@@ -36,7 +36,7 @@ public class PacketTester implements Closeable {
     }
 
     public void setMap(PolyMap map) {
-        ((PolyMapProvider)this.playerEntity).setPolyMap(map);
+        PolyMapProvider.get(this.playerEntity).setPolyMap(map);
     }
 
     public void clearPackets() {

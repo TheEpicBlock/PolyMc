@@ -29,8 +29,8 @@ import xyz.nucleoid.packettweaker.PacketContext;
 public class ChunkDeltaUpdateImplementation {
     @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getRawIdFromState(Lnet/minecraft/block/BlockState;)I"))
     public BlockState getRawIdFromStateRedirect(BlockState state) {
-        var player = PacketContext.get().getTarget();
-        var polymap = Util.tryGetPolyMap(player);
-        return polymap.getClientState(state, player);
+        var ctx = PacketContext.get();
+        var polymap = Util.tryGetPolyMap(ctx.getClientConnection());
+        return polymap.getClientState(state, ctx.getPlayer());
     }
 }
