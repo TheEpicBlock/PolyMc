@@ -14,17 +14,20 @@ import net.minecraft.util.math.Vec3d;
 import nl.theepicblock.polymc.testmod.Testmod;
 
 public class WizardTests implements FabricGameTest {
-    @GameTest(templateName = EMPTY_STRUCTURE)
+    @GameTest(templateName = EMPTY_STRUCTURE, batchId = "blockWizard")
     public void testBlock(TestContext ctx) {
         var packetCtx = new PacketTester(ctx);
 
-        var packet = packetCtx.capture(EntitySpawnS2CPacket.class, () -> {
-            ctx.setBlockState(0,0,0, Testmod.TEST_BLOCK_WIZARD);
-        });
-        ctx.assertTrue(packet.getEntityType() == EntityType.ITEM, "Test wizard should spawn an entity, not a "+packet.getEntityType());
+        ctx.setBlockState(0,0,0, Testmod.TEST_BLOCK_WIZARD);
 
-        packetCtx.close();
-        ctx.complete();
+        ctx.waitAndRun(1, () -> {
+            // Wait a tick so packets can be sent
+            var packet = packetCtx.getFirstOfType(EntitySpawnS2CPacket.class);
+            ctx.assertTrue(packet.getEntityType() == EntityType.ITEM, "Test wizard should spawn an entity, not a "+packet.getEntityType());
+
+            packetCtx.close();
+            ctx.complete();
+        });
     }
 
     @GameTest(templateName = EMPTY_STRUCTURE, batchId = "pistonExtension")
@@ -34,10 +37,14 @@ public class WizardTests implements FabricGameTest {
         // Set up a piston
         ctx.setBlockState(0,1,0, Blocks.PISTON.getDefaultState().with(PistonBlock.FACING, Direction.UP));
         ctx.setBlockState(0,2,0, Testmod.TEST_BLOCK_WIZARD);
-        ctx.setBlockState(0,0,0, Blocks.REDSTONE_BLOCK);
 
-        packetCtx.clearPackets(); // Start capturing packets
         ctx.waitAndRun(1, () -> {
+            // Allow for one tick so the previous packets can be sent.
+            ctx.setBlockState(0,0,0, Blocks.REDSTONE_BLOCK);
+            packetCtx.clearPackets();
+        });
+
+        ctx.waitAndRun(2, () -> {
             // Piston should be extending now
             ctx.checkBlock(new BlockPos(0,2,0), block -> block == Blocks.MOVING_PISTON, "Piston isn't extending");
 
@@ -46,9 +53,9 @@ public class WizardTests implements FabricGameTest {
             ctx.assertTrue(packet.getX() == expectedPosition.getX(), "Wrong x value: "+packet.getX() + " instead of " + expectedPosition.getX());
             ctx.assertTrue(packet.getY() == expectedPosition.getY(), "Wrong y value: "+packet.getY() + " instead of " + expectedPosition.getY());
             ctx.assertTrue(packet.getZ() == expectedPosition.getZ(), "Wrong z value: "+packet.getZ() + " instead of " + expectedPosition.getZ());
-        });
 
-        packetCtx.close();
-        ctx.complete();
+            packetCtx.close();
+            ctx.complete();
+        });
     }
 }

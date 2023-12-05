@@ -57,6 +57,7 @@ public class PacketTester implements Closeable {
      * Finds any packets of a certain type that have been sent recently. Will error if there isn't exactly one packet found.
      */
     public <T extends Packet<?>> T getFirstOfType(Class<T> packetType) {
+        this.context.assertTrue(!this.fakeNetworkHandler.sentPackets.isEmpty(), String.format("Expected one packet of type %s, but no packet of any type has been received", packetType));
         var packets = this.fakeNetworkHandler.sentPackets
                 .stream()
                 .filter(packet -> packet.getClass() == packetType)

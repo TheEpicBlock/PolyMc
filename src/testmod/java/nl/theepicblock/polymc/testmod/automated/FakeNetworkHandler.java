@@ -9,6 +9,7 @@ import net.minecraft.network.listener.PacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ChunkDataSender;
 import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -22,6 +23,13 @@ public class FakeNetworkHandler extends ServerPlayNetworkHandler {
 
     public FakeNetworkHandler(MinecraftServer server, ServerPlayerEntity player) {
         super(server, new FakeClientConnection(), player, ConnectedClientData.createDefault(player.getGameProfile()));
+        try {
+            var field = this.getClass().getField("chunkDataSender");
+            field.setAccessible(true);
+            field.set(this, new FakeDataSender(true));
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -65,6 +73,16 @@ public class FakeNetworkHandler extends ServerPlayNetworkHandler {
 
         @Override
         public void setPacketListener(PacketListener packetListener) {
+        }
+    }
+
+    private static final class FakeDataSender extends ChunkDataSender {
+        public FakeDataSender(boolean local) {
+            super(local);
+        }
+
+        public boolean isInNextBatch(long chunkPos) {
+            return false;
         }
     }
 }

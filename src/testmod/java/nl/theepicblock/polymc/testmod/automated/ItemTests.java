@@ -1,6 +1,7 @@
 package nl.theepicblock.polymc.testmod.automated;
 
 import io.github.theepicblock.polymc.impl.NOPPolyMap;
+import io.github.theepicblock.polymc.mixins.wizards.ItemEntityAccessor;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
@@ -79,13 +80,20 @@ public class ItemTests implements FabricGameTest {
         var coords = ctx.getTestContext().getAbsolute(new Vec3d(0,0,0));
         var entity = new ItemEntity(ctx.getTestContext().getWorld(), coords.x, coords.y, coords.z, stack);
 
-        var trackerPacket = ctx.capture(EntityTrackerUpdateS2CPacket.class, () -> {
+        var trackerPackets = ctx.captureAll(() -> {
             ctx.getTestContext().getWorld().spawnEntity(entity);
+            ctx.getTestContext().getWorld().tick(() -> false); // Tick the world so packets are sent
         });
 
-        ctx.getTestContext().assertTrue(trackerPacket.trackedValues().size() == 1, "Weird tracker update");
+        var entry = trackerPackets.stream()
+                .filter(p -> p instanceof EntityTrackerUpdateS2CPacket)
+                .map(p -> (EntityTrackerUpdateS2CPacket)p)
+                .filter(p -> p.id() == entity.getId())
+                .flatMap(p -> p.trackedValues().stream())
+                .filter(p -> p.id() == ItemEntityAccessor.getStackTracker().getId())
+                .findAny();
 
-        return (ItemStack)trackerPacket.trackedValues().get(0).value();
+        return (ItemStack)(entry.orElseThrow().value());
     }
 
     public interface ReserializationMethod {
