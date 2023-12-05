@@ -20,7 +20,7 @@ public class WizardTests implements FabricGameTest {
 
         ctx.setBlockState(0,0,0, Testmod.TEST_BLOCK_WIZARD);
 
-        ctx.waitAndRun(1, () -> {
+        ctx.waitAndRun(2, () -> {
             // Wait a tick so packets can be sent
             var packet = packetCtx.getFirstOfType(EntitySpawnS2CPacket.class);
             ctx.assertTrue(packet.getEntityType() == EntityType.ITEM, "Test wizard should spawn an entity, not a "+packet.getEntityType());
@@ -38,13 +38,13 @@ public class WizardTests implements FabricGameTest {
         ctx.setBlockState(0,1,0, Blocks.PISTON.getDefaultState().with(PistonBlock.FACING, Direction.UP));
         ctx.setBlockState(0,2,0, Testmod.TEST_BLOCK_WIZARD);
 
-        ctx.waitAndRun(1, () -> {
+        ctx.runAtTick(1, () -> {
             // Allow for one tick so the previous packets can be sent.
             ctx.setBlockState(0,0,0, Blocks.REDSTONE_BLOCK);
             packetCtx.clearPackets();
         });
 
-        ctx.waitAndRun(2, () -> {
+        ctx.runAtTick(2, () -> {
             // Piston should be extending now
             ctx.checkBlock(new BlockPos(0,2,0), block -> block == Blocks.MOVING_PISTON, "Piston isn't extending");
 

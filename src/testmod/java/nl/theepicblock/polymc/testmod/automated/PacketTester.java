@@ -17,9 +17,10 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class PacketTester implements Closeable {
-    private final ServerPlayerEntity playerEntity;
+    public final ServerPlayerEntity playerEntity;
     private final FakeNetworkHandler fakeNetworkHandler;
     private final TestContext context;
 
@@ -35,7 +36,7 @@ public class PacketTester implements Closeable {
         // Since the regular fabric events don't get called on this
         PolyMapProvider.get(fakeNetworkHandler).refreshUsedPolyMap();
 
-        world.spawnEntity(playerEntity);
+        world.onPlayerConnected(playerEntity);
         world.getChunkManager().threadedAnvilChunkStorage.updatePosition(playerEntity);
         this.playerEntity.setPosition(context.getAbsolute(Vec3d.ZERO));
         world.getChunkManager().threadedAnvilChunkStorage.updatePosition(playerEntity);
@@ -80,6 +81,14 @@ public class PacketTester implements Closeable {
         this.clearPackets();
         run.run();
         return new ArrayList<>(this.fakeNetworkHandler.sentPackets);
+    }
+
+    public Stream<Packet<?>> getReceived() {
+        return this.fakeNetworkHandler.sentPackets.stream();
+    }
+
+    public <T extends Packet<?>> Stream<T> getReceived(Class<T> packetType) {
+        return this.fakeNetworkHandler.sentPackets.stream().filter(p -> p.getClass() == packetType).map(p -> (T)p);
     }
 
     public void assertReceived(Packet<?> packet, String message) {

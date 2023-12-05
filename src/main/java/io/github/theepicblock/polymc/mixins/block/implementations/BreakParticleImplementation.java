@@ -25,9 +25,10 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 /**
  * Redirects the {@link BlockState} in Block#spawnBreakParticles to send the particles for the polyd {@link BlockState} instead.
@@ -38,14 +39,12 @@ public class BreakParticleImplementation {
      * Replaces the call to {@link World#syncWorldEvent(PlayerEntity, int, BlockPos, int)} with a call to {@link PacketReplacementUtil#syncWorldEvent(World, PlayerEntity, int, BlockPos, BlockState)}
      * to respect different PolyMaps
      */
-    @Redirect(method = "spawnBreakParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;syncWorldEvent(Lnet/minecraft/entity/player/PlayerEntity;ILnet/minecraft/util/math/BlockPos;I)V"))
-    public void worldEventPoly(World world, PlayerEntity player, int eventId, BlockPos pos, int data,
-                               World worldParent, PlayerEntity playerParent, BlockPos posParent, BlockState stateParent) {
-        var spe = (ServerPlayerEntity)player;
-
-        // Minecraft assumes the player who breaks the block knows it's breaking a block.
-        // However, as PolyMc reimplements block breaking server-side, the one breaking the block needs to be notified too
-        var needsCustomBreaking = CustomBlockBreakingCheck.needsCustomBreaking(spe, stateParent.getBlock());
-        PacketReplacementUtil.syncWorldEvent(world, needsCustomBreaking ? null : player, 2001, pos, stateParent);
+    @ModifyVariable(method = "spawnBreakParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;syncWorldEvent(Lnet/minecraft/entity/player/PlayerEntity;ILnet/minecraft/util/math/BlockPos;I)V"), argsOnly = true)
+    public PlayerEntity onBreakParticlePacket(@Nullable PlayerEntity player, World world, @Nullable PlayerEntity player2, BlockPos pos, BlockState state) {
+        if (player instanceof ServerPlayerEntity spe) {
+            var needsCustomBreaking = CustomBlockBreakingCheck.needsCustomBreaking(spe, state.getBlock());
+            return needsCustomBreaking ? null : player;
+        }
+        return player;
     }
 }
