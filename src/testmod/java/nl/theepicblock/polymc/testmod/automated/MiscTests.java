@@ -58,7 +58,7 @@ public class MiscTests implements FabricGameTest {
     @GameTest(templateName = EMPTY_STRUCTURE,  batchId = "breakSimulated")
     public void breakModdedVanilla(TestContext ctx) {
         var packetCtx = new PacketTester(ctx);
-        var block = Blocks.GRASS;
+        var block = Blocks.SHORT_GRASS;
         var state = block.getDefaultState();
 
         block.onBreak(ctx.getWorld(), ctx.getAbsolutePos(BlockPos.ORIGIN), state, packetCtx.playerEntity);

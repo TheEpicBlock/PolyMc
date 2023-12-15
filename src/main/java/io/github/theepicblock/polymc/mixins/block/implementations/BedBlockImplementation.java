@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins.block.implementations;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import io.github.theepicblock.polymc.impl.mixin.PacketReplacementUtil;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockState;
@@ -29,6 +30,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
@@ -49,9 +51,8 @@ public class BedBlockImplementation {
      * Replaces the call to {@link World#syncWorldEvent(PlayerEntity, int, BlockPos, int)} with a call to {@link PacketReplacementUtil#syncWorldEvent(World, PlayerEntity, int, BlockPos, BlockState)}
      * to respect different PolyMaps
      */
-    @Inject(method = "onBreak", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;syncWorldEvent(Lnet/minecraft/entity/player/PlayerEntity;ILnet/minecraft/util/math/BlockPos;I)V"),
-            locals = LocalCapture.CAPTURE_FAILHARD)
-    public void worldEventReplacement(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci, BedPart var5, BlockPos var6, BlockState var7) {
-        PacketReplacementUtil.syncWorldEvent(world, player, 2001, var6, var7);
+    @Inject(method = "onBreak", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;syncWorldEvent(Lnet/minecraft/entity/player/PlayerEntity;ILnet/minecraft/util/math/BlockPos;I)V"))
+    public void worldEventReplacement(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfoReturnable<BlockState> cir, @Local(ordinal = 1) BlockPos bedPos, @Local(ordinal = 1) BlockState bedState) {
+        PacketReplacementUtil.syncWorldEvent(world, player, 2001, bedPos, bedState);
     }
 }

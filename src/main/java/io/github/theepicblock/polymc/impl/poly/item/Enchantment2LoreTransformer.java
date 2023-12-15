@@ -67,9 +67,9 @@ public class Enchantment2LoreTransformer implements ItemTransformer {
                     var name = enchantment.getName(EnchantmentHelper.getLevelFromNbt(enchantmentCompound)).copy();
                     name.setStyle(name.getStyle().withItalic(name.getStyle().isItalic()));
                     if (atBeginning) {
-                        displayTag.getList("Lore", NbtElement.STRING_TYPE).add(0, NbtString.of(Text.Serializer.toJson(name)));
+                        displayTag.getList("Lore", NbtElement.STRING_TYPE).add(0, NbtString.of(Text.Serialization.toJsonString(name)));
                     } else {
-                        displayTag.getList("Lore", NbtElement.STRING_TYPE).add(NbtString.of(Text.Serializer.toJson(name)));
+                        displayTag.getList("Lore", NbtElement.STRING_TYPE).add(NbtString.of(Text.Serialization.toJsonString(name)));
                     }
                 });
             }
