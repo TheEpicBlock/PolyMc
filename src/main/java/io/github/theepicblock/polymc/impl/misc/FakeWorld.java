@@ -52,6 +52,7 @@ import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.OrderedTick;
 import net.minecraft.world.tick.QueryableTickScheduler;
+import net.minecraft.world.tick.TickManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -97,6 +98,7 @@ public final class FakeWorld extends World implements LightSourceView {
     };
     static final RecipeManager RECIPE_MANAGER = new RecipeManager();
     private static final FeatureSet FEATURES = FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+    private static final TickManager TICK_MANAGER = new TickManager();
     final ChunkManager chunkManager = new ChunkManager() {
         private LightingProvider lightingProvider = null;
 
@@ -296,6 +298,11 @@ public final class FakeWorld extends World implements LightSourceView {
     @Override
     public Entity getEntityById(int id) {
         return null;
+    }
+
+    @Override
+    public TickManager getTickManager() {
+        return TICK_MANAGER;
     }
 
     @Nullable

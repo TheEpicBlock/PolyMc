@@ -4,7 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.fabricmc.fabric.api.object.builder.v1.block.type.BlockSetTypeRegistry;
+import net.fabricmc.fabric.api.object.builder.v1.block.type.BlockSetTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.block.*;
@@ -20,6 +20,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.ColorCode;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import org.jetbrains.annotations.Nullable;
@@ -27,24 +28,14 @@ import org.jetbrains.annotations.Nullable;
 public class Testmod implements ModInitializer {
     private static final String MODID = "polymc-testmod";
 
-    public static final BlockSetType TEST_IRON_BLOCKSET = BlockSetTypeRegistry.register(
-            id("test_iron"),
-            false,
-            BlockSoundGroup.BONE,
-            SoundEvents.ENTITY_CAMEL_DASH, SoundEvents.ENTITY_CAMEL_DASH,
-            SoundEvents.ENTITY_CAMEL_DASH, SoundEvents.ENTITY_CAMEL_DASH,
-            SoundEvents.ENTITY_CAMEL_DASH, SoundEvents.ENTITY_CAMEL_DASH,
-            SoundEvents.ENTITY_CAMEL_DASH, SoundEvents.ENTITY_CAMEL_DASH
-    );
-    public static final BlockSetType TEST_WOOD_BLOCKSET = BlockSetTypeRegistry.register(
-            id("test_wood"),
-            true,
-            BlockSoundGroup.WOOL,
-            SoundEvents.BLOCK_ROOTED_DIRT_BREAK, SoundEvents.BLOCK_ROOTED_DIRT_BREAK,
-            SoundEvents.BLOCK_ROOTED_DIRT_BREAK, SoundEvents.BLOCK_ROOTED_DIRT_BREAK,
-            SoundEvents.BLOCK_ROOTED_DIRT_BREAK, SoundEvents.BLOCK_ROOTED_DIRT_BREAK,
-            SoundEvents.BLOCK_ROOTED_DIRT_BREAK, SoundEvents.BLOCK_ROOTED_DIRT_BREAK
-    );
+    public static final BlockSetType TEST_IRON_BLOCKSET = new BlockSetTypeBuilder()
+            .soundGroup(BlockSoundGroup.BONE)
+            .openableByHand(false)
+            .register(id("test_iron"));
+    public static final BlockSetType TEST_WOOD_BLOCKSET = new BlockSetTypeBuilder()
+            .soundGroup(BlockSoundGroup.WOOL)
+            .openableByHand(true)
+            .register(id("test_wood"));
 
     public static final Item TEST_ITEM = new TestItem(new FabricItemSettings().maxCount(6).rarity(Rarity.EPIC));
     public static final Item TEST_FOOD = new Item(new FabricItemSettings().food(FoodComponents.COOKED_CHICKEN));
@@ -57,12 +48,12 @@ public class Testmod implements ModInitializer {
     public static final Block TEST_BLOCK = new TestBlock(FabricBlockSettings.create());
     public static final Block TEST_STAIRS = new TestStairsBlock(TEST_BLOCK.getDefaultState(), FabricBlockSettings.create());
     public static final Block TEST_SLAB = new TestSlabBlock(FabricBlockSettings.create());
-    public static final Block TEST_DOOR = new DoorBlock(FabricBlockSettings.copyOf(Blocks.OAK_DOOR), TEST_WOOD_BLOCKSET);
-    public static final Block TEST_IRON_DOOR = new DoorBlock(FabricBlockSettings.copyOf(Blocks.OAK_DOOR), TEST_IRON_BLOCKSET);
-    public static final Block TEST_TRAP_DOOR = new TrapdoorBlock(FabricBlockSettings.copyOf(Blocks.OAK_TRAPDOOR), TEST_WOOD_BLOCKSET);
-    public static final Block TEST_IRON_TRAP_DOOR = new TrapdoorBlock(FabricBlockSettings.copyOf(Blocks.OAK_TRAPDOOR), TEST_IRON_BLOCKSET);
+    public static final Block TEST_DOOR = new DoorBlock(TEST_WOOD_BLOCKSET, FabricBlockSettings.copyOf(Blocks.OAK_DOOR));
+    public static final Block TEST_IRON_DOOR = new DoorBlock(TEST_IRON_BLOCKSET, FabricBlockSettings.copyOf(Blocks.OAK_DOOR));
+    public static final Block TEST_TRAP_DOOR = new TrapdoorBlock(TEST_WOOD_BLOCKSET, FabricBlockSettings.copyOf(Blocks.OAK_TRAPDOOR));
+    public static final Block TEST_IRON_TRAP_DOOR = new TrapdoorBlock(TEST_IRON_BLOCKSET, FabricBlockSettings.copyOf(Blocks.OAK_TRAPDOOR));
     public static final Block TEST_BLOCK_GLOWING = new Block(FabricBlockSettings.create().luminance(9));
-    public static final Block TEST_BLOCK_WIZARD = new FallingBlock(FabricBlockSettings.create());
+    public static final Block TEST_BLOCK_WIZARD = new ColoredFallingBlock(new ColorCode(0), FabricBlockSettings.create());
 
     public static final EntityType<? extends LivingEntity> TEST_ENTITY_DIRECT = FabricEntityTypeBuilder.create().entityFactory(CreeperEntity::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
     public static final EntityType<? extends LivingEntity> TEST_ENTITY_EXTEND_DIRECT = FabricEntityTypeBuilder.create().entityFactory(TestExtendDirectEntity::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();

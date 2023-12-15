@@ -1,5 +1,5 @@
 plugins {
-	id 'org.quiltmc.loom' version '1.2.3'
+	id 'org.quiltmc.loom' version '1.4.+'
 	id 'maven-publish'
 	id 'org.ajoberstar.grgit' version '4.1.0'
 }
@@ -70,7 +70,7 @@ dependencies {
 		transitive(false)
 	}
 
-	include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.2.0")))
+	implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.2"))
 }
 
 sourceSets {

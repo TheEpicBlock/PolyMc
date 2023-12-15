@@ -229,7 +229,7 @@ public class CustomModelDataPoly implements ItemPoly {
     }
 
     private static NbtString toStr(Text text) {
-        return NbtString.of(Text.Serializer.toJson(text));
+        return NbtString.of(Text.Serialization.toJsonString(text));
     }
 
     private static MutableText explicitlySetItalics(MutableText in) {
