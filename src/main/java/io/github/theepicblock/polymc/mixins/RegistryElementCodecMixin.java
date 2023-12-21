@@ -4,19 +4,20 @@ import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryElementCodec;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryFixedCodec;
 import net.minecraft.sound.SoundEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
-@Mixin(RegistryFixedCodec.class)
+@Mixin(RegistryElementCodec.class)
 public class RegistryElementCodecMixin {
     @ModifyVariable(
             method = "encode(Lnet/minecraft/registry/entry/RegistryEntry;Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;",
-            at = @At("HEAD")
+            at = @At("HEAD"),
+            argsOnly = true
     )
     private RegistryEntry<?> swapEntry(RegistryEntry<?> entry) {
         var ctx = PacketContext.get();
