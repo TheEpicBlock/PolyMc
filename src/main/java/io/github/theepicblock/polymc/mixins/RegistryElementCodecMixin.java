@@ -18,7 +18,7 @@ public class RegistryElementCodecMixin {
             method = "encode(Lnet/minecraft/registry/entry/RegistryEntry;Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;",
             at = @At("HEAD")
     )
-    private RegistryEntry<?> polymerCore$swapEntry(RegistryEntry<?> entry) {
+    private RegistryEntry<?> swapEntry(RegistryEntry<?> entry) {
         var ctx = PacketContext.get();
         if (ctx.getClientConnection() != null) {
             try {
