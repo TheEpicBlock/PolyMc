@@ -8,6 +8,8 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryFixedCodec;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -31,6 +33,8 @@ public class RegistryFixedCodecMixin {
                     return Registries.ITEM.getEntry(map.getClientItem(item.getDefaultStack(), ctx.getPlayer(), null).getItem());
                 } else if (entry.value() instanceof Block item && map.getBlockPoly(item) != null) {
                     return Registries.BLOCK.getEntry(map.getBlockPoly(item).getClientBlock(item.getDefaultState()).getBlock());
+                } else if (entry.value() instanceof SoundEvent event && !Util.isVanilla(Registries.SOUND_EVENT.getId(event))) {
+                    return Registries.SOUND_EVENT.getEntry(SoundEvents.INTENTIONALLY_EMPTY);
                 }
             } catch (Throwable e) {
                 e.printStackTrace();
