@@ -51,8 +51,14 @@ public class ItemPolyGenerator {
         if (item instanceof ShieldItem) {
             return new DamageableItemPoly(cmdManager, item, Items.SHIELD);
         }
+        if (item instanceof FishingRodItem) {
+            return new DamageableItemPoly(cmdManager, item, Items.FISHING_ROD);
+        }
         if (item instanceof CompassItem) {
             return new CustomModelDataPoly(cmdManager, item, Items.COMPASS);
+        }
+        if (item instanceof BrushItem) {
+            return new CustomModelDataPoly(cmdManager, item, Items.BRUSH);
         }
         if (item instanceof CrossbowItem) {
             return new DamageableItemPoly(cmdManager, item, Items.CROSSBOW);

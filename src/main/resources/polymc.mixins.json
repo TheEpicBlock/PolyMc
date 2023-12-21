@@ -11,6 +11,8 @@
     "ItemStackAccessor",
     "PolyMapProviderImpl",
     "ReferenceAccessor",
+    "RegistryElementCodecMixin",
+    "RegistryFixedCodecMixin",
     "SCNetworkHandlerAccessor",
     "ServerStartMixin",
     "SoundPacketFix",
