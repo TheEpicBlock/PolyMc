@@ -66,9 +66,9 @@ public class BlockPolyGeneratorTests implements FabricGameTest {
 
     public static boolean opensAfterRightClick(TestContext ctx, BlockState a) {
         var startOpenedState = a.get(Properties.OPEN);
-        ctx.setBlockState(BlockPos.ORIGIN, a);
-        ctx.useBlock(BlockPos.ORIGIN);
-        var endOpenedState = ctx.getBlockState(BlockPos.ORIGIN).get(Properties.OPEN);
+        ctx.setBlockState(new BlockPos(1,1,1), a);
+        ctx.useBlock(new BlockPos(1,1,1));
+        var endOpenedState = ctx.getBlockState(new BlockPos(1,1,1)).get(Properties.OPEN);
         return startOpenedState != endOpenedState;
     }
 }
