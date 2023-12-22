@@ -25,6 +25,7 @@ repositories {
 		url "https://maven.nucleoid.xyz"
 		content {
 			includeGroup("xyz.nucleoid")
+			includeGroup("eu.pb4")
 		}
 	}
 	maven {
@@ -66,6 +67,10 @@ dependencies {
 		transitive(false)
 	}
 	modCompileOnly("com.github.iPortalTeam.ImmersivePortalsMod:q_misc_util:${project.immersive_portals_version}") {
+		exclude group: 'net.fabricmc', module: 'fabric-loader'
+		transitive(false)
+	}
+	modCompileOnly("eu.pb4:factorytools:0.1.0+1.20.4") {
 		exclude group: 'net.fabricmc', module: 'fabric-loader'
 		transitive(false)
 	}

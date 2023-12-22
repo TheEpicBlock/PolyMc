@@ -282,4 +282,8 @@ public class Util {
             gson.toJson(json, writer);
         }
     }
+
+    public static boolean checkFactorytools(Block block) {
+        return (FabricLoader.getInstance().isModLoaded("factorytools") && block instanceof VirtualDestroyStage.Marker);
+    }
 }
