@@ -25,6 +25,7 @@ repositories {
 		url "https://maven.nucleoid.xyz"
 		content {
 			includeGroup("xyz.nucleoid")
+			includeGroup("eu.pb4")
 		}
 	}
 	maven {

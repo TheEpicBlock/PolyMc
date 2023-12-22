@@ -131,7 +131,7 @@ public class Util {
             v.append(",");
         });
         String res = v.toString();
-        if (res.length() == 0) return res;
+        if (res.isEmpty()) return res;
         return res.substring(0, res.length() - 1); //this removes the last comma
     }
 
@@ -249,7 +249,8 @@ public class Util {
      * @see PolyMap#isVanillaLikeMap()
      */
     public static boolean isPolyMapVanillaLike(ServerPlayerEntity client) {
-        return tryGetPolyMap(client).isVanillaLikeMap();
+        final var polyMap = tryGetPolyMap(client);
+        return polyMap != null && polyMap.isVanillaLikeMap();
     }
 
     public static boolean isPolyMapVanillaLike(ServerCommonNetworkHandler client) {
