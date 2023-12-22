@@ -25,6 +25,7 @@ import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface PolyMapProvider {
     PolyMapProviderEvent EVENT = new PolyMapProviderEvent();
@@ -58,22 +59,28 @@ public interface PolyMapProvider {
     }
 
     /**
+     * Might be null only when this player was never initialized
      * @return the {@link PolyMap} that is used for this packet handler.
      */
+    @Nullable
     static PolyMap getPolyMap(@NotNull ServerCommonNetworkHandler handler) {
         return getPolyMap(((SCNetworkHandlerAccessor) handler).getConnection());
     }
 
     /**
+     * Might be null only when this player was never initialized
      * @return the {@link PolyMap} that is used for this client connection.
      */
+    @Nullable
     static PolyMap getPolyMap(@NotNull ClientConnection connection) {
         return get(connection).getPolyMap();
     }
 
     /**
+     * Might be null only when this player was never initialized
      * @return the {@link PolyMap} that is used by this provider.
      */
+    @Nullable
     PolyMap getPolyMap();
 
     /**

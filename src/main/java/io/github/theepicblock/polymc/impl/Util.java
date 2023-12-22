@@ -35,6 +35,7 @@ import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -200,8 +201,10 @@ public class Util {
         return PolyMapProvider.getPolyMap(player);
     }
 
+    @NotNull
     public static PolyMap tryGetPolyMap(@Nullable ServerCommonNetworkHandler handler) {
-        if (handler == null) {
+        var map = handler == null ? null : PolyMapProvider.getPolyMap(handler);
+        if (map == null) {
             if (!HAS_LOGGED_POLYMAP_ERROR) {
                 PolyMc.LOGGER.error("Tried to get polymap but there's no packet handler context. PolyMc will use the default PolyMap. If PolyMc is transforming things it shouldn't, this is why. Further errors of this kind will be silenced. Have a thread dump: ");
                 Thread.dumpStack();
@@ -209,11 +212,13 @@ public class Util {
             }
             return PolyMc.getMainMap();
         }
-        return PolyMapProvider.getPolyMap(handler);
+        return map;
     }
 
+    @NotNull
     public static PolyMap tryGetPolyMap(@Nullable ClientConnection handler) {
-        if (handler == null) {
+        var map = handler == null ? null : PolyMapProvider.getPolyMap(handler);
+        if (map == null) {
             if (!HAS_LOGGED_POLYMAP_ERROR) {
                 PolyMc.LOGGER.error("Tried to get polymap but there's no connection context. PolyMc will use the default PolyMap. If PolyMc is transforming things it shouldn't, this is why. Further errors of this kind will be silenced. Have a thread dump: ");
                 Thread.dumpStack();
@@ -221,7 +226,7 @@ public class Util {
             }
             return PolyMc.getMainMap();
         }
-        return PolyMapProvider.getPolyMap(handler);
+        return map;
     }
 
     /**
@@ -249,8 +254,7 @@ public class Util {
      * @see PolyMap#isVanillaLikeMap()
      */
     public static boolean isPolyMapVanillaLike(ServerPlayerEntity client) {
-        final var polyMap = tryGetPolyMap(client);
-        return polyMap != null && polyMap.isVanillaLikeMap();
+        return tryGetPolyMap(client).isVanillaLikeMap();
     }
 
     public static boolean isPolyMapVanillaLike(ServerCommonNetworkHandler client) {
