@@ -19,7 +19,6 @@ package io.github.theepicblock.polymc.impl;
 
 import com.google.common.base.Splitter;
 import com.google.gson.Gson;
-import eu.pb4.factorytools.api.util.VirtualDestroyStage;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
@@ -38,7 +37,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
-import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -284,9 +282,5 @@ public class Util {
         try (var writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
             gson.toJson(json, writer);
         }
-    }
-
-    public static boolean checkFactorytools(Block block) {
-        return (FabricLoader.getInstance().isModLoaded("factorytools") && block instanceof VirtualDestroyStage.Marker);
     }
 }

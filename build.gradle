@@ -70,10 +70,6 @@ dependencies {
 		exclude group: 'net.fabricmc', module: 'fabric-loader'
 		transitive(false)
 	}
-	modCompileOnly("eu.pb4:factorytools:0.1.0+1.20.4") {
-		exclude group: 'net.fabricmc', module: 'fabric-loader'
-		transitive(false)
-	}
 
 	implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.2"))
 }
