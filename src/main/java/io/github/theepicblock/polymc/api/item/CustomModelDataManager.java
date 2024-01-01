@@ -70,6 +70,14 @@ public class CustomModelDataManager {
             Items.CHARCOAL,
             Items.BLAZE_ROD,
     };
+
+    public final static Item[] DYABLE_DAMAGABLE_ITEMS = {
+            Items.LEATHER_HELMET,
+            Items.LEATHER_CHESTPLATE,
+            Items.LEATHER_LEGGINGS,
+            Items.LEATHER_BOOTS
+    };
+
     public final static Item[] FOOD_ITEMS = {
             Items.COOKED_BEEF,
             Items.COOKED_CHICKEN,
@@ -94,13 +102,9 @@ public class CustomModelDataManager {
             Items.BREAD
     };
     @ApiStatus.Internal
-    public final static Item[] FULL_BLOCK_ITEMS = {
-            Items.STRUCTURE_VOID
-    };
+    public final static Item[] FULL_BLOCK_ITEMS = DEFAULT_ITEMS;
     @ApiStatus.Internal
-    public final static Item[] BLOCK_ITEMS = {
-            Items.STRUCTURE_VOID
-    };
+    public final static Item[] BLOCK_ITEMS = DEFAULT_ITEMS;
 
     private final Object2IntMap<Item> customModelDataCounter = new Object2IntOpenHashMap<>();
     private int roundRobin = 0;

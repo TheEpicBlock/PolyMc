@@ -20,7 +20,6 @@ package io.github.theepicblock.polymc.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.api.PolyMap;
@@ -53,7 +52,6 @@ import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
@@ -79,6 +77,8 @@ public class PolyMapImpl implements PolyMap {
     private final ImmutableMap<ScreenHandlerType<?>,GuiPoly> guiPolys;
     private final ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys;
     private final ImmutableList<SharedValuesKey.ResourceContainer> sharedValueResources;
+
+    private final boolean alwaysAddCreativeNbt = ConfigManager.getConfig().alwaysSendFullNbt;
     private final boolean hasBlockWizards;
 
     public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys,
@@ -109,7 +109,7 @@ public class PolyMapImpl implements PolyMap {
             ret = globalPoly.transform(serverItem, ret, player, location);
         }
 
-        if ((player == null || player.isCreative()) && !ItemStack.canCombine(serverItem, ret) && !serverItem.isEmpty()) {
+        if ((player == null || player.isCreative() || location == ItemLocation.CREATIVE || this.alwaysAddCreativeNbt) && !ItemStack.canCombine(serverItem, ret) && !serverItem.isEmpty()) {
             // Preserves the nbt of the original item so it can be reverted
             ret = ret.copy();
             ret.setSubNbt(ORIGINAL_ITEM_NBT, originalNbt);
@@ -173,7 +173,7 @@ public class PolyMapImpl implements PolyMap {
     public boolean shouldForceBlockStateSync(BlockState sourceState, BlockState clientState, Direction direction) {
         Block block = clientState.getBlock();
         if (block == Blocks.NOTE_BLOCK) {
-            return direction == Direction.UP;
+            return direction == Direction.UP || direction == Direction.DOWN;
         } else if (block == Blocks.MYCELIUM || block == Blocks.PODZOL) {
             return direction == Direction.DOWN;
         } else if (block == Blocks.TRIPWIRE) {
@@ -241,7 +241,7 @@ public class PolyMapImpl implements PolyMap {
                 var mainLangMap = languageKeys.computeIfAbsent(lang.getLeft().getPath(), (key) -> new TreeMap<>());
                 languageObject.entrySet().forEach(entry -> mainLangMap.put(entry.getKey(), JsonHelper.asString(entry.getValue(), entry.getKey())));
             } catch (Throwable e) {
-                logger.error("Couldn't parse lang file "+lang);
+                logger.error("Couldn't parse lang file " + lang.getLeft());
                 e.printStackTrace();
             }
         }

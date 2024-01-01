@@ -4,4 +4,5 @@ public enum ItemLocation {
     INVENTORY,
     EQUIPMENT,
     TRACKED_DATA,
+    CREATIVE
 }

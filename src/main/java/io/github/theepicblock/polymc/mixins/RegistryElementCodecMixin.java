@@ -30,7 +30,7 @@ public class RegistryElementCodecMixin {
                 } else if (entry.value() instanceof Block item && map.getBlockPoly(item) != null) {
                     return Registries.BLOCK.getEntry(map.getBlockPoly(item).getClientBlock(item.getDefaultState()).getBlock());
                 } else if (entry.value() instanceof SoundEvent event && !Util.isVanilla(Registries.SOUND_EVENT.getId(event))) {
-                    return RegistryEntry.of(entry);
+                    return RegistryEntry.of(entry.value());
                 }
             } catch (Throwable e) {
                 e.printStackTrace();
