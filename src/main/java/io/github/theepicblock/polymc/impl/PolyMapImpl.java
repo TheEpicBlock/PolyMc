@@ -70,6 +70,7 @@ public class PolyMapImpl implements PolyMap {
      * @see #recoverOriginalItem(ItemStack)
      */
     private static final String ORIGINAL_ITEM_NBT = "PolyMcOriginal";
+    private static final boolean ALWAYS_ADD_CREATIVE_NBT = ConfigManager.getConfig().alwaysSendFullNbt;
 
     private final ImmutableMap<Item,ItemPoly> itemPolys;
     private final ItemTransformer[] globalItemPolys;
@@ -78,7 +79,6 @@ public class PolyMapImpl implements PolyMap {
     private final ImmutableMap<EntityType<?>,EntityPoly<?>> entityPolys;
     private final ImmutableList<SharedValuesKey.ResourceContainer> sharedValueResources;
 
-    private final boolean alwaysAddCreativeNbt = ConfigManager.getConfig().alwaysSendFullNbt;
     private final boolean hasBlockWizards;
 
     public PolyMapImpl(ImmutableMap<Item,ItemPoly> itemPolys,
@@ -109,8 +109,8 @@ public class PolyMapImpl implements PolyMap {
             ret = globalPoly.transform(serverItem, ret, player, location);
         }
 
-        if ((player == null || player.isCreative() || location == ItemLocation.CREATIVE || this.alwaysAddCreativeNbt) && !ItemStack.canCombine(serverItem, ret) && !serverItem.isEmpty()) {
-            // Preserves the nbt of the original item so it can be reverted
+        if ((player == null || player.isCreative() || location == ItemLocation.CREATIVE || this.ALWAYS_ADD_CREATIVE_NBT) && !ItemStack.canCombine(serverItem, ret) && !serverItem.isEmpty()) {
+            // Preserves the nbt of the original item, so it can be reverted
             ret = ret.copy();
             ret.setSubNbt(ORIGINAL_ITEM_NBT, originalNbt);
         }

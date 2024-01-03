@@ -9,7 +9,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,6 +25,7 @@ public abstract class PlaceAnimationAndSoundFix extends Item {
     private PlayerEntity removeSource(PlayerEntity player) {
         if (player instanceof ServerPlayerEntity serverPlayerEntity
                 && Util.tryGetPolyMap(serverPlayerEntity).getItemPoly(this) instanceof PlaceableItemPoly) {
+            // Causes the player that broke the block to also receive the sound packet
             return null;
         }
 

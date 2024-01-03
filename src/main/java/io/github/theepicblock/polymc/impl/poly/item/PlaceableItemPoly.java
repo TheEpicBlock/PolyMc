@@ -3,6 +3,10 @@ package io.github.theepicblock.polymc.impl.poly.item;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import net.minecraft.item.Item;
 
+/**
+ * Polys extending this class are blessed by {@link io.github.theepicblock.polymc.mixins.block.PlaceAnimationAndSoundFix}
+ * to have correct placement sounds
+ */
 public class PlaceableItemPoly extends CustomModelDataPoly {
     public PlaceableItemPoly(CustomModelDataManager registerManager, Item moddedBase) {
         super(registerManager, moddedBase);
