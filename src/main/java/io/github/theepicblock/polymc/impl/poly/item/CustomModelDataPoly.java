@@ -44,6 +44,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
@@ -238,7 +239,7 @@ public class CustomModelDataPoly implements ItemPoly {
     }
 
     private static boolean isInventory(@Nullable ItemLocation location) {
-        return location == ItemLocation.INVENTORY || location == null; // Be conservative and say that unknown locations are in inventory too
+        return location == ItemLocation.INVENTORY || location == ItemLocation.CREATIVE || location == null; // Be conservative and say that unknown locations are in inventory too
     }
 
     @Override

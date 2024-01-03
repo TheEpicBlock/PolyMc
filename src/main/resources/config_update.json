@@ -51,5 +51,10 @@
     "add": {
       "forceBlockIdIntControl": false
     }
+  },
+  "11": {
+    "add": {
+      "alwaysSendFullNbt": false
+    }
   }
 }

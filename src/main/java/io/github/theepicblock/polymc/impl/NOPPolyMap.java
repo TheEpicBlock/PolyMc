@@ -22,6 +22,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 public class NOPPolyMap implements PolyMap {
+    public static final NOPPolyMap INSTANCE = new NOPPolyMap();
     @Override
     public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
         return serverItem;

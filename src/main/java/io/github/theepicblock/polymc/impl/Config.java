@@ -39,8 +39,9 @@ import java.util.List;
  */
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection", "JavadocReference"})
 public class Config {
-    public static final int LATEST_VERSION = 10;
+    public static final int LATEST_VERSION = 11;
     public MiscConfig misc;
+    public boolean alwaysSendFullNbt;
     private int configVersion;
     private List<String> disabledMixins;
     public boolean remapVanillaBlockIds;

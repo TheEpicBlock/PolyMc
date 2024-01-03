@@ -24,6 +24,7 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.mixin.BlockStateDuck;
 import io.github.theepicblock.polymc.mixins.ItemStackAccessor;
+import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
@@ -198,6 +199,10 @@ public class Util {
             }
             return PolyMc.getMainMap();
         }
+        if (player instanceof FakePlayer) {
+            return NOPPolyMap.INSTANCE;
+        }
+
         return PolyMapProvider.getPolyMap(player);
     }
 

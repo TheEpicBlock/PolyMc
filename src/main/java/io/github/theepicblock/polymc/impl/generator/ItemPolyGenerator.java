@@ -21,10 +21,7 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
-import io.github.theepicblock.polymc.impl.poly.item.ArmorColorManager;
-import io.github.theepicblock.polymc.impl.poly.item.CustomModelDataPoly;
-import io.github.theepicblock.polymc.impl.poly.item.DamageableItemPoly;
-import io.github.theepicblock.polymc.impl.poly.item.FancyPantsItemPoly;
+import io.github.theepicblock.polymc.impl.poly.item.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.item.*;
@@ -68,7 +65,7 @@ public class ItemPolyGenerator {
         }
         if (item.isDamageable()) {
             if (item instanceof DyeableItem) {
-                return new DamageableItemPoly(cmdManager, item, Items.LEATHER_HELMET);
+                return new DamageableItemPoly(cmdManager, item, CustomModelDataManager.DYABLE_DAMAGABLE_ITEMS);
             }
             return new DamageableItemPoly(cmdManager, item);
         }
@@ -78,12 +75,18 @@ public class ItemPolyGenerator {
         if (item instanceof DyeableItem) {
             return new CustomModelDataPoly(cmdManager, item, Items.LEATHER_HORSE_ARMOR);
         }
+        if (item instanceof BlockItem blockItem) {
+            if (AbstractFurnaceBlockEntity.canUseAsFuel(new ItemStack(item))) {
+                return new PlaceableItemPoly(cmdManager, item, CustomModelDataManager.FUEL_ITEMS);
+            }
+
+            return new PlaceableItemPoly(cmdManager, item, CustomModelDataManager.BLOCK_ITEMS);
+        }
+
         if (AbstractFurnaceBlockEntity.canUseAsFuel(new ItemStack(item))) {
             return new CustomModelDataPoly(cmdManager, item, CustomModelDataManager.FUEL_ITEMS);
         }
-        if (item instanceof BlockItem blockItem) {
-            return new CustomModelDataPoly(cmdManager, item, getBestVanillaItemsForBlockItem(blockItem));
-        }
+
         return new CustomModelDataPoly(cmdManager, item);
     }
 
