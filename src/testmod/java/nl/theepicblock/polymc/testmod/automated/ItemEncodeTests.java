@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class ItemTests implements FabricGameTest {
+public class ItemEncodeTests implements FabricGameTest {
     @CustomTestProvider
     public Collection<TestFunction> testItem() {
         var list = new ArrayList<TestFunction>();

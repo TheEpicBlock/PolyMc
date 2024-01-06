@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.impl.poly.item;
 
+import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.impl.Util;
@@ -26,10 +27,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public class Enchantment2LoreTransformer implements ItemTransformer {
     @Override
-    public ItemStack transform(ItemStack original, ItemStack input, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
-        var map = Util.tryGetPolyMap(player);
-
-        return portEnchantmentsToLore(input, map.getItemPoly(original.getItem()) != null);
+    public ItemStack transform(ItemStack original, ItemStack input, PolyMap polyMap, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
+        return portEnchantmentsToLore(input, polyMap.getItemPoly(original.getItem()) != null);
     }
 
     public static ItemStack portEnchantmentsToLore(ItemStack input, boolean atBeginning) {

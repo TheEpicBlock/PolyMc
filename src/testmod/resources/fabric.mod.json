@@ -22,7 +22,7 @@
     ],
     "fabric-gametest": [
       "nl.theepicblock.polymc.testmod.automated.AuditMixin",
-      "nl.theepicblock.polymc.testmod.automated.ItemTests",
+      "nl.theepicblock.polymc.testmod.automated.ItemEncodeTests",
       "nl.theepicblock.polymc.testmod.automated.BlockPolyGeneratorTests",
       "nl.theepicblock.polymc.testmod.automated.BlockTests",
       "nl.theepicblock.polymc.testmod.automated.MiscTests",
