@@ -27,32 +27,19 @@ import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ResourceConstants;
 import io.github.theepicblock.polymc.mixins.item.EntityAttributeUuidAccessor;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.component.ComponentMapImpl;
-import net.minecraft.component.DataComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.UUID;
 
@@ -117,11 +104,7 @@ public class CustomModelDataPoly implements ItemPoly {
         // should set the name to the correct one of the item
         // We also check the location, to prevent the name being set when it's in an item frame
         if (!input.contains(DataComponentTypes.CUSTOM_NAME) && location != ItemLocation.TRACKED_DATA) {
-            var name = input.getName();
-            if (name instanceof MutableText mutableText) {
-                mutableText.setStyle(name.getStyle().withItalic(false).withColor(input.getRarity().formatting));
-            }
-            output.set(DataComponentTypes.CUSTOM_NAME, name);
+            output.set(DataComponentTypes.CUSTOM_NAME, negateCustomNameStyling(input, input.getName()));
         }
 
         return output;
@@ -165,5 +148,9 @@ public class CustomModelDataPoly implements ItemPoly {
     @Override
     public String getDebugInfo(Item item) {
         return "CMD: " + Util.expandTo(cmdValue, 3) + ", item:" + clientItem.getTranslationKey();
+    }
+
+    public static MutableText negateCustomNameStyling(ItemStack stack, Text text) {
+        return Text.empty().append(text).setStyle(Style.EMPTY.withFormatting(stack.getRarity().formatting).withItalic(false));
     }
 }

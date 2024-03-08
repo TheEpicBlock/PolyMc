@@ -8,7 +8,6 @@ import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -33,13 +32,7 @@ public class PotionFixGlobalPoly implements ItemTransformer {
             var i = input.getItem();
             if (i == Items.POTION || i == Items.LINGERING_POTION || i == Items.SPLASH_POTION || i == Items.TIPPED_ARROW) {
                 if (!input.contains(DataComponentTypes.CUSTOM_NAME) && location != ItemLocation.TRACKED_DATA) {
-                    var name = input.getName();
-                    // Override the style to make sure the client does not render
-                    // the custom name in italics, and uses the correct rarity format
-                    if (name instanceof MutableText mutableText) {
-                        mutableText.setStyle(name.getStyle().withItalic(false).withColor(input.getRarity().formatting));
-                    }
-                    output.set(DataComponentTypes.CUSTOM_NAME, name);
+                    output.set(DataComponentTypes.CUSTOM_NAME, CustomModelDataPoly.negateCustomNameStyling(input, input.getName()));
                 }
             }
             return output;
