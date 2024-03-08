@@ -101,10 +101,6 @@ public class DefaultedEntityPoly<T extends Entity> implements EntityPoly<T> {
                 if (!list.isEmpty()) {
                     player.sendPacket(new EntityEquipmentUpdateS2CPacket(e.getId(), list));
                 }
-
-                for(var statusEffect : e.getStatusEffects()) {
-                    player.sendPacket(new EntityStatusEffectS2CPacket(e.getId(), statusEffect));
-                }
             }
 
             if (!original.getPassengerList().isEmpty()) {

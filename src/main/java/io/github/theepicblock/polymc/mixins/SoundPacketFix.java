@@ -17,10 +17,11 @@ import xyz.nucleoid.packettweaker.PacketContext;
  */
 @Mixin(PlaySoundS2CPacket.class)
 public class SoundPacketFix {
-    @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeRegistryEntry(Lnet/minecraft/util/collection/IndexedIterable;Lnet/minecraft/registry/entry/RegistryEntry;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V"))
-    private RegistryEntry<SoundEvent> replaceSound(RegistryEntry<SoundEvent> entry) {
-        if (entry.getType() == RegistryEntry.Type.REFERENCE && Util.isPolyMapVanillaLike(PacketContext.get().getClientConnection()) && !Util.isVanilla(entry.getKey().get().getValue())) {
-            return RegistryEntry.of(entry.value());
+    @ModifyArg(method = "write", index = 1, at = @At(value = "INVOKE", target = "Lnet/minecraft/network/codec/PacketCodec;encode(Ljava/lang/Object;Ljava/lang/Object;)V"))
+    private Object replaceSound(Object entry) {
+        var entryT = (RegistryEntry<SoundEvent>)entry;
+        if (entryT.getType() == RegistryEntry.Type.REFERENCE && Util.isPolyMapVanillaLike(PacketContext.get().getClientConnection()) && !Util.isVanilla(entryT.getKey().get().getValue())) {
+            return RegistryEntry.of(entryT.value());
         }
         return entry;
     }

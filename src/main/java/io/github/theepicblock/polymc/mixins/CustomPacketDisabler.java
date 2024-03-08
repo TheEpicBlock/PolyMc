@@ -39,7 +39,7 @@ public class CustomPacketDisabler {
     public void sendPacketInject(Packet<?> packet, PacketCallbacks callbacks, CallbackInfo ci) {
         if (this instanceof PlayerAssociatedNetworkHandler player
                 && packet instanceof CustomPayloadS2CPacket && Util.isPolyMapVanillaLike(player.getPlayer())) {
-            Identifier channel = ((CustomPayloadS2CPacket) packet).payload().id();
+            Identifier channel = ((CustomPayloadS2CPacket) packet).payload().getId().id();
             if (!Util.isVanilla(channel)) {
                 ci.cancel();
             }

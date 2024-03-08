@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import net.minecraft.item.ArmorMaterial;
+import net.minecraft.registry.Registries;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -61,7 +62,8 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
         }
 
         // Do this entire thing twice for both armor layers
-        for (int layer = 1; layer <= 2; layer++) {
+        // Note: the material defines a list of layers. But each layer has two "inner" layers
+        for (int innerlayer = 1; innerlayer <= 2; innerlayer++) {
             int outputWidth = 64;
             int outputHeight = 32;
 
@@ -69,17 +71,25 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
 
             // Collect all modded textures and calculate the size of the output
             for (var material : material2Color.keySet()) {
+                var id = Objects.requireNonNull(Registries.ARMOR_MATERIAL.getId(material));
+
+                if (material.layers().size() != 1) {
+                    logger.warn("Couldn't generate material texture for "+id+"; PolyMc currently only supports a single layer. This material has "+material.layers().size()+" layers");
+                    continue;
+                }
+                var layer = material.layers().get(0);
+
                 try {
-                    var texturePath = "models/armor/" + material.getName() + "_layer_" + layer;
-                    var texture = moddedResources.getTexture("minecraft", texturePath);
+                    var textureId = layer.getTexture(innerlayer == 2);
+                    var texture = moddedResources.getTexture(textureId.getNamespace(), textureId.getPath());
                     if (texture == null) {
-                        logger.warn("Couldn't find armor texture for "+material.getName()+", it won't display correctly when worn");
+                        logger.warn("Couldn't find material texture for "+id+", it won't display correctly when worn");
                         continue;
                     }
 
                     var moddedImage = ImageIO.read(texture.getTexture());
                     if (moddedImage == null) {
-                        logger.warn("Couldn't read layer "+layer+" armor texture for "+material.getName());
+                        logger.warn("Couldn't read layer "+innerlayer+" material texture for "+id);
                         continue;
                     }
 
@@ -88,9 +98,9 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
                     outputWidth += moddedImage.getWidth();
 
                     // Write the modded armor textures standalone
-                    pack.setTexture("minecraft", texturePath, moddedResources.getTexture("minecraft", texturePath));
+                    pack.setTexture(textureId.getNamespace(), textureId.getPath(), texture);
                 } catch (IOException e) {
-                    logger.error("Couldn't read armor texture "+material.getName()+" (layer #"+layer+")");
+                    logger.error("Couldn't read material texture "+id+" (layer #"+innerlayer+")");
                     e.printStackTrace();
                 }
             }
@@ -100,10 +110,10 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
 
             // Write vanilla leather
             try {
-                var leatherTexture = ImageIO.read(Objects.requireNonNull(moddedResources.includeClientJar(logger).getInputStream("minecraft", "textures/models/armor/leather_layer_" + layer + ".png")));
+                var leatherTexture = ImageIO.read(Objects.requireNonNull(moddedResources.includeClientJar(logger).getInputStream("minecraft", "textures/models/armor/leather_layer_" + innerlayer + ".png")));
                 graphics.drawImage(leatherTexture, 0, 0, null);
 
-                var leatherOverlayTexture = ImageIO.read(Objects.requireNonNull(moddedResources.includeClientJar(logger).getInputStream("minecraft", "textures/models/armor/leather_layer_" + layer + "_overlay.png")));
+                var leatherOverlayTexture = ImageIO.read(Objects.requireNonNull(moddedResources.includeClientJar(logger).getInputStream("minecraft", "textures/models/armor/leather_layer_" + innerlayer + "_overlay.png")));
                 graphics.drawImage(leatherOverlayTexture, 0, 0, null);
             } catch (Exception e) {
                 logger.error("Error reading vanilla armor textures, please report this");
@@ -131,11 +141,11 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
             }
 
             // Add the output image to the resource pack
-            pack.setAsset("minecraft", "textures/models/armor/leather_layer_" + layer + ".png",
+            pack.setAsset("minecraft", "textures/models/armor/leather_layer_" + innerlayer + ".png",
                     (stream, gson) -> ImageIO.write(image, "png", stream));
 
             // Write something small to the overlay texture because apparently that's needed
-            pack.setAsset("minecraft", "textures/models/armor/leather_layer_" + layer + "_overlay.png",
+            pack.setAsset("minecraft", "textures/models/armor/leather_layer_" + innerlayer + "_overlay.png",
                     (stream, gson) -> ImageIO.write(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), "png", stream));
         }
 

@@ -3,38 +3,46 @@ package io.github.theepicblock.polymc.impl.poly.item;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
+
 public class PotionFixGlobalPoly implements ItemTransformer {
     @Override
     public ItemStack transform(ItemStack original, ItemStack input, PolyMap map, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
-        var i = input.getItem();
-        if (i == Items.POTION || i == Items.LINGERING_POTION || i == Items.SPLASH_POTION || i == Items.TIPPED_ARROW) {
-            var ret = input.copy();
-            var color = PotionUtil.getColor(ret);
-            ret.getOrCreateNbt().putInt(PotionUtil.CUSTOM_POTION_COLOR_KEY, color);
+        if (input.contains(DataComponentTypes.POTION_CONTENTS)) {
+            // Copy if needed
+            var output = original == input ? input.copy() : input;
+            var ogPotionComponent = output.get(DataComponentTypes.POTION_CONTENTS);
+            assert ogPotionComponent != null; // We just checked that the input contains this component
 
-            if (!input.hasCustomName()) {
-                // Set the name to what the server thinks the name is
-                var name = input.getName();
+            // The colour calculation will be wrong on the client, because custom potions will be missing
+            // So we do the calculation on the server and force that to be the colour
+            var colour = ogPotionComponent.getColor();
+            output.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(ogPotionComponent.potion(), Optional.of(colour), ogPotionComponent.customEffects()));
 
-                if (location != ItemLocation.TRACKED_DATA) {
+            // Potions also derive their default names from their potion data
+            // which will be invalid for custom potions
+            // So we should set the name to the correct one (if it doesn't already have a custom name)
+            var i = input.getItem();
+            if (i == Items.POTION || i == Items.LINGERING_POTION || i == Items.SPLASH_POTION || i == Items.TIPPED_ARROW) {
+                if (!input.contains(DataComponentTypes.CUSTOM_NAME) && location != ItemLocation.TRACKED_DATA) {
+                    var name = input.getName();
                     // Override the style to make sure the client does not render
                     // the custom name in italics, and uses the correct rarity format
                     if (name instanceof MutableText mutableText) {
                         mutableText.setStyle(name.getStyle().withItalic(false).withColor(input.getRarity().formatting));
                     }
-
-                    ret.setCustomName(name);
+                    output.set(DataComponentTypes.CUSTOM_NAME, name);
                 }
             }
-
-            return ret;
+            return output;
         }
 
         return input;

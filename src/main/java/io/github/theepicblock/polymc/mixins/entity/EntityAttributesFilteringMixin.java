@@ -14,17 +14,17 @@ import java.util.List;
 
 @Mixin(EntityAttributesS2CPacket.class)
 public abstract class EntityAttributesFilteringMixin {
-
-    @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeCollection(Ljava/util/Collection;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V", ordinal = 0))
-    private Collection<EntityAttributesS2CPacket.Entry> removeUnsupportedAttributes(Collection<EntityAttributesS2CPacket.Entry> value) {
-        var map = Util.tryGetPolyMap(PacketContext.get().getClientConnection());
-        List<EntityAttributesS2CPacket.Entry> list = new ArrayList<>();
-        for (EntityAttributesS2CPacket.Entry entry : value) {
-            if (map.canReceiveEntityAttribute(entry.getAttribute())) {
-                list.add(entry);
-            }
-        }
-
-        return list;
-    }
+    // TODO temporarily disabled whilst porting to 24w09a
+//    @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeCollection(Ljava/util/Collection;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V", ordinal = 0))
+//    private Collection<EntityAttributesS2CPacket.Entry> removeUnsupportedAttributes(Collection<EntityAttributesS2CPacket.Entry> value) {
+//        var map = Util.tryGetPolyMap(PacketContext.get().getClientConnection());
+//        List<EntityAttributesS2CPacket.Entry> list = new ArrayList<>();
+//        for (EntityAttributesS2CPacket.Entry entry : value) {
+//            if (map.canReceiveEntityAttribute(entry.getAttribute())) {
+//                list.add(entry);
+//            }
+//        }
+//
+//        return list;
+//    }
 }

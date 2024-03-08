@@ -252,7 +252,7 @@ public class BlockPolyGenerator {
         }
 
         //=== FARMLAND-LIKE BLOCKS ===
-        if (Util.areEqual(collisionShape, Blocks.FARMLAND.getCollisionShape(Blocks.FARMLAND.getDefaultState(), fakeWorld, BlockPos.ORIGIN, ShapeContext.absent()))) {
+        if (Util.areEqual(collisionShape, Blocks.FARMLAND.getDefaultState().getCollisionShape(fakeWorld, BlockPos.ORIGIN, ShapeContext.absent()))) {
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.FARMLAND_PROFILE, modelId);
@@ -260,7 +260,7 @@ public class BlockPolyGenerator {
         }
 
         //=== CACTUS-LIKE BLOCKS ===
-        if (Util.areEqual(collisionShape, Blocks.CACTUS.getCollisionShape(Blocks.CACTUS.getDefaultState(), fakeWorld, BlockPos.ORIGIN, ShapeContext.absent()))) {
+        if (Util.areEqual(collisionShape, Blocks.CACTUS.getDefaultState().getCollisionShape(fakeWorld, BlockPos.ORIGIN, ShapeContext.absent()))) {
             try {
                 isUniqueCallback.set(true);
                 return manager.requestBlockState(BlockStateProfile.CACTUS_PROFILE, modelId);

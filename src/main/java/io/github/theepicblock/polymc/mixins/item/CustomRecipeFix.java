@@ -37,17 +37,18 @@ import java.util.stream.Collectors;
  */
 @Mixin(SynchronizeRecipesS2CPacket.class)
 public class CustomRecipeFix {
-    /**
-     * Modifies the recipes to remove custom serializers (which will crash vanilla clients).
-     */
-    @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeCollection(Ljava/util/Collection;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V"))
-    public Collection<RecipeEntry<?>> modifyRecipes(Collection<RecipeEntry<?>> input) {
-        if (!Util.isPolyMapVanillaLike(PacketContext.get().getClientConnection())) {
-            return input;
-        }
-
-        return input.stream() // Remove non-vanilla serializers using streams. TODO can be done more efficiently, maybe with a custom iterator
-                .filter(recipe -> Util.isVanilla(Registries.RECIPE_SERIALIZER.getId(recipe.value().getSerializer())))
-                .collect(Collectors.toList());
-    }
+    // TODO temporarily disabled whilst porting to 24w09a
+//    /**
+//     * Modifies the recipes to remove custom serializers (which will crash vanilla clients).
+//     */
+//    @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/RegistryByteBuf;writeCollection(Ljava/util/Collection;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V"))
+//    public Collection<RecipeEntry<?>> modifyRecipes(Collection<RecipeEntry<?>> input) {
+//        if (!Util.isPolyMapVanillaLike(PacketContext.get().getClientConnection())) {
+//            return input;
+//        }
+//
+//        return input.stream() // Remove non-vanilla serializers using streams. TODO can be done more efficiently, maybe with a custom iterator
+//                .filter(recipe -> Util.isVanilla(Registries.RECIPE_SERIALIZER.getId(recipe.value().getSerializer())))
+//                .collect(Collectors.toList());
+//    }
 }

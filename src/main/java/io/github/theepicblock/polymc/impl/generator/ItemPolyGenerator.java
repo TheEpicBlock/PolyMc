@@ -64,17 +64,19 @@ public class ItemPolyGenerator {
             return new DamageableItemPoly(cmdManager, item, Items.BOW);
         }
         if (item.isDamageable()) {
-            if (item instanceof DyeableItem) {
-                return new DamageableItemPoly(cmdManager, item, CustomModelDataManager.DYABLE_DAMAGABLE_ITEMS);
-            }
+            // TODO during 1.20.5 updating. Best solution would be to check if there's an ItemColorProvider registered
+//            if (item instanceof DyeableItem) {
+//                return new DamageableItemPoly(cmdManager, item, CustomModelDataManager.DYABLE_DAMAGABLE_ITEMS);
+//            }
             return new DamageableItemPoly(cmdManager, item);
         }
         if (item.isFood()) {
             return new CustomModelDataPoly(cmdManager, item, CustomModelDataManager.FOOD_ITEMS);
         }
-        if (item instanceof DyeableItem) {
-            return new CustomModelDataPoly(cmdManager, item, Items.LEATHER_HORSE_ARMOR);
-        }
+        // TODO during 1.20.5 updating. Best solution would be to check if there's an ItemColorProvider registered
+//        if (item instanceof DyeableItem) {
+//            return new CustomModelDataPoly(cmdManager, item, Items.LEATHER_HORSE_ARMOR);
+//        }
         if (item instanceof BlockItem blockItem) {
             if (AbstractFurnaceBlockEntity.canUseAsFuel(new ItemStack(item))) {
                 return new PlaceableItemPoly(cmdManager, item, CustomModelDataManager.FUEL_ITEMS);

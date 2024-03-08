@@ -1,5 +1,5 @@
 plugins {
-	id 'org.quiltmc.loom' version '1.4.+'
+	id 'fabric-loom' version '1.5-SNAPSHOT'
 	id 'maven-publish'
 	id 'org.ajoberstar.grgit' version '4.1.0'
 }
@@ -19,6 +19,7 @@ repositories {
 		url "https://maven.theepicblock.nl"
 		content {
 			includeGroup("nl.theepicblock")
+			includeGroup("xyz.nucleoid") // Temporary for 1.20.5 snapshots (thanks Drex :D)
 		}
 	}
 	maven {
@@ -41,13 +42,9 @@ dependencies {
 	//to change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "org.quiltmc:quilt-loader:${project.loader_version}"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
 		exclude group: 'net.fabricmc', module: 'fabric-loader'
-	}
-
-	modCompileOnly("org.quiltmc.qsl.core:registry:${project.qsl_version}") {
-		transitive(false)
 	}
 
 	modImplementation include("nl.theepicblock:resource-locator-api:${project.resource_locator_api_version}") {
@@ -70,8 +67,9 @@ dependencies {
 		exclude group: 'net.fabricmc', module: 'fabric-loader'
 		transitive(false)
 	}
-
-	implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.2"))
+//	modCompileOnly("org.quiltmc.qsl.core:registry:${project.qsl_version}") {
+//		transitive(false)
+//	}
 }
 
 sourceSets {
@@ -86,6 +84,18 @@ sourceSets {
 }
 
 loom {
+	mods {
+		"polymc-datagen" {
+			sourceSet("datagen")
+		}
+		"polymc" {
+			sourceSet("main")
+		}
+		"polymc-testmod" {
+			sourceSet("testmod")
+		}
+	}
+
 	runs {
 		testmodClient {
 			client()

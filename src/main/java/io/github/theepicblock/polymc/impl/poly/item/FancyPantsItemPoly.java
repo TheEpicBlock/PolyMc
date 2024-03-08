@@ -3,6 +3,8 @@ package io.github.theepicblock.polymc.impl.poly.item;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.DyedColorComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
@@ -17,7 +19,7 @@ public class FancyPantsItemPoly extends DamageableItemPoly {
     public FancyPantsItemPoly(PolyRegistry registry, ArmorItem base, Item replacementItem) {
         super(registry.getSharedValues(CustomModelDataManager.KEY), base, replacementItem);
 
-        ArmorMaterial material = base.getMaterial();
+        ArmorMaterial material = base.getMaterial().value();
         int color;
         try {
             color = registry.getSharedValues(ArmorColorManager.KEY).getColorForMaterial(material);
@@ -44,9 +46,7 @@ public class FancyPantsItemPoly extends DamageableItemPoly {
     @Override
     protected void addCustomTagsToItem(ItemStack stack, Item moddedBase) {
         super.addCustomTagsToItem(stack, moddedBase);
-        NbtCompound nbt = stack.getOrCreateSubNbt("display");
-        nbt.putInt("color", this.color);
-        stack.addHideFlag(ItemStack.TooltipSection.DYE);
+        stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(this.color, false));
     }
 
     public static void onFirstRegister(PolyRegistry registry) {
@@ -54,11 +54,11 @@ public class FancyPantsItemPoly extends DamageableItemPoly {
         var armorManager = registry.getSharedValues(ArmorColorManager.KEY);
         for (var leatherItem : new Item[]{Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS}) {
             registry.registerItemPoly(leatherItem, (stack, player, location) -> {
-                var dyeableItem = (DyeableItem)stack.getItem();
-                if (armorManager.hasColor(dyeableItem.getColor(stack))) {
+                var colour = stack.get(DataComponentTypes.DYED_COLOR);
+                if (colour != null && armorManager.hasColor(colour.rgb())) {
                     var copy = stack.copy();
                     // There should only be a modded armor piece every other color value
-                    dyeableItem.setColor(copy, dyeableItem.getColor(stack)-1);
+                    copy.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(colour.rgb()-1, colour.showInTooltip()));
                     return copy;
                 }
                 return stack;

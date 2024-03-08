@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(PalettedContainer.Data.class)
 public class IdListImplementation {
     @Redirect(method = "writePacket", at = @At(value = "FIELD", opcode = Opcodes.GETFIELD, target = "Lnet/minecraft/world/chunk/PalettedContainer$Data;storage:Lnet/minecraft/util/collection/PaletteStorage;"))
-    private PaletteStorage getData(PalettedContainer.Data container, PacketByteBuf buf)  {
+    private PaletteStorage getData(PalettedContainer.Data<?> container, PacketByteBuf buf)  {
         var originalStorage = container.storage();
 
         if (!(container.palette() instanceof IdListPalette<?>)) {

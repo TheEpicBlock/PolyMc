@@ -23,10 +23,11 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.mixin.BlockStateDuck;
-import io.github.theepicblock.polymc.mixins.ItemStackAccessor;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.registry.Registries;
@@ -274,11 +275,6 @@ public class Util {
         return new BlockPos(index & 0xF, (index >> 8) & 0xF, (index >> 4) & 0xF);
     }
 
-    public static boolean isSectionVisible(ItemStack stack, ItemStack.TooltipSection tooltipSection) {
-        int flags = ((ItemStackAccessor)(Object)stack).callGetHideFlags();
-        return ItemStackAccessor.callIsSectionVisible(flags, tooltipSection);
-    }
-
     /**
      * @return null if the id can't be parsed or the string is null
      */
@@ -291,5 +287,13 @@ public class Util {
         try (var writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
             gson.toJson(json, writer);
         }
+    }
+
+    /**
+     * Returns a copy of the provided {@link ItemStack}, but with the item set to the target item.
+     */
+    public static ItemStack copyWithItem(ItemStack original, Item target) {
+        // TODO, the returned stack should ideally contain the default components of the original too
+        return original.copyComponentsToNewStack(target, original.getCount());
     }
 }

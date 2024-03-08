@@ -6,6 +6,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryEntryInfo;
 import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.registry.entry.RegistryEntryOwner;
 import net.minecraft.registry.tag.TagKey;
@@ -65,8 +66,8 @@ public record FakeRegistry<T>(RegistryKey<? extends Registry<T>> registryKey, Id
     }
 
     @Override
-    public Lifecycle getEntryLifecycle(T entry) {
-        return Lifecycle.experimental();
+    public Optional<RegistryEntryInfo> getEntryInfo(RegistryKey<T> key) {
+        return Optional.empty();
     }
 
     @Override
@@ -116,6 +117,11 @@ public record FakeRegistry<T>(RegistryKey<? extends Registry<T>> registryKey, Id
 
     @Override
     public Optional<RegistryEntry.Reference<T>> getEntry(int rawId) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<RegistryEntry.Reference<T>> getEntry(Identifier id) {
         return Optional.empty();
     }
 

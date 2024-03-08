@@ -7,6 +7,7 @@ import io.netty.util.internal.shaded.org.jctools.util.UnsafeAccess;
 import it.unimi.dsi.fastutil.objects.ObjectIterators;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageScaling;
 import net.minecraft.entity.damage.DamageSources;
@@ -96,7 +97,7 @@ public final class FakeWorld extends World implements LightSourceView {
             return Stream.empty();
         }
     };
-    static final RecipeManager RECIPE_MANAGER = new RecipeManager();
+    static final RecipeManager RECIPE_MANAGER = new RecipeManager(REGISTRY_MANAGER);
     private static final FeatureSet FEATURES = FeatureFlags.FEATURE_MANAGER.getFeatureSet();
     private static final TickManager TICK_MANAGER = new TickManager();
     final ChunkManager chunkManager = new ChunkManager() {
@@ -218,7 +219,6 @@ public final class FakeWorld extends World implements LightSourceView {
             accessor.polymc$setProfiler(() -> new ProfilerSystem(() -> 0l, () -> 0, false));
             accessor.polymc$setProperties(new FakeWorldProperties());
             accessor.polymc$setRegistryKey(RegistryKey.of(RegistryKeys.WORLD, new Identifier("polymer","fake_world")));
-            accessor.polymc$setDimensionKey(DimensionTypes.OVERWORLD);
             accessor.polymc$setDimensionEntry(dimType);
             accessor.polymc$setThread(Thread.currentThread());
             accessor.polymc$setRandom(Random.create());
@@ -307,18 +307,18 @@ public final class FakeWorld extends World implements LightSourceView {
 
     @Nullable
     @Override
-    public MapState getMapState(String id) {
+    public MapState getMapState(MapIdComponent id) {
         return null;
     }
 
     @Override
-    public void putMapState(String id, MapState state) {
+    public void putMapState(MapIdComponent id, MapState state) {
 
     }
 
     @Override
-    public int getNextMapId() {
-        return 0;
+    public MapIdComponent getNextMapId() {
+        return new MapIdComponent(0);
     }
 
     @Override
@@ -362,12 +362,7 @@ public final class FakeWorld extends World implements LightSourceView {
     }
 
     @Override
-    public void emitGameEvent(GameEvent event, Vec3d pos, @Nullable GameEvent.Emitter emitter) {
-
-    }
-
-    @Override
-    public void emitGameEvent(@Nullable Entity entity, GameEvent event, BlockPos pos) {
+    public void emitGameEvent(RegistryEntry<GameEvent> event, Vec3d emitterPos, GameEvent.Emitter emitter) {
 
     }
 
@@ -408,45 +403,14 @@ public final class FakeWorld extends World implements LightSourceView {
 
 
     static class FakeWorldProperties implements MutableWorldProperties {
-
         @Override
-        public int getSpawnX() {
-            return 0;
-        }
-
-        @Override
-        public void setSpawnX(int spawnX) {
-
-        }
-
-        @Override
-        public int getSpawnY() {
-            return 0;
-        }
-
-        @Override
-        public void setSpawnY(int spawnY) {
-
-        }
-
-        @Override
-        public int getSpawnZ() {
-            return 0;
-        }
-
-        @Override
-        public void setSpawnZ(int spawnZ) {
-
+        public BlockPos getSpawnPos() {
+            return BlockPos.ORIGIN;
         }
 
         @Override
         public float getSpawnAngle() {
             return 0;
-        }
-
-        @Override
-        public void setSpawnAngle(float angle) {
-
         }
 
         @Override
@@ -492,6 +456,11 @@ public final class FakeWorld extends World implements LightSourceView {
         @Override
         public boolean isDifficultyLocked() {
             return false;
+        }
+
+        @Override
+        public void setSpawnPos(BlockPos pos, float angle) {
+
         }
     }
 }

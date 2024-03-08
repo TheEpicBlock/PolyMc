@@ -17,14 +17,13 @@
  */
 package io.github.theepicblock.polymc.mixins.block;
 
+import io.github.theepicblock.polymc.impl.misc.BlockBreakingUtil;
+import io.github.theepicblock.polymc.impl.mixin.BlockBreakingDuck;
 import io.github.theepicblock.polymc.impl.mixin.CustomBlockBreakingCheck;
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntityStatusEffectS2CPacket;
-import net.minecraft.network.packet.s2c.play.RemoveEntityStatusEffectS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
@@ -45,7 +44,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * These mixins give vanilla-like clients mining fatigue and reimplement the block breaking server-side.
  */
 @Mixin(ServerPlayerInteractionManager.class)
-public abstract class BlockBreakingPatch {
+public abstract class BlockBreakingPatch implements BlockBreakingDuck {
     @Shadow @Final protected ServerPlayerEntity player;
     @Shadow private int tickCounter;
     @Shadow private int startMiningTime;
@@ -55,11 +54,10 @@ public abstract class BlockBreakingPatch {
     @Unique
     private int blockBreakingCooldown;
     @Unique
-    private boolean hasMineFatigue = false;
+    private boolean isBreakingServerside = false;
 
     @Shadow
     public abstract void finishMining(BlockPos pos, int sequence, String reason);
-
 
     /**
      * This breaks the block serverside if the client hasn't broken it already
@@ -96,15 +94,14 @@ public abstract class BlockBreakingPatch {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
                 // This prevents the client from trying to break the block themselves.
                 if (this.world.getBlockState(pos).calcBlockBreakingDelta(this.player, this.player.getWorld(), pos) < 1) {
-                    hasMineFatigue = true;
-                    player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(this.player.getId(), new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20, -1, true, false)));
+                    disableClientBreaking();
                 }
             } else if (action == PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK) {
-                removeFakeMiningFatigue();
+                enableClientBreaking();
                 player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(-1, pos, -1));
             }
-        } else if (hasMineFatigue) {
-            removeFakeMiningFatigue();
+        } else if (isBreakingServerside) {
+            enableClientBreaking();
         }
     }
 
@@ -114,25 +111,33 @@ public abstract class BlockBreakingPatch {
             if (action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
                 this.startMiningTime += blockBreakingCooldown;
             }
-        } else if (hasMineFatigue) {
-            removeFakeMiningFatigue();
+        } else if (isBreakingServerside) {
+            enableClientBreaking();
         }
     }
 
     @Inject(method = "finishMining", at = @At("HEAD"))
     private void clearEffects(BlockPos pos, int sequence, String reason, CallbackInfo ci) {
-        if (hasMineFatigue) {
-            removeFakeMiningFatigue();
+        if (isBreakingServerside) {
+            enableClientBreaking();
         }
     }
 
     @Unique
-    private void removeFakeMiningFatigue() {
-        player.networkHandler.sendPacket(new RemoveEntityStatusEffectS2CPacket(player.getId(), StatusEffects.MINING_FATIGUE));
+    private void disableClientBreaking() {
+        isBreakingServerside = true;
+        // Make sure it's resynced
+        this.player.getAttributes().getTracked().add(this.player.getAttributeInstance(EntityAttributes.PLAYER_BLOCK_BREAK_SPEED));
+    }
 
-        var effectInstance = this.player.getStatusEffect(StatusEffects.MINING_FATIGUE);
-        if (effectInstance != null) {
-            player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(this.player.getId(), effectInstance));
-        }
+    @Unique
+    private void enableClientBreaking() {
+        isBreakingServerside = false;
+        BlockBreakingUtil.sendBreakDisabler(this.player);
+    }
+
+    @Override
+    public boolean polymc$isBreakingServerside() {
+        return this.isBreakingServerside;
     }
 }

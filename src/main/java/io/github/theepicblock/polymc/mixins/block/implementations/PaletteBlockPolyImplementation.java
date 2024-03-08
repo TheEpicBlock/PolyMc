@@ -44,7 +44,6 @@ public abstract class PaletteBlockPolyImplementation {
             var player = ChunkPacketStaticHack.player.get();
 
             PolyMap map = Util.tryGetPolyMap(player);
-            //noinspection unchecked
             return map.getClientStateRawId((BlockState)object, player);
         }
 

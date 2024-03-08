@@ -30,12 +30,13 @@ import xyz.nucleoid.packettweaker.PacketContext;
 /**
  * This is the class responsible for replacing the serverside items with the clientside items
  */
-@Mixin(PacketByteBuf.class)
+@Mixin(targets = "net/minecraft/item/ItemStack$1")
 public class ItemPolyImplementation {
-    @ModifyVariable(method = "writeItemStack(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/network/PacketByteBuf;", at = @At("HEAD"), argsOnly = true)
-    public ItemStack writeItemStackHook(ItemStack itemStack) {
+    @ModifyVariable(method = "encode(Lnet/minecraft/network/RegistryByteBuf;Lnet/minecraft/item/ItemStack;)V", at = @At("HEAD"), ordinal = 0, argsOnly = true)
+    private ItemStack writeItemStackHook(ItemStack itemStack) {
         var ctx = PacketContext.get();
         var map = Util.tryGetPolyMap(ctx.getClientConnection());
         return map.getClientItem(itemStack, ctx.getPlayer(), ItemLocationStaticHack.location.get());
+
     }
 }

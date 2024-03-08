@@ -58,8 +58,7 @@ public class ItemEncodeTests implements FabricGameTest {
                                     ctx.assertTrue(newStack.getItem() != originalStack.getItem(), "Item should've been transformed by PolyMc. Result: "+newStack);
                                 }
                                 ctx.assertTrue(newStack.getCount() == 5, "PolyMc shouldn't affect itemcount");
-                                ctx.assertTrue(ItemStack.areItemsEqual(originalStack, copyOfOriginal), "PolyMc shouldn't affect the original item");
-                                ctx.assertTrue(Objects.equals(originalStack.getNbt(), copyOfOriginal.getNbt()), "PolyMc shouldn't affect the original item's nbt");
+                                ctx.assertTrue(ItemStack.areItemsAndComponentsEqual(originalStack, copyOfOriginal), "PolyMc shouldn't affect the original item");
 
                                 packetCtx.close();
                                 ctx.complete();
@@ -90,7 +89,7 @@ public class ItemEncodeTests implements FabricGameTest {
                 .map(p -> (EntityTrackerUpdateS2CPacket)p)
                 .filter(p -> p.id() == entity.getId())
                 .flatMap(p -> p.trackedValues().stream())
-                .filter(p -> p.id() == ItemEntityAccessor.getStackTracker().getId())
+                .filter(p -> p.id() == ItemEntityAccessor.getStackTracker().id())
                 .findAny();
 
         return (ItemStack)(entry.orElseThrow().value());

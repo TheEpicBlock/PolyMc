@@ -12,14 +12,14 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 @Mixin(PacketByteBuf.class)
 public class WriteRegistryValueImplementation {
-
-    @ModifyVariable(method = "writeRegistryValue", at = @At("HEAD"), argsOnly = true)
-    private <T> T redirectBlock(T original, IndexedIterable<T> registry) {
-        if (registry == Block.STATE_IDS) {
-            var ctx = PacketContext.get();
-            var polymap = Util.tryGetPolyMap(ctx.getClientConnection());
-            return (T)polymap.getClientState((BlockState)original, ctx.getPlayer());
-        }
-        return original;
-    }
+    // TODO temporarily disabled whilst porting to 24w09a
+//    @ModifyVariable(method = "writeRegistryValue", at = @At("HEAD"), argsOnly = true)
+//    private <T> T redirectBlock(T original, IndexedIterable<T> registry) {
+//        if (registry == Block.STATE_IDS) {
+//            var ctx = PacketContext.get();
+//            var polymap = Util.tryGetPolyMap(ctx.getClientConnection());
+//            return (T)polymap.getClientState((BlockState)original, ctx.getPlayer());
+//        }
+//        return original;
+//    }
 }
