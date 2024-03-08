@@ -27,10 +27,10 @@ import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Property;
@@ -70,6 +70,10 @@ public class Util {
     public static boolean isVanilla(Identifier id) {
         if (id == null) return false;
         return isNamespaceVanilla(id.getNamespace());
+    }
+
+    public static boolean isVanillaAndRegistered(RegistryEntry<?> v) {
+        return v.getKey().isEmpty() && Util.isVanilla(v.getKey().get().getValue());
     }
 
     /**

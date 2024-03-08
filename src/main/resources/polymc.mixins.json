@@ -62,6 +62,7 @@
     "item.ItemEnchantmentsComponentAccessor",
     "item.ItemPolyImplementation",
     "item.ItemStackAccessor",
+    "item.codec.DontSendCustomPotions",
     "item.locationproviders.EntityEquipmentLocationProvider",
     "item.locationproviders.InventoryLocationProvider",
     "item.locationproviders.ScreenHandlerLocationProvider",
