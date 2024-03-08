@@ -3,6 +3,7 @@ package nl.theepicblock.polymc.testmod.automated;
 import io.github.theepicblock.polymc.impl.NOPPolyMap;
 import io.github.theepicblock.polymc.mixins.wizards.ItemEntityAccessor;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -16,7 +17,6 @@ import nl.theepicblock.polymc.testmod.Testmod;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Objects;
 
 public class ItemEncodeTests implements FabricGameTest {
     @CustomTestProvider
@@ -54,6 +54,8 @@ public class ItemEncodeTests implements FabricGameTest {
 
                                 if (isItemVanilla || useNopMap) {
                                     ctx.assertTrue(newStack.getItem() == originalStack.getItem(), "Item shouldn't have been transformed by PolyMc. Result: "+newStack);
+                                    ctx.assertFalse(newStack.contains(DataComponentTypes.CUSTOM_DATA), "PolyMc shouldn't add data when it's not transforming");
+                                    ctx.assertTrue(ItemStack.areItemsAndComponentsEqual(newStack, originalStack), "PolyMc should not influence stacks in any way if it's not transforming");
                                 } else {
                                     ctx.assertTrue(newStack.getItem() != originalStack.getItem(), "Item should've been transformed by PolyMc. Result: "+newStack);
                                 }

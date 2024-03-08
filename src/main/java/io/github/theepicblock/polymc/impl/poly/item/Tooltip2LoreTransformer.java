@@ -3,37 +3,23 @@ package io.github.theepicblock.polymc.impl.poly.item;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
-import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.poly.wizard.UnsafeEntityUtil;
 import io.github.theepicblock.polymc.mixins.item.ArmorTrimAccessor;
 import io.github.theepicblock.polymc.mixins.item.ItemEnchantmentsComponentAccessor;
 import io.github.theepicblock.polymc.mixins.item.ItemStackAccessor;
-import net.jpountz.util.UnsafeUtils;
 import net.minecraft.client.item.TooltipContext;
-import net.minecraft.component.DataComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.component.type.LoreComponent;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.*;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.trim.ArmorTrim;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.text.Texts;
-import org.apache.logging.log4j.core.util.internal.UnsafeUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public class Tooltip2LoreTransformer implements ItemTransformer {
@@ -49,21 +35,38 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
     }
 
     private static boolean shouldPort(ItemStack stack) {
-        // Components which:
+        // Checks for components which:
         //  - Add things to the tooltip
         //  - Don't generate said tooltip correctly for modded content
-        var componentTypes = new DataComponentType[]{
-                DataComponentTypes.TRIM,
-                DataComponentTypes.STORED_ENCHANTMENTS,
-                DataComponentTypes.ENCHANTMENTS,
-                DataComponentTypes.ATTRIBUTE_MODIFIERS,
-        };
+        // Note that these components are a slightly different set from those in `portToLore`. Since that
+        // method has to process a continuous block
 
-        for (var type : componentTypes) {
-            if (stack.contains(type)) {
-                return true;
-            }
+        // This method checks the following components:
+        //   - DataComponentTypes.TRIM,
+        //   - DataComponentTypes.STORED_ENCHANTMENTS,
+        //   - DataComponentTypes.ENCHANTMENTS,
+        //   - DataComponentTypes.ATTRIBUTE_MODIFIERS,
+
+        var trim = stack.get(DataComponentTypes.TRIM);
+        if (trim != null) {
+            return true;
         }
+
+        var stored_enchants = stack.get(DataComponentTypes.STORED_ENCHANTMENTS);
+        if (stored_enchants != null && !stored_enchants.isEmpty()) {
+            return true;
+        }
+
+        var enchants = stack.get(DataComponentTypes.ENCHANTMENTS);
+        if (enchants != null && !enchants.isEmpty()) {
+            return true;
+        }
+
+        var attributes = stack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+        if (attributes != null && attributes.showInTooltip() && !attributes.modifiers().isEmpty()) {
+            return true;
+        }
+
         return false;
     }
 
