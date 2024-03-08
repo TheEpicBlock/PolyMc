@@ -19,7 +19,6 @@ import net.minecraft.util.math.BlockPos;
 import nl.theepicblock.polymc.testmod.Testmod;
 import nl.theepicblock.polymc.testmod.YellowStatusEffect;
 
-import java.util.List;
 import java.util.Objects;
 
 public class MiscTests implements FabricGameTest {
@@ -98,13 +97,17 @@ public class MiscTests implements FabricGameTest {
         var serverPotion = testPotion();
         var clientPotion = map.getClientItem(serverPotion, null, ItemLocation.INVENTORY);
 
-        YellowStatusEffect.SIMULATE_UNAVAILABLE = true;
-        var clientPotionData = clientPotion.get(DataComponentTypes.POTION_CONTENTS);
-        TestUtil.assertNonNull(clientPotionData, "polyd potions should still have potion data");
-        TestUtil.assertEq(clientPotionData.getColor(), 0xf4e42c, "potion should be yellow");
-        TestUtil.assertEq(clientPotion.getName().getLiteralString(), serverPotion.getName().getLiteralString());
-        YellowStatusEffect.SIMULATE_UNAVAILABLE = false;
+        try {
+            YellowStatusEffect.SIMULATE_UNAVAILABLE = true;
+            var clientPotionData = clientPotion.get(DataComponentTypes.POTION_CONTENTS);
+            TestUtil.assertNonNull(clientPotionData, "polyd potions should still have potion data");
+            TestUtil.assertEq(clientPotionData.getColor(), 0xf4e42c, "potion should be yellow");
+            TestUtil.assertEq(clientPotion.getName().getLiteralString(), serverPotion.getName().getLiteralString());
 
+            TestUtil.assertDifferent(serverPotion.get(DataComponentTypes.POTION_CONTENTS).customColor(), 0xf4e42c, "Untransformed item should be broken. This test may be invalid");
+        } finally {
+            YellowStatusEffect.SIMULATE_UNAVAILABLE = false;
+        }
         ctx.complete();
     }
 
@@ -118,15 +121,18 @@ public class MiscTests implements FabricGameTest {
         var packetTester = new PacketTester(ctx);
         var clientPotion = packetTester.reencode(new InventoryS2CPacket(0,0, DefaultedList.of(), serverPotion)).getCursorStack();
 
-        YellowStatusEffect.SIMULATE_UNAVAILABLE = true;
-        TestUtil.assertTrue(
-                clientPotion.getTooltip(null, TooltipContext.Default.BASIC)
-                        .stream()
-                        .map(Text::getLiteralString)
-                        .filter(Objects::nonNull)
-                        .anyMatch(str -> str.contains("test_effect")),
-                "Tooltip should make some reference to the contained effect");
-        YellowStatusEffect.SIMULATE_UNAVAILABLE = false;
+        try {
+            YellowStatusEffect.SIMULATE_UNAVAILABLE = true;
+            TestUtil.assertTrue(
+                    clientPotion.getTooltip(null, TooltipContext.Default.BASIC)
+                            .stream()
+                            .map(Text::getLiteralString)
+                            .filter(Objects::nonNull)
+                            .anyMatch(str -> str.contains("test_effect")),
+                    "Tooltip should make some reference to the contained effect");
+        } finally {
+            YellowStatusEffect.SIMULATE_UNAVAILABLE = false;
+        }
 
         packetTester.close();
         ctx.complete();
