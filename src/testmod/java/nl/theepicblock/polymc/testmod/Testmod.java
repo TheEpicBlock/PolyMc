@@ -120,6 +120,11 @@ public class Testmod implements ModInitializer {
         Registry.register(Registries.ENCHANTMENT, id("test_enchantment"), new TestEnchantment());
 
         CommandRegistrationCallback.EVENT.register(TestCommands::register);
+
+        var e = Registries.POTION.getRawId(TEST_POTION_TYPE);
+        System.out.println("qwertgyuwgdyuyqw "+e);
+        e = Registries.STATUS_EFFECT.getRawId(TEST_EFFECT.value());
+        System.out.println("eeeeeeeeeeeeeeee "+e);
     }
 
     public static void debugSend(@Nullable PlayerEntity playerEntity, String text) {
