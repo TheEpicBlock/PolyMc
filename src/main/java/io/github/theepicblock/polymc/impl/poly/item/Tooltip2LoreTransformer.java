@@ -6,6 +6,7 @@ import io.github.theepicblock.polymc.api.item.ItemTransformer;
 import io.github.theepicblock.polymc.mixins.item.ArmorTrimAccessor;
 import io.github.theepicblock.polymc.mixins.item.ItemEnchantmentsComponentAccessor;
 import io.github.theepicblock.polymc.mixins.item.ItemStackAccessor;
+import it.unimi.dsi.fastutil.objects.AbstractReferenceList;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifiersComponent;
@@ -17,24 +18,29 @@ import net.minecraft.item.trim.ArmorTrim;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.Unit;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class Tooltip2LoreTransformer implements ItemTransformer {
+
     @Override
     public ItemStack transform(ItemStack original, ItemStack input, PolyMap polyMap, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
-        if (shouldPort(input)) {
+        var ctx = new TooltipContext.Default(false, player != null && player.isCreative());
+        if (shouldPort(input, player, ctx)) {
             // Copy if needed
             var output = original == input ? input.copy() : input;
-            portToLore(output, player, new TooltipContext.Default(false, player != null && player.isCreative()));
+            portToLore(output, player, ctx);
             return output;
         }
         return input;
     }
 
-    private static boolean shouldPort(ItemStack stack) {
+    private static boolean shouldPort(ItemStack stack, @Nullable ServerPlayerEntity player, TooltipContext ctx) {
         // Checks for components which:
         //  - Add things to the tooltip
         //  - Don't generate said tooltip correctly for modded content
@@ -42,10 +48,12 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
         // method has to process a continuous block
 
         // This method checks the following components:
-        //   - DataComponentTypes.TRIM,
-        //   - DataComponentTypes.STORED_ENCHANTMENTS,
-        //   - DataComponentTypes.ENCHANTMENTS,
-        //   - DataComponentTypes.ATTRIBUTE_MODIFIERS,
+        //   - DataComponentTypes.TRIM
+        //   - DataComponentTypes.STORED_ENCHANTMENTS
+        //   - DataComponentTypes.ENCHANTMENTS
+        //   - DataComponentTypes.ATTRIBUTE_MODIFIERS
+        //   - Anything done using Item#appendTooltip
+
 
         var trim = stack.get(DataComponentTypes.TRIM);
         if (trim != null) {
@@ -67,6 +75,13 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
             return true;
         }
 
+        // Check Item#appendTooltip
+        try {
+            stack.getItem().appendTooltip(stack, player == null ? null : player.getWorld(), CrashyList.INSTANCE, ctx);
+        } catch (TriedInsertException e) {
+            return true;
+        }
+
         return false;
     }
 
@@ -76,12 +91,13 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
      */
     public static void portToLore(ItemStack input, @Nullable PlayerEntity player, TooltipContext ctx) {
         // This function will reprocess the following components:
-        //   - DataComponentTypes.TRIM,
-        //   - DataComponentTypes.STORED_ENCHANTMENTS,
-        //   - DataComponentTypes.ENCHANTMENTS,
-        //   - DataComponentTypes.DYED_COLOR,
-        //   - DataComponentTypes.LORE,
-        //   - DataComponentTypes.ATTRIBUTE_MODIFIERS,
+        //   - Anything done using Item#appendTooltip
+        //   - DataComponentTypes.TRIM
+        //   - DataComponentTypes.STORED_ENCHANTMENTS
+        //   - DataComponentTypes.ENCHANTMENTS
+        //   - DataComponentTypes.DYED_COLOR
+        //   - DataComponentTypes.LORE
+        //   - DataComponentTypes.ATTRIBUTE_MODIFIERS
 
         // To avoid ordering issues, all of these will be processed as one block
         // This block should be continuous, and thus contains some components which wouldn't have needed to
@@ -111,6 +127,7 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
         // Precompute the lore
         // Should match the order of ItemStack#getTooltip
 
+        var hasAdditional = addAdditionalTooltip(input, player, append_function, ctx);
         invoker.callAppendTooltip(DataComponentTypes.TRIM, append_function, ctx);
         invoker.callAppendTooltip(DataComponentTypes.STORED_ENCHANTMENTS, append_function, ctx);
         invoker.callAppendTooltip(DataComponentTypes.ENCHANTMENTS, append_function, ctx);
@@ -120,6 +137,10 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
 
         /////////////////
         // Ensure that the components are showInTooltip = false
+
+        if (hasAdditional) {
+            input.set(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, Unit.INSTANCE);
+        }
 
         var trim = input.get(DataComponentTypes.TRIM);
         if (trim != null && ((ArmorTrimAccessor)trim).isShowInTooltip()) {
@@ -150,5 +171,40 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
         // Insert the LORE component
         // No need to set styledLines, it's not used for serialization
         input.set(DataComponentTypes.LORE, new LoreComponent(lore, null));
+    }
+
+    /**
+     * Adds tooltip lines appended by {@link net.minecraft.item.Item#appendTooltip(ItemStack, World, List, TooltipContext)}
+     *
+     * @return true if something was inserted
+     */
+    private static boolean addAdditionalTooltip(ItemStack stack, @Nullable PlayerEntity player, Consumer<Text> textConsumer, TooltipContext ctx) {
+        var list = new ArrayList<Text>();
+        stack.getItem().appendTooltip(stack, player == null ? null : player.getWorld(), list, ctx);
+        list.forEach(textConsumer);
+        return !list.isEmpty();
+    }
+
+    private static class CrashyList<T> extends AbstractReferenceList<T> {
+        public static final CrashyList<Text> INSTANCE = new CrashyList<>();
+
+        @Override
+        public int size() {
+            return 0;
+        }
+
+        @Override
+        public T get(int index) {
+            return null;
+        }
+
+        @Override
+        public void add(int index, T t) {
+            throw new TriedInsertException();
+        }
+    }
+
+    private static class TriedInsertException extends RuntimeException {
+
     }
 }

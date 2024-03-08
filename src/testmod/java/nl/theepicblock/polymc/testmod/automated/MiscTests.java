@@ -13,7 +13,6 @@ import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
 import net.minecraft.registry.Registries;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
-import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import nl.theepicblock.polymc.testmod.Testmod;
@@ -111,7 +110,7 @@ public class MiscTests implements FabricGameTest {
         ctx.complete();
     }
 
-    @GameTest(templateName = EMPTY_STRUCTURE, required = false)
+    @GameTest(templateName = EMPTY_STRUCTURE)
     public void potionItemTooltip(TestContext ctx) {
         var map = TestUtil.getMap();
         var serverPotion = testPotion();
@@ -126,9 +125,9 @@ public class MiscTests implements FabricGameTest {
             TestUtil.assertTrue(
                     clientPotion.getTooltip(null, TooltipContext.Default.BASIC)
                             .stream()
-                            .map(Text::getLiteralString)
+                            .map(Object::toString)
                             .filter(Objects::nonNull)
-                            .anyMatch(str -> str.contains("test_effect")),
+                            .anyMatch(str -> str.contains("effect.polymc-testmod.yellow_effect")),
                     "Tooltip should make some reference to the contained effect");
         } finally {
             YellowStatusEffect.SIMULATE_UNAVAILABLE = false;
