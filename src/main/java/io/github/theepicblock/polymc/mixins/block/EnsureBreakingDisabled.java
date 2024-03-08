@@ -13,14 +13,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EntityTrackerEntry.class)
-public class UnsureBreakingDisabled {
+public class EnsureBreakingDisabled {
     @Shadow @Final private Entity entity;
 
     @Inject(method = "syncEntityData", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/server/network/EntityTrackerEntry;sendSyncPacket(Lnet/minecraft/network/packet/Packet;)V", ordinal = 1))
     private void onSyncAttributes(CallbackInfo ci) {
         if (this.entity instanceof ServerPlayerEntity serverPlayer) {
             if (((BlockBreakingDuck)serverPlayer.interactionManager).polymc$isBreakingServerside()) {
-                // Send it again to unsure the correct value is still there
+                // Send it again to ensure the correct value is still there
                 BlockBreakingUtil.sendBreakDisabler(serverPlayer);
             }
         }
