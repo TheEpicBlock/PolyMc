@@ -1,25 +1,38 @@
 package io.github.theepicblock.polymc.mixins.block.implementations.forceintcontrol;
 
 import io.github.theepicblock.polymc.impl.Util;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.util.collection.IndexedIterable;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.Overwrite;
 import xyz.nucleoid.packettweaker.PacketContext;
 
-@Mixin(PacketByteBuf.class)
-public class WriteRegistryValueImplementation {
-    // TODO temporarily disabled whilst porting to 24w09a
-//    @Redirect(method = "writeRegistryValue", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IndexedIterable;getRawId(Ljava/lang/Object;)I"))
-//    private <T> int redirectBlock(IndexedIterable<T> instance, T t) {
-//        if (instance == Block.STATE_IDS) {
-//            var ctx = PacketContext.get();
-//            var polymap = Util.tryGetPolyMap(ctx.getClientConnection());
-//            return polymap.getClientStateRawId((BlockState)t, ctx.getPlayer());
-//        }
-//        return instance.getRawId(t);
-//    }
+import java.util.Objects;
+
+import static net.minecraft.network.codec.PacketCodecs.indexed;
+
+@Mixin(PacketCodecs.class)
+public interface WriteRegistryValueImplementation {
+    /**
+     * @author TheEpicBlock
+     * @reason There's only one int value that's actually written. And only one mod that can choose it.
+     *         A more compatible mixin is used if you don't enable the `forceBlockIdIntControl` config option
+     */
+    @Overwrite
+    static <T> PacketCodec<ByteBuf,T> entryOf(IndexedIterable<T> iterable) {
+        Objects.requireNonNull(iterable);
+        if (iterable == Block.STATE_IDS) {
+            return indexed(iterable::getOrThrow, state -> {
+                var ctx = PacketContext.get();
+                var polymap = Util.tryGetPolyMap(ctx.getClientConnection());
+                return polymap.getClientStateRawId((BlockState)state, ctx.getPlayer());
+            });
+        } else {
+            return indexed(iterable::getOrThrow, iterable::getRawIdOrThrow);
+        }
+    }
 }
