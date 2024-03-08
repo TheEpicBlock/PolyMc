@@ -12,6 +12,7 @@ import net.minecraft.test.TestContext;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.GameMode;
 
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -48,6 +49,10 @@ public class PacketTester implements Closeable {
 
     public void setMap(PolyMap map) {
         PolyMapProvider.get(this.playerEntity).setPolyMap(map);
+    }
+
+    public void setGameMode(GameMode v) {
+        this.playerEntity.interactionManager.changeGameMode(v);
     }
 
     public void clearPackets() {

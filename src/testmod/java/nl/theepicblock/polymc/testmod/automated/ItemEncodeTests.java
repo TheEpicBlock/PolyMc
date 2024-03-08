@@ -1,6 +1,7 @@
 package nl.theepicblock.polymc.testmod.automated;
 
 import io.github.theepicblock.polymc.impl.NOPPolyMap;
+import io.github.theepicblock.polymc.impl.PolyMapImpl;
 import io.github.theepicblock.polymc.mixins.wizards.ItemEntityAccessor;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.component.DataComponentTypes;
@@ -12,6 +13,7 @@ import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.test.CustomTestProvider;
 import net.minecraft.test.TestFunction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.GameMode;
 import nl.theepicblock.polymc.testmod.Testmod;
 
 import java.util.ArrayList;
@@ -42,6 +44,7 @@ public class ItemEncodeTests implements FabricGameTest {
                             (ctx) -> {
                                 // The actual test function
                                 var packetCtx = new PacketTester(ctx);
+                                packetCtx.setGameMode(GameMode.CREATIVE);
                                 if (useNopMap) {
                                     packetCtx.setMap(new NOPPolyMap());
                                 }
@@ -61,6 +64,9 @@ public class ItemEncodeTests implements FabricGameTest {
                                 }
                                 ctx.assertTrue(newStack.getCount() == 5, "PolyMc shouldn't affect itemcount");
                                 ctx.assertTrue(ItemStack.areItemsAndComponentsEqual(originalStack, copyOfOriginal), "PolyMc shouldn't affect the original item");
+
+                                ctx.assertTrue(ItemStack.areItemsAndComponentsEqual(originalStack, PolyMapImpl.recoverOriginalItem(newStack)),
+                                        "Item should survive round-trip (when player is in creative mode)");
 
                                 packetCtx.close();
                                 ctx.complete();
