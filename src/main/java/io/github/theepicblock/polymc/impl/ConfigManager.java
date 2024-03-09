@@ -172,10 +172,6 @@ public class ConfigManager {
         return ret;
     }
 
-    /**
-     * Gets the polymap needed to translate from server items to client items.
-     * @return the PolyMap
-     */
     public static Config getConfig() {
         if (config == null) {
             generateConfig();
