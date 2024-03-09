@@ -23,10 +23,7 @@ import io.github.theepicblock.polymc.impl.poly.block.ListOfSlabs;
 import io.github.theepicblock.polymc.impl.poly.block.PropertyRetainingReplacementPoly;
 import io.github.theepicblock.polymc.impl.poly.block.SimpleReplacementPoly;
 import net.minecraft.block.*;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.block.enums.SculkSensorPhase;
-import net.minecraft.block.enums.SlabType;
-import net.minecraft.block.enums.WallShape;
+import net.minecraft.block.enums.*;
 import net.minecraft.item.HoneycombItem;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
@@ -130,6 +127,7 @@ public class BlockStateProfile {
         int level = blockState.get(BeehiveBlock.HONEY_LEVEL);
         return level != 0 && level != BeehiveBlock.FULL_HONEY_LEVEL;
     };
+    private static final Predicate<BlockState> DOOR_FILTER = (blockState) -> getDoorCannonState(blockState) != blockState;
     private static final Predicate<BlockState> POWERED_FILTER = (blockState) -> blockState.get(Properties.POWERED) == true;
     private static final Predicate<BlockState> TRIGGERED_FILTER = (blockState) -> blockState.get(Properties.TRIGGERED) == true;
     private static final Predicate<BlockState> OPEN_FENCE_GATE_FILTER = POWERED_FILTER.and(state -> state.get(FenceGateBlock.OPEN) == true);
@@ -211,6 +209,7 @@ public class BlockStateProfile {
         }
         return input;
     });
+    private static final BiConsumer<Block,PolyRegistry> DOOR_BLOCK_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, BlockStateProfile::getDoorCannonState);
     private static final BiConsumer<Block,PolyRegistry> POWERED_BLOCK_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, (input) -> input.with(Properties.POWERED, false));
     private static final BiConsumer<Block,PolyRegistry> TRIGGERED_BLOCK_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, (input) -> input.with(Properties.TRIGGERED, false));
     private static final BiConsumer<Block,PolyRegistry> SNOWY_GRASS_ON_FIRST_REGISTER = (block, polyRegistry) -> polyRegistry.registerBlockPoly(block, input -> {
@@ -302,7 +301,7 @@ public class BlockStateProfile {
     public static final BlockStateProfile NO_COLLISION_PROFILE = combine("blocks without collisions", KELP_SUB_PROFILE, SAPLING_SUB_PROFILE, SUGARCANE_SUB_PROFILE, TRIPWIRE_SUB_PROFILE, SMALL_DRIPLEAF_SUB_PROFILE, OPEN_FENCE_GATE_PROFILE, PRESSURE_PLATE_PROFILE);
     public static final BlockStateProfile FARMLAND_PROFILE = newProfile("farmland", Blocks.FARMLAND, FARMLAND_FILTER, FARMLAND_ON_FIRST_REGISTER);
     public static final BlockStateProfile CACTUS_PROFILE = getProfileWithDefaultFilter("cactus", Blocks.CACTUS);
-    public static final BlockStateProfile DOOR_PROFILE = newProfile("door", DOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
+    public static final BlockStateProfile DOOR_PROFILE = newProfile("door", DOOR_BLOCKS, DOOR_FILTER, DOOR_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile TRAPDOOR_PROFILE = newProfile("trapdoor", TRAPDOOR_BLOCKS, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile METAL_DOOR_PROFILE = newProfile("metal door", Blocks.IRON_DOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
     public static final BlockStateProfile METAL_TRAPDOOR_PROFILE = newProfile("metal trapdoor", Blocks.IRON_TRAPDOOR, POWERED_FILTER, POWERED_BLOCK_ON_FIRST_REGISTER);
@@ -361,6 +360,19 @@ public class BlockStateProfile {
     private static boolean isStringUseable(BlockState state) {
         return  state.get(Properties.POWERED) == true ||
                 state.get(TripwireBlock.DISARMED) == true;
+    }
+
+    private static BlockState getDoorCannonState(BlockState input) {
+        input = input.with(Properties.POWERED, false);
+        var facing = input.get(DoorBlock.FACING);
+        if (facing == Direction.WEST || facing == Direction.EAST) {
+            // West and east are reserved for modded. Let's transform them into a south/north equivalent
+            var hinge = input.get(DoorBlock.HINGE);
+            input = input.with(DoorBlock.FACING, (hinge == DoorHinge.RIGHT ^ facing == Direction.WEST) ? Direction.NORTH : Direction.SOUTH);
+            input = input.cycle(DoorBlock.HINGE);
+            input = input.cycle(DoorBlock.OPEN);
+        }
+        return input;
     }
 
     public BlockStateProfile and(Predicate<BlockState> filter) {
