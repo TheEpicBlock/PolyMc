@@ -1,0 +1,45 @@
+.md-header {
+  background-image: url("https://theepicblock.github.io/PolyMc/assets/header.png");
+  background-repeat: repeat-x;
+  background-size: contain;
+  background-position-x: right;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.md-header::after {
+    background-image: url("https://theepicblock.github.io/PolyMc/assets/header_corner.svg");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position-x: right;
+    height: 100%;
+    width: 100%;
+    content: "";
+    position: absolute;
+    top: 0;
+    z-index: -1;
+}
+
+[data-md-color-scheme="default"] .md-header {
+  --md-primary-fg-color: #fff;
+  --md-primary-bg-color: rgba(0,0,0,.87);
+  color: black;
+}
+
+[data-md-color-scheme="slate"] .md-header {
+  --md-primary-fg-color: #546d78;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #98a7ff;
+}
+
+[data-md-color-scheme="slate"] .md-button {
+  color: #eee;
+  border-color: #4051b5;
+  --md-primary-fg-color: #4051b5;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .md-button--primary {
+  color: white;
+}
