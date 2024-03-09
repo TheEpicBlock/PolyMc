@@ -39,7 +39,7 @@ import java.util.List;
  */
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection", "JavadocReference"})
 public class Config {
-    public static final int LATEST_VERSION = 11;
+    public static final int LATEST_VERSION = 12;
     public MiscConfig misc;
     public boolean alwaysSendFullNbt;
     private int configVersion;
@@ -48,6 +48,7 @@ public class Config {
     public boolean enableWizardThreading;
     public boolean forceBlockIdIntControl;
     public int maxPacketsPerSecond;
+    public boolean blockItemMatching;
 
     public int getConfigVersion() {
         return configVersion;

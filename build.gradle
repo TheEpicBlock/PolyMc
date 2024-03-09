@@ -75,13 +75,21 @@ dependencies {
 }
 
 sourceSets {
+	common {
+		runtimeClasspath += main.runtimeClasspath
+		compileClasspath += main.compileClasspath
+	}
+	main {
+		runtimeClasspath += common.output
+		compileClasspath += common.output
+	}
 	testmod {
 		runtimeClasspath += main.runtimeClasspath + main.output
 		compileClasspath += main.compileClasspath + main.output
 	}
 	datagen {
-		runtimeClasspath += main.runtimeClasspath
-		compileClasspath += main.compileClasspath
+		runtimeClasspath += main.runtimeClasspath + common.output
+		compileClasspath += main.compileClasspath + common.output
 	}
 }
 

@@ -56,5 +56,10 @@
     "add": {
       "alwaysSendFullNbt": false
     }
+  },
+  "12": {
+    "add": {
+      "blockItemMatching": false
+    }
   }
 }

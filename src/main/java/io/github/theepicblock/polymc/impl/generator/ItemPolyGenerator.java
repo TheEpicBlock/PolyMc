@@ -21,6 +21,8 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.item.CustomModelDataManager;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
+import io.github.theepicblock.polymc.common.BlockItemType;
+import io.github.theepicblock.polymc.impl.ConfigManager;
 import io.github.theepicblock.polymc.impl.poly.item.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
@@ -78,6 +80,15 @@ public class ItemPolyGenerator {
         if (item instanceof BlockItem blockItem) {
             if (AbstractFurnaceBlockEntity.canUseAsFuel(new ItemStack(item))) {
                 return new PlaceableItemPoly(cmdManager, item, CustomModelDataManager.FUEL_ITEMS);
+            }
+
+            if (ConfigManager.getConfig().blockItemMatching) {
+                var blockItemInfo = builder.getSharedValues(BlockItemInfo.KEY);
+                var vanillaEquivalents = blockItemInfo.getExamples(BlockItemType.of(blockItem));
+                if (vanillaEquivalents != null) {
+                    // This one doesn't need custom breaking sounds because it's built-in
+                    return new CustomModelDataPoly(cmdManager, item, vanillaEquivalents);
+                }
             }
 
             return new PlaceableItemPoly(cmdManager, item, CustomModelDataManager.BLOCK_ITEMS);
