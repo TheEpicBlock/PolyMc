@@ -111,13 +111,21 @@ public class FunctionBlockStatePoly implements BlockPoly {
 
             var clientBlockId = Registries.BLOCK.getId(clientState.getBlock());
             var clientBlockStates = pack.getOrDefaultBlockState(clientBlockId.getNamespace(), clientBlockId.getPath());
+
+            if (clientBlockStates == null) {
+                return;
+            }
+
             var clientStateString = Util.getPropertiesFromBlockState(clientState);
 
             // Get the model that the modded block state uses and assign it to the client block state
             var moddedVariants = moddedBlockState.getVariantsBestMatching(moddedState);
             clientBlockStates.setVariant(clientStateString, moddedVariants);
-
             pack.importRequirements(moddedResources, moddedVariants, logger);
+
+            var moddedMultipartVariants = moddedBlockState.getMultipartVariantsBestMatching(moddedState);
+            clientBlockStates.setMultipart(clientStateString, moddedMultipartVariants);
+            pack.importRequirements(moddedResources, moddedMultipartVariants, logger);
 
             clientStatesDone.add(clientState);
         });

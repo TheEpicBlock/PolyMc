@@ -7,19 +7,38 @@ import net.minecraft.block.BlockState;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 public interface JBlockState extends PolyMcAsset {
     void setVariant(String propertyString, JBlockStateVariant[] variants);
+    void setMultipart(String propertyString, JBlockStateVariant[] variants);
 
     JBlockStateVariant[] getVariants(String variantString);
 
     Set<String> getPropertyStrings();
 
     default @Nullable JBlockStateVariant[] getVariantsBestMatching(BlockState state) {
-        var variantBestMatching = this.getVariantId(state);
-        return variantBestMatching == null ? null : getVariants(variantBestMatching);
+        String variantBestMatching = this.getVariantId(state);
+
+        if (variantBestMatching != null) {
+            JBlockStateVariant[] variants = getVariants(variantBestMatching);
+
+            if (variants != null && variants.length > 0) {
+                return variants;
+            }
+        }
+
+        return null;
+    }
+
+    default @Nullable JBlockStateVariant[] getMultipartVariantsBestMatching(BlockState state) {
+        return null;
+    }
+
+    default @Nullable String getMultipartVariantId(BlockState state) {
+        return null;
     }
 
     /**
@@ -48,7 +67,8 @@ public interface JBlockState extends PolyMcAsset {
 
             return propertyString;
         }
-        return null;
+
+        return this.getMultipartVariantId(state);
     }
 
     static JBlockState create() {

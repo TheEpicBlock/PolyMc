@@ -3,10 +3,16 @@ package io.github.theepicblock.polymc.impl.resource.json;
 import com.google.gson.*;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
+import io.github.theepicblock.polymc.api.resource.ModdedResources;
+import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.api.resource.json.JBlockState;
+import io.github.theepicblock.polymc.api.resource.json.JBlockStateMultipart;
 import io.github.theepicblock.polymc.api.resource.json.JBlockStateVariant;
 import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ResourceGenerationException;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.property.Property;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,9 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 @ApiStatus.Internal
 public class JBlockStateImpl implements JBlockState {
@@ -27,6 +31,7 @@ public class JBlockStateImpl implements JBlockState {
     private String credit;
 
     public final Map<String, JsonElement> variants = new TreeMap<>();
+    public final ArrayList<JsonElement> multipart = new ArrayList<>();
 
     public JBlockStateImpl() {
     }
@@ -40,6 +45,66 @@ public class JBlockStateImpl implements JBlockState {
         } catch (JsonSyntaxException | IOException e) {
             throw new ResourceGenerationException("Error reading block state definition for "+name, e);
         }
+    }
+
+    @Override
+    @Nullable
+    public String getMultipartVariantId(BlockState state) {
+
+        StringBuilder result = new StringBuilder();
+
+        // Iterate over all the properties this state has
+        for (Property<?> property : state.getProperties()) {
+            String key = property.getName();
+            String value = state.get(property).toString();
+
+            if (result.isEmpty()) {
+                result = new StringBuilder(key + "=" + value);
+            } else {
+                result.append(",").append(key).append("=").append(value);
+            }
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Try to get all the multipart variants that match the given blockstate.
+     * If none are found, return null.
+     */
+    @Override
+    @Nullable
+    public JBlockStateVariant[] getMultipartVariantsBestMatching(BlockState state) {
+
+        if (this.multipart.isEmpty()) {
+            return null;
+        }
+
+        List<JBlockStateVariant> matching_multiparts = new ArrayList<>();
+
+        // If no variants were found, check multipart
+        for (JsonElement entry : this.multipart) {
+
+            JBlockStateMultipart multipart = JBlockStateMultipart.from(entry);
+
+            if (multipart == null) {
+                continue;
+            }
+
+            if (multipart.matches(state)) {
+                JBlockStateVariant apply = multipart.getApply();
+
+                if (apply != null) {
+                    matching_multiparts.add(apply);
+                }
+            }
+        }
+
+        if (!matching_multiparts.isEmpty()) {
+            return matching_multiparts.toArray(new JBlockStateVariant[0]);
+        }
+
+        return null;
     }
 
     /**
@@ -73,8 +138,21 @@ public class JBlockStateImpl implements JBlockState {
     }
 
     @Override
+    public void setMultipart(String propertyString, JBlockStateVariant[] variants) {
+        this.multipart.addAll(JBlockStateMultipart.jsonElementFrom(propertyString, variants));
+    }
+
+    @Override
     public JBlockStateVariant[] getVariants(String variantString) {
-        return getVariantsFromJsonElement(this.variants.get(variantString));
+        JBlockStateVariant[] variants = getVariantsFromJsonElement(this.variants.get(variantString));
+
+        // If variants is not null or empty, return it
+        if (variants != null && variants.length != 0) {
+            return variants;
+        }
+
+        // Return empty array if no variants were found
+        return new JBlockStateVariant[0];
     }
 
     @Override
