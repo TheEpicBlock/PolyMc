@@ -56,14 +56,14 @@ public class CustomModelDataManager {
             Items.DIAMOND,
             Items.NETHERITE_SCRAP,
             Items.NETHERITE_INGOT,
-            Items.HEART_OF_THE_SEA,
+            Items.PRISMARINE_CRYSTALS,
             Items.NAUTILUS_SHELL,
             Items.PHANTOM_MEMBRANE,
             Items.ECHO_SHARD,
             Items.GUNPOWDER,
             Items.SUGAR,
             Items.BLAZE_ROD,
-            Items.PAPER,
+            Items.PAPER
     };
     public final static Item[] FUEL_ITEMS = {
             Items.COAL,
