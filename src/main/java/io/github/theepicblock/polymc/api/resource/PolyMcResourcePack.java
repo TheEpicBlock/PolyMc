@@ -90,6 +90,31 @@ public interface PolyMcResourcePack {
         return this.getBlockState(namespace, block);
     }
 
+    /**
+     * Utility that gets the original vanilla {@link JBlockState} definition into the map
+     * if there's no asset registered at this path,
+     */
+    default @Nullable JBlockState getOrDefaultVanillaBlockState(ModdedResources baseResources, String namespace, String block, SimpleLogger logger) {
+
+        JBlockState blockState = this.getBlockState(namespace, block);
+
+        if (blockState == null) {
+
+            if (Util.isNamespaceVanilla(namespace)) {
+                var clientJar = baseResources.includeClientJar(logger);
+                blockState = clientJar.getBlockState(namespace, block);
+            }
+
+            if (blockState == null) {
+                blockState = new JBlockStateImpl();
+            }
+
+            this.setBlockState(namespace, block, blockState);
+        }
+
+        return blockState;
+    }
+
     default @Nullable JModel getItemModel(String namespace, String model) {
         return getModel(namespace, "item/"+model);
     }

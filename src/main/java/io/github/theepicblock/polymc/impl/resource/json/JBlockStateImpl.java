@@ -139,6 +139,11 @@ public class JBlockStateImpl implements JBlockState {
 
     @Override
     public void setMultipart(String propertyString, JBlockStateVariant[] variants) {
+
+        // Make sure to delete any possible variant matching this property string,
+        // since variants take precedence over multipart
+        this.variants.remove(propertyString);
+
         this.multipart.addAll(JBlockStateMultipart.jsonElementFrom(propertyString, variants));
     }
 
