@@ -17,6 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins.item;
 
+import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
@@ -30,12 +31,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 /**
  * When items are moved around by a creative mode player, the client just tells the server to set a stack to a specific item.
  * This means that if the client thinks it's holding a stick, it will instruct the server to set the slot to a stick.
- * Even if the stick is supposed to represent another item.
- * <p>
- * My hacky solution:
- * When a packet is sent to void a slot. The item previously in there gets set in "polyMCrecentlyVoided".
- * Then when it tries to set a slot to an item. It first gets checked to see if the item it tries to set could be the poly of
- * We also check if the client tries to set a slot to its polyd version.
+ * Even if the stick is supposed to represent another item. To fix this, we store the original full itemstack inside
+ * the polyd itemstack and restore it when we receive the packet.
+ * @see io.github.theepicblock.polymc.impl.PolyMapImpl#getClientItem(ItemStack, ServerPlayerEntity, ItemLocation)
+ * @see io.github.theepicblock.polymc.api.PolyMap#reverseClientItem(ItemStack)
  */
 @Mixin(ServerPlayNetworkHandler.class)
 public class CreativeItemStackFix {
