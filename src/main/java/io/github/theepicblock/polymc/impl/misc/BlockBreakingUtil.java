@@ -18,7 +18,7 @@ public class BlockBreakingUtil {
     );
 
     static {
-        DISABLER_ATTRIBUTES.iterator().next().addPersistentModifier(new EntityAttributeModifier("polymc", -1, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
+        DISABLER_ATTRIBUTES.iterator().next().addPersistentModifier(new EntityAttributeModifier("polymc", -1, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
     }
 
     public static void sendBreakDisabler(ServerPlayerEntity player) {

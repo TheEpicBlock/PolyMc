@@ -7,7 +7,6 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DyedColorComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.*;
-import net.minecraft.nbt.NbtCompound;
 
 public class FancyPantsItemPoly extends DamageableItemPoly {
     private final int color;
@@ -44,8 +43,8 @@ public class FancyPantsItemPoly extends DamageableItemPoly {
     }
 
     @Override
-    protected void addCustomTagsToItem(ItemStack stack, Item moddedBase) {
-        super.addCustomTagsToItem(stack, moddedBase);
+    protected void addCustomTagsToItem(ItemStack stack) {
+        super.addCustomTagsToItem(stack);
         stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(this.color, false));
     }
 

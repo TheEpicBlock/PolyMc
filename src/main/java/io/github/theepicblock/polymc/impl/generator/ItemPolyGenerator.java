@@ -63,16 +63,6 @@ public class ItemPolyGenerator {
         if (item instanceof RangedWeaponItem && item.getMaxUseTime(new ItemStack(item)) != 0) {
             return new DamageableItemPoly(cmdManager, item, Items.BOW);
         }
-        if (item.isDamageable()) {
-            // TODO during 1.20.5 updating. Best solution would be to check if there's an ItemColorProvider registered
-//            if (item instanceof DyeableItem) {
-//                return new DamageableItemPoly(cmdManager, item, CustomModelDataManager.DYABLE_DAMAGABLE_ITEMS);
-//            }
-            return new DamageableItemPoly(cmdManager, item);
-        }
-        if (item.isFood()) {
-            return new CustomModelDataPoly(cmdManager, item, CustomModelDataManager.FOOD_ITEMS);
-        }
         // TODO during 1.20.5 updating. Best solution would be to check if there's an ItemColorProvider registered
 //        if (item instanceof DyeableItem) {
 //            return new CustomModelDataPoly(cmdManager, item, Items.LEATHER_HORSE_ARMOR);

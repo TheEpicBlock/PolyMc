@@ -15,6 +15,7 @@ import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.map.MapState;
+import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -369,6 +370,11 @@ public final class FakeWorld extends World implements LightSourceView {
     @Override
     public DynamicRegistryManager getRegistryManager() {
         return REGISTRY_MANAGER;
+    }
+
+    @Override
+    public BrewingRecipeRegistry getBrewingRecipeRegistry() {
+        return new BrewingRecipeRegistry.Builder(FeatureSet.empty()).build();
     }
 
     @Override

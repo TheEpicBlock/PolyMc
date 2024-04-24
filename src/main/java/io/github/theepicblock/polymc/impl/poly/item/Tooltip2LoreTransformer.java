@@ -7,19 +7,19 @@ import io.github.theepicblock.polymc.mixins.item.ArmorTrimAccessor;
 import io.github.theepicblock.polymc.mixins.item.ItemEnchantmentsComponentAccessor;
 import io.github.theepicblock.polymc.mixins.item.ItemStackAccessor;
 import it.unimi.dsi.fastutil.objects.AbstractReferenceList;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.component.type.DyedColorComponent;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.trim.ArmorTrim;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Unit;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -30,17 +30,25 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
 
     @Override
     public ItemStack transform(ItemStack original, ItemStack input, PolyMap polyMap, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
-        var ctx = new TooltipContext.Default(false, player != null && player.isCreative());
-        if (shouldPort(input, player, ctx)) {
+        Item.TooltipContext ctx;
+        if (player != null) {
+            ctx = Item.TooltipContext.create(player.getWorld());
+        } else {
+            ctx = Item.TooltipContext.DEFAULT;
+        }
+        // TODO we should probably have a way of changing this
+        var type = TooltipType.ADVANCED;
+
+        if (shouldPort(input, ctx, type)) {
             // Copy if needed
             var output = original == input ? input.copy() : input;
-            portToLore(output, player, ctx);
+            portToLore(output, player, ctx, type);
             return output;
         }
         return input;
     }
 
-    private static boolean shouldPort(ItemStack stack, @Nullable ServerPlayerEntity player, TooltipContext ctx) {
+    private static boolean shouldPort(ItemStack stack, Item.TooltipContext ctx, TooltipType type) {
         // Checks for components which:
         //  - Add things to the tooltip
         //  - Don't generate said tooltip correctly for modded content
@@ -77,7 +85,7 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
 
         // Check Item#appendTooltip
         try {
-            stack.getItem().appendTooltip(stack, player == null ? null : player.getWorld(), CrashyList.INSTANCE, ctx);
+            stack.getItem().appendTooltip(stack, ctx, CrashyList.INSTANCE, type);
         } catch (TriedInsertException e) {
             return true;
         }
@@ -89,7 +97,7 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
      * Computes the tooltip serverside and applies it to the target item.
      * Note: modifies the input
      */
-    public static void portToLore(ItemStack input, @Nullable PlayerEntity player, TooltipContext ctx) {
+    public static void portToLore(ItemStack input, @Nullable PlayerEntity player, Item.TooltipContext ctx, TooltipType type) {
         // This function will reprocess the following components:
         //   - Anything done using Item#appendTooltip
         //   - DataComponentTypes.TRIM
@@ -127,12 +135,12 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
         // Precompute the lore
         // Should match the order of ItemStack#getTooltip
 
-        var hasAdditional = addAdditionalTooltip(input, player, append_function, ctx);
-        invoker.callAppendTooltip(DataComponentTypes.TRIM, append_function, ctx);
-        invoker.callAppendTooltip(DataComponentTypes.STORED_ENCHANTMENTS, append_function, ctx);
-        invoker.callAppendTooltip(DataComponentTypes.ENCHANTMENTS, append_function, ctx);
-        invoker.callAppendTooltip(DataComponentTypes.DYED_COLOR, append_function, ctx);
-        invoker.callAppendTooltip(DataComponentTypes.LORE, append_function, ctx);
+        var hasAdditional = addAdditionalTooltip(input, ctx, append_function, type);
+        invoker.callAppendTooltip(DataComponentTypes.TRIM, ctx, append_function, type);
+        invoker.callAppendTooltip(DataComponentTypes.STORED_ENCHANTMENTS, ctx, append_function, type);
+        invoker.callAppendTooltip(DataComponentTypes.ENCHANTMENTS, ctx, append_function, type);
+        invoker.callAppendTooltip(DataComponentTypes.DYED_COLOR, ctx, append_function, type);
+        invoker.callAppendTooltip(DataComponentTypes.LORE, ctx, append_function, type);
         invoker.callAppendAttributeModifiersTooltip(append_function, player);
 
         /////////////////
@@ -174,13 +182,13 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
     }
 
     /**
-     * Adds tooltip lines appended by {@link net.minecraft.item.Item#appendTooltip(ItemStack, World, List, TooltipContext)}
+     * Adds tooltip lines appended by {@link net.minecraft.item.Item#appendTooltip(ItemStack, Item.TooltipContext, List, TooltipType)}
      *
      * @return true if something was inserted
      */
-    private static boolean addAdditionalTooltip(ItemStack stack, @Nullable PlayerEntity player, Consumer<Text> textConsumer, TooltipContext ctx) {
+    private static boolean addAdditionalTooltip(ItemStack stack, Item.TooltipContext ctx, Consumer<Text> textConsumer, TooltipType type) {
         var list = new ArrayList<Text>();
-        stack.getItem().appendTooltip(stack, player == null ? null : player.getWorld(), list, ctx);
+        stack.getItem().appendTooltip(stack, ctx, list, type);
         list.forEach(textConsumer);
         return !list.isEmpty();
     }

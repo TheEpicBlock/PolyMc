@@ -1,8 +1,9 @@
 package io.github.theepicblock.polymc.mixins.item;
 
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipType;
 import net.minecraft.component.DataComponentType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.TooltipAppender;
 import net.minecraft.text.Text;
@@ -15,7 +16,7 @@ import java.util.function.Consumer;
 @Mixin(ItemStack.class)
 public interface ItemStackAccessor {
     @Invoker
-    <T extends TooltipAppender> void callAppendTooltip(DataComponentType<T> componentType, Consumer<Text> textConsumer, TooltipContext context);
+    <T extends TooltipAppender> void callAppendTooltip(DataComponentType<T> componentType, Item.TooltipContext context, Consumer<Text> textConsumer, TooltipType type);
 
     @Invoker
     void callAppendAttributeModifiersTooltip(Consumer<Text> textConsumer, @Nullable PlayerEntity player);

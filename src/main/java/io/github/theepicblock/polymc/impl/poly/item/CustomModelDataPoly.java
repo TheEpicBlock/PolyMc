@@ -26,7 +26,6 @@ import io.github.theepicblock.polymc.api.resource.json.JModelOverride;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ResourceConstants;
-import io.github.theepicblock.polymc.mixins.item.EntityAttributeUuidAccessor;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.item.Item;
@@ -34,26 +33,18 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
 import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
-import java.util.UUID;
 
 /**
  * The most standard ItemPoly implementation
  */
 public class CustomModelDataPoly implements ItemPoly {
-    private static final UUID ATTACK_DAMAGE_MODIFIER_ID = EntityAttributeUuidAccessor.getATTACK_DAMAGE_MODIFIER_ID();
-    private static final UUID ATTACK_SPEED_MODIFIER_ID = EntityAttributeUuidAccessor.getATTACK_SPEED_MODIFIER_ID();
-
     protected final int cmdValue;
     protected final CustomModelDataComponent cmdComponent;
     protected final Item clientItem;
-    protected final Item moddedBase;
 
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item moddedBase) {
         this(registerManager, moddedBase, CustomModelDataManager.DEFAULT_ITEMS);
@@ -77,7 +68,6 @@ public class CustomModelDataPoly implements ItemPoly {
      */
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item moddedBase, Item[] targets) {
         Pair<Item,Integer> pair = registerManager.requestCMD(targets);
-        this.moddedBase = moddedBase;
         this.clientItem = pair.getLeft();
         this.cmdValue = pair.getRight();
 
@@ -89,7 +79,7 @@ public class CustomModelDataPoly implements ItemPoly {
      * These shouldn't change depending on the stack as this method will be cached.
      * For un-cached tags, use {@link #getClientItem(ItemStack, ServerPlayerEntity, ItemLocation)}
      */
-    protected void addCustomTagsToItem(ItemStack stack, Item moddedBase) {
+    protected void addCustomTagsToItem(ItemStack stack) {
         stack.set(DataComponentTypes.CUSTOM_MODEL_DATA, this.cmdComponent);
     }
 
@@ -98,14 +88,8 @@ public class CustomModelDataPoly implements ItemPoly {
     public ItemStack getClientItem(ItemStack input, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
         var output = Util.copyWithItem(input, clientItem);
 
-        this.addCustomTagsToItem(output, moddedBase);
-
-        // If the item doesn't have a custom name, we
-        // should set the name to the correct one of the item
-        // We also check the location, to prevent the name being set when it's in an item frame
-        if (!input.contains(DataComponentTypes.CUSTOM_NAME) && location != ItemLocation.TRACKED_DATA) {
-            output.set(DataComponentTypes.CUSTOM_NAME, negateCustomNameStyling(input, input.getName()));
-        }
+        this.addCustomTagsToItem(output);
+        output.set(DataComponentTypes.ITEM_NAME, input.getItem().getName(input));
 
         return output;
     }
@@ -148,9 +132,5 @@ public class CustomModelDataPoly implements ItemPoly {
     @Override
     public String getDebugInfo(Item item) {
         return "CMD: " + Util.expandTo(cmdValue, 3) + ", item:" + clientItem.getTranslationKey();
-    }
-
-    public static MutableText negateCustomNameStyling(ItemStack stack, Text text) {
-        return Text.empty().append(text).setStyle(Style.EMPTY.withFormatting(stack.getRarity().formatting).withItalic(false));
     }
 }

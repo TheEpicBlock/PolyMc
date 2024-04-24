@@ -17,15 +17,14 @@
  */
 package io.github.theepicblock.polymc.mixins.item;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
  * When items are moved around by a creative mode player, the client just tells the server to set a stack to a specific item.
@@ -41,8 +40,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class CreativeItemStackFix {
     @Shadow public ServerPlayerEntity player;
 
-    @Redirect(method = "onCreativeInventoryAction(Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;getStack()Lnet/minecraft/item/ItemStack;"))
-    public ItemStack creativemodeSetSlotRedirect(CreativeInventoryActionC2SPacket packet) {
-        return PolyMapProvider.getPolyMap(player).reverseClientItem(packet.getStack());
+    @ModifyReturnValue(method = "onCreativeInventoryAction(Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;stack()Lnet/minecraft/item/ItemStack;"))
+    public ItemStack creativemodeSetSlotRedirect(ItemStack original) {
+        return PolyMapProvider.getPolyMap(player).reverseClientItem(original);
     }
 }
