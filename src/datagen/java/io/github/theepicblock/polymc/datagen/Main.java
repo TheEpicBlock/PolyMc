@@ -16,7 +16,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
 
 public class Main implements ModInitializer {
-    private static final Logger LOGGER = LogManager.getLogger("datagen");
+    public static final Logger LOGGER = LogManager.getLogger("datagen");
+
     @Override
     public void onInitialize() {
         try {
@@ -27,7 +28,7 @@ public class Main implements ModInitializer {
 
             PacketByteBuf outBuf = new PacketByteBuf(Unpooled.buffer());
             File outputFile = new File(outputDir, "block-ids");
-            LOGGER.info("Output: "+outputFile.toPath().toAbsolutePath());
+            LOGGER.info("Vanilla ids: "+outputFile.toPath().toAbsolutePath());
 
             var properties = new HashSet<Property<?>>();
             for (var block : Registries.BLOCK) {
@@ -46,8 +47,11 @@ public class Main implements ModInitializer {
 
             Files.write(outputFile.toPath(), outBuf.array(), StandardOpenOption.CREATE);
 
+            PopulateBlockItemInfo.doStuff(outputDir);
+
             System.exit(0); // Shut down the server
         } catch (Exception e) {
+            e.printStackTrace();
             // Shutdown the server and tell Gradle something went wrong
             System.exit(1);
         }

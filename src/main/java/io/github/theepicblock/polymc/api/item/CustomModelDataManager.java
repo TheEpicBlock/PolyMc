@@ -57,7 +57,7 @@ public class CustomModelDataManager {
             Items.DIAMOND,
             Items.NETHERITE_SCRAP,
             Items.NETHERITE_INGOT,
-            Items.HEART_OF_THE_SEA,
+            Items.PRISMARINE_CRYSTALS,
             Items.NAUTILUS_SHELL,
             Items.PHANTOM_MEMBRANE,
             Items.ECHO_SHARD,
@@ -76,7 +76,7 @@ public class CustomModelDataManager {
             Items.LEATHER_HELMET,
             Items.LEATHER_CHESTPLATE,
             Items.LEATHER_LEGGINGS,
-            Items.LEATHER_BOOTS
+            Items.LEATHER_BOOTS,
     };
 
     public final static Item[] FOOD_ITEMS = {
@@ -100,7 +100,7 @@ public class CustomModelDataManager {
             Items.BEETROOT,
             Items.POTATO,
             Items.BAKED_POTATO,
-            Items.BREAD
+            Items.BREAD,
     };
     @ApiStatus.Internal
     public final static Item[] FULL_BLOCK_ITEMS = DEFAULT_ITEMS;

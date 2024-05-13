@@ -1,4 +1,8 @@
 # Unused Block States
+
+!!! warning
+    This page was written around 1.18/1.19, and isn't up-to-date anymore
+
 !!! note
     This page is purely to document all unused block states in Minecraft, 
     which might be useful to explain PolyMc's behaviour or might help if you're doing some serverside hackery yourself.
