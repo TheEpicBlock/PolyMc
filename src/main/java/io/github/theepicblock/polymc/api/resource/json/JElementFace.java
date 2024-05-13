@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.api.resource.json;
 
+import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -8,10 +9,10 @@ public final class JElementFace {
     private final double[] uv;
     private final String texture;
     private final JDirection cullface;
-    private final int rotation;
-    private final int tintindex;
+    private final Integer rotation;
+    private final Integer tintindex;
 
-    public JElementFace(double[] uv, String texture, JDirection cullface, int rotation, int tintindex) {
+    public JElementFace(double[] uv, String texture, JDirection cullface, @Nullable Integer rotation, @Nullable Integer tintindex) {
         this.uv = uv;
         this.texture = texture;
         this.cullface = cullface;
@@ -31,11 +32,11 @@ public final class JElementFace {
         return cullface;
     }
 
-    public int rotation() {
+    public Integer rotation() {
         return rotation;
     }
 
-    public int tintindex() {
+    public Integer tintindex() {
         return tintindex;
     }
 
@@ -44,12 +45,22 @@ public final class JElementFace {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         JElementFace that = (JElementFace)o;
-        return rotation == that.rotation && tintindex == that.tintindex && Arrays.equals(uv, that.uv) && Objects.equals(texture, that.texture) && cullface == that.cullface;
+        return (rotation == null || that.rotation == null) ? rotation == that.rotation : rotation.intValue() == that.rotation.intValue() &&
+                (tintindex == null || that.tintindex == null) ? tintindex == that.tintindex : tintindex.intValue() == that.tintindex.intValue() &&
+                Arrays.equals(uv, that.uv) && Objects.equals(texture, that.texture) && cullface == that.cullface;
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(texture, cullface, rotation, tintindex);
+        int result;
+        if (tintindex != null) {
+            if (rotation != null) result = Objects.hash(texture, cullface, rotation, tintindex);
+            else result = Objects.hash(texture, cullface, tintindex);
+        }
+        else {
+            if (rotation != null) result = Objects.hash(texture, cullface, rotation);
+            else result = Objects.hash(texture, cullface);
+        }
         result = 31 * result + Arrays.hashCode(uv);
         return result;
     }

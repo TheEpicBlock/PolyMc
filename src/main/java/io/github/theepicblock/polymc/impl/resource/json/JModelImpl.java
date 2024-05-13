@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.resource.json.*;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.resource.ResourceGenerationException;
@@ -23,6 +24,35 @@ public class JModelImpl implements JModel {
      */
     @SerializedName(value = "credit", alternate = "__comment")
     private String credit;
+
+    /**
+     * Ordered list keeps track of model predicate priority when sorting.
+     * Note that ranged numbers (0-1) take priority over boolean values.
+     */
+    protected static final String[] MODEL_PREDICATES = new String[]{
+        "custom_model_data",
+        "angle",
+        "damage",
+        "pull",
+        "time",
+        "trim_type",
+        "brushing",
+
+        "blocking",
+        "broken",
+        "cast",
+        "cooldown",
+        "damaged",
+        "lefthanded",
+        "pulling",
+        "charged",
+        "firework",
+        "throwing",
+        "level",
+        "filled",
+        "tooting",
+        "level"
+    };
 
     public String parent;
     public JGuiLight gui_light;
@@ -117,10 +147,25 @@ public class JModelImpl implements JModel {
     private void sortOverrides() {
         if (overrides == null) return;
         overrides.sort((o1, o2) -> {
-            if (o1.predicates().size() > 0 && o2.predicates().size() > 0) {
-                double i1 = o1.predicates().values().iterator().next();
-                double i2 = o2.predicates().values().iterator().next();
-                return (int)(i1 - i2);
+            // For each predicate listed in the ordered priority list, weigh the overrides against each other.
+            for (String predictae_name : MODEL_PREDICATES) {
+                boolean o1_has_predicate = o1.predicates().containsKey(predictae_name);
+                boolean o2_has_predicate = o2.predicates().containsKey(predictae_name);
+
+                // If neither model has the predicate, then continue.
+                if (!o1_has_predicate && !o2_has_predicate)
+                    continue;
+
+                // If one model has the predicate but the other doesn't, put the lacking one on top.
+                if (!o1_has_predicate || !o2_has_predicate)
+                    return o1_has_predicate ? 0 : -1;
+
+                // Weigh the values of each. If they are equal, continue.
+                double i1 = o1.predicates().get(predictae_name);
+                double i2 = o2.predicates().get(predictae_name);
+                double difference = i1 - i2;
+                // Using math.abs to account for double precision errors
+                if (Math.abs(difference) > 0.0001) return (int)difference;
             }
             return 0;
         });
