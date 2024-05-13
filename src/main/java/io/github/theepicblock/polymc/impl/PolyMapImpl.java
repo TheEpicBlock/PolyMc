@@ -20,7 +20,9 @@ package io.github.theepicblock.polymc.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.api.PolyMap;
@@ -36,9 +38,9 @@ import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ModdedResourceContainerImpl;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackImplementation;
-import net.fabricmc.fabric.api.util.NbtType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.*;
+import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
@@ -46,7 +48,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -58,6 +59,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+
+import static net.minecraft.item.ItemStack.ITEM_CODEC;
 
 /**
  * This is the standard implementation of the PolyMap that PolyMc uses by default.
@@ -71,7 +74,12 @@ public class PolyMapImpl implements PolyMap {
      */
     private static final String ORIGINAL_ITEM_NBT = "PolyMcOriginal";
     private static final boolean ALWAYS_ADD_CREATIVE_NBT = ConfigManager.getConfig().alwaysSendFullNbt;
-    public static final MapCodec<Optional<ItemStack>> ORIGINAL_ITEM_CODEC = ItemStack.CODEC.optionalFieldOf(ORIGINAL_ITEM_NBT);
+    /**
+     * Encodes all data that's meant to be server controlled. In practice this is simply all the ItemStack data minus
+     * the count
+     */
+    private static final Codec<ItemStack> ITEM_DATA_CODEC = RecordCodecBuilder.create((instance) -> instance.group(ITEM_CODEC.fieldOf("id").forGetter(ItemStack::getRegistryEntry), ComponentChanges.CODEC.optionalFieldOf("components", ComponentChanges.EMPTY).forGetter(ItemStack::getComponentChanges)).apply(instance, (id, components) -> new ItemStack(id, 1, components)));
+    public static final MapCodec<Optional<ItemStack>> ORIGINAL_ITEM_CODEC = ITEM_DATA_CODEC.optionalFieldOf(ORIGINAL_ITEM_NBT);
 
     private final ImmutableMap<Item,ItemPoly> itemPolys;
     private final ItemTransformer[] globalItemPolys;
@@ -111,7 +119,7 @@ public class PolyMapImpl implements PolyMap {
 
         if ((player == null || player.isCreative() || location == ItemLocation.CREATIVE || ALWAYS_ADD_CREATIVE_NBT) && !ItemStack.areItemsAndComponentsEqual(serverItem, ret) && !serverItem.isEmpty()) {
             // Preserves the nbt of the original item, so it can be reverted
-            ItemStack finalRet = ret;
+            var finalRet = ret;
             NbtComponent.DEFAULT.with(ORIGINAL_ITEM_CODEC, Optional.of(serverItem)).result().ifPresent((nbt) -> {
                 finalRet.set(DataComponentTypes.CUSTOM_DATA, nbt);
             });
