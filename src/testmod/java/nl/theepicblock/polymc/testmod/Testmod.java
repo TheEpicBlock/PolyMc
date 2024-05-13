@@ -38,6 +38,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.EnumMap;
 import java.util.List;
 
+import static nl.theepicblock.polymc.testmod.YellowStatusEffect.YELLOW;
+
 public class Testmod implements ModInitializer {
     private static final String MODID = "polymc-testmod";
 
@@ -82,7 +84,7 @@ public class Testmod implements ModInitializer {
     public static final EntityType<?> TEST_ENTITY_OTHER = FabricEntityTypeBuilder.create().entityFactory(TestOtherEntity::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
     public static final EntityType<?> TEST_FLYING_WAXED_WEATHERED_CUT_COPPER_STAIRS_ENTITY = FabricEntityTypeBuilder.create().entityFactory(TestFlyingWaxedWeatheredCutCopperStairs::new).trackRangeChunks(4).dimensions(EntityDimensions.fixed(0.5f, 0.5f)).build();
 
-    public static final RegistryEntry<StatusEffect> TEST_EFFECT = Registry.registerReference(Registries.STATUS_EFFECT, id("yellow_effect"), new YellowStatusEffect(StatusEffectCategory.HARMFUL, 0xf4e42c));
+    public static final RegistryEntry<StatusEffect> TEST_EFFECT = Registry.registerReference(Registries.STATUS_EFFECT, id("yellow_effect"), new YellowStatusEffect(StatusEffectCategory.HARMFUL, YELLOW));
     public static final Potion TEST_POTION_TYPE = Registry.register(Registries.POTION, id("yellow_potion"), new Potion(new StatusEffectInstance(TEST_EFFECT, 9600)));
 
     @Override

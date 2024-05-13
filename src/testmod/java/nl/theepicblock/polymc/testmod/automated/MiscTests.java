@@ -21,6 +21,8 @@ import nl.theepicblock.polymc.testmod.YellowStatusEffect;
 
 import java.util.Objects;
 
+import static nl.theepicblock.polymc.testmod.YellowStatusEffect.YELLOW;
+
 public class MiscTests implements FabricGameTest {
     // These tests are broken, I am aware
 
@@ -95,16 +97,17 @@ public class MiscTests implements FabricGameTest {
 
         // Create a potion item
         var serverPotion = testPotion();
+        TestUtil.assertEq(serverPotion.get(DataComponentTypes.POTION_CONTENTS).getColor(), YELLOW, "Sanity check");
         var clientPotion = map.getClientItem(serverPotion, null, ItemLocation.INVENTORY);
 
         try {
             YellowStatusEffect.SIMULATE_UNAVAILABLE = true;
             var clientPotionData = clientPotion.get(DataComponentTypes.POTION_CONTENTS);
             TestUtil.assertNonNull(clientPotionData, "polyd potions should still have potion data");
-            TestUtil.assertEq(clientPotionData.getColor(), 0xf4e42c, "potion should be yellow");
+            TestUtil.assertEq(clientPotionData.getColor(), YELLOW, "potion should be yellow");
             TestUtil.assertEq(clientPotion.getName().getLiteralString(), serverPotion.getName().getLiteralString());
 
-            TestUtil.assertDifferent(serverPotion.get(DataComponentTypes.POTION_CONTENTS).customColor(), 0xf4e42c, "Untransformed item should be broken. This test may be invalid");
+            TestUtil.assertDifferent(serverPotion.get(DataComponentTypes.POTION_CONTENTS).getColor(), YELLOW, "Untransformed item should be broken. This test may be invalid");
         } finally {
             YellowStatusEffect.SIMULATE_UNAVAILABLE = false;
         }

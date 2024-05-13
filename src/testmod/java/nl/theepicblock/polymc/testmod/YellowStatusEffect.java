@@ -4,6 +4,7 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 
 public class YellowStatusEffect extends StatusEffect {
+    public static int YELLOW = 0xfff4e42c;
     /**
      * Helpful for automatic testing, to simulate the fact that
      * this status effect will not be a registered one on the client
