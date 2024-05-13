@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.resource.json.*;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.resource.ResourceGenerationException;
@@ -148,9 +147,9 @@ public class JModelImpl implements JModel {
         if (overrides == null) return;
         overrides.sort((o1, o2) -> {
             // For each predicate listed in the ordered priority list, weigh the overrides against each other.
-            for (String predictae_name : MODEL_PREDICATES) {
-                boolean o1_has_predicate = o1.predicates().containsKey(predictae_name);
-                boolean o2_has_predicate = o2.predicates().containsKey(predictae_name);
+            for (String predicate_name : MODEL_PREDICATES) {
+                boolean o1_has_predicate = o1.predicates().containsKey(predicate_name);
+                boolean o2_has_predicate = o2.predicates().containsKey(predicate_name);
 
                 // If neither model has the predicate, then continue.
                 if (!o1_has_predicate && !o2_has_predicate)
@@ -161,8 +160,8 @@ public class JModelImpl implements JModel {
                     return o1_has_predicate ? 0 : -1;
 
                 // Weigh the values of each. If they are equal, continue.
-                double i1 = o1.predicates().get(predictae_name);
-                double i2 = o2.predicates().get(predictae_name);
+                double i1 = o1.predicates().get(predicate_name);
+                double i2 = o2.predicates().get(predicate_name);
                 double difference = i1 - i2;
                 // Using math.abs to account for double precision errors
                 if (Math.abs(difference) > 0.0001) return (int)difference;
