@@ -90,7 +90,7 @@ public final class FakeWorld extends World implements LightSourceView {
                 return Optional.of(damageTypes);
             }
 
-            return Optional.empty();
+            return Optional.of(new FakeRegistry(key, new Identifier("polymc", "edksflj"), "jsawadanja"));
         }
 
         @Override
