@@ -68,6 +68,13 @@ public class ItemEncodeTests implements FabricGameTest {
                                 ctx.assertTrue(ItemStack.areItemsAndComponentsEqual(originalStack, PolyMapImpl.recoverOriginalItem(newStack)),
                                         "Item should survive round-trip (when player is in creative mode)");
 
+                                // Create a new polyd stack with a different count
+                                if (method.getKey().equals("reencode")) {
+                                    originalStack.setCount(7);
+                                    var secondStack = method.getValue().reserialize(originalStack, packetCtx);
+                                    ctx.assertTrue(ItemStack.areItemsAndComponentsEqual(newStack, secondStack), "The same item with different counts should be stackable");
+                                }
+
                                 packetCtx.close();
                                 ctx.complete();
                             }
