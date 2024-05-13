@@ -63,7 +63,7 @@ public class CustomModelDataManager {
             Items.GUNPOWDER,
             Items.SUGAR,
             Items.BLAZE_ROD,
-            Items.PAPER
+            Items.PAPER,
     };
     public final static Item[] FUEL_ITEMS = {
             Items.COAL,
@@ -75,7 +75,7 @@ public class CustomModelDataManager {
             Items.LEATHER_HELMET,
             Items.LEATHER_CHESTPLATE,
             Items.LEATHER_LEGGINGS,
-            Items.LEATHER_BOOTS
+            Items.LEATHER_BOOTS,
     };
 
     public final static Item[] FOOD_ITEMS = {
@@ -99,7 +99,7 @@ public class CustomModelDataManager {
             Items.BEETROOT,
             Items.POTATO,
             Items.BAKED_POTATO,
-            Items.BREAD
+            Items.BREAD,
     };
     @ApiStatus.Internal
     public final static Item[] FULL_BLOCK_ITEMS = DEFAULT_ITEMS;
