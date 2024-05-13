@@ -17,7 +17,7 @@
  */
 package io.github.theepicblock.polymc.mixins.item;
 
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import net.minecraft.item.ItemStack;
@@ -39,8 +39,8 @@ import org.spongepowered.asm.mixin.injection.At;
 public class CreativeItemStackFix {
     @Shadow public ServerPlayerEntity player;
 
-    @ModifyReturnValue(method = "onCreativeInventoryAction(Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;stack()Lnet/minecraft/item/ItemStack;"))
-    public ItemStack creativemodeSetSlotRedirect(ItemStack original) {
+    @ModifyExpressionValue(method = "onCreativeInventoryAction(Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/packet/c2s/play/CreativeInventoryActionC2SPacket;stack()Lnet/minecraft/item/ItemStack;"))
+    private ItemStack creativemodeSetSlotRedirect(ItemStack original) {
         return PolyMapProvider.getPolyMap(player).reverseClientItem(original);
     }
 }

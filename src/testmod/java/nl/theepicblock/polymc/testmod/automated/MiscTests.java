@@ -3,9 +3,10 @@ package nl.theepicblock.polymc.testmod.automated;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.PotionContentsComponent;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.InventoryS2CPacket;
@@ -112,7 +113,6 @@ public class MiscTests implements FabricGameTest {
 
     @GameTest(templateName = EMPTY_STRUCTURE)
     public void potionItemTooltip(TestContext ctx) {
-        var map = TestUtil.getMap();
         var serverPotion = testPotion();
 
         // PolyMc makes some assumptions with tooltips
@@ -123,7 +123,7 @@ public class MiscTests implements FabricGameTest {
         try {
             YellowStatusEffect.SIMULATE_UNAVAILABLE = true;
             TestUtil.assertTrue(
-                    clientPotion.getTooltip(null, TooltipContext.Default.BASIC)
+                    clientPotion.getTooltip(Item.TooltipContext.DEFAULT, null, TooltipType.BASIC)
                             .stream()
                             .map(Object::toString)
                             .filter(Objects::nonNull)

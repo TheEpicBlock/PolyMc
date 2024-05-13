@@ -7,17 +7,7 @@ import net.minecraft.registry.tag.ItemTags;
 
 public class TestEnchantment extends Enchantment {
     protected TestEnchantment() {
-        super(Rarity.COMMON, ItemTags.BUTTONS, new EquipmentSlot[0]);
-    }
-
-    @Override
-    public int getMinPower(int level) {
-        return 1;
-    }
-
-    @Override
-    public int getMaxLevel() {
-        return 4;
+        super(Enchantment.properties(ItemTags.BUTTONS, 10, 4, Enchantment.leveledCost(1, 11), Enchantment.leveledCost(12, 11), 1, EquipmentSlot.MAINHAND));
     }
 
     @Override
