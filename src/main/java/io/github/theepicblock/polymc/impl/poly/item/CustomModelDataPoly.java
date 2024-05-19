@@ -86,10 +86,12 @@ public class CustomModelDataPoly implements ItemPoly {
     @SuppressWarnings("ConstantConditions")
     @Override
     public ItemStack getClientItem(ItemStack input, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
-        var output = Util.copyWithItem(input, clientItem);
+        var output = Util.copyWithItem(input, clientItem, player);
 
         this.addCustomTagsToItem(output);
-        output.set(DataComponentTypes.ITEM_NAME, input.getItem().getName(input));
+        if (!output.contains(DataComponentTypes.ITEM_NAME)) {
+            output.set(DataComponentTypes.ITEM_NAME, input.getItem().getName(input));
+        }
 
         return output;
     }

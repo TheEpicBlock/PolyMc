@@ -17,15 +17,20 @@
  */
 package io.github.theepicblock.polymc.mixins.item;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.registry.Registries;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import xyz.nucleoid.packettweaker.PacketContext;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,18 +42,18 @@ import java.util.stream.Collectors;
  */
 @Mixin(SynchronizeRecipesS2CPacket.class)
 public class CustomRecipeFix {
-    // TODO temporarily disabled whilst porting to 24w09a
-//    /**
-//     * Modifies the recipes to remove custom serializers (which will crash vanilla clients).
-//     */
-//    @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/RegistryByteBuf;writeCollection(Ljava/util/Collection;Lnet/minecraft/network/PacketByteBuf$PacketWriter;)V"))
-//    public Collection<RecipeEntry<?>> modifyRecipes(Collection<RecipeEntry<?>> input) {
-//        if (!Util.isPolyMapVanillaLike(PacketContext.get().getClientConnection())) {
-//            return input;
-//        }
-//
-//        return input.stream() // Remove non-vanilla serializers using streams. TODO can be done more efficiently, maybe with a custom iterator
-//                .filter(recipe -> Util.isVanilla(Registries.RECIPE_SERIALIZER.getId(recipe.value().getSerializer())))
-//                .collect(Collectors.toList());
-//    }
+    @ModifyReturnValue(method = "method_55955", at = @At("TAIL"))
+    private static List<RecipeEntry<?>>  modifyRecipes(List<RecipeEntry<?>> input) {
+        if (!Util.isPolyMapVanillaLike(PacketContext.get().getClientConnection())) {
+            return input;
+        }
+        List<RecipeEntry<?>> list = new ArrayList<>();
+        for (var recipe : input) {
+            if (Util.isVanilla(Registries.RECIPE_SERIALIZER.getId(recipe.value().getSerializer()))) {
+                list.add(recipe);
+            }
+        }
+
+        return list;
+    }
 }

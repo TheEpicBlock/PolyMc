@@ -45,5 +45,7 @@ public class ChunkDataPlayerProvider {
             at = @At("TAIL"))
     private static void clearPlayerContext(ServerPlayNetworkHandler handler, ServerWorld world, WorldChunk chunk, CallbackInfo ci) {
         ChunkPacketStaticHack.player.set(null);
+
     }
+
 }

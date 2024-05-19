@@ -39,7 +39,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public abstract class PaletteBlockPolyImplementation {
     
     @Redirect(method = {"writePacket", "getPacketSize"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IndexedIterable;getRawId(Ljava/lang/Object;)I"))
-    public <T> int GetIdRedirect(IndexedIterable<T> instance, T object) {
+    public <T> int getIdRedirect(IndexedIterable<T> instance, T object) {
         if (object instanceof BlockState) {
             var player = ChunkPacketStaticHack.player.get();
 

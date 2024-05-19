@@ -31,12 +31,18 @@ import io.github.theepicblock.polymc.mixins.item.CreativeItemStackFix;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.type.FoodComponent;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Direction;
@@ -127,7 +133,23 @@ public interface PolyMap {
      * Used for filtering out attributes unsupported by client.
      * @see EntityAttributesFilteringMixin
      */
-    default boolean canReceiveEntityAttribute(EntityAttribute attribute) {
-        return Util.isVanilla(Registries.ATTRIBUTE.getId(attribute));
+    default boolean canReceiveEntityAttribute(RegistryEntry<EntityAttribute> attribute) {
+        return Util.isVanillaAndRegistered(attribute);
     }
+
+    default boolean canReceiveBlockEntity(BlockEntityType<?> e) {
+        return Util.isVanilla(Registries.BLOCK_ENTITY_TYPE.getId(e));
+    };
+
+    default boolean canReceiveStatusEffect(RegistryEntry<StatusEffect> entry) {
+        return Util.isVanillaAndRegistered(entry);
+    }
+
+    default boolean canReceiveEnchantment(RegistryEntry<Enchantment> entry) {
+        return Util.isVanillaAndRegistered(entry);
+    }
+
+    default boolean canReceivePotion(RegistryEntry<Potion> entry) {
+        return Util.isVanillaAndRegistered(entry);
+    };
 }

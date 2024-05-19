@@ -23,9 +23,12 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.mixin.BlockStateDuck;
+import io.github.theepicblock.polymc.impl.mixin.TransformingDataComponent;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.component.DataComponentType;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.ClientConnection;
@@ -73,7 +76,7 @@ public class Util {
     }
 
     public static boolean isVanillaAndRegistered(RegistryEntry<?> v) {
-        return v.getKey().isEmpty() && Util.isVanilla(v.getKey().get().getValue());
+        return v.getKey().isPresent() && Util.isVanilla(v.getKey().get().getValue());
     }
 
     /**
@@ -296,8 +299,53 @@ public class Util {
     /**
      * Returns a copy of the provided {@link ItemStack}, but with the item set to the target item.
      */
-    public static ItemStack copyWithItem(ItemStack original, Item target) {
-        // TODO, the returned stack should ideally contain the default components of the original too
-        return original.copyComponentsToNewStack(target, original.getCount());
+    public static ItemStack copyWithItem(ItemStack original, Item target, @Nullable ServerPlayerEntity player) {
+        var out = new ItemStack(target, original.getCount());
+        for (var x : out.getComponents().getTypes()) {
+            if (original.getComponents().get(x) == null) {
+                out.set(x, null);
+            }
+        }
+
+        for (var i = 0; i < COMPONENTS_TO_COPY.length; i++) {
+            var key = COMPONENTS_TO_COPY[i];
+            var x = original.get(key);
+
+            if (x instanceof TransformingDataComponent t) {
+                //noinspection unchecked,rawtypes
+                out.set((DataComponentType) key, t.polymc$getTransformed(player));
+            } else {
+                //noinspection unchecked,rawtypes
+                out.set((DataComponentType) key, (Object) original.get(key));
+            }
+        }
+        return out;
     }
+
+    private static final DataComponentType<?>[] COMPONENTS_TO_COPY = {DataComponentTypes.CAN_BREAK, DataComponentTypes.CAN_PLACE_ON,
+            DataComponentTypes.BLOCK_ENTITY_DATA, DataComponentTypes.TRIM,
+            DataComponentTypes.TOOL,
+            DataComponentTypes.MAX_STACK_SIZE,
+            DataComponentTypes.FOOD,
+            DataComponentTypes.FIRE_RESISTANT,
+            DataComponentTypes.FIREWORKS,
+            DataComponentTypes.FIREWORK_EXPLOSION,
+            DataComponentTypes.DAMAGE,
+            DataComponentTypes.MAX_DAMAGE,
+            DataComponentTypes.ATTRIBUTE_MODIFIERS,
+            DataComponentTypes.BANNER_PATTERNS,
+            DataComponentTypes.BASE_COLOR,
+            DataComponentTypes.HIDE_TOOLTIP,
+            DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP,
+            DataComponentTypes.CAN_BREAK,
+            DataComponentTypes.CAN_PLACE_ON,
+            DataComponentTypes.REPAIR_COST,
+            DataComponentTypes.BUNDLE_CONTENTS,
+            DataComponentTypes.RARITY,
+            DataComponentTypes.LODESTONE_TRACKER,
+            DataComponentTypes.ENCHANTMENTS,
+            DataComponentTypes.STORED_ENCHANTMENTS,
+            DataComponentTypes.POTION_CONTENTS,
+            DataComponentTypes.CUSTOM_NAME,
+    };
 }

@@ -33,8 +33,8 @@ public class Generator {
      * @param builder builder to add polys to
      */
     public static void generateMissing(PolyRegistry builder) {
-        generateMissingPolys(builder, Registries.ITEM, ItemPolyGenerator::addItemToBuilder, builder::hasItemPoly);
         generateMissingPolys(builder, Registries.BLOCK, BlockPolyGenerator::addBlockToBuilder, builder::hasBlockPoly);
+        generateMissingPolys(builder, Registries.ITEM, ItemPolyGenerator::addItemToBuilder, builder::hasItemPoly);
         generateMissingPolys(builder, Registries.SCREEN_HANDLER, GuiGenerator::addGuiToBuilder, builder::hasGuiPoly);
         generateMissingPolys(builder, Registries.ENTITY_TYPE, EntityPolyGenerator::addEntityToBuilder, builder::hasEntityPoly);
     }

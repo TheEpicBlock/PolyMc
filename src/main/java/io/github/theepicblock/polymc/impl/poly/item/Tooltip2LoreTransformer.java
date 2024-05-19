@@ -3,30 +3,42 @@ package io.github.theepicblock.polymc.impl.poly.item;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
+import io.github.theepicblock.polymc.impl.mixin.TransformingDataComponent;
 import io.github.theepicblock.polymc.mixins.item.ArmorTrimAccessor;
 import io.github.theepicblock.polymc.mixins.item.ItemEnchantmentsComponentAccessor;
 import io.github.theepicblock.polymc.mixins.item.ItemStackAccessor;
 import it.unimi.dsi.fastutil.objects.AbstractReferenceList;
 import net.minecraft.client.item.TooltipType;
+import net.minecraft.component.DataComponentType;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.*;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockPredicatesChecker;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.trim.ArmorTrim;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Unit;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class Tooltip2LoreTransformer implements ItemTransformer {
+    private static final List<HideableTooltip> HIDEABLE_TOOLTIPS = List.of(
+            HideableTooltip.of(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent::withShowInTooltip),
+            HideableTooltip.of(DataComponentTypes.TRIM, ArmorTrim::withShowInTooltip),
+            HideableTooltip.ofNeg(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent::isEmpty, ItemEnchantmentsComponent::withShowInTooltip),
+            HideableTooltip.ofNeg(DataComponentTypes.STORED_ENCHANTMENTS, ItemEnchantmentsComponent::isEmpty, ItemEnchantmentsComponent::withShowInTooltip),
+            HideableTooltip.of(DataComponentTypes.UNBREAKABLE, UnbreakableComponent::withShowInTooltip),
+            HideableTooltip.of(DataComponentTypes.CAN_BREAK, BlockPredicatesChecker::withShowInTooltip),
+            HideableTooltip.of(DataComponentTypes.CAN_PLACE_ON, BlockPredicatesChecker::withShowInTooltip)
+    );
 
     @Override
     public ItemStack transform(ItemStack original, ItemStack input, PolyMap polyMap, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
@@ -36,19 +48,36 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
         } else {
             ctx = Item.TooltipContext.DEFAULT;
         }
-        // TODO we should probably have a way of changing this
-        var type = TooltipType.ADVANCED;
+        var type = TooltipType.BASIC;
 
-        if (shouldPort(input, ctx, type)) {
+        if (shouldPort(input, original, ctx, type, player)) {
             // Copy if needed
             var output = original == input ? input.copy() : input;
-            portToLore(output, player, ctx, type);
+            try {
+                var list = original.getTooltip(ctx, player, type);
+                if (list.isEmpty()) {
+                    input.set(DataComponentTypes.HIDE_TOOLTIP, Unit.INSTANCE);
+                } else {
+                    list.removeFirst();
+                    var style = Style.EMPTY.withItalic(false).withColor(Formatting.WHITE);
+                    for (int i = 0; i < list.size(); i++) {
+                        list.set(i, Text.empty().setStyle(style).append(list.get(i)));
+                    }
+                    output.set(DataComponentTypes.LORE, new LoreComponent(list, null));
+                    for (var x : HIDEABLE_TOOLTIPS) {
+                        x.apply(output);
+                    }
+                }
+            } catch (Throwable e) {
+                fallbackPortToLore(output, player, ctx, type);
+            }
+
             return output;
         }
         return input;
     }
 
-    private static boolean shouldPort(ItemStack stack, Item.TooltipContext ctx, TooltipType type) {
+    private static boolean shouldPort(ItemStack stack, ItemStack original, Item.TooltipContext ctx, TooltipType type, @Nullable ServerPlayerEntity player) {
         // Checks for components which:
         //  - Add things to the tooltip
         //  - Don't generate said tooltip correctly for modded content
@@ -56,38 +85,34 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
         // method has to process a continuous block
 
         // This method checks the following components:
-        //   - DataComponentTypes.TRIM
         //   - DataComponentTypes.STORED_ENCHANTMENTS
         //   - DataComponentTypes.ENCHANTMENTS
         //   - DataComponentTypes.ATTRIBUTE_MODIFIERS
         //   - Anything done using Item#appendTooltip
 
+        if (original.contains(DataComponentTypes.HIDE_TOOLTIP)) {
+            return false;
+        }
 
-        var trim = stack.get(DataComponentTypes.TRIM);
-        if (trim != null) {
+        if (TransformingDataComponent.requireTransformForTooltip(original.get(DataComponentTypes.STORED_ENCHANTMENTS), player)) {
             return true;
         }
 
-        var stored_enchants = stack.get(DataComponentTypes.STORED_ENCHANTMENTS);
-        if (stored_enchants != null && !stored_enchants.isEmpty()) {
+        if (TransformingDataComponent.requireTransformForTooltip(original.get(DataComponentTypes.ENCHANTMENTS), player)) {
             return true;
         }
 
-        var enchants = stack.get(DataComponentTypes.ENCHANTMENTS);
-        if (enchants != null && !enchants.isEmpty()) {
-            return true;
-        }
-
-        var attributes = stack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
-        if (attributes != null && attributes.showInTooltip() && !attributes.modifiers().isEmpty()) {
+        if (TransformingDataComponent.requireTransformForTooltip(original.get(DataComponentTypes.ATTRIBUTE_MODIFIERS), player)) {
             return true;
         }
 
         // Check Item#appendTooltip
-        try {
-            stack.getItem().appendTooltip(stack, ctx, CrashyList.INSTANCE, type);
-        } catch (TriedInsertException e) {
-            return true;
+        if (!ItemStack.areItemsAndComponentsEqual(original, stack) && !original.contains(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP)) {
+            try {
+                original.getItem().appendTooltip(original, ctx, CrashyList.INSTANCE, type);
+            } catch (TriedInsertException e) {
+                return true;
+            }
         }
 
         return false;
@@ -97,7 +122,8 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
      * Computes the tooltip serverside and applies it to the target item.
      * Note: modifies the input
      */
-    public static void portToLore(ItemStack input, @Nullable PlayerEntity player, Item.TooltipContext ctx, TooltipType type) {
+    @SuppressWarnings("UnreachableCode")
+    public static void fallbackPortToLore(ItemStack input, @Nullable PlayerEntity player, Item.TooltipContext ctx, TooltipType type) {
         // This function will reprocess the following components:
         //   - Anything done using Item#appendTooltip
         //   - DataComponentTypes.TRIM
@@ -214,5 +240,31 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
 
     private static class TriedInsertException extends RuntimeException {
 
+    }
+
+    private record HideableTooltip<T>(DataComponentType<T> type, Predicate<T> shouldSet, TooltipSetter<T> setter) {
+
+        public static <T> HideableTooltip<T> of(DataComponentType<T> type, TooltipSetter<T> setter) {
+            return new HideableTooltip<>(type, x -> true, setter);
+        }
+
+        public static <T> HideableTooltip<T> of(DataComponentType<T> type, Predicate<T> shouldSet, TooltipSetter<T> setter) {
+            return new HideableTooltip<>(type, shouldSet, setter);
+        }
+
+        public static <T> HideableTooltip<T> ofNeg(DataComponentType<T> type, Predicate<T> shouldntSet, TooltipSetter<T> setter) {
+            return new HideableTooltip<>(type, shouldntSet.negate(), setter);
+        }
+
+        public void apply(ItemStack output) {
+            var data = output.get(type);
+            if (data != null && this.shouldSet.test(data)) {
+                output.set(type, setter.setTooltip(data, false));
+            }
+        }
+
+        interface TooltipSetter<T> {
+            T setTooltip(T val, boolean value);
+        }
     }
 }

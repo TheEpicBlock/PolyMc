@@ -77,11 +77,11 @@ public class ArmorColorManager implements SharedValuesKey.ResourceContainer {
                     logger.warn("Couldn't generate material texture for "+id+"; PolyMc currently only supports a single layer. This material has "+material.layers().size()+" layers");
                     continue;
                 }
-                var layer = material.layers().get(0);
+                var layer = material.layers().getFirst();
 
                 try {
                     var textureId = layer.getTexture(innerlayer == 2);
-                    var texture = moddedResources.getTexture(textureId.getNamespace(), textureId.getPath());
+                    var texture = moddedResources.getTextureRaw(textureId.getNamespace(), textureId.getPath());
                     if (texture == null) {
                         logger.warn("Couldn't find material texture for "+id+", it won't display correctly when worn");
                         continue;

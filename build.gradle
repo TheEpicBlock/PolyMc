@@ -36,6 +36,8 @@ repositories {
 			includeGroupByRegex("org\\.quiltmc.*")
 		}
 	}
+
+	mavenLocal()
 }
 
 dependencies {
