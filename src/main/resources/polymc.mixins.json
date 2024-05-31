@@ -51,6 +51,7 @@
     "compat.QuiltRegistrySyncDisabler",
     "compat.immersive_portals.ImmPtlChunkTrackingMixin",
     "compat.immersive_portals.PlayerChunkLoadingMixin",
+    "entity.CustomEffectsDisabler",
     "entity.DisableCustomEntities",
     "entity.EntityAttributesFilteringMixin",
     "entity.EntityTrackerAccessor",
