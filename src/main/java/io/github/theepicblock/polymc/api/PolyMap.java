@@ -32,6 +32,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.DataComponentType;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
@@ -151,5 +152,10 @@ public interface PolyMap {
 
     default boolean canReceivePotion(RegistryEntry<Potion> entry) {
         return Util.isVanillaAndRegistered(entry);
+    };
+
+    default boolean canReceiveDataComponentType(DataComponentType<?> type) {
+        return Util.isVanilla(Registries.DATA_COMPONENT_TYPE.getId(type));
+
     };
 }

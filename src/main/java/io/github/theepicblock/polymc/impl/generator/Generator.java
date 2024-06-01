@@ -20,7 +20,7 @@ package io.github.theepicblock.polymc.impl.generator;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.poly.item.Tooltip2LoreTransformer;
-import io.github.theepicblock.polymc.impl.poly.item.PotionFixGlobalPoly;
+import io.github.theepicblock.polymc.impl.poly.item.InvalidComponentFixGlobalPoly;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 
@@ -53,7 +53,7 @@ public class Generator {
      */
     public static void addDefaultGlobalItemPolys(PolyRegistry registry) {
         registry.registerGlobalItemPoly(new Tooltip2LoreTransformer());
-        registry.registerGlobalItemPoly(new PotionFixGlobalPoly());
+        registry.registerGlobalItemPoly(new InvalidComponentFixGlobalPoly());
     }
 
     @FunctionalInterface
