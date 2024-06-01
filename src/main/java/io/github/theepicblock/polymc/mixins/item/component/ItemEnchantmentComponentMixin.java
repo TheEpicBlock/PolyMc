@@ -29,7 +29,7 @@ public abstract class ItemEnchantmentComponentMixin implements TransformingDataC
         var map = Util.tryGetPolyMap(player);
 
         var b = new ItemEnchantmentsComponent.Builder((ItemEnchantmentsComponent) (Object) this);
-        b.remove(map::canReceiveEnchantment);
+        b.remove((x) -> !map.canReceiveEnchantment(x));
         return b.build();
     }
 
