@@ -301,7 +301,7 @@ public class Util {
      */
     public static ItemStack copyWithItem(ItemStack original, Item target, @Nullable ServerPlayerEntity player) {
         var out = new ItemStack(target, original.getCount());
-        for (var x : out.getComponents().getTypes()) {
+        for (var x : original.getComponents().getTypes()) {
             if (original.getComponents().get(x) == null) {
                 out.set(x, null);
             }
@@ -319,12 +319,15 @@ public class Util {
                 out.set((DataComponentType) key, (Object) original.get(key));
             }
         }
+        out.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, original.hasGlint());
+
         return out;
     }
 
     private static final DataComponentType<?>[] COMPONENTS_TO_COPY = {DataComponentTypes.CAN_BREAK, DataComponentTypes.CAN_PLACE_ON,
             DataComponentTypes.BLOCK_ENTITY_DATA, DataComponentTypes.TRIM,
             DataComponentTypes.TOOL,
+            DataComponentTypes.LORE,
             DataComponentTypes.MAX_STACK_SIZE,
             DataComponentTypes.FOOD,
             DataComponentTypes.FIRE_RESISTANT,

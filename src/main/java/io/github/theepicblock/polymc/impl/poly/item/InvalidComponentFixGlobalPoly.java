@@ -20,7 +20,7 @@ public class InvalidComponentFixGlobalPoly implements ItemTransformer {
             if (!map.canReceiveDataComponentType(comp.type())
                     || (comp.value() instanceof TransformingDataComponent t
                     && t.polymc$requireModification(player))) {
-                return Util.copyWithItem(original, original.getItem(), player);
+                return Util.copyWithItem(input, input.getItem(), player);
             }
         }
 

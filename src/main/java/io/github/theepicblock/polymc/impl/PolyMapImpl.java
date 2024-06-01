@@ -108,6 +108,10 @@ public class PolyMapImpl implements PolyMap {
 
     @Override
     public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
+        if (serverItem.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+
         ItemStack ret = serverItem;
 
         ItemPoly poly = itemPolys.get(serverItem.getItem());
