@@ -64,6 +64,7 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
                         list.set(i, Text.empty().setStyle(style).append(list.get(i)));
                     }
                     output.set(DataComponentTypes.LORE, new LoreComponent(list, null));
+                    output.set(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, Unit.INSTANCE);
                     for (var x : HIDEABLE_TOOLTIPS) {
                         x.apply(output);
                     }
@@ -102,7 +103,8 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
             return true;
         }
 
-        if (TransformingDataComponent.requireTransformForTooltip(original.get(DataComponentTypes.ATTRIBUTE_MODIFIERS), player)) {
+        if (TransformingDataComponent.requireTransformForTooltip(original.get(DataComponentTypes.ATTRIBUTE_MODIFIERS), player)
+        || (stack.getItem() != original.getItem() && !original.getItem().getAttributeModifiers().modifiers().isEmpty())) {
             return true;
         }
 
