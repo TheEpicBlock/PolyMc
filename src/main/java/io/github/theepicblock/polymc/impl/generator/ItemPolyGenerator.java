@@ -27,6 +27,7 @@ import io.github.theepicblock.polymc.impl.poly.item.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.item.*;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
@@ -85,9 +86,11 @@ public class ItemPolyGenerator {
 
             return new PlaceableItemPoly(cmdManager, item, CustomModelDataManager.BLOCK_ITEMS);
         }
-
         if (AbstractFurnaceBlockEntity.canUseAsFuel(new ItemStack(item))) {
             return new CustomModelDataPoly(cmdManager, item, CustomModelDataManager.FUEL_ITEMS);
+        }
+        if (new ItemStack(item).isIn(ItemTags.DYEABLE)) {
+            return new CustomModelDataPoly(cmdManager, item, Items.LEATHER_HORSE_ARMOR);
         }
 
         return new CustomModelDataPoly(cmdManager, item);
