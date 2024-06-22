@@ -170,7 +170,9 @@ public class PolyMapImpl implements PolyMap {
         } else {
             // Return the original only if it's present
             var polymcOriginal = result.result().orElseThrow();
-            return polymcOriginal.orElse(input);
+            ItemStack recovered_stack = polymcOriginal.orElse(input);
+            recovered_stack.setCount(input.getCount());
+            return recovered_stack;
         }
     }
 
