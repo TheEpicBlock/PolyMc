@@ -76,6 +76,11 @@ public record FakeRegistry<T>(RegistryKey<? extends Registry<T>> registryKey, Id
     }
 
     @Override
+    public Optional<RegistryEntry.Reference<T>> getDefaultEntry() {
+        return Optional.empty();
+    }
+
+    @Override
     public Set<Identifier> getIds() {
         return Set.of(defaultId);
     }

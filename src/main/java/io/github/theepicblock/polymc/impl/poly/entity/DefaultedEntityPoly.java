@@ -18,7 +18,6 @@ import net.minecraft.network.packet.s2c.play.EntityAttachS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityAttributesS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityEquipmentUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntityStatusEffectS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
 
 import java.util.ArrayList;
@@ -112,7 +111,7 @@ public class DefaultedEntityPoly<T extends Entity> implements EntityPoly<T> {
             }
     
             if (original instanceof MobEntity mobEntity && mobEntity.isLeashed()) {
-                player.sendPacket(new EntityAttachS2CPacket(mobEntity, mobEntity.getHoldingEntity()));
+                player.sendPacket(new EntityAttachS2CPacket(mobEntity, mobEntity.getLeashHolder()));
             }
         }
 

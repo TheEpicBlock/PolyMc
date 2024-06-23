@@ -116,7 +116,7 @@ public abstract class Wizard {
     @Deprecated
     @ThreadedWizardUpdater.Unsafe
     public List<ServerPlayerEntity> getPlayersWatchingChunk() {
-        return this.getWorld().getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(
+        return this.getWorld().getChunkManager().chunkLoadingManager.getPlayersWatchingChunk(
                 new ChunkPos((int)this.getPosition().x >> 4, (int)this.getPosition().z >> 4), false);
     }
 }

@@ -182,7 +182,7 @@ public class PolyMcCommands {
             restrictionLevelTxt.formatted(Formatting.DARK_GREEN);
         }
         source.sendFeedback(() -> Text.literal("Restriction level: ").append(restrictionLevelTxt), false);
-        var watchDistance = ((TACSAccessor)context.getSource().getWorld().getChunkManager().threadedAnvilChunkStorage).getWatchDistance();
+        var watchDistance = ((TACSAccessor)context.getSource().getWorld().getChunkManager().chunkLoadingManager).getWatchDistance();
         source.sendFeedback(() -> Text.literal("Watch distance/radius: ").append(Text.literal(watchDistance+"/"+PacketCountManager.getWatchRadiusFromDistance(watchDistance)).formatted(Formatting.AQUA)), false);
         return Command.SINGLE_SUCCESS;
     }

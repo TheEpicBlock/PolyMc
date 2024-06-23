@@ -27,7 +27,7 @@ import io.github.theepicblock.polymc.impl.mixin.TransformingDataComponent;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -313,10 +313,10 @@ public class Util {
 
             if (x instanceof TransformingDataComponent t) {
                 //noinspection unchecked,rawtypes
-                out.set((DataComponentType) key, t.polymc$getTransformed(player));
+                out.set((ComponentType) key, t.polymc$getTransformed(player));
             } else {
                 //noinspection unchecked,rawtypes
-                out.set((DataComponentType) key, (Object) original.get(key));
+                out.set((ComponentType) key, (Object) original.get(key));
             }
         }
         out.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, original.hasGlint());
@@ -324,7 +324,7 @@ public class Util {
         return out;
     }
 
-    private static final DataComponentType<?>[] COMPONENTS_TO_COPY = {DataComponentTypes.CAN_BREAK, DataComponentTypes.CAN_PLACE_ON,
+    private static final ComponentType<?>[] COMPONENTS_TO_COPY = {DataComponentTypes.CAN_BREAK, DataComponentTypes.CAN_PLACE_ON,
             DataComponentTypes.BLOCK_ENTITY_DATA, DataComponentTypes.TRIM,
             DataComponentTypes.TOOL,
             DataComponentTypes.LORE,

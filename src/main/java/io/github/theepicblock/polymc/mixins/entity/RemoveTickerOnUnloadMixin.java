@@ -4,8 +4,8 @@ import io.github.theepicblock.polymc.impl.mixin.EntityTrackerEntryDuck;
 import io.github.theepicblock.polymc.impl.mixin.WizardTickerDuck;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.entity.Entity;
+import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -13,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
+@Mixin(ServerChunkLoadingManager.class)
 public class RemoveTickerOnUnloadMixin {
-    @Shadow @Final private Int2ObjectMap<ThreadedAnvilChunkStorage.EntityTracker> entityTrackers;
+    @Shadow @Final private Int2ObjectMap<ServerChunkLoadingManager.EntityTracker> entityTrackers;
 
     @Shadow @Final ServerWorld world;
 

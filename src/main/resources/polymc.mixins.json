@@ -62,7 +62,6 @@
     "item.ArmorTrimAccessor",
     "item.CreativeItemStackFix",
     "item.CustomRecipeFix",
-    "item.EntityAttributeUuidAccessor",
     "item.GameModeUpdateMixin",
     "item.ItemEnchantmentsComponentAccessor",
     "item.ItemPolyImplementation",

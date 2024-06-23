@@ -63,7 +63,7 @@ public class ItemPolyGenerator {
         if (item instanceof CrossbowItem) {
             return new DamageableItemPoly(cmdManager, item, Items.CROSSBOW);
         }
-        if (item instanceof RangedWeaponItem && item.getMaxUseTime(new ItemStack(item)) != 0) {
+        if (item instanceof RangedWeaponItem && item.getMaxUseTime(new ItemStack(item), null) != 0) {
             return new DamageableItemPoly(cmdManager, item, Items.BOW);
         }
         // TODO during 1.20.5 updating. Best solution would be to check if there's an ItemColorProvider registered

@@ -46,7 +46,7 @@ public class BlockIdRemapper {
 
     private static void readBlock(PacketByteBuf buf, PropertyLookupTable table, BlockState[] outputList) {
         var path = buf.readString();
-        var id = new Identifier(path);
+        var id = Identifier.of(path);
         Block block = Registries.BLOCK.get(id);
 
         var baseState = block.getDefaultState();

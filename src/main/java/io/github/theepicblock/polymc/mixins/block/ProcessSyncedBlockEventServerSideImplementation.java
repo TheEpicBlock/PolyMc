@@ -55,7 +55,7 @@ public class ProcessSyncedBlockEventServerSideImplementation {
     public void initInject(MinecraftServer server, Executor workerExecutor, LevelStorage.Session session, ServerWorldProperties properties, RegistryKey worldKey, DimensionOptions dimensionOptions, WorldGenerationProgressListener worldGenerationProgressListener, boolean debugWorld, long seed, List spawners, boolean shouldTickTime, RandomSequencesState randomSequencesState, CallbackInfo ci) {
         List<String> serverCalculatedBlockEventsAsString = ConfigManager.getConfig().misc.getProcessSyncedBlockEventServerSide();
         for (String s : serverCalculatedBlockEventsAsString) {
-            Block e = Registries.BLOCK.get(new Identifier(s));
+            Block e = Registries.BLOCK.get(Identifier.of(s));
             serverCalculatedBlockEvents.add(e);
         }
     }

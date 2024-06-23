@@ -5,6 +5,7 @@ import io.github.theepicblock.polymc.mixins.TACSAccessor;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.chunk.AbstractChunkHolder;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,14 +15,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.List;
 
 @Mixin(ChunkHolder.class)
-public abstract class FixLighting {
+public abstract class FixLighting extends AbstractChunkHolder {
 
     @Shadow @Final private ChunkHolder.PlayersWatchingChunkProvider playersWatchingChunkProvider;
 
-    @Shadow public abstract ChunkPos getPos();
-
-    @Shadow @Final
-    ChunkPos pos;
+    public FixLighting(ChunkPos pos) {
+        super(pos);
+    }
 
     /**
      * Minecraft usually only sends lighting packets when a chunk is on the watch distance edge.

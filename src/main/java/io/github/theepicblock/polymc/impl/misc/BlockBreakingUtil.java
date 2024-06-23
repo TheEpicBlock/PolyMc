@@ -5,11 +5,15 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.network.packet.s2c.play.EntityAttributesS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 
 import java.util.Collection;
 import java.util.Collections;
 
 public class BlockBreakingUtil {
+
+    public static Identifier POLYMC_MODIFIER_ID = Identifier.of("polymc", "block_breaking");
+
     public static Collection<EntityAttributeInstance> DISABLER_ATTRIBUTES = Collections.singleton(
             new EntityAttributeInstance(
                     EntityAttributes.PLAYER_BLOCK_BREAK_SPEED,
@@ -18,7 +22,7 @@ public class BlockBreakingUtil {
     );
 
     static {
-        DISABLER_ATTRIBUTES.iterator().next().addPersistentModifier(new EntityAttributeModifier("polymc", -1, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        DISABLER_ATTRIBUTES.iterator().next().addPersistentModifier(new EntityAttributeModifier(POLYMC_MODIFIER_ID, -1, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
     }
 
     public static void sendBreakDisabler(ServerPlayerEntity player) {

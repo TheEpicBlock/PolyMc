@@ -25,9 +25,8 @@ public class RegularWizardUpdater {
         var tick = world.getServer().getTicks();
         var updateInfo = new ThreadedWizardUpdater.UpdateInfoImpl(tick, 1); // Called at the end of the tick, therefore delta is 1
         var packetCountManager = PacketCountManager.INSTANCE;
-        packetCountManager.updateWatchRadius(((TACSAccessor)world.getChunkManager().threadedAnvilChunkStorage).getWatchDistance());
-
-        var entityTrackers = ((TACSAccessor)world.getChunkManager().threadedAnvilChunkStorage).getEntityTrackers();
+        packetCountManager.updateWatchRadius(((TACSAccessor)world.getChunkManager().chunkLoadingManager).getWatchDistance());
+        var entityTrackers = ((TACSAccessor)world.getChunkManager().chunkLoadingManager).getEntityTrackers();
         int seed = 0;
         for (var tracker : entityTrackers.values()) {
             var trackerEntry = (EntityTrackerEntryDuck)((EntityTrackerAccessor)tracker).getEntry();
