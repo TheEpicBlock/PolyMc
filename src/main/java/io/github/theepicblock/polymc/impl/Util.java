@@ -29,9 +29,11 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.ClientConnection;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerCommonNetworkHandler;
@@ -322,6 +324,32 @@ public class Util {
         out.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, original.hasGlint());
 
         return out;
+    }
+
+    /**
+     * Get the appropriate dynamic registry manager
+     */
+    @NotNull
+    public static DynamicRegistryManager getRegistryManager(PlayerEntity entity) {
+        if (entity == null) {
+            return getRegistryManager();
+        }
+
+        return entity.getRegistryManager();
+    }
+
+    /**
+     * Get the appropriate dynamic registry manager
+     */
+    @NotNull
+    public static DynamicRegistryManager getRegistryManager() {
+
+        if (PolyMc.REGISTRY_MANAGER != null) {
+            return PolyMc.REGISTRY_MANAGER;
+        }
+
+        // Fallback to an empty registry
+        return DynamicRegistryManager.EMPTY;
     }
 
     private static final ComponentType<?>[] COMPONENTS_TO_COPY = {DataComponentTypes.CAN_BREAK, DataComponentTypes.CAN_PLACE_ON,

@@ -126,7 +126,7 @@ public class PolyMapImpl implements PolyMap {
 
         if ((player == null || player.isCreative() || location == ItemLocation.CREATIVE || ALWAYS_ADD_CREATIVE_NBT) && !ItemStack.areItemsAndComponentsEqual(serverItem, ret) && !serverItem.isEmpty()) {
 
-            RegistryOps<NbtElement> registryOps = player.getRegistryManager().getOps(NbtOps.INSTANCE);
+            RegistryOps<NbtElement> registryOps = Util.getRegistryManager(player).getOps(NbtOps.INSTANCE);
 
             // Preserves the nbt of the original item, so it can be reverted
             var finalRet = ret;

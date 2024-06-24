@@ -35,6 +35,7 @@ import io.github.theepicblock.polymc.impl.poly.wizard.ThreadedWizardUpdater;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.ApiStatus;
@@ -45,6 +46,7 @@ public class PolyMc implements ModInitializer {
     public static final String MODID = "polymc";
     public static final SimpleLogger LOGGER = new Log4JWrapper(LogManager.getLogger("PolyMc"));
     private static PolyMap map;
+    public static DynamicRegistryManager.Immutable REGISTRY_MANAGER = null;
 
     /**
      * Called when the registries are definitely final (eg, on world start).
@@ -52,7 +54,8 @@ public class PolyMc implements ModInitializer {
      * so it can't really support dynamic registration unless you want to regenerate your resource pack constantly.
      */
     @ApiStatus.Internal
-    public static void onRegistryClosed() {
+    public static void onRegistryClosed(DynamicRegistryManager.Immutable registryManager) {
+        REGISTRY_MANAGER = registryManager;
         if (ConfigManager.getConfig().remapVanillaBlockIds) {
             BlockIdRemapper.remapFromInternalList();
         }
