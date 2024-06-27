@@ -378,5 +378,7 @@ public class Util {
             DataComponentTypes.STORED_ENCHANTMENTS,
             DataComponentTypes.POTION_CONTENTS,
             DataComponentTypes.CUSTOM_NAME,
+            DataComponentTypes.WRITABLE_BOOK_CONTENT,
+            DataComponentTypes.WRITTEN_BOOK_CONTENT
     };
 }
