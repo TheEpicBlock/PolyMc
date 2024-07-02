@@ -8,6 +8,7 @@ import io.github.theepicblock.polymc.impl.resource.json.JBlockStateImpl;
 import io.github.theepicblock.polymc.impl.resource.json.JModelImpl;
 import io.github.theepicblock.polymc.impl.resource.json.JSoundEventRegistryImpl;
 import net.minecraft.resource.InputSupplier;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -21,6 +22,15 @@ public interface ResourceContainer {
         var metaPath = ResourceConstants.textureMeta(texture);
         return new TextureAsset(textureStream, getInputStreamSupplier(namespace, metaPath));
     }
+
+    default @Nullable TextureAsset getTextureRaw(String namespace, String texture) {
+        var textureStream = getInputStreamSupplier(namespace, texture);
+        if (textureStream == null) return null;
+
+        var metaPath = texture + ".mcmeta";
+        return new TextureAsset(textureStream, getInputStreamSupplier(namespace, metaPath));
+    }
+
 
     default @Nullable SoundAsset getSound(String namespace, String sound) {
         var stream = getInputStreamSupplier(namespace, ResourceConstants.sound(sound));

@@ -26,43 +26,25 @@ import io.github.theepicblock.polymc.api.resource.json.JModelOverride;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ResourceConstants;
-import io.github.theepicblock.polymc.mixins.item.EntityAttributeUuidAccessor;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EntityGroup;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.TreeMap;
-import java.util.UUID;
 
 /**
  * The most standard ItemPoly implementation
  */
 public class CustomModelDataPoly implements ItemPoly {
-    private static final UUID ATTACK_DAMAGE_MODIFIER_ID = EntityAttributeUuidAccessor.getATTACK_DAMAGE_MODIFIER_ID();
-    private static final UUID ATTACK_SPEED_MODIFIER_ID = EntityAttributeUuidAccessor.getATTACK_SPEED_MODIFIER_ID();
-
-    protected final ThreadLocal<ItemStack> cachedClientItem;
     protected final int cmdValue;
+    protected final CustomModelDataComponent cmdComponent;
     protected final Item clientItem;
-    protected final Item moddedBase;
 
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item moddedBase) {
         this(registerManager, moddedBase, CustomModelDataManager.DEFAULT_ITEMS);
@@ -86,14 +68,10 @@ public class CustomModelDataPoly implements ItemPoly {
      */
     public CustomModelDataPoly(CustomModelDataManager registerManager, Item moddedBase, Item[] targets) {
         Pair<Item,Integer> pair = registerManager.requestCMD(targets);
-        this.moddedBase = moddedBase;
         this.clientItem = pair.getLeft();
         this.cmdValue = pair.getRight();
-        cachedClientItem = ThreadLocal.withInitial(() -> {
-            var stack = new ItemStack(clientItem);
-            addCustomTagsToItem(stack, moddedBase);
-            return stack;
-        });
+
+        this.cmdComponent = new CustomModelDataComponent(this.cmdValue);
     }
 
     /**
@@ -101,144 +79,21 @@ public class CustomModelDataPoly implements ItemPoly {
      * These shouldn't change depending on the stack as this method will be cached.
      * For un-cached tags, use {@link #getClientItem(ItemStack, ServerPlayerEntity, ItemLocation)}
      */
-    protected void addCustomTagsToItem(ItemStack stack, Item moddedBase) {
-        var item = stack.getItem();
-
-        NbtCompound tag = stack.getOrCreateNbt();
-        tag.putInt("CustomModelData", cmdValue);
-        tag.putString("PolyMcId", Registries.ITEM.getId(moddedBase).toString());
-        stack.setNbt(tag);
+    protected void addCustomTagsToItem(ItemStack stack) {
+        stack.set(DataComponentTypes.CUSTOM_MODEL_DATA, this.cmdComponent);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Override
     public ItemStack getClientItem(ItemStack input, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
-        ItemStack serverItem = cachedClientItem.get();
-        if (input.hasNbt()) {
-            serverItem = cachedClientItem.get().copy();
-            serverItem.setNbt(input.getNbt().copy());
+        var output = Util.copyWithItem(input, clientItem, player);
 
-            // Doing this removes the custom tags, so we should add that again
-            addCustomTagsToItem(serverItem, moddedBase);
+        this.addCustomTagsToItem(output);
+        if (!output.contains(DataComponentTypes.ITEM_NAME)) {
+            output.set(DataComponentTypes.ITEM_NAME, input.getItem().getName(input));
         }
 
-        // Add custom tooltips. Don't bother showing them if the item's not in the inventory
-        if (Util.isSectionVisible(input, ItemStack.TooltipSection.ADDITIONAL) && isInventory(location)) {
-            var tooltips = new ArrayList<Text>(0);
-            try {
-                input.getItem().appendTooltip(input, player == null ? null : player.getWorld(), tooltips, TooltipContext.Default.BASIC);
-            } catch (Exception | NoClassDefFoundError ignored) {}
-
-            if (!tooltips.isEmpty()) {
-                NbtList list = serverItem.getOrCreateSubNbt("display").getList("Lore", NbtElement.LIST_TYPE);
-                for (Text line : tooltips) {
-                    if (line instanceof MutableText mText) {
-                        // Cancels the styling of the lore
-                        var style = line.getStyle();
-                        style = style.withItalic(style.isItalic());
-                        if (style.getColor() == null) {
-                            style = style.withColor(style.getColor());
-                        }
-                        line = mText.setStyle(style);
-                    }
-
-                    list.add(toStr(line));
-                }
-
-                // `serverItem` is always either the cached item or a copy, so it's okay to modify
-                NbtCompound display = serverItem.getOrCreateSubNbt("display");
-                display.put("Lore", list);
-            }
-        }
-
-        // Always set the name again in case the item can change its name based on NBT data
-        if (!input.hasCustomName()) {
-            var name = input.getName();
-
-            if (location == ItemLocation.TRACKED_DATA) {
-                // Don't override the name, otherwise it'll show up on item frames
-                serverItem.setCustomName(null);
-            } else  {
-                // Override the style to make sure the client does not render
-                // the custom name in italics, and uses the correct rarity format
-                if (name instanceof MutableText mutableText) {
-                    mutableText.setStyle(name.getStyle().withItalic(false).withColor(input.getRarity().formatting));
-                }
-
-                serverItem.setCustomName(name);
-            }
-        }
-
-        // Add the attributes (This code has been mostly copied from ItemStack#getTooltip)
-        if (isInventory(location) && Util.isSectionVisible(input, ItemStack.TooltipSection.MODIFIERS) && (!serverItem.hasNbt() || !serverItem.getNbt().contains("AttributeModifiers", NbtElement.LIST_TYPE))) {
-            var tag = serverItem.getOrCreateNbt();
-            tag.put("AttributeModifiers", new NbtList());
-            var display = serverItem.getOrCreateSubNbt("display");
-            var lore = display.getList("Lore", NbtElement.STRING_TYPE);
-            display.put("Lore", lore);
-            try {
-                for (var slotType : EquipmentSlot.values()) {
-                    // This will only include the default attributes
-                    var attributes = moddedBase.getAttributeModifiers(slotType);
-                    if (!attributes.isEmpty()) {
-                        lore.add(toStr(Text.empty()));
-                        lore.add(toStr(explicitlySetItalics((Text.translatable("item.modifiers." + slotType.getName())).formatted(Formatting.GRAY))));
-                        for (var entry : attributes.entries()) {
-                            var attributeModifier = entry.getValue();
-                            double v = attributeModifier.getValue();
-                            boolean bl = false;
-                            if (player != null) {
-                                if (attributeModifier.getId() == ATTACK_DAMAGE_MODIFIER_ID) {
-                                    v += player.getAttributeBaseValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
-                                    v += EnchantmentHelper.getAttackDamage(input, EntityGroup.DEFAULT);
-                                    bl = true;
-                                } else if (attributeModifier.getId() == ATTACK_SPEED_MODIFIER_ID) {
-                                    v += player.getAttributeBaseValue(EntityAttributes.GENERIC_ATTACK_SPEED);
-                                    bl = true;
-                                }
-                            }
-
-                            double e;
-                            if (attributeModifier.getOperation() != EntityAttributeModifier.Operation.MULTIPLY_BASE && attributeModifier.getOperation() != EntityAttributeModifier.Operation.MULTIPLY_TOTAL) {
-                                if (entry.getKey().equals(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE)) {
-                                    e = v * 10.0;
-                                } else {
-                                    e = v;
-                                }
-                            } else {
-                                e = v * 100.0;
-                            }
-
-                            if (bl) {
-                                lore.add(toStr(explicitlySetItalics((Text.literal(" ")).append(Text.translatable("attribute.modifier.equals." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), Text.translatable(entry.getKey().getTranslationKey()))).formatted(Formatting.DARK_GREEN))));
-                            } else if (v > 0.0) {
-                                lore.add(toStr(explicitlySetItalics((Text.translatable("attribute.modifier.plus." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), Text.translatable(entry.getKey().getTranslationKey()))).formatted(Formatting.BLUE))));
-                            } else if (v < 0.0) {
-                                e *= -1.0;
-                                lore.add(toStr(explicitlySetItalics((Text.translatable("attribute.modifier.take." + attributeModifier.getOperation().getId(), ItemStack.MODIFIER_FORMAT.format(e), Text.translatable(entry.getKey().getTranslationKey()))).formatted(Formatting.RED))));
-                            }
-                        }
-                    }
-                }
-            } catch (Throwable ignored) {}
-        }
-
-        serverItem.setCount(input.getCount());
-        serverItem.setBobbingAnimationTime(input.getBobbingAnimationTime());
-        return serverItem;
-    }
-
-    private static NbtString toStr(Text text) {
-        return NbtString.of(Text.Serialization.toJsonString(text));
-    }
-
-    private static MutableText explicitlySetItalics(MutableText in) {
-        in.setStyle(in.getStyle().withItalic(false));
-        return in;
-    }
-
-    private static boolean isInventory(@Nullable ItemLocation location) {
-        return location == ItemLocation.INVENTORY || location == ItemLocation.CREATIVE || location == null; // Be conservative and say that unknown locations are in inventory too
+        return output;
     }
 
     @Override

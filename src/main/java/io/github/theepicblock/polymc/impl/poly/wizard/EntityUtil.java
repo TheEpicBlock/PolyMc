@@ -38,7 +38,7 @@ public class EntityUtil {
         byteBuf.writeByte(pitch);
         byteBuf.writeBoolean(onGround);
 
-        return new EntityPositionS2CPacket(byteBuf);
+        return EntityPositionS2CPacket.CODEC.decode(byteBuf);
     }
 
     public static EntityVelocityUpdateS2CPacket createEntityVelocityUpdate(int id, int x, int y, int z) {
@@ -57,7 +57,7 @@ public class EntityUtil {
         byteBuf.writeShort(y);
         byteBuf.writeShort(z);
 
-        return new EntityVelocityUpdateS2CPacket(byteBuf);
+        return EntityVelocityUpdateS2CPacket.CODEC.decode(byteBuf);
     }
 
     public static <T> EntityTrackerUpdateS2CPacket createDataTrackerUpdate(int id, TrackedData<T> tracker, T value) {

@@ -9,7 +9,9 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 @Mixin(targets = "net/minecraft/entity/data/TrackedDataHandlerRegistry$2")
 public class TrackedDataImplementation {
-    @ModifyArg(method = "write(Lnet/minecraft/network/PacketByteBuf;Ljava/util/Optional;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getRawIdFromState(Lnet/minecraft/block/BlockState;)I"))
+    // TODO this fixes the optional block state codec, but not the regular one. For what is it used?
+
+    @ModifyArg(method = "encode(Lio/netty/buffer/ByteBuf;Ljava/util/Optional;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getRawIdFromState(Lnet/minecraft/block/BlockState;)I"))
     private BlockState redirectGetRawId(BlockState state) {
         var player = PacketContext.get().getPlayer();
         var map = Util.tryGetPolyMap(player);

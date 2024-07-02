@@ -44,15 +44,19 @@ public class WizardTests implements FabricGameTest {
             packetCtx.clearPackets();
         });
 
-        ctx.runAtTick(2, () -> {
+        ctx.runAtTick(3, () -> {
             // Piston should be extending now
             ctx.checkBlock(new BlockPos(0,2,0), block -> block == Blocks.MOVING_PISTON, "Piston isn't extending");
 
-            var packet = packetCtx.getFirstOfType(EntityPositionS2CPacket.class);
-            var expectedPosition = ctx.getAbsolute(new Vec3d(0.5, 2.5, 0.5)); // Midway in-between piston extension from y2-3
-            ctx.assertTrue(packet.getX() == expectedPosition.getX(), "Wrong x value: "+packet.getX() + " instead of " + expectedPosition.getX());
-            ctx.assertTrue(packet.getY() == expectedPosition.getY(), "Wrong y value: "+packet.getY() + " instead of " + expectedPosition.getY());
-            ctx.assertTrue(packet.getZ() == expectedPosition.getZ(), "Wrong z value: "+packet.getZ() + " instead of " + expectedPosition.getZ());
+            // As part of the extension animation, there should be an item at the midway
+            // point in-between the piston extension from y2-3
+            var expectedPosition = ctx.getAbsolute(new Vec3d(0.5, 2.5, 0.5));
+
+            ctx.assertTrue(packetCtx.getReceived(EntityPositionS2CPacket.class).anyMatch(packet ->
+                            packet.getX() == expectedPosition.getX() &&
+                            packet.getY() == expectedPosition.getY() &&
+                            packet.getZ() == expectedPosition.getZ()),
+                    "Item did not move to the midway point during piston animation");
 
             packetCtx.close();
             ctx.complete();

@@ -27,8 +27,8 @@ public class TestSlabBlock extends SlabBlock {
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         Testmod.debugSend(player, "Slab: "+state.get(VARIANT));
-        return ActionResult.PASS;
+        return super.onUse(state, world, pos, player, hit);
     }
 }

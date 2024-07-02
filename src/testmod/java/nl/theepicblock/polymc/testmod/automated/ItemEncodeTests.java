@@ -1,8 +1,10 @@
 package nl.theepicblock.polymc.testmod.automated;
 
 import io.github.theepicblock.polymc.impl.NOPPolyMap;
+import io.github.theepicblock.polymc.impl.PolyMapImpl;
 import io.github.theepicblock.polymc.mixins.wizards.ItemEntityAccessor;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -11,12 +13,12 @@ import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.test.CustomTestProvider;
 import net.minecraft.test.TestFunction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.GameMode;
 import nl.theepicblock.polymc.testmod.Testmod;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Objects;
 
 public class ItemEncodeTests implements FabricGameTest {
     @CustomTestProvider
@@ -42,6 +44,7 @@ public class ItemEncodeTests implements FabricGameTest {
                             (ctx) -> {
                                 // The actual test function
                                 var packetCtx = new PacketTester(ctx);
+                                packetCtx.setGameMode(GameMode.CREATIVE);
                                 if (useNopMap) {
                                     packetCtx.setMap(new NOPPolyMap());
                                 }
@@ -54,12 +57,23 @@ public class ItemEncodeTests implements FabricGameTest {
 
                                 if (isItemVanilla || useNopMap) {
                                     ctx.assertTrue(newStack.getItem() == originalStack.getItem(), "Item shouldn't have been transformed by PolyMc. Result: "+newStack);
+                                    ctx.assertFalse(newStack.contains(DataComponentTypes.CUSTOM_DATA), "PolyMc shouldn't add data when it's not transforming");
+                                    ctx.assertTrue(ItemStack.areItemsAndComponentsEqual(newStack, originalStack), "PolyMc should not influence stacks in any way if it's not transforming");
                                 } else {
                                     ctx.assertTrue(newStack.getItem() != originalStack.getItem(), "Item should've been transformed by PolyMc. Result: "+newStack);
                                 }
                                 ctx.assertTrue(newStack.getCount() == 5, "PolyMc shouldn't affect itemcount");
-                                ctx.assertTrue(ItemStack.areItemsEqual(originalStack, copyOfOriginal), "PolyMc shouldn't affect the original item");
-                                ctx.assertTrue(Objects.equals(originalStack.getNbt(), copyOfOriginal.getNbt()), "PolyMc shouldn't affect the original item's nbt");
+                                ctx.assertTrue(ItemStack.areItemsAndComponentsEqual(originalStack, copyOfOriginal), "PolyMc shouldn't affect the original item");
+
+                                ctx.assertTrue(ItemStack.areItemsAndComponentsEqual(originalStack, PolyMapImpl.recoverOriginalItem(newStack)),
+                                        "Item should survive round-trip (when player is in creative mode)");
+
+                                // Create a new polyd stack with a different count
+                                if (method.getKey().equals("reencode")) {
+                                    originalStack.setCount(7);
+                                    var secondStack = method.getValue().reserialize(originalStack, packetCtx);
+                                    ctx.assertTrue(ItemStack.areItemsAndComponentsEqual(newStack, secondStack), "The same item with different counts should be stackable");
+                                }
 
                                 packetCtx.close();
                                 ctx.complete();
@@ -90,7 +104,7 @@ public class ItemEncodeTests implements FabricGameTest {
                 .map(p -> (EntityTrackerUpdateS2CPacket)p)
                 .filter(p -> p.id() == entity.getId())
                 .flatMap(p -> p.trackedValues().stream())
-                .filter(p -> p.id() == ItemEntityAccessor.getStackTracker().getId())
+                .filter(p -> p.id() == ItemEntityAccessor.getStackTracker().id())
                 .findAny();
 
         return (ItemStack)(entry.orElseThrow().value());

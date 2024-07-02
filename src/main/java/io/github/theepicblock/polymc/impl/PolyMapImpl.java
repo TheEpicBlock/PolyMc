@@ -20,6 +20,9 @@ package io.github.theepicblock.polymc.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.DebugInfoProvider;
 import io.github.theepicblock.polymc.api.PolyMap;
@@ -35,15 +38,19 @@ import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ModdedResourceContainerImpl;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackImplementation;
-import net.fabricmc.fabric.api.util.NbtType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.*;
+import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -54,10 +61,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+
+import static net.minecraft.item.ItemStack.ITEM_CODEC;
 
 /**
  * This is the standard implementation of the PolyMap that PolyMc uses by default.
@@ -71,6 +77,12 @@ public class PolyMapImpl implements PolyMap {
      */
     private static final String ORIGINAL_ITEM_NBT = "PolyMcOriginal";
     private static final boolean ALWAYS_ADD_CREATIVE_NBT = ConfigManager.getConfig().alwaysSendFullNbt;
+    /**
+     * Encodes all data that's meant to be server controlled. In practice this is simply all the ItemStack data minus
+     * the count
+     */
+    private static final Codec<ItemStack> ITEM_DATA_CODEC = RecordCodecBuilder.create((instance) -> instance.group(ITEM_CODEC.fieldOf("id").forGetter(ItemStack::getRegistryEntry), ComponentChanges.CODEC.optionalFieldOf("components", ComponentChanges.EMPTY).forGetter(ItemStack::getComponentChanges)).apply(instance, (id, components) -> new ItemStack(id, 1, components)));
+    public static final MapCodec<Optional<ItemStack>> ORIGINAL_ITEM_CODEC = ITEM_DATA_CODEC.optionalFieldOf(ORIGINAL_ITEM_NBT);
 
     private final ImmutableMap<Item,ItemPoly> itemPolys;
     private final ItemTransformer[] globalItemPolys;
@@ -99,8 +111,11 @@ public class PolyMapImpl implements PolyMap {
 
     @Override
     public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
+        if (serverItem.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+
         ItemStack ret = serverItem;
-        NbtCompound originalNbt = serverItem.writeNbt(new NbtCompound());
 
         ItemPoly poly = itemPolys.get(serverItem.getItem());
         if (poly != null) ret = poly.getClientItem(serverItem, player, location);
@@ -109,11 +124,15 @@ public class PolyMapImpl implements PolyMap {
             ret = globalPoly.transform(serverItem, ret, this, player, location);
         }
 
-        if ((player == null || player.isCreative() || location == ItemLocation.CREATIVE || this.ALWAYS_ADD_CREATIVE_NBT) && !ItemStack.canCombine(serverItem, ret) && !serverItem.isEmpty()) {
+        if ((player == null || player.isCreative() || location == ItemLocation.CREATIVE || ALWAYS_ADD_CREATIVE_NBT) && !ItemStack.areItemsAndComponentsEqual(serverItem, ret) && !serverItem.isEmpty()) {
+
+            RegistryOps<NbtElement> registryOps = Util.getRegistryManager(player).getOps(NbtOps.INSTANCE);
+
             // Preserves the nbt of the original item, so it can be reverted
-            ret = ret.copy();
-            originalNbt.remove("Count");
-            ret.setSubNbt(ORIGINAL_ITEM_NBT, originalNbt);
+            var finalRet = ret;
+            NbtComponent.DEFAULT.with(registryOps, ORIGINAL_ITEM_CODEC, Optional.of(serverItem)).result().ifPresent((nbt) -> {
+                finalRet.set(DataComponentTypes.CUSTOM_DATA, nbt);
+            });
         }
 
         return ret;
@@ -145,19 +164,22 @@ public class PolyMapImpl implements PolyMap {
     }
 
     public static ItemStack recoverOriginalItem(ItemStack input) {
-        if (input.getNbt() == null || !input.getNbt().contains(ORIGINAL_ITEM_NBT, NbtType.COMPOUND)) {
+        var data = input.get(DataComponentTypes.CUSTOM_DATA);
+        if (data == null) {
             return input;
         }
-
-        NbtCompound tag = input.getNbt().getCompound(ORIGINAL_ITEM_NBT);
-        ItemStack stack = ItemStack.fromNbt(tag);
-        stack.setCount(input.getCount()); // The clientside count is leading, to support middle mouse button duplication and stack splitting and such
-
-        if (stack.isEmpty() && !input.isEmpty()) {
-            stack = new ItemStack(Items.CLAY_BALL);
-            stack.setCustomName(Text.literal("Invalid Item").formatted(Formatting.ITALIC));
+        var result = data.get(ORIGINAL_ITEM_CODEC);
+        if (result.error().isPresent()) {
+            var stack = new ItemStack(Items.CLAY_BALL);
+            stack.set(DataComponentTypes.CUSTOM_NAME, Text.literal("Invalid Item").formatted(Formatting.ITALIC));
+            return stack;
+        } else {
+            // Return the original only if it's present
+            var polymcOriginal = result.result().orElseThrow();
+            ItemStack recovered_stack = polymcOriginal.orElse(input);
+            recovered_stack.setCount(input.getCount());
+            return recovered_stack;
         }
-        return stack;
     }
 
     @Override

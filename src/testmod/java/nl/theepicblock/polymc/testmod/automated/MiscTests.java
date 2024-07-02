@@ -3,18 +3,25 @@ package nl.theepicblock.polymc.testmod.automated;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.network.packet.s2c.play.InventoryS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
-import net.minecraft.potion.PotionUtil;
+import net.minecraft.registry.Registries;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
-import net.minecraft.text.Text;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import nl.theepicblock.polymc.testmod.Testmod;
+import nl.theepicblock.polymc.testmod.YellowStatusEffect;
 
 import java.util.Objects;
+
+import static nl.theepicblock.polymc.testmod.YellowStatusEffect.YELLOW;
 
 public class MiscTests implements FabricGameTest {
     // These tests are broken, I am aware
@@ -78,39 +85,58 @@ public class MiscTests implements FabricGameTest {
         packetCtx.close();
     }
 
+    private ItemStack testPotion() {
+        var serverPotion = new ItemStack(Items.POTION);
+        serverPotion.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Registries.POTION.getEntry(Testmod.TEST_POTION_TYPE)));
+        return serverPotion;
+    }
+
     @GameTest(templateName = EMPTY_STRUCTURE)
     public void potionItem(TestContext ctx) {
         var map = TestUtil.getMap();
-        var serverPotion = new ItemStack(Items.POTION);
-        PotionUtil.setPotion(serverPotion, Testmod.TEST_POTION_TYPE);
 
+        // Create a potion item
+        var serverPotion = testPotion();
+        TestUtil.assertEq(serverPotion.get(DataComponentTypes.POTION_CONTENTS).getColor(), YELLOW, "Sanity check");
         var clientPotion = map.getClientItem(serverPotion, null, ItemLocation.INVENTORY);
-        clientPotion.getOrCreateNbt().remove("Potion"); // Anything under this tag can't be understood by vanilla client
 
-        TestUtil.assertEq(PotionUtil.getColor(clientPotion), 0xf4e42c, "potion should be yellow");
-        TestUtil.assertEq(clientPotion.getName().getLiteralString(), serverPotion.getName().getLiteralString());
+        try {
+            YellowStatusEffect.SIMULATE_UNAVAILABLE = true;
+            var clientPotionData = clientPotion.get(DataComponentTypes.POTION_CONTENTS);
+            TestUtil.assertNonNull(clientPotionData, "polyd potions should still have potion data");
+            TestUtil.assertEq(clientPotionData.getColor(), YELLOW, "potion should be yellow");
+            TestUtil.assertEq(clientPotion.getName().getLiteralString(), serverPotion.getName().getLiteralString());
 
+            TestUtil.assertDifferent(serverPotion.get(DataComponentTypes.POTION_CONTENTS).getColor(), YELLOW, "Untransformed item should be broken. This test may be invalid");
+        } finally {
+            YellowStatusEffect.SIMULATE_UNAVAILABLE = false;
+        }
         ctx.complete();
     }
 
-    @GameTest(templateName = EMPTY_STRUCTURE, required = false)
+    @GameTest(templateName = EMPTY_STRUCTURE)
     public void potionItemTooltip(TestContext ctx) {
-        var map = TestUtil.getMap();
-        var serverPotion = new ItemStack(Items.POTION);
-        PotionUtil.setPotion(serverPotion, Testmod.TEST_POTION_TYPE);
+        var serverPotion = testPotion();
 
-        var clientPotion = map.getClientItem(serverPotion, null, ItemLocation.INVENTORY);
-        clientPotion.getOrCreateNbt().remove("Potion"); // Anything under this tag can't be understood by vanilla client
+        // PolyMc makes some assumptions with tooltips
+        // namely that the client item will be directly serialized
+        var packetTester = new PacketTester(ctx);
+        var clientPotion = packetTester.reencode(new InventoryS2CPacket(0,0, DefaultedList.of(), serverPotion)).getCursorStack();
 
-        TestUtil.assertTrue(
-                clientPotion.getTooltip(null, TooltipContext.Default.BASIC)
-                        .stream()
-                        .map(Text::getLiteralString)
-                        .filter(Objects::nonNull)
-                        .anyMatch(str -> str.contains("test_effect")),
-                "Tooltip should make some reference to the contained effect");
+        try {
+            YellowStatusEffect.SIMULATE_UNAVAILABLE = true;
+            TestUtil.assertTrue(
+                    clientPotion.getTooltip(Item.TooltipContext.DEFAULT, null, TooltipType.BASIC)
+                            .stream()
+                            .map(Object::toString)
+                            .filter(Objects::nonNull)
+                            .anyMatch(str -> str.contains("effect.polymc-testmod.yellow_effect")),
+                    "Tooltip should make some reference to the contained effect");
+        } finally {
+            YellowStatusEffect.SIMULATE_UNAVAILABLE = false;
+        }
 
-
+        packetTester.close();
         ctx.complete();
     }
 }

@@ -7,6 +7,7 @@ import io.netty.util.internal.shaded.org.jctools.util.UnsafeAccess;
 import it.unimi.dsi.fastutil.objects.ObjectIterators;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageScaling;
 import net.minecraft.entity.damage.DamageSources;
@@ -14,6 +15,7 @@ import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.map.MapState;
+import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -74,7 +76,7 @@ public final class FakeWorld extends World implements LightSourceView {
     public static final World INSTANCE_REGULAR;
     static final Scoreboard SCOREBOARD = new Scoreboard();
     static final DynamicRegistryManager REGISTRY_MANAGER = new DynamicRegistryManager.Immutable() {
-        private FakeRegistry<DamageType> damageTypes = new FakeRegistry<>(RegistryKeys.DAMAGE_TYPE, new Identifier("polymer","fake_damage"),
+        private FakeRegistry<DamageType> damageTypes = new FakeRegistry<>(RegistryKeys.DAMAGE_TYPE, Identifier.of("polymer","fake_damage"),
                 new DamageType("", DamageScaling.NEVER, 0));
 
         @Override
@@ -88,7 +90,7 @@ public final class FakeWorld extends World implements LightSourceView {
                 return Optional.of(damageTypes);
             }
 
-            return Optional.empty();
+            return Optional.of(new FakeRegistry(key, Identifier.of("polymc", "edksflj"), "jsawadanja"));
         }
 
         @Override
@@ -96,7 +98,7 @@ public final class FakeWorld extends World implements LightSourceView {
             return Stream.empty();
         }
     };
-    static final RecipeManager RECIPE_MANAGER = new RecipeManager();
+    static final RecipeManager RECIPE_MANAGER = new RecipeManager(REGISTRY_MANAGER);
     private static final FeatureSet FEATURES = FeatureFlags.FEATURE_MANAGER.getFeatureSet();
     private static final TickManager TICK_MANAGER = new TickManager();
     final ChunkManager chunkManager = new ChunkManager() {
@@ -208,7 +210,7 @@ public final class FakeWorld extends World implements LightSourceView {
         World worldUnsafe, worldDefault;
 
         var dimType = RegistryEntry.Reference.intrusive(new RegistryEntryOwner<>() {}, new DimensionType(OptionalLong.empty(), true, false, false, true, 1.0D, true, false, -64, 384, 384, BlockTags.INFINIBURN_OVERWORLD, DimensionTypes.OVERWORLD_ID, 0.0F, new DimensionType.MonsterSettings(false, true, UniformIntProvider.create(0, 7), 0)));
-        ((ReferenceAccessor) dimType).callSetRegistryKey(RegistryKey.of(RegistryKeys.DIMENSION_TYPE, new Identifier("overworld")));
+        ((ReferenceAccessor) dimType).callSetRegistryKey(RegistryKey.of(RegistryKeys.DIMENSION_TYPE, Identifier.ofVanilla("overworld")));
         try {
             worldUnsafe = (FakeWorld) UnsafeAccess.UNSAFE.allocateInstance(FakeWorld.class);
             var accessor = (WorldAccessor) worldUnsafe;
@@ -217,8 +219,7 @@ public final class FakeWorld extends World implements LightSourceView {
             accessor.polymc$setDebugWorld(true);
             accessor.polymc$setProfiler(() -> new ProfilerSystem(() -> 0l, () -> 0, false));
             accessor.polymc$setProperties(new FakeWorldProperties());
-            accessor.polymc$setRegistryKey(RegistryKey.of(RegistryKeys.WORLD, new Identifier("polymer","fake_world")));
-            accessor.polymc$setDimensionKey(DimensionTypes.OVERWORLD);
+            accessor.polymc$setRegistryKey(RegistryKey.of(RegistryKeys.WORLD, Identifier.of("polymer","fake_world")));
             accessor.polymc$setDimensionEntry(dimType);
             accessor.polymc$setThread(Thread.currentThread());
             accessor.polymc$setRandom(Random.create());
@@ -240,7 +241,7 @@ public final class FakeWorld extends World implements LightSourceView {
         try {
             worldDefault = new FakeWorld(
                     new FakeWorldProperties(),
-                    RegistryKey.of(RegistryKeys.WORLD, new Identifier("polymer", "fake_world")),
+                    RegistryKey.of(RegistryKeys.WORLD, Identifier.of("polymer", "fake_world")),
                     dimType,
                     () -> new ProfilerSystem(() -> 0L, () -> 0, false),
                     false,
@@ -307,18 +308,18 @@ public final class FakeWorld extends World implements LightSourceView {
 
     @Nullable
     @Override
-    public MapState getMapState(String id) {
+    public MapState getMapState(MapIdComponent id) {
         return null;
     }
 
     @Override
-    public void putMapState(String id, MapState state) {
+    public void putMapState(MapIdComponent id, MapState state) {
 
     }
 
     @Override
-    public int getNextMapId() {
-        return 0;
+    public MapIdComponent increaseAndGetMapId() {
+        return new MapIdComponent(0);
     }
 
     @Override
@@ -362,18 +363,18 @@ public final class FakeWorld extends World implements LightSourceView {
     }
 
     @Override
-    public void emitGameEvent(GameEvent event, Vec3d pos, @Nullable GameEvent.Emitter emitter) {
-
-    }
-
-    @Override
-    public void emitGameEvent(@Nullable Entity entity, GameEvent event, BlockPos pos) {
+    public void emitGameEvent(RegistryEntry<GameEvent> event, Vec3d emitterPos, GameEvent.Emitter emitter) {
 
     }
 
     @Override
     public DynamicRegistryManager getRegistryManager() {
         return REGISTRY_MANAGER;
+    }
+
+    @Override
+    public BrewingRecipeRegistry getBrewingRecipeRegistry() {
+        return new BrewingRecipeRegistry.Builder(FeatureSet.empty()).build();
     }
 
     @Override
@@ -408,45 +409,14 @@ public final class FakeWorld extends World implements LightSourceView {
 
 
     static class FakeWorldProperties implements MutableWorldProperties {
-
         @Override
-        public int getSpawnX() {
-            return 0;
-        }
-
-        @Override
-        public void setSpawnX(int spawnX) {
-
-        }
-
-        @Override
-        public int getSpawnY() {
-            return 0;
-        }
-
-        @Override
-        public void setSpawnY(int spawnY) {
-
-        }
-
-        @Override
-        public int getSpawnZ() {
-            return 0;
-        }
-
-        @Override
-        public void setSpawnZ(int spawnZ) {
-
+        public BlockPos getSpawnPos() {
+            return BlockPos.ORIGIN;
         }
 
         @Override
         public float getSpawnAngle() {
             return 0;
-        }
-
-        @Override
-        public void setSpawnAngle(float angle) {
-
         }
 
         @Override
@@ -492,6 +462,11 @@ public final class FakeWorld extends World implements LightSourceView {
         @Override
         public boolean isDifficultyLocked() {
             return false;
+        }
+
+        @Override
+        public void setSpawnPos(BlockPos pos, float angle) {
+
         }
     }
 }

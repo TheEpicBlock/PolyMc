@@ -3,6 +3,7 @@ package io.github.theepicblock.polymc.datagen;
 import io.github.theepicblock.polymc.common.BlockItemType;
 import io.github.theepicblock.polymc.common.BlockItemTypeExamples;
 import io.netty.buffer.Unpooled;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.BlockItem;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
@@ -24,7 +25,7 @@ public class PopulateBlockItemInfo {
     public static void doStuff(File outputDir) throws IOException {
         var list = new BlockItemTypeExamples();
         for (var item : Registries.ITEM) {
-            if (item.isFood()) continue;
+            if (item.getComponents().contains(DataComponentTypes.FOOD)) continue;
 
             if (item instanceof BlockItem blockItem) {
                 var type = BlockItemType.of(blockItem);

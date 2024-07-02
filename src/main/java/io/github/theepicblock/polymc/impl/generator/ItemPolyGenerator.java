@@ -25,8 +25,11 @@ import io.github.theepicblock.polymc.common.BlockItemType;
 import io.github.theepicblock.polymc.impl.ConfigManager;
 import io.github.theepicblock.polymc.impl.poly.item.*;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.item.*;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
@@ -47,6 +50,24 @@ public class ItemPolyGenerator {
             }
             return new FancyPantsItemPoly(builder, armorItem);
         }
+        if (item instanceof AxeItem) {
+            return new DamageableItemPoly(cmdManager, item, Items.IRON_AXE);
+        }
+        if (item instanceof PickaxeItem) {
+            return new DamageableItemPoly(cmdManager, item, Items.IRON_PICKAXE);
+        }
+        if (item instanceof HoeItem) {
+            return new DamageableItemPoly(cmdManager, item, Items.IRON_HOE);
+        }
+        if (item instanceof ShovelItem) {
+            return new DamageableItemPoly(cmdManager, item, Items.IRON_SHOVEL);
+        }
+        if (item instanceof SwordItem) {
+            return new DamageableItemPoly(cmdManager, item, Items.IRON_SWORD);
+        }
+        if (item instanceof MiningToolItem) {
+            return new DamageableItemPoly(cmdManager, item, Items.STONE_HOE);
+        }
         if (item instanceof ShieldItem) {
             return new DamageableItemPoly(cmdManager, item, Items.SHIELD);
         }
@@ -62,21 +83,13 @@ public class ItemPolyGenerator {
         if (item instanceof CrossbowItem) {
             return new DamageableItemPoly(cmdManager, item, Items.CROSSBOW);
         }
-        if (item instanceof RangedWeaponItem && item.getMaxUseTime(new ItemStack(item)) != 0) {
+        if (item instanceof RangedWeaponItem && item.getMaxUseTime(new ItemStack(item), null) != 0) {
             return new DamageableItemPoly(cmdManager, item, Items.BOW);
         }
-        if (item.isDamageable()) {
-            if (item instanceof DyeableItem) {
-                return new DamageableItemPoly(cmdManager, item, CustomModelDataManager.DYABLE_DAMAGABLE_ITEMS);
-            }
-            return new DamageableItemPoly(cmdManager, item);
-        }
-        if (item.isFood()) {
-            return new CustomModelDataPoly(cmdManager, item, CustomModelDataManager.FOOD_ITEMS);
-        }
-        if (item instanceof DyeableItem) {
-            return new CustomModelDataPoly(cmdManager, item, Items.LEATHER_HORSE_ARMOR);
-        }
+        // TODO during 1.20.5 updating. Best solution would be to check if there's an ItemColorProvider registered
+//        if (item instanceof DyeableItem) {
+//            return new CustomModelDataPoly(cmdManager, item, Items.LEATHER_HORSE_ARMOR);
+//        }
         if (item instanceof BlockItem blockItem) {
             if (AbstractFurnaceBlockEntity.canUseAsFuel(new ItemStack(item))) {
                 return new PlaceableItemPoly(cmdManager, item, CustomModelDataManager.FUEL_ITEMS);
@@ -93,9 +106,11 @@ public class ItemPolyGenerator {
 
             return new PlaceableItemPoly(cmdManager, item, CustomModelDataManager.BLOCK_ITEMS);
         }
-
         if (AbstractFurnaceBlockEntity.canUseAsFuel(new ItemStack(item))) {
             return new CustomModelDataPoly(cmdManager, item, CustomModelDataManager.FUEL_ITEMS);
+        }
+        if (new ItemStack(item).isIn(ItemTags.DYEABLE)) {
+            return new CustomModelDataPoly(cmdManager, item, Items.LEATHER_HORSE_ARMOR);
         }
 
         return new CustomModelDataPoly(cmdManager, item);

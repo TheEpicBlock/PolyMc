@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public record BlockItemType(@NotNull BlockPlacementBehaviour placementBehaviour, SoundEvent placeSound) {
     public BlockItemType(PacketByteBuf buf) {
-        this(buf.readEnumConstant(BlockPlacementBehaviour.class), SoundEvent.fromBuf(buf));
+        this(buf.readEnumConstant(BlockPlacementBehaviour.class), SoundEvent.PACKET_CODEC.decode(buf));
     }
 
     @Nullable
@@ -18,13 +18,13 @@ public record BlockItemType(@NotNull BlockPlacementBehaviour placementBehaviour,
         var block = blockItem.getBlock();
         var behavior = BlockPlacementBehaviour.get(blockItem);
         if (behavior == null) return null;
-        var sound = block.getSoundGroup(block.getDefaultState()).getPlaceSound();
+        var sound = block.getDefaultState().getSoundGroup().getPlaceSound();
         return new BlockItemType(behavior, sound);
     }
 
     public static void write(PacketByteBuf buf, BlockItemType self) {
         buf.writeEnumConstant(self.placementBehaviour);
-        self.placeSound.writeBuf(buf);
+        SoundEvent.PACKET_CODEC.encode(buf, self.placeSound);
     }
 
     // We need custom equals and hashCode because SoundEvent doesn't have a proper one

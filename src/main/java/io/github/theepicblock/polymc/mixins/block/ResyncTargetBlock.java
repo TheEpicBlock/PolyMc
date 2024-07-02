@@ -18,7 +18,7 @@ public class ResyncTargetBlock {
     @Inject(method = "setPower(Lnet/minecraft/world/WorldAccess;Lnet/minecraft/block/BlockState;ILnet/minecraft/util/math/BlockPos;I)V", at = @At("HEAD"))
     private static void onSetPower(WorldAccess world, BlockState state, int power, BlockPos pos, int delay, CallbackInfo ci) {
         if (world instanceof ServerWorld serverWorld) {
-            serverWorld.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(new ChunkPos(pos)).forEach(player -> {
+            serverWorld.getChunkManager().chunkLoadingManager.getPlayersWatchingChunk(new ChunkPos(pos)).forEach(player -> {
                 if (Util.tryGetPolyMap(player).isVanillaLikeMap()) {
                     BlockResyncManager.onBlockUpdate(null, pos, serverWorld, player, null);
                 }

@@ -29,8 +29,8 @@ public class RegistryElementCodecMixin {
                     return Registries.ITEM.getEntry(map.getClientItem(item.getDefaultStack(), ctx.getPlayer(), null).getItem());
                 } else if (entry.value() instanceof Block item && map.getBlockPoly(item) != null) {
                     return Registries.BLOCK.getEntry(map.getBlockPoly(item).getClientBlock(item.getDefaultState()).getBlock());
-                } else if (entry.value() instanceof SoundEvent event && !Util.isVanilla(Registries.SOUND_EVENT.getId(event))) {
-                    return RegistryEntry.of(entry.value());
+                } else if (entry.value() instanceof SoundEvent event && !Util.isVanillaAndRegistered(entry)) {
+                    return RegistryEntry.of(event);
                 }
             } catch (Throwable e) {
                 e.printStackTrace();

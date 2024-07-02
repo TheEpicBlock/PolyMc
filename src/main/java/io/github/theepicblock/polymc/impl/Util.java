@@ -23,13 +23,19 @@ import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.mixin.BlockStateDuck;
-import io.github.theepicblock.polymc.mixins.ItemStackAccessor;
+import io.github.theepicblock.polymc.impl.mixin.TransformingDataComponent;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.component.ComponentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.ClientConnection;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Property;
@@ -69,6 +75,10 @@ public class Util {
     public static boolean isVanilla(Identifier id) {
         if (id == null) return false;
         return isNamespaceVanilla(id.getNamespace());
+    }
+
+    public static boolean isVanillaAndRegistered(RegistryEntry<?> v) {
+        return v.getKey().isPresent() && Util.isVanilla(v.getKey().get().getValue());
     }
 
     /**
@@ -274,11 +284,6 @@ public class Util {
         return new BlockPos(index & 0xF, (index >> 8) & 0xF, (index >> 4) & 0xF);
     }
 
-    public static boolean isSectionVisible(ItemStack stack, ItemStack.TooltipSection tooltipSection) {
-        int flags = ((ItemStackAccessor)(Object)stack).callGetHideFlags();
-        return ItemStackAccessor.callIsSectionVisible(flags, tooltipSection);
-    }
-
     /**
      * @return null if the id can't be parsed or the string is null
      */
@@ -292,4 +297,89 @@ public class Util {
             gson.toJson(json, writer);
         }
     }
+
+    /**
+     * Returns a copy of the provided {@link ItemStack}, but with the item set to the target item.
+     */
+    public static ItemStack copyWithItem(ItemStack original, Item target, @Nullable ServerPlayerEntity player) {
+        var out = new ItemStack(target, original.getCount());
+        for (var x : original.getComponents().getTypes()) {
+            if (original.getComponents().get(x) == null) {
+                out.set(x, null);
+            }
+        }
+
+        for (var i = 0; i < COMPONENTS_TO_COPY.length; i++) {
+            var key = COMPONENTS_TO_COPY[i];
+            var x = original.get(key);
+
+            if (x instanceof TransformingDataComponent t) {
+                //noinspection unchecked,rawtypes
+                out.set((ComponentType) key, t.polymc$getTransformed(player));
+            } else {
+                //noinspection unchecked,rawtypes
+                out.set((ComponentType) key, (Object) original.get(key));
+            }
+        }
+        out.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, original.hasGlint());
+
+        return out;
+    }
+
+    /**
+     * Get the appropriate dynamic registry manager
+     */
+    @NotNull
+    public static DynamicRegistryManager getRegistryManager(PlayerEntity entity) {
+        if (entity == null) {
+            return getRegistryManager();
+        }
+
+        return entity.getRegistryManager();
+    }
+
+    /**
+     * Get the appropriate dynamic registry manager
+     */
+    @NotNull
+    public static DynamicRegistryManager getRegistryManager() {
+
+        if (PolyMc.REGISTRY_MANAGER != null) {
+            return PolyMc.REGISTRY_MANAGER;
+        }
+
+        // Fallback to an empty registry
+        return DynamicRegistryManager.EMPTY;
+    }
+
+    private static final ComponentType<?>[] COMPONENTS_TO_COPY = {DataComponentTypes.CAN_BREAK, DataComponentTypes.CAN_PLACE_ON,
+            DataComponentTypes.BLOCK_ENTITY_DATA, DataComponentTypes.TRIM,
+            DataComponentTypes.TOOL,
+            DataComponentTypes.LORE,
+            DataComponentTypes.MAX_STACK_SIZE,
+            DataComponentTypes.FOOD,
+            DataComponentTypes.FIRE_RESISTANT,
+            DataComponentTypes.FIREWORKS,
+            DataComponentTypes.FIREWORK_EXPLOSION,
+            DataComponentTypes.DAMAGE,
+            DataComponentTypes.MAX_DAMAGE,
+            DataComponentTypes.ATTRIBUTE_MODIFIERS,
+            DataComponentTypes.BANNER_PATTERNS,
+            DataComponentTypes.BASE_COLOR,
+            DataComponentTypes.HIDE_TOOLTIP,
+            DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP,
+            DataComponentTypes.CAN_BREAK,
+            DataComponentTypes.CAN_PLACE_ON,
+            DataComponentTypes.REPAIR_COST,
+            DataComponentTypes.BUNDLE_CONTENTS,
+            DataComponentTypes.RARITY,
+            DataComponentTypes.LODESTONE_TRACKER,
+            DataComponentTypes.ENCHANTMENTS,
+            DataComponentTypes.STORED_ENCHANTMENTS,
+            DataComponentTypes.POTION_CONTENTS,
+            DataComponentTypes.CUSTOM_NAME,
+            DataComponentTypes.WRITABLE_BOOK_CONTENT,
+            DataComponentTypes.WRITTEN_BOOK_CONTENT,
+            DataComponentTypes.DYED_COLOR
+    };
 }

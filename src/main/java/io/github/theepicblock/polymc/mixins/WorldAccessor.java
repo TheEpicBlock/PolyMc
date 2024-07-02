@@ -49,10 +49,6 @@ public interface WorldAccessor {
     void polymc$setRegistryKey(RegistryKey<World> registryKey);
 
     @Mutable
-    @Accessor("dimension")
-    void polymc$setDimensionKey(RegistryKey<DimensionType> dimension);
-
-    @Mutable
     @Accessor("dimensionEntry")
     void polymc$setDimensionEntry(RegistryEntry<DimensionType> dimensionEntry);
 
