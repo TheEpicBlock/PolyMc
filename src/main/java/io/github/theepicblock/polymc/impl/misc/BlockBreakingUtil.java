@@ -21,14 +21,29 @@ public class BlockBreakingUtil {
             )
     );
 
+    public static Collection<EntityAttributeInstance> REMOVE_DISABLER_ATTRIBUTES = Collections.singleton(
+            new EntityAttributeInstance(
+                    EntityAttributes.PLAYER_BLOCK_BREAK_SPEED,
+                    (update) -> {}
+            )
+    );
+
     static {
         DISABLER_ATTRIBUTES.iterator().next().addPersistentModifier(new EntityAttributeModifier(POLYMC_MODIFIER_ID, -1, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        REMOVE_DISABLER_ATTRIBUTES.iterator().next().removeModifier(POLYMC_MODIFIER_ID);
     }
 
     public static void sendBreakDisabler(ServerPlayerEntity player) {
         player.networkHandler.sendPacket(new EntityAttributesS2CPacket(
                 player.getId(),
                 DISABLER_ATTRIBUTES
+        ));
+    }
+
+    public static void removeBreakDisabler(ServerPlayerEntity player) {
+        player.networkHandler.sendPacket(new EntityAttributesS2CPacket(
+                player.getId(),
+                REMOVE_DISABLER_ATTRIBUTES
         ));
     }
 }

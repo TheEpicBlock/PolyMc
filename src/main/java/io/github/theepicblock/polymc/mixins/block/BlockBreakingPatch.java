@@ -133,7 +133,7 @@ public abstract class BlockBreakingPatch implements BlockBreakingDuck {
     @Unique
     private void enableClientBreaking() {
         isBreakingServerside = false;
-        BlockBreakingUtil.sendBreakDisabler(this.player);
+        BlockBreakingUtil.removeBreakDisabler(this.player);
     }
 
     @Override
