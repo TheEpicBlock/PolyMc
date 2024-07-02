@@ -93,10 +93,6 @@ public class CustomModelDataPoly implements ItemPoly {
             output.set(DataComponentTypes.ITEM_NAME, input.getItem().getName(input));
         }
 
-        if (input.contains(DataComponentTypes.TOOL)) {
-            output.set(DataComponentTypes.TOOL, input.get(DataComponentTypes.TOOL));
-        }
-
         return output;
     }
 
