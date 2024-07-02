@@ -4,10 +4,12 @@ import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.Util;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public class CustomBlockBreakingCheck {
+
     /**
      * @param block The block the player is looking at
      * @return True if the player needs to have custom breaking speeds
@@ -16,10 +18,21 @@ public class CustomBlockBreakingCheck {
         if (player instanceof FakePlayer || !Util.isPolyMapVanillaLike(player) || player.isCreative())
             return false;
 
+        return needsCustomBreaking(player, block.getDefaultState());
+    }
+
+    /**
+     * @param blockState The blockState the player is looking at
+     * @return True if the player needs to have custom breaking speeds
+     */
+    public static boolean needsCustomBreaking(ServerPlayerEntity player, BlockState blockState) {
+        if (player instanceof FakePlayer || !Util.isPolyMapVanillaLike(player) || player.isCreative())
+            return false;
+
         var polyMap = PolyMapProvider.getPolyMap(player);
 
         // A modded block is being broken, this always requires custom breaking
-        if (polyMap.getBlockPoly(block) != null) {
+        if (polyMap.getBlockPoly(blockState.getBlock()) != null) {
             return true;
         }
 
@@ -35,7 +48,7 @@ public class CustomBlockBreakingCheck {
                 return true;
             }
 
-            return toolComponent.isCorrectForDrops(block.getDefaultState());
+            return toolComponent.isCorrectForDrops(blockState);
         }
 
         return false;

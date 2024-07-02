@@ -113,7 +113,7 @@ public interface PolyMap {
      * This is used to disable/enable miscellaneous patches
      * @see io.github.theepicblock.polymc.mixins.CustomPacketDisabler
      * @see io.github.theepicblock.polymc.mixins.block.ResyncImplementation
-     * @see io.github.theepicblock.polymc.impl.mixin.CustomBlockBreakingCheck#needsCustomBreaking(ServerPlayerEntity, Block)
+     * @see io.github.theepicblock.polymc.impl.mixin.CustomBlockBreakingCheck#needsCustomBreaking(ServerPlayerEntity, BlockState)
      * @see GuiPolyImplementation
      * @see io.github.theepicblock.polymc.mixins.item.CustomRecipeFix
      */

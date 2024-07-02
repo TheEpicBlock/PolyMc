@@ -42,7 +42,7 @@ public class BreakParticleImplementation {
     @ModifyVariable(method = "spawnBreakParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;syncWorldEvent(Lnet/minecraft/entity/player/PlayerEntity;ILnet/minecraft/util/math/BlockPos;I)V"), argsOnly = true)
     public PlayerEntity onBreakParticlePacket(@Nullable PlayerEntity player, World world, @Nullable PlayerEntity player2, BlockPos pos, BlockState state) {
         if (player instanceof ServerPlayerEntity spe) {
-            var needsCustomBreaking = CustomBlockBreakingCheck.needsCustomBreaking(spe, state.getBlock());
+            var needsCustomBreaking = CustomBlockBreakingCheck.needsCustomBreaking(spe, state);
             return needsCustomBreaking ? null : player;
         }
         return player;
