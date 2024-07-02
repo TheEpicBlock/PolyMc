@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.impl.mixin;
 
+import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.Util;
 import net.fabricmc.fabric.api.entity.FakePlayer;
@@ -42,13 +43,7 @@ public class CustomBlockBreakingCheck {
         var handItem = handStack.getItem();
 
         if (polyMap.getItemPoly(handItem) != null) {
-            var toolComponent = handStack.get(DataComponentTypes.TOOL);
-
-            if (toolComponent == null) {
-                return true;
-            }
-
-            return toolComponent.isCorrectForDrops(blockState);
+            return handStack.get(DataComponentTypes.TOOL) == null;
         }
 
         return false;
