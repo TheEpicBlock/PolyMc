@@ -25,6 +25,8 @@ import io.github.theepicblock.polymc.common.BlockItemType;
 import io.github.theepicblock.polymc.impl.ConfigManager;
 import io.github.theepicblock.polymc.impl.poly.item.*;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.item.*;
 import net.minecraft.registry.tag.ItemTags;
@@ -47,6 +49,24 @@ public class ItemPolyGenerator {
                 FancyPantsItemPoly.onFirstRegister(builder);
             }
             return new FancyPantsItemPoly(builder, armorItem);
+        }
+        if (item instanceof AxeItem) {
+            return new DamageableItemPoly(cmdManager, item, Items.IRON_AXE);
+        }
+        if (item instanceof PickaxeItem) {
+            return new DamageableItemPoly(cmdManager, item, Items.IRON_PICKAXE);
+        }
+        if (item instanceof HoeItem) {
+            return new DamageableItemPoly(cmdManager, item, Items.IRON_HOE);
+        }
+        if (item instanceof ShovelItem) {
+            return new DamageableItemPoly(cmdManager, item, Items.IRON_SHOVEL);
+        }
+        if (item instanceof SwordItem) {
+            return new DamageableItemPoly(cmdManager, item, Items.IRON_SWORD);
+        }
+        if (item instanceof MiningToolItem) {
+            return new DamageableItemPoly(cmdManager, item, Items.STONE_HOE);
         }
         if (item instanceof ShieldItem) {
             return new DamageableItemPoly(cmdManager, item, Items.SHIELD);

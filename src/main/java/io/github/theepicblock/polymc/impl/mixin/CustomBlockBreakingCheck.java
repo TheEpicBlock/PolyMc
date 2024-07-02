@@ -4,6 +4,7 @@ import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.Util;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.block.Block;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public class CustomBlockBreakingCheck {
@@ -16,6 +17,27 @@ public class CustomBlockBreakingCheck {
             return false;
 
         var polyMap = PolyMapProvider.getPolyMap(player);
-        return polyMap.getBlockPoly(block) != null || polyMap.getItemPoly(player.getMainHandStack().getItem()) != null;
+
+        // A modded block is being broken, this always requires custom breaking
+        if (polyMap.getBlockPoly(block) != null) {
+            return true;
+        }
+
+        // If the modded stack has a ToolComponent, the client one will get it too.
+        // This means we might not need any trickery for breaking vanilla blocks.
+        var handStack = player.getMainHandStack();
+        var handItem = handStack.getItem();
+
+        if (polyMap.getItemPoly(handItem) != null) {
+            var toolComponent = handStack.get(DataComponentTypes.TOOL);
+
+            if (toolComponent == null) {
+                return true;
+            }
+
+            return toolComponent.isCorrectForDrops(block.getDefaultState());
+        }
+
+        return false;
     }
 }
