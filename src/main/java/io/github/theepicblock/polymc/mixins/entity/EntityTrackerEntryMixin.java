@@ -6,11 +6,14 @@ import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.impl.misc.PolyMapMap;
 import io.github.theepicblock.polymc.impl.mixin.EntityTrackerEntryDuck;
 import io.github.theepicblock.polymc.impl.mixin.WizardTickerDuck;
+import io.github.theepicblock.polymc.impl.poly.entity.EntityWizard;
 import io.github.theepicblock.polymc.impl.poly.wizard.EntityWizardInfo;
 import io.github.theepicblock.polymc.impl.poly.wizard.PolyMapFilteredPlayerView;
 import io.github.theepicblock.polymc.impl.poly.wizard.SinglePlayerView;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -21,6 +24,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Set;
 
 @Mixin(EntityTrackerEntry.class)
 public class EntityTrackerEntryMixin implements EntityTrackerEntryDuck {
@@ -96,5 +101,34 @@ public class EntityTrackerEntryMixin implements EntityTrackerEntryDuck {
                 t.printStackTrace();
             }
         }
+    }
+
+    @Inject(method = "syncEntityData", at = @At("HEAD"), cancellable = true)
+    private void preventSyncEntityData(CallbackInfo ci) {
+
+        if (wizards.isEmpty()) return;
+
+        wizards.forEach((polyMap, wizard) -> {
+            var allPlayers = PolyMapFilteredPlayerView.getAll(world, this.entity.getBlockPos());
+
+            if (!(wizard instanceof EntityWizard<?> entityWizard)) return;
+
+            var filteredView = new PolyMapFilteredPlayerView(allPlayers, polyMap);
+
+            try {
+                entityWizard.syncEntityData(filteredView);
+            } catch (Throwable t) {
+                PolyMc.LOGGER.error("Error syncing entity wizard");
+                t.printStackTrace();
+            }
+            filteredView.sendBatched();
+        });
+
+        if (this.entity instanceof LivingEntity livingEntity) {
+            Set<EntityAttributeInstance> set = ((LivingEntity)this.entity).getAttributes().getTracked();
+            set.clear();
+        }
+
+        ci.cancel();
     }
 }

@@ -1,5 +1,6 @@
 package io.github.theepicblock.polymc.impl.poly.entity;
 
+import io.github.theepicblock.polymc.api.wizard.PacketConsumer;
 import io.github.theepicblock.polymc.api.wizard.Wizard;
 import io.github.theepicblock.polymc.api.wizard.WizardInfo;
 import io.github.theepicblock.polymc.impl.poly.wizard.ThreadedWizardUpdater;
@@ -17,4 +18,6 @@ public abstract class EntityWizard<T extends Entity> extends Wizard {
     public T getEntity() {
         return entity;
     }
+
+    public void syncEntityData(PacketConsumer players) {}
 }
