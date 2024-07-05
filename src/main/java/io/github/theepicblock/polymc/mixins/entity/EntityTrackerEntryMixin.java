@@ -26,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(EntityTrackerEntry.class)
 public class EntityTrackerEntryMixin implements EntityTrackerEntryDuck {
@@ -108,11 +109,13 @@ public class EntityTrackerEntryMixin implements EntityTrackerEntryDuck {
 
         if (wizards.isEmpty()) return;
 
+        AtomicBoolean hasValidWizard = new AtomicBoolean(false);
         wizards.forEach((polyMap, wizard) -> {
-            var allPlayers = PolyMapFilteredPlayerView.getAll(world, this.entity.getBlockPos());
 
             if (!(wizard instanceof EntityWizard<?> entityWizard)) return;
 
+            hasValidWizard.set(true);
+            var allPlayers = PolyMapFilteredPlayerView.getAll(world, this.entity.getBlockPos());
             var filteredView = new PolyMapFilteredPlayerView(allPlayers, polyMap);
 
             try {
@@ -123,6 +126,8 @@ public class EntityTrackerEntryMixin implements EntityTrackerEntryDuck {
             }
             filteredView.sendBatched();
         });
+
+        if (!hasValidWizard.get()) return;
 
         if (this.entity instanceof LivingEntity livingEntity) {
             Set<EntityAttributeInstance> set = ((LivingEntity)this.entity).getAttributes().getTracked();
