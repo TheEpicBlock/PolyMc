@@ -159,16 +159,17 @@ public class PolyMapImpl implements PolyMap {
     }
 
     @Override
-    public ItemStack reverseClientItem(ItemStack clientItem) {
-        return recoverOriginalItem(clientItem);
+    public ItemStack reverseClientItem(ItemStack clientItem, @Nullable ServerPlayerEntity player) {
+        return recoverOriginalItem(clientItem, player);
     }
 
-    public static ItemStack recoverOriginalItem(ItemStack input) {
+    public static ItemStack recoverOriginalItem(ItemStack input, @Nullable ServerPlayerEntity player) {
         var data = input.get(DataComponentTypes.CUSTOM_DATA);
         if (data == null) {
             return input;
         }
-        var result = data.get(ORIGINAL_ITEM_CODEC);
+        var registryOps = Util.getRegistryManager(player).getOps(NbtOps.INSTANCE);
+        var result = data.get(registryOps, ORIGINAL_ITEM_CODEC);
         if (result.error().isPresent()) {
             var stack = new ItemStack(Items.CLAY_BALL);
             stack.set(DataComponentTypes.CUSTOM_NAME, Text.literal("Invalid Item").formatted(Formatting.ITALIC));

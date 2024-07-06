@@ -54,7 +54,7 @@ public class NOPPolyMap implements PolyMap {
     }
 
     @Override
-    public ItemStack reverseClientItem(ItemStack clientItem) {
+    public ItemStack reverseClientItem(ItemStack clientItem, @Nullable ServerPlayerEntity player) {
         return clientItem;
     }
 

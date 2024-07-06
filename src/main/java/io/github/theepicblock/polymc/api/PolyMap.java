@@ -106,7 +106,7 @@ public interface PolyMap {
      * For optimization reasons, this method only needs to be implemented for items gained by players in creative mode.
      * @see CreativeItemStackFix
      */
-    ItemStack reverseClientItem(ItemStack clientItem);
+    ItemStack reverseClientItem(ItemStack clientItem, @Nullable ServerPlayerEntity player);
 
     /**
      * Specifies if this map is meant for vanilla-like clients
