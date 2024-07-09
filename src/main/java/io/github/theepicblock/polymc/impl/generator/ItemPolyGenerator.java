@@ -25,8 +25,6 @@ import io.github.theepicblock.polymc.common.BlockItemType;
 import io.github.theepicblock.polymc.impl.ConfigManager;
 import io.github.theepicblock.polymc.impl.poly.item.*;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.item.*;
 import net.minecraft.registry.tag.ItemTags;
@@ -86,10 +84,6 @@ public class ItemPolyGenerator {
         if (item instanceof RangedWeaponItem && item.getMaxUseTime(new ItemStack(item), null) != 0) {
             return new DamageableItemPoly(cmdManager, item, Items.BOW);
         }
-        // TODO during 1.20.5 updating. Best solution would be to check if there's an ItemColorProvider registered
-//        if (item instanceof DyeableItem) {
-//            return new CustomModelDataPoly(cmdManager, item, Items.LEATHER_HORSE_ARMOR);
-//        }
         if (item instanceof BlockItem blockItem) {
             if (AbstractFurnaceBlockEntity.canUseAsFuel(new ItemStack(item))) {
                 return new PlaceableItemPoly(cmdManager, item, CustomModelDataManager.FUEL_ITEMS);
@@ -109,6 +103,8 @@ public class ItemPolyGenerator {
         if (AbstractFurnaceBlockEntity.canUseAsFuel(new ItemStack(item))) {
             return new CustomModelDataPoly(cmdManager, item, CustomModelDataManager.FUEL_ITEMS);
         }
+        // TODO when the jvm analyzer is finally merged, we should check if there's an ItemColorProvider registered
+        //      instead of checking tags
         if (new ItemStack(item).isIn(ItemTags.DYEABLE)) {
             return new CustomModelDataPoly(cmdManager, item, Items.LEATHER_HORSE_ARMOR);
         }

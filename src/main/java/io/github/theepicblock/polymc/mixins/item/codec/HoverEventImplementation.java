@@ -15,7 +15,7 @@ import xyz.nucleoid.packettweaker.PacketContext;
 @Mixin(HoverEvent.ItemStackContent.class)
 public class HoverEventImplementation {
     @ModifyExpressionValue(method = "<clinit>", at = @At(value = "FIELD", opcode = Opcodes.GETSTATIC, target = "Lnet/minecraft/item/ItemStack;CODEC:Lcom/mojang/serialization/Codec;"))
-    private static Codec<ItemStack> polyMcWrapCodeA(Codec<ItemStack> codec) {
+    private static Codec<ItemStack> polyMcWrapCodecA(Codec<ItemStack> codec) {
         return polyMcWrapCodec(codec);
     }
 
@@ -23,7 +23,6 @@ public class HoverEventImplementation {
     private static Codec<ItemStack> polyMcWrapCodecB(Codec<ItemStack> codec) {
         return polyMcWrapCodec(codec);
     }
-
 
     @Unique
     private static Codec<ItemStack> polyMcWrapCodec(Codec<ItemStack> codec) {

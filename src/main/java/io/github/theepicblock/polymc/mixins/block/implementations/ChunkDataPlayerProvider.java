@@ -29,7 +29,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ChunkDataSender.class)
 public class ChunkDataPlayerProvider {
-
     @Inject(method = "sendChunkData",
             at = @At("HEAD"))
     private static void setPlayerContext(ServerPlayNetworkHandler handler, ServerWorld world, WorldChunk chunk, CallbackInfo ci) {
@@ -40,7 +39,5 @@ public class ChunkDataPlayerProvider {
             at = @At("TAIL"))
     private static void clearPlayerContext(ServerPlayNetworkHandler handler, ServerWorld world, WorldChunk chunk, CallbackInfo ci) {
         ChunkPacketStaticHack.player.set(null);
-
     }
-
 }
