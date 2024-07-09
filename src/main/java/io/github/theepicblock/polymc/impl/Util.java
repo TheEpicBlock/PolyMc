@@ -309,16 +309,15 @@ public class Util {
             }
         }
 
-        for (var i = 0; i < COMPONENTS_TO_COPY.length; i++) {
-            var key = COMPONENTS_TO_COPY[i];
-            var x = original.get(key);
+        for (ComponentType<?> type : COMPONENTS_TO_COPY) {
+            var x = original.get(type);
 
             if (x instanceof TransformingDataComponent t) {
                 //noinspection unchecked,rawtypes
-                out.set((ComponentType) key, t.polymc$getTransformed(player));
+                out.set((ComponentType)type, t.polymc$getTransformed(player));
             } else {
                 //noinspection unchecked,rawtypes
-                out.set((ComponentType) key, (Object) original.get(key));
+                out.set((ComponentType)type, (Object)original.get(type));
             }
         }
         out.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, original.hasGlint());

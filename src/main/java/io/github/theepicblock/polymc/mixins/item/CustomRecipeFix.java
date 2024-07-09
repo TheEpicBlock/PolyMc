@@ -20,20 +20,14 @@ package io.github.theepicblock.polymc.mixins.item;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import io.github.theepicblock.polymc.impl.Util;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
-import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.registry.Registries;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Minecraft syncs the entire recipe library when the client joins.
@@ -43,7 +37,7 @@ import java.util.stream.Collectors;
 @Mixin(SynchronizeRecipesS2CPacket.class)
 public class CustomRecipeFix {
     @ModifyReturnValue(method = "method_55955", at = @At("TAIL"))
-    private static List<RecipeEntry<?>>  modifyRecipes(List<RecipeEntry<?>> input) {
+    private static List<RecipeEntry<?>> modifyRecipes(List<RecipeEntry<?>> input) {
         if (!Util.isPolyMapVanillaLike(PacketContext.get().getClientConnection())) {
             return input;
         }

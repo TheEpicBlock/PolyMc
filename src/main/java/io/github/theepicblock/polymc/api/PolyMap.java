@@ -33,7 +33,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.ComponentType;
-import net.minecraft.component.type.FoodComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -140,7 +139,7 @@ public interface PolyMap {
 
     default boolean canReceiveBlockEntity(BlockEntityType<?> e) {
         return Util.isVanilla(Registries.BLOCK_ENTITY_TYPE.getId(e));
-    };
+    }
 
     default boolean canReceiveStatusEffect(RegistryEntry<StatusEffect> entry) {
         return Util.isVanillaAndRegistered(entry);
@@ -152,10 +151,9 @@ public interface PolyMap {
 
     default boolean canReceivePotion(RegistryEntry<Potion> entry) {
         return Util.isVanillaAndRegistered(entry);
-    };
+    }
 
     default boolean canReceiveDataComponentType(ComponentType<?> type) {
         return Util.isVanilla(Registries.DATA_COMPONENT_TYPE.getId(type));
-
-    };
+    }
 }

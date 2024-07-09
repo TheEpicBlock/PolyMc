@@ -18,7 +18,7 @@ public class VanillaData {
     }
 
     /**
-     * Try to guess if this state is a vanilla state. Accuracy is determined by if the block id map was loaded or not (see {@link #isPerfectlyAccurate()}.
+     * Try to guess if this state is a vanilla state. Accuracy is determined by if the block id map was loaded or not (see {@link #isPerfectlyAccurate()}).
      * Even when guessing, PolyMc should never give false negatives (blocks that are marked as modded but are actually vanilla), only false positives.
      */
     public static boolean guessVanilla(BlockState state) {

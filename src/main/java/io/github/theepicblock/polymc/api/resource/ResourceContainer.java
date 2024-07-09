@@ -8,7 +8,6 @@ import io.github.theepicblock.polymc.impl.resource.json.JBlockStateImpl;
 import io.github.theepicblock.polymc.impl.resource.json.JModelImpl;
 import io.github.theepicblock.polymc.impl.resource.json.JSoundEventRegistryImpl;
 import net.minecraft.resource.InputSupplier;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -23,6 +22,11 @@ public interface ResourceContainer {
         return new TextureAsset(textureStream, getInputStreamSupplier(namespace, metaPath));
     }
 
+    /**
+     * Retrieves a texture without calling {@link ResourceConstants#texture(String)}.
+     * This means you can retrieve any texture, even those not in the {@code texture/} folder.
+     * Unlike {@link #getTexture(String, String)} you'll also have to make sure the path has the correct extension.
+     */
     default @Nullable TextureAsset getTextureRaw(String namespace, String texture) {
         var textureStream = getInputStreamSupplier(namespace, texture);
         if (textureStream == null) return null;
@@ -30,7 +34,6 @@ public interface ResourceContainer {
         var metaPath = texture + ".mcmeta";
         return new TextureAsset(textureStream, getInputStreamSupplier(namespace, metaPath));
     }
-
 
     default @Nullable SoundAsset getSound(String namespace, String sound) {
         var stream = getInputStreamSupplier(namespace, ResourceConstants.sound(sound));
