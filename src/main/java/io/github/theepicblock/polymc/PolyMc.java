@@ -46,7 +46,8 @@ public class PolyMc implements ModInitializer {
     public static final String MODID = "polymc";
     public static final SimpleLogger LOGGER = new Log4JWrapper(LogManager.getLogger("PolyMc"));
     private static PolyMap map;
-    public static DynamicRegistryManager.Immutable REGISTRY_MANAGER = null;
+    @ApiStatus.Internal
+    public static DynamicRegistryManager.Immutable FALLBACK_REGISTRY_MANAGER = null;
 
     /**
      * Called when the registries are definitely final (eg, on world start).
@@ -55,7 +56,7 @@ public class PolyMc implements ModInitializer {
      */
     @ApiStatus.Internal
     public static void onRegistryClosed(DynamicRegistryManager.Immutable registryManager) {
-        REGISTRY_MANAGER = registryManager;
+        FALLBACK_REGISTRY_MANAGER = registryManager;
         if (ConfigManager.getConfig().remapVanillaBlockIds) {
             BlockIdRemapper.remapFromInternalList();
         }

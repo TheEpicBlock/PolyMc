@@ -339,13 +339,13 @@ public class Util {
     }
 
     /**
-     * Get the appropriate dynamic registry manager
+     * Get the appropriate dynamic registry manager. Please use
+     * {@link #getRegistryManager(PlayerEntity)} unless it's really not possible.
      */
     @NotNull
     public static DynamicRegistryManager getRegistryManager() {
-
-        if (PolyMc.REGISTRY_MANAGER != null) {
-            return PolyMc.REGISTRY_MANAGER;
+        if (PolyMc.FALLBACK_REGISTRY_MANAGER != null) {
+            return PolyMc.FALLBACK_REGISTRY_MANAGER;
         }
 
         // Fallback to an empty registry
