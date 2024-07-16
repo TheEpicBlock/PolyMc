@@ -17,7 +17,6 @@
  */
 package io.github.theepicblock.polymc.impl.misc;
 
-import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.block.BlockPoly;
 import io.github.theepicblock.polymc.impl.Util;
@@ -29,8 +28,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * Vanilla clients do client-side prediction when placing and removing blocks.
@@ -39,21 +38,36 @@ import java.util.List;
  */
 public class BlockResyncManager {
 
-    public static void onBlockUpdate(BlockState sourceState, BlockPos sourcePos, World world, ServerPlayerEntity player, List<BlockPos> checkedBlocks) {
+    private static final Direction[] ALL_DIRECTIONS = Direction.values();
+
+    public static void onBlockUpdate(BlockState sourceState, BlockPos sourcePos, World world, ServerPlayerEntity player, Collection<BlockPos> checkedBlocks) {
+        if (checkedBlocks == null) checkedBlocks = new HashSet<>();
+        PolyMap map = Util.tryGetPolyMap(player);
+        onBlockUpdate(sourceState, sourcePos, world, player, checkedBlocks, map);
+    }
+
+    private static void onBlockUpdate(BlockState sourceState, BlockPos sourcePos, World world, ServerPlayerEntity player, Collection<BlockPos> checkedBlocks, PolyMap map) {
 
         BlockPos.Mutable pos = new BlockPos.Mutable();
+        checkedBlocks.add(sourcePos);
+
+        // Huge chunks of modded blocks can cause lag and even a stack overflow,
+        // so limit it to something sane
+        if (checkedBlocks.size() > 500) {
+            return;
+        }
 
         // Check all the adjacent blocks
-        for (Direction direction : Direction.values()) {
+        for (Direction direction : ALL_DIRECTIONS) {
 
             pos.set(sourcePos.getX() + direction.getOffsetX(), sourcePos.getY() + direction.getOffsetY(), sourcePos.getZ() + direction.getOffsetZ());
+            BlockPos newPos = pos.toImmutable();
 
             // Make sure no blocks get checked twice
-            if (checkedBlocks != null && checkedBlocks.contains(pos)) {
+            if (checkedBlocks.contains(newPos)) {
                 continue;
             }
 
-            PolyMap map = Util.tryGetPolyMap(player);
             BlockState adjacentState = world.getBlockState(pos);
             BlockPoly adjacentPoly = map.getBlockPoly(adjacentState.getBlock());
 
@@ -78,22 +92,17 @@ public class BlockResyncManager {
                 }
 
                 if (map.shouldForceBlockStateSync(sourceState, adjacentClientState, direction)) {
-                    BlockPos newPos = pos.toImmutable();
                     player.networkHandler.sendPacket(new BlockUpdateS2CPacket(newPos, adjacentState));
-
-                    if (checkedBlocks == null) checkedBlocks = new ArrayList<>();
                     checkedBlocks.add(sourcePos);
-
-                    onBlockUpdate(adjacentClientState, newPos, world, player, checkedBlocks);
+                    onBlockUpdate(adjacentClientState, newPos, world, player, checkedBlocks, map);
                 }
             }
 
             // If the lower half of a door is interacted with, we should check the upper half as well
             boolean isUpperDoor = direction == Direction.UP && adjacentState.getBlock() instanceof DoorBlock && adjacentState.get(DoorBlock.HALF) == DoubleBlockHalf.UPPER;
             if (isUpperDoor) {
-                if (checkedBlocks == null) checkedBlocks = new ArrayList<>();
                 checkedBlocks.add(sourcePos);
-                onBlockUpdate(null, pos, world, player, checkedBlocks);
+                onBlockUpdate(null, pos, world, player, checkedBlocks, map);
             }
         }
     }
