@@ -124,6 +124,9 @@ public class PolyMapImpl implements PolyMap {
             ret = globalPoly.transform(serverItem, ret, this, player, location);
         }
 
+        // If max count varies between the client and server item, set the max count.
+        if (ret.getMaxCount() != serverItem.getMaxCount()) ret.set(DataComponentTypes.MAX_STACK_SIZE, serverItem.getMaxCount());
+
         if ((player == null || player.isCreative() || location == ItemLocation.CREATIVE || ALWAYS_ADD_CREATIVE_NBT) && !ItemStack.areItemsAndComponentsEqual(serverItem, ret) && !serverItem.isEmpty()) {
 
             RegistryOps<NbtElement> registryOps = Util.getRegistryManager(player).getOps(NbtOps.INSTANCE);
