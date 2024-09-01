@@ -15,6 +15,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockPredicatesChecker;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.PotionItem;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.item.trim.ArmorTrim;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -107,7 +108,12 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
         }
 
         // Check Item#appendTooltip
-        if (!ItemStack.areItemsAndComponentsEqual(original, stack) && !original.contains(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP)) {
+        // Includes special-cases for vanilla items, since we know their implementation
+        if (original.getItem() instanceof PotionItem) {
+            if (TransformingDataComponent.requireTransformForTooltip(original.get(DataComponentTypes.POTION_CONTENTS), player)) {
+                return true;
+            }
+        } else if (!ItemStack.areItemsAndComponentsEqual(original, stack) && !original.contains(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP)) {
             try {
                 original.getItem().appendTooltip(original, ctx, CrashyList.INSTANCE, type);
             } catch (TriedInsertException e) {
