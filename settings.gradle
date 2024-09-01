@@ -4,8 +4,8 @@ pluginManagement {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
             content {
-                includeGroupByRegex("net\\.fabricmc.*");
-                includeGroupByRegex("fabric-loom.*");
+                includeGroupAndSubgroups("net.fabricmc");
+                includeGroupAndSubgroups("fabric-loom");
             }
         }
         mavenCentral()

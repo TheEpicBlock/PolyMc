@@ -14,12 +14,14 @@ group = project.maven_group
 repositories {
 	maven {
 		url "https://jitpack.io"
+		content {
+			includeGroupAndSubgroups("com.github")
+		}
 	}
 	maven {
 		url "https://maven.theepicblock.nl"
 		content {
 			includeGroup("nl.theepicblock")
-			includeGroup("xyz.nucleoid") // Temporary for 1.20.5 snapshots (thanks Drex :D)
 		}
 	}
 	maven {
@@ -33,7 +35,7 @@ repositories {
 		name 'Quilt'
 		url 'https://maven.quiltmc.org/repository/release'
 		content {
-			includeGroupByRegex("org\\.quiltmc.*")
+			includeGroupAndSubgroups("org.quiltmc")
 		}
 	}
 
