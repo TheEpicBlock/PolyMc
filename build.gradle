@@ -1,7 +1,7 @@
 plugins {
 	id 'fabric-loom' version '1.6-SNAPSHOT'
 	id 'maven-publish'
-	id 'org.ajoberstar.grgit' version '4.1.0'
+	id 'org.ajoberstar.grgit' version '5.2.2'
 }
 
 sourceCompatibility = JavaVersion.VERSION_21
