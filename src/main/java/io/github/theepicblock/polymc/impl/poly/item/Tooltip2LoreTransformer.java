@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class Tooltip2LoreTransformer implements ItemTransformer {
-    private static final List<HideableTooltip> HIDEABLE_TOOLTIPS = List.of(
+    private static final List<HideableTooltip<?>> HIDEABLE_TOOLTIPS = List.of(
             HideableTooltip.of(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent::withShowInTooltip),
             HideableTooltip.of(DataComponentTypes.TRIM, ArmorTrim::withShowInTooltip),
             HideableTooltip.ofNeg(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent::isEmpty, ItemEnchantmentsComponent::withShowInTooltip),
@@ -60,9 +60,7 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
                 } else {
                     list.removeFirst();
                     var style = Style.EMPTY.withItalic(false).withColor(Formatting.WHITE);
-                    for (int i = 0; i < list.size(); i++) {
-                        list.set(i, Text.empty().setStyle(style).append(list.get(i)));
-                    }
+                    list.replaceAll(text -> Text.empty().setStyle(style).append(text));
                     output.set(DataComponentTypes.LORE, new LoreComponent(list, null));
                     output.set(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, Unit.INSTANCE);
                     for (var x : HIDEABLE_TOOLTIPS) {
@@ -82,7 +80,7 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
         // Checks for components which:
         //  - Add things to the tooltip
         //  - Don't generate said tooltip correctly for modded content
-        // Note that these components are a slightly different set from those in `portToLore`. Since that
+        // Note that these components are a slightly different set from those in `fallbackPortToLore`. Since that
         // method has to process a continuous block
 
         // This method checks the following components:
@@ -145,7 +143,6 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
         // be run iff a situation arises where the ordering would be messed up.
 
         var invoker = (ItemStackAccessor)(Object)input;
-        //noinspection ConstantValue
         assert invoker != null;
 
         var lore = new ArrayList<Text>();
