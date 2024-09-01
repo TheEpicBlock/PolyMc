@@ -38,9 +38,9 @@ public class PacketTester implements Closeable {
         PolyMapProvider.get(fakeNetworkHandler).refreshUsedPolyMap();
 
         world.onPlayerConnected(playerEntity);
-        world.getChunkManager().threadedAnvilChunkStorage.updatePosition(playerEntity);
+        world.getChunkManager().chunkLoadingManager.updatePosition(playerEntity);
         this.playerEntity.setPosition(context.getAbsolute(Vec3d.ZERO));
-        world.getChunkManager().threadedAnvilChunkStorage.updatePosition(playerEntity);
+        world.getChunkManager().chunkLoadingManager.updatePosition(playerEntity);
     }
 
     public <T extends Packet<?>> T reencode(T packet) {

@@ -123,8 +123,6 @@ public class Testmod implements ModInitializer {
         Registry.register(Registries.ENTITY_TYPE, id("test_entity_other"), TEST_ENTITY_OTHER);
         Registry.register(Registries.ENTITY_TYPE, id("test_flying_waxed_weathered_cut_copper_stairs_entity"), TEST_FLYING_WAXED_WEATHERED_CUT_COPPER_STAIRS_ENTITY);
 
-        Registry.register(Registries.ENCHANTMENT, id("test_enchantment"), new TestEnchantment());
-
         CommandRegistrationCallback.EVENT.register(TestCommands::register);
 
         var e = Registries.POTION.getRawId(TEST_POTION_TYPE);
@@ -143,6 +141,6 @@ public class Testmod implements ModInitializer {
     }
 
     private static Identifier id(String path) {
-        return new Identifier(MODID, path);
+        return Identifier.of(MODID, path);
     }
 }

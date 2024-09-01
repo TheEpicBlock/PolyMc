@@ -65,7 +65,7 @@ public class ItemEncodeTests implements FabricGameTest {
                                 ctx.assertTrue(newStack.getCount() == 5, "PolyMc shouldn't affect itemcount");
                                 ctx.assertTrue(ItemStack.areItemsAndComponentsEqual(originalStack, copyOfOriginal), "PolyMc shouldn't affect the original item");
 
-                                ctx.assertTrue(ItemStack.areItemsAndComponentsEqual(originalStack, PolyMapImpl.recoverOriginalItem(newStack)),
+                                ctx.assertTrue(ItemStack.areItemsAndComponentsEqual(originalStack, PolyMapImpl.recoverOriginalItem(newStack, packetCtx.playerEntity)),
                                         "Item should survive round-trip (when player is in creative mode)");
 
                                 // Create a new polyd stack with a different count
