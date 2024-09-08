@@ -33,10 +33,12 @@ import io.github.theepicblock.polymc.impl.poly.wizard.PacketCountManager;
 import io.github.theepicblock.polymc.impl.poly.wizard.RegularWizardUpdater;
 import io.github.theepicblock.polymc.impl.poly.wizard.ThreadedWizardUpdater;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -112,7 +114,10 @@ public class PolyMc implements ModInitializer {
     @Override
     public void onInitialize() {
         PolyMcCommands.registerCommands();
-        ServerConfigurationConnectionEvents.BEFORE_CONFIGURE.register((handler, server) -> {
+        var polyMcEarly = Identifier.of("polymc", "early");
+
+        ServerConfigurationConnectionEvents.BEFORE_CONFIGURE.addPhaseOrdering(polyMcEarly, Event.DEFAULT_PHASE);
+        ServerConfigurationConnectionEvents.BEFORE_CONFIGURE.register(polyMcEarly, (handler, server) -> {
             // Ensures the connection has a polymap
             PolyMapProvider.get(handler).refreshUsedPolyMap();
         });

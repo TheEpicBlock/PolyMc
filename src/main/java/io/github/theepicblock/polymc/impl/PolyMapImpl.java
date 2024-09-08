@@ -73,7 +73,7 @@ public class PolyMapImpl implements PolyMap {
     /**
      * The nbt tag name that stores the original item nbt so it can be restored
      * @see PolyMap#getClientItem(ItemStack, ServerPlayerEntity, ItemLocation)
-     * @see #recoverOriginalItem(ItemStack)
+     * @see #recoverOriginalItem(ItemStack, ServerPlayerEntity)
      */
     private static final String ORIGINAL_ITEM_NBT = "PolyMcOriginal";
     private static final boolean ALWAYS_ADD_CREATIVE_NBT = ConfigManager.getConfig().alwaysSendFullNbt;
@@ -219,7 +219,7 @@ public class PolyMapImpl implements PolyMap {
         var moddedResources = new ModdedResourceContainerImpl();
         var pack = new ResourcePackImplementation();
 
-        PolyMc.LOGGER.info("Using: " + moddedResources);
+        logger.info("Using: " + moddedResources);
 
         //Let mods register resources via the api
         List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("polymc", PolyMcEntrypoint.class);

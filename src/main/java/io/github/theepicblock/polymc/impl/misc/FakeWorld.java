@@ -7,11 +7,14 @@ import io.netty.util.internal.shaded.org.jctools.util.UnsafeAccess;
 import it.unimi.dsi.fastutil.objects.ObjectIterators;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BannerPattern;
 import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageScaling;
 import net.minecraft.entity.damage.DamageSources;
 import net.minecraft.entity.damage.DamageType;
+import net.minecraft.entity.decoration.painting.PaintingVariant;
+import net.minecraft.entity.passive.WolfVariant;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.map.MapState;
@@ -19,6 +22,7 @@ import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.registry.entry.RegistryEntryOwner;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.resource.featuretoggle.FeatureFlags;
@@ -75,10 +79,8 @@ public final class FakeWorld extends World implements LightSourceView {
     public static final World INSTANCE_UNSAFE;
     public static final World INSTANCE_REGULAR;
     static final Scoreboard SCOREBOARD = new Scoreboard();
-    static final DynamicRegistryManager REGISTRY_MANAGER = new DynamicRegistryManager.Immutable() {
-        private FakeRegistry<DamageType> damageTypes = new FakeRegistry<>(RegistryKeys.DAMAGE_TYPE, Identifier.of("polymer","fake_damage"),
-                new DamageType("", DamageScaling.NEVER, 0));
-
+    static final DynamicRegistryManager FALLBACK_REGISTRY_MANAGER = new DynamicRegistryManager.Immutable() {
+        private static final Map<RegistryKey<?>, Registry<?>> REGISTRIES = new HashMap<>();
         @Override
         public Optional<Registry> getOptional(RegistryKey key) {
             var x = Registries.REGISTRIES.get(key);
@@ -86,19 +88,39 @@ public final class FakeWorld extends World implements LightSourceView {
                 return Optional.of(x);
             }
 
-            if (RegistryKeys.DAMAGE_TYPE.equals(key)) {
-                return Optional.of(damageTypes);
+            var reg = REGISTRIES.get(key);
+
+            if (reg != null) {
+                return Optional.of(reg);
             }
 
-            return Optional.of(new FakeRegistry(key, Identifier.of("polymc", "edksflj"), "jsawadanja"));
+            return Optional.empty();
         }
 
         @Override
         public Stream<Entry<?>> streamAllRegistries() {
             return Stream.empty();
         }
+
+        public static void addRegistry(FakeRegistry<?> registry) {
+            REGISTRIES.put(registry.getKey(), registry);
+        }
+
+        static {
+            addRegistry(new FakeRegistry<>(RegistryKeys.DAMAGE_TYPE, Identifier.of("polymer","fake_damage"),
+                    new DamageType("", DamageScaling.NEVER, 0)));
+            addRegistry(new FakeRegistry<>(RegistryKeys.BANNER_PATTERN,
+                    Identifier.of("polymer","fake_pattern"),
+                    new BannerPattern(Identifier.of("polymer","fake_pattern"), "")));
+            addRegistry(new FakeRegistry<>(RegistryKeys.PAINTING_VARIANT,
+                    Identifier.of("polymer","painting"),
+                    new PaintingVariant(1, 1, Identifier.of("polymer","painting"))));
+            addRegistry(new FakeRegistry<>(RegistryKeys.WOLF_VARIANT,
+                    Identifier.of("polymer","wolf"),
+                    new WolfVariant(Identifier.of("polymer","wolf"), Identifier.of("polymer","wolf"),Identifier.of("polymer","wolf"), RegistryEntryList.empty())));
+        }
     };
-    static final RecipeManager RECIPE_MANAGER = new RecipeManager(REGISTRY_MANAGER);
+    static final RecipeManager RECIPE_MANAGER = new RecipeManager(FALLBACK_REGISTRY_MANAGER);
     private static final FeatureSet FEATURES = FeatureFlags.FEATURE_MANAGER.getFeatureSet();
     private static final TickManager TICK_MANAGER = new TickManager();
     final ChunkManager chunkManager = new ChunkManager() {
@@ -219,7 +241,7 @@ public final class FakeWorld extends World implements LightSourceView {
             accessor.polymc$setDebugWorld(true);
             accessor.polymc$setProfiler(() -> new ProfilerSystem(() -> 0l, () -> 0, false));
             accessor.polymc$setProperties(new FakeWorldProperties());
-            accessor.polymc$setRegistryKey(RegistryKey.of(RegistryKeys.WORLD, Identifier.of("polymer","fake_world")));
+            accessor.polymc$setRegistryKey(RegistryKey.of(RegistryKeys.WORLD, Identifier.of("polymc","fake_world")));
             accessor.polymc$setDimensionEntry(dimType);
             accessor.polymc$setThread(Thread.currentThread());
             accessor.polymc$setRandom(Random.create());
@@ -227,7 +249,7 @@ public final class FakeWorld extends World implements LightSourceView {
             accessor.polymc$setBlockEntityTickers(new ArrayList<>());
             accessor.polymc$setPendingBlockEntityTickers(new ArrayList<>());
             try {
-                accessor.polymc$setDamageSources(new DamageSources(REGISTRY_MANAGER));
+                accessor.polymc$setDamageSources(new DamageSources(FALLBACK_REGISTRY_MANAGER));
             } catch (Throwable e) {
 
             }
@@ -241,7 +263,7 @@ public final class FakeWorld extends World implements LightSourceView {
         try {
             worldDefault = new FakeWorld(
                     new FakeWorldProperties(),
-                    RegistryKey.of(RegistryKeys.WORLD, Identifier.of("polymer", "fake_world")),
+                    RegistryKey.of(RegistryKeys.WORLD, Identifier.of("polymc", "fake_world")),
                     dimType,
                     () -> new ProfilerSystem(() -> 0L, () -> 0, false),
                     false,
@@ -262,7 +284,7 @@ public final class FakeWorld extends World implements LightSourceView {
     }
 
     private FakeWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> dimensionType, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed) {
-        super(properties, registryRef, REGISTRY_MANAGER, dimensionType, profiler, isClient, debugWorld, seed, 0);
+        super(properties, registryRef, FALLBACK_REGISTRY_MANAGER, dimensionType, profiler, isClient, debugWorld, seed, 0);
     }
 
     @Override
@@ -369,7 +391,7 @@ public final class FakeWorld extends World implements LightSourceView {
 
     @Override
     public DynamicRegistryManager getRegistryManager() {
-        return REGISTRY_MANAGER;
+        return FALLBACK_REGISTRY_MANAGER;
     }
 
     @Override

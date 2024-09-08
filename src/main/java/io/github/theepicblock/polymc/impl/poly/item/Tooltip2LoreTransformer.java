@@ -38,6 +38,7 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
             HideableTooltip.ofNeg(DataComponentTypes.STORED_ENCHANTMENTS, ItemEnchantmentsComponent::isEmpty, ItemEnchantmentsComponent::withShowInTooltip),
             HideableTooltip.of(DataComponentTypes.UNBREAKABLE, UnbreakableComponent::withShowInTooltip),
             HideableTooltip.of(DataComponentTypes.CAN_BREAK, BlockPredicatesChecker::withShowInTooltip),
+            HideableTooltip.of(DataComponentTypes.JUKEBOX_PLAYABLE, JukeboxPlayableComponent::withShowInTooltip),
             HideableTooltip.of(DataComponentTypes.CAN_PLACE_ON, BlockPredicatesChecker::withShowInTooltip)
     );
 
@@ -92,14 +93,6 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
 
         if (original.contains(DataComponentTypes.HIDE_TOOLTIP)) {
             return false;
-        }
-
-        if (TransformingDataComponent.requireTransformForTooltip(original.get(DataComponentTypes.STORED_ENCHANTMENTS), player)) {
-            return true;
-        }
-
-        if (TransformingDataComponent.requireTransformForTooltip(original.get(DataComponentTypes.ENCHANTMENTS), player)) {
-            return true;
         }
 
         if (TransformingDataComponent.requireTransformForTooltip(original.get(DataComponentTypes.ATTRIBUTE_MODIFIERS), player)

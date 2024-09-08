@@ -21,6 +21,7 @@ import com.google.gson.JsonObject;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Hello, if you've come here, you might be wondering how to add something to this config.
@@ -39,7 +40,7 @@ import java.util.List;
  */
 @SuppressWarnings({"unused", "MismatchedQueryAndUpdateOfCollection", "JavadocReference"})
 public class Config {
-    public static final int LATEST_VERSION = 12;
+    public static final int LATEST_VERSION = 13;
     public MiscConfig misc;
     public boolean alwaysSendFullNbt;
     private int configVersion;
@@ -49,6 +50,10 @@ public class Config {
     public boolean forceBlockIdIntControl;
     public int maxPacketsPerSecond;
     public boolean blockItemMatching;
+
+    public Set<String> allowedPackets;
+    public boolean logEntityTemplateErrors;
+    public boolean logMissingContext;
 
     public int getConfigVersion() {
         return configVersion;

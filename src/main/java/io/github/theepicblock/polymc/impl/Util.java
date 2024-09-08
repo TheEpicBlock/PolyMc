@@ -59,7 +59,7 @@ public class Util {
     public static final Gson GSON = new Gson();
     public static final String MC_NAMESPACE = "minecraft";
     private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
-    private static boolean HAS_LOGGED_POLYMAP_ERROR = false;
+    private static boolean HAS_LOGGED_POLYMAP_ERROR = !ConfigManager.getConfig().logMissingContext;
 
     public static boolean isVanilla(BlockState state) {
         if (ConfigManager.getConfig().remapVanillaBlockIds) {
@@ -218,9 +218,12 @@ public class Util {
 
     @NotNull
     public static PolyMap tryGetPolyMap(@Nullable ServerCommonNetworkHandler handler) {
+        return tryGetPolyMap(handler, true);
+    }
+    public static PolyMap tryGetPolyMap(@Nullable ServerCommonNetworkHandler handler, boolean logWarning) {
         var map = handler == null ? null : PolyMapProvider.getPolyMap(handler);
         if (map == null) {
-            if (!HAS_LOGGED_POLYMAP_ERROR) {
+            if (!HAS_LOGGED_POLYMAP_ERROR && logWarning) {
                 PolyMc.LOGGER.error("Tried to get polymap but there's no packet handler context. PolyMc will use the default PolyMap. If PolyMc is transforming things it shouldn't, this is why. Further errors of this kind will be silenced. Have a thread dump: ");
                 Thread.dumpStack();
                 HAS_LOGGED_POLYMAP_ERROR = true;

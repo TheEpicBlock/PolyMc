@@ -61,5 +61,12 @@
     "add": {
       "blockItemMatching": false
     }
+  },
+  "13": {
+    "add": {
+      "allowedPackets": ["polymer"],
+      "logEntityTemplateErrors": true,
+      "logMissingContext": true
+    }
   }
 }

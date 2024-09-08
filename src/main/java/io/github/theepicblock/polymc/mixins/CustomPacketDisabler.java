@@ -37,12 +37,9 @@ public class CustomPacketDisabler {
 
     @Inject(method = "send", at = @At("HEAD"), cancellable = true)
     public void sendPacketInject(Packet<?> packet, PacketCallbacks callbacks, CallbackInfo ci) {
-        if (this instanceof PlayerAssociatedNetworkHandler player
-                && packet instanceof CustomPayloadS2CPacket && Util.isPolyMapVanillaLike(player.getPlayer())) {
-            Identifier channel = ((CustomPayloadS2CPacket) packet).payload().getId().id();
-            if (!Util.isVanilla(channel)) {
-                ci.cancel();
-            }
+        var polymap = Util.tryGetPolyMap((ServerCommonNetworkHandler) (Object) this, false);
+        if (packet instanceof CustomPayloadS2CPacket payload && !polymap.canReceiveCustomPayload((ServerCommonNetworkHandler) (Object) this, payload.payload().getId())) {
+            ci.cancel();
         }
     }
 }
