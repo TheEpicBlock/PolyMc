@@ -357,7 +357,7 @@ public class Util {
     private static final ComponentType<?>[] COMPONENTS_TO_COPY = {DataComponentTypes.CAN_BREAK, DataComponentTypes.CAN_PLACE_ON,
             DataComponentTypes.BLOCK_ENTITY_DATA, DataComponentTypes.TRIM,
             DataComponentTypes.TOOL,
-            DataComponentTypes.LORE,
+            DataComponentTypes.ITEM_NAME,
             DataComponentTypes.MAX_STACK_SIZE,
             DataComponentTypes.FOOD,
             DataComponentTypes.FIRE_RESISTANT,
@@ -383,6 +383,7 @@ public class Util {
             DataComponentTypes.WRITABLE_BOOK_CONTENT,
             DataComponentTypes.WRITTEN_BOOK_CONTENT,
             DataComponentTypes.DYED_COLOR,
-            DataComponentTypes.CONTAINER
+            DataComponentTypes.JUKEBOX_PLAYABLE,
+            DataComponentTypes.CONTAINER,
     };
 }
