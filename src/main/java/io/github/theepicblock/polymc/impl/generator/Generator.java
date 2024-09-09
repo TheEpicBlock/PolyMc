@@ -18,9 +18,11 @@
 package io.github.theepicblock.polymc.impl.generator;
 
 import io.github.theepicblock.polymc.api.PolyRegistry;
+import io.github.theepicblock.polymc.api.block.BlockStateProfile;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.poly.item.Tooltip2LoreTransformer;
 import io.github.theepicblock.polymc.impl.poly.item.InvalidComponentFixGlobalPoly;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 
@@ -37,6 +39,15 @@ public class Generator {
         generateMissingPolys(builder, Registries.ITEM, ItemPolyGenerator::addItemToBuilder, builder::hasItemPoly);
         generateMissingPolys(builder, Registries.SCREEN_HANDLER, GuiGenerator::addGuiToBuilder, builder::hasGuiPoly);
         generateMissingPolys(builder, Registries.ENTITY_TYPE, EntityPolyGenerator::addEntityToBuilder, builder::hasEntityPoly);
+
+        // Todo: Replace with more generic logic!
+        if (FabricLoader.getInstance().isModLoaded("terraform-wood-api-v1")) {
+            for (var block : BlockStateProfile.LEAVES_PROFILE.blocks) {
+                if (!builder.hasBlockPoly(block)) {
+                    BlockStateProfile.LEAVES_PROFILE.onFirstRegister.accept(block, builder);
+                }
+            }
+        }
     }
 
     private static <T> void generateMissingPolys(PolyRegistry builder, Registry<T> registry, BiConsumer<T, PolyRegistry> generator, BooleanFunction<T> contains) {

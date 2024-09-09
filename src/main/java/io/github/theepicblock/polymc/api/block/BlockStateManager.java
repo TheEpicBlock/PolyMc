@@ -81,8 +81,8 @@ public class BlockStateManager {
         }
 
         for (var block : searchSpace) {
+            onFirstRegister.accept(block, this.polyRegistry);
             var availableStates = availableBlockStates.computeIfAbsent(block, (b) -> {
-                onFirstRegister.accept(b, this.polyRegistry);
                 return new LinkedList<>(b.getStateManager().getStates().stream().filter(Util::isVanilla).toList());
             });
 
