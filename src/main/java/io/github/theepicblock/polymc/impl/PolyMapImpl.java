@@ -19,6 +19,8 @@ package io.github.theepicblock.polymc.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -266,7 +268,7 @@ public class PolyMapImpl implements PolyMap {
                 // Copy all the language keys into the main map
                 var languageObject = pack.getGson().fromJson(streamReader, JsonObject.class);
                 var mainLangMap = languageKeys.computeIfAbsent(lang.getLeft().getPath(), (key) -> new TreeMap<>());
-                languageObject.entrySet().forEach(entry -> mainLangMap.put(entry.getKey(), JsonHelper.asString(entry.getValue(), entry.getKey())));
+                languageObject.entrySet().forEach(entry -> addTranslation(mainLangMap, entry.getKey(), entry.getValue()));
             } catch (Throwable e) {
                 logger.error("Couldn't parse lang file " + lang.getLeft());
                 e.printStackTrace();
@@ -300,6 +302,19 @@ public class PolyMapImpl implements PolyMap {
             logger.error("Failed to close modded resources");
         }
         return pack;
+    }
+
+    private void addTranslation(Map<String, String> mainLangMap, String key, JsonElement value) {
+        if (value instanceof JsonArray array) { // Assume owo lib text
+            var x = Text.Serialization.fromJsonTree(array, PolyMc.FALLBACK_REGISTRY_MANAGER);
+            mainLangMap.put(key, x != null ? x.getString() : "<INVALID TRANSLATION: " + key + ">");
+        } else if (value instanceof JsonObject object) { // Assume that one library which allows objects for text
+            for (var e : object.entrySet()) {
+                addTranslation(mainLangMap, key + "." + e.getKey(), e.getValue());
+            }
+        } else { // Vanilla Translation
+            mainLangMap.put(key, JsonHelper.asString(value, key));
+        }
     }
 
     @Override

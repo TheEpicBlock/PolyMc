@@ -9,6 +9,7 @@ import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -31,6 +32,7 @@ public class ResourcePackImplementation implements PolyMcResourcePack {
     }
 
     @Override
+    @Nullable
     public PolyMcAsset getAsset(String namespace, String path) {
         var perNamespaceMap = assets.get(namespace);
         if (perNamespaceMap == null) return null;
@@ -58,7 +60,11 @@ public class ResourcePackImplementation implements PolyMcResourcePack {
 
     @Override
     public void forEachAsset(TriConsumer<String,String,PolyMcAsset> consumer) {
-        assets.forEach((namespace, innerMap) -> innerMap.forEach((path, asset) -> consumer.accept(namespace, path, asset)));
+        assets.forEach((namespace, innerMap) -> innerMap.forEach((path, asset) -> {
+            if (asset != null) {
+                consumer.accept(namespace, path, asset);
+            }
+        }));
     }
 
     @Override
