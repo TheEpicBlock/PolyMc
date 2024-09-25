@@ -1,21 +1,21 @@
-package io.github.theepicblock.polymc.mixins.item.component;
+package io.github.theepicblock.polymc.mixins.component.transforms;
 
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.mixin.TransformingDataComponent;
+import io.github.theepicblock.polymc.impl.mixin.TransformingComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.potion.Potion;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 import java.util.Optional;
 
 @Mixin(PotionContentsComponent.class)
-public abstract class PotionContentsComponentMixin implements TransformingDataComponent {
+public abstract class PotionContentsComponentMixin implements TransformingComponent {
     @Shadow @Final private Optional<RegistryEntry<Potion>> potion;
 
     @Shadow @Final private List<StatusEffectInstance> customEffects;
@@ -23,7 +23,7 @@ public abstract class PotionContentsComponentMixin implements TransformingDataCo
     @Shadow public abstract int getColor();
 
     @Override
-    public Object polymc$getTransformed(ServerPlayerEntity player) {
+    public Object polymc$getTransformed(PacketContext player) {
         if (!polymc$requireModification(player)) {
             return this;
         }
@@ -32,7 +32,7 @@ public abstract class PotionContentsComponentMixin implements TransformingDataCo
     }
 
     @Override
-    public boolean polymc$requireModification(ServerPlayerEntity player) {
+    public boolean polymc$requireModification(PacketContext player) {
         var map = Util.tryGetPolyMap(player);
         if (this.potion.isPresent() && !map.canReceivePotion(this.potion.get())) {
             return true;

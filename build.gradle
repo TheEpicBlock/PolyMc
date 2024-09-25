@@ -58,6 +58,10 @@ dependencies {
 		exclude group: 'net.fabricmc', module: 'fabric-loader'
 	}
 
+	modImplementation include("eu.pb4:polymer-common:${project.polymer_version}") {
+		exclude group: 'net.fabricmc', module: 'fabric-loader'
+	}
+
 	// Compat
 	modCompileOnly("com.github.CaffeineMC.lithium-fabric:lithium:${project.lithium_version}") {
 		exclude group: 'net.fabricmc', module: 'fabric-loader'

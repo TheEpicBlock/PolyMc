@@ -201,10 +201,11 @@ public class BlockPolyGenerator {
 
                 // Each chorus plant state has a slightly different collision box.
                 // But it's roughly a full cube (it's the corners that miss a few pixels of collision)
-                try {
+                // Patbox: This caused way too annoying collision desyncs, so I feel it's best to disable it.
+                /*try {
                     isUniqueCallback.set(true);
                     return manager.requestBlockState(BlockStateProfile.CHORUS_PLANT_BLOCK_PROFILE, modelId);
-                } catch (BlockStateManager.StateLimitReachedException ignored) {}
+                } catch (BlockStateManager.StateLimitReachedException ignored) {}*/
             }
 
             try {

@@ -3,7 +3,8 @@ package io.github.theepicblock.polymc.impl.poly.item;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemTransformer;
-import io.github.theepicblock.polymc.impl.mixin.TransformingDataComponent;
+import io.github.theepicblock.polymc.impl.Util;
+import io.github.theepicblock.polymc.impl.mixin.TransformingComponent;
 import io.github.theepicblock.polymc.mixins.item.ArmorTrimAccessor;
 import io.github.theepicblock.polymc.mixins.item.ItemEnchantmentsComponentAccessor;
 import io.github.theepicblock.polymc.mixins.item.ItemStackAccessor;
@@ -91,11 +92,13 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
         //   - DataComponentTypes.ATTRIBUTE_MODIFIERS
         //   - Anything done using Item#appendTooltip
 
+        var pctx = Util.getContext(player);
+
         if (original.contains(DataComponentTypes.HIDE_TOOLTIP)) {
             return false;
         }
 
-        if (TransformingDataComponent.requireTransformForTooltip(original.get(DataComponentTypes.ATTRIBUTE_MODIFIERS), player)
+        if (TransformingComponent.requireTransformForTooltip(original.get(DataComponentTypes.ATTRIBUTE_MODIFIERS), pctx)
         || (stack.getItem() != original.getItem() && !original.getItem().getAttributeModifiers().modifiers().isEmpty())) {
             return true;
         }
@@ -103,7 +106,7 @@ public class Tooltip2LoreTransformer implements ItemTransformer {
         // Check Item#appendTooltip
         // Includes special-cases for vanilla items, since we know their implementation
         if (original.getItem() instanceof PotionItem) {
-            if (TransformingDataComponent.requireTransformForTooltip(original.get(DataComponentTypes.POTION_CONTENTS), player)) {
+            if (TransformingComponent.requireTransformForTooltip(original.get(DataComponentTypes.POTION_CONTENTS), pctx)) {
                 return true;
             }
         } else if (!ItemStack.areItemsAndComponentsEqual(original, stack) && !original.contains(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP)) {

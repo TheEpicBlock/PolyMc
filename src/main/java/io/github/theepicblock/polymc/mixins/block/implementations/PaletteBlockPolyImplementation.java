@@ -17,11 +17,10 @@
  */
 package io.github.theepicblock.polymc.mixins.block.implementations;
 
+import eu.pb4.polymer.common.api.PolymerCommonUtils;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.mixin.ChunkPacketStaticHack;
 import me.jellysquid.mods.lithium.common.world.chunk.LithiumHashPalette;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.collection.IndexedIterable;
 import net.minecraft.world.chunk.ArrayPalette;
@@ -41,7 +40,7 @@ public abstract class PaletteBlockPolyImplementation {
     @Redirect(method = {"writePacket", "getPacketSize"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/collection/IndexedIterable;getRawId(Ljava/lang/Object;)I"))
     public <T> int getIdRedirect(IndexedIterable<T> instance, T object) {
         if (object instanceof BlockState) {
-            var player = ChunkPacketStaticHack.player.get();
+            var player = PolymerCommonUtils.getPlayerContext();
 
             PolyMap map = Util.tryGetPolyMap(player);
             return map.getClientStateRawId((BlockState)object, player);
