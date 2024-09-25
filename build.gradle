@@ -40,6 +40,14 @@ repositories {
 	}
 
 	maven {
+		name 'Modrinth'
+		url 'https://api.modrinth.com/maven'
+		content {
+			includeGroupAndSubgroups("maven.modrinth")
+		}
+	}
+
+	maven {
 		name = 'Ladysnake Mods'
 		url = 'https://maven.ladysnake.org/releases'
 	}
@@ -68,10 +76,7 @@ dependencies {
 	}
 
 	// Compat
-	modCompileOnly("com.github.CaffeineMC.lithium-fabric:lithium:${project.lithium_version}") {
-		exclude group: 'net.fabricmc', module: 'fabric-loader'
-		transitive(false)
-	}
+	modCompileOnly("maven.modrinth:lithium:${project.lithium_version}")
 	modCompileOnly("com.github.iPortalTeam.ImmersivePortalsMod:imm_ptl_core:${project.immersive_portals_version}") {
 		exclude group: 'net.fabricmc', module: 'fabric-loader'
 		transitive(false)

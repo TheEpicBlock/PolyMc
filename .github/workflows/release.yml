@@ -39,7 +39,7 @@ jobs:
         run: ./gradlew build
 
       - name: Upload GitHub release
-        uses: AButler/upload-release-assets@v2.0
+        uses: AButler/upload-release-assets@v3.0
         with:
           files: 'build/libs/*.jar;!build/libs/*-sources.jar;!build/libs/*-dev.jar'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
