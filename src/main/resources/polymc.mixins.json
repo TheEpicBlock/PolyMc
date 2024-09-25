@@ -48,6 +48,7 @@
     "block.implementations.dontforceintcontrol.WriteRegistryValueImplementation",
     "block.implementations.forceintcontrol.ChunkDeltaUpdateImplementation",
     "block.implementations.forceintcontrol.WriteRegistryValueImplementation",
+    "compat.CCAPlayerSyncPredicateFix",
     "compat.FabricRegistrySyncDisabler",
     "compat.QuiltFabricRegistrySyncDisabler",
     "compat.QuiltRegistrySyncDisabler",

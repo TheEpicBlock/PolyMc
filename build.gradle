@@ -39,6 +39,11 @@ repositories {
 		}
 	}
 
+	maven {
+		name = 'Ladysnake Mods'
+		url = 'https://maven.ladysnake.org/releases'
+	}
+
 	mavenLocal()
 }
 
@@ -75,6 +80,12 @@ dependencies {
 		exclude group: 'net.fabricmc', module: 'fabric-loader'
 		transitive(false)
 	}
+
+	modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_component_version}") {
+		exclude group: 'net.fabricmc', module: 'fabric-loader'
+		transitive(false)
+	}
+
 //	modCompileOnly("org.quiltmc.qsl.core:registry:${project.qsl_version}") {
 //		transitive(false)
 //	}
