@@ -41,6 +41,7 @@ import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ModdedResourceContainerImpl;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackImplementation;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.advancement.AdvancementDisplay;
 import net.minecraft.block.*;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.DataComponentTypes;
@@ -54,9 +55,11 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.server.ServerAdvancementLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
@@ -79,6 +82,7 @@ public class PolyMapImpl implements PolyMap {
      */
     private static final String ORIGINAL_ITEM_NBT = "PolyMcOriginal";
     private static final boolean ALWAYS_ADD_CREATIVE_NBT = ConfigManager.getConfig().alwaysSendFullNbt;
+    private static final List<Identifier> ADVANCEMENT_BACKGROUNDS = new ArrayList<>();
     /**
      * Encodes all data that's meant to be server controlled. In practice this is simply all the ItemStack data minus
      * the count
@@ -109,6 +113,20 @@ public class PolyMapImpl implements PolyMap {
         this.sharedValueResources = sharedValueResources;
 
         this.hasBlockWizards = blockPolys.values().stream().anyMatch(BlockPoly::hasWizard);
+    }
+
+    public static void updateAdvancementBackgrounds(ServerAdvancementLoader advancementLoader) {
+        ADVANCEMENT_BACKGROUNDS.clear();
+        for (var advancement : advancementLoader.getAdvancements()) {
+            var optional = advancement.value().display().map(AdvancementDisplay::getBackground).flatMap(x -> x);
+            if (optional.isPresent()) {
+                var texture = optional.get();
+                System.out.println(texture);
+                if (texture.getPath().startsWith("textures/")) {
+                    ADVANCEMENT_BACKGROUNDS.add(texture);
+                }
+            }
+        }
     }
 
     @Override
@@ -292,8 +310,17 @@ public class PolyMapImpl implements PolyMap {
                 logger.error("Couldn't parse sounds file " + namespace);
                 e.printStackTrace();
             }
-
         }
+
+
+        for (var texture : ADVANCEMENT_BACKGROUNDS) {
+            var asset = moddedResources.getTextureRaw(texture.getNamespace(), texture.getPath());
+            if (asset != null) {
+                pack.setAsset(texture.getNamespace(), texture.getPath(), asset);
+                pack.importRequirements(moddedResources, asset, logger);
+            }
+        }
+
 
         try {
             moddedResources.close();

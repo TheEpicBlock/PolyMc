@@ -23,6 +23,7 @@ import io.github.theepicblock.polymc.api.PolyMcEntrypoint;
 import io.github.theepicblock.polymc.api.PolyRegistry;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.ConfigManager;
+import io.github.theepicblock.polymc.impl.PolyMapImpl;
 import io.github.theepicblock.polymc.impl.PolyMcCommands;
 import io.github.theepicblock.polymc.impl.generator.Generator;
 import io.github.theepicblock.polymc.impl.misc.BlockIdRemapper;
@@ -34,9 +35,11 @@ import io.github.theepicblock.polymc.impl.poly.wizard.RegularWizardUpdater;
 import io.github.theepicblock.polymc.impl.poly.wizard.ThreadedWizardUpdater;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.server.ServerAdvancementLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
@@ -115,6 +118,8 @@ public class PolyMc implements ModInitializer {
     public void onInitialize() {
         PolyMcCommands.registerCommands();
         var polyMcEarly = Identifier.of("polymc", "early");
+        ServerLifecycleEvents.SERVER_STARTING.register(x -> PolyMapImpl.updateAdvancementBackgrounds(x.getAdvancementLoader()));
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((x, a, b) -> PolyMapImpl.updateAdvancementBackgrounds(x.getAdvancementLoader()));
 
         ServerConfigurationConnectionEvents.BEFORE_CONFIGURE.addPhaseOrdering(polyMcEarly, Event.DEFAULT_PHASE);
         ServerConfigurationConnectionEvents.BEFORE_CONFIGURE.register(polyMcEarly, (handler, server) -> {
