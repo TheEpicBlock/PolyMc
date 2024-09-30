@@ -23,27 +23,37 @@ import io.github.theepicblock.polymc.api.gui.GuiPoly;
 import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.item.ItemPoly;
 import io.github.theepicblock.polymc.api.resource.PolyMcResourcePack;
+import io.github.theepicblock.polymc.impl.ConfigManager;
 import io.github.theepicblock.polymc.impl.Util;
 import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.mixins.entity.EntityAttributesFilteringMixin;
 import io.github.theepicblock.polymc.mixins.gui.GuiPolyImplementation;
 import io.github.theepicblock.polymc.mixins.item.CreativeItemStackFix;
+import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.ComponentType;
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.effect.EnchantmentEntityEffect;
+import net.minecraft.enchantment.effect.EnchantmentLocationBasedEffect;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.potion.Potion;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.server.network.ServerCommonNetworkHandler;
+import net.minecraft.server.network.ServerConfigurationNetworkHandler;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.ApiStatus;
@@ -130,11 +140,11 @@ public interface PolyMap {
     String dumpDebugInfo();
 
     /**
-     * Used for filtering out attributes unsupported by client.
+     * Used for filtering out registry entries unsupported by client.
      * @see EntityAttributesFilteringMixin
      */
-    default boolean canReceiveEntityAttribute(RegistryEntry<EntityAttribute> attribute) {
-        return Util.isVanillaAndRegistered(attribute);
+    default <T> boolean canReceiveRegistryEntry(Registry<T> registry, RegistryEntry<T> entry) {
+        return Util.isVanillaAndRegistered(entry);
     }
 
     default boolean canReceiveBlockEntity(BlockEntityType<?> e) {
@@ -155,5 +165,28 @@ public interface PolyMap {
 
     default boolean canReceiveDataComponentType(ComponentType<?> type) {
         return Util.isVanilla(Registries.DATA_COMPONENT_TYPE.getId(type));
+    }
+
+    default boolean canReceiveEnchantmentComponentType(ComponentType<?> type) {
+        return Util.isVanilla(Registries.ENCHANTMENT_EFFECT_COMPONENT_TYPE.getId(type));
+    }
+
+    default boolean canReceiveCustomPayload(ServerCommonNetworkHandler handler, CustomPayload.Id<? extends CustomPayload> id) {
+        return Util.isVanilla(id.id())
+                || (handler instanceof ServerPlayNetworkHandler play && ServerPlayNetworking.canSend(play, id))
+                || (handler instanceof ServerConfigurationNetworkHandler config && ServerConfigurationNetworking.canSend(config, id))
+                || ConfigManager.getConfig().allowedPackets.contains(id.id().getNamespace());
+    }
+
+    default boolean canReceiveComponentType(ComponentType<?> key) {
+        return canReceiveDataComponentType(key) || canReceiveEnchantmentComponentType(key);
+    };
+
+    default boolean canReceiveEnchantmentLocationBasedEffect(EnchantmentLocationBasedEffect effect) {
+        return Util.isVanilla(Registries.ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE.getId(effect.getCodec()));
+    }
+
+    default boolean canReceiveEnchantmentEntityEffect(EnchantmentEntityEffect effect) {
+        return Util.isVanilla(Registries.ENCHANTMENT_ENTITY_EFFECT_TYPE.getId(effect.getCodec()));
     }
 }

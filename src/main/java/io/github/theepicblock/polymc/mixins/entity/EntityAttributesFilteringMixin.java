@@ -7,11 +7,11 @@ import io.github.theepicblock.polymc.impl.misc.TransformingPacketCodec;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.s2c.play.EntityAttributesS2CPacket;
+import net.minecraft.registry.Registries;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.nucleoid.packettweaker.PacketContext;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(EntityAttributesS2CPacket.class)
@@ -24,7 +24,7 @@ public abstract class EntityAttributesFilteringMixin {
             var p = new EntityAttributesS2CPacket(packet.getEntityId(), List.of());
             var list = p.getEntries();
             for (EntityAttributesS2CPacket.Entry entry : packet.getEntries()) {
-                if (map.canReceiveEntityAttribute(entry.attribute())) {
+                if (map.canReceiveRegistryEntry(Registries.ATTRIBUTE, entry.attribute())) {
                     list.add(entry);
                 }
             }

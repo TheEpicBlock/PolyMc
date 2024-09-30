@@ -33,7 +33,6 @@ public class CustomModelDataManager {
     public final static SharedValuesKey<CustomModelDataManager> KEY = new SharedValuesKey<>(registry -> new CustomModelDataManager(), null);
 
     public final static Item[] DEFAULT_ITEMS = {
-            Items.STICK,
             Items.FEATHER,
             Items.FLINT,
             Items.LEATHER,

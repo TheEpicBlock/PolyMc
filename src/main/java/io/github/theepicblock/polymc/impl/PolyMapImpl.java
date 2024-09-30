@@ -19,7 +19,10 @@ package io.github.theepicblock.polymc.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -39,6 +42,7 @@ import io.github.theepicblock.polymc.impl.misc.logging.SimpleLogger;
 import io.github.theepicblock.polymc.impl.resource.ModdedResourceContainerImpl;
 import io.github.theepicblock.polymc.impl.resource.ResourcePackImplementation;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.advancement.AdvancementDisplay;
 import net.minecraft.block.*;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.DataComponentTypes;
@@ -52,9 +56,11 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.server.ServerAdvancementLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
@@ -73,10 +79,11 @@ public class PolyMapImpl implements PolyMap {
     /**
      * The nbt tag name that stores the original item nbt so it can be restored
      * @see PolyMap#getClientItem(ItemStack, ServerPlayerEntity, ItemLocation)
-     * @see #recoverOriginalItem(ItemStack)
+     * @see #recoverOriginalItem(ItemStack, ServerPlayerEntity)
      */
     private static final String ORIGINAL_ITEM_NBT = "PolyMcOriginal";
     private static final boolean ALWAYS_ADD_CREATIVE_NBT = ConfigManager.getConfig().alwaysSendFullNbt;
+    private static final List<Identifier> ADVANCEMENT_BACKGROUNDS = new ArrayList<>();
     /**
      * Encodes all data that's meant to be server controlled. In practice this is simply all the ItemStack data minus
      * the count
@@ -109,6 +116,19 @@ public class PolyMapImpl implements PolyMap {
         this.hasBlockWizards = blockPolys.values().stream().anyMatch(BlockPoly::hasWizard);
     }
 
+    public static void updateAdvancementBackgrounds(ServerAdvancementLoader advancementLoader) {
+        ADVANCEMENT_BACKGROUNDS.clear();
+        for (var advancement : advancementLoader.getAdvancements()) {
+            var optional = advancement.value().display().map(AdvancementDisplay::getBackground).flatMap(x -> x);
+            if (optional.isPresent()) {
+                var texture = optional.get();
+                if (texture.getPath().startsWith("textures/")) {
+                    ADVANCEMENT_BACKGROUNDS.add(texture);
+                }
+            }
+        }
+    }
+
     @Override
     public ItemStack getClientItem(ItemStack serverItem, @Nullable ServerPlayerEntity player, @Nullable ItemLocation location) {
         if (serverItem.isEmpty()) {
@@ -123,6 +143,9 @@ public class PolyMapImpl implements PolyMap {
         for (ItemTransformer globalPoly : globalItemPolys) {
             ret = globalPoly.transform(serverItem, ret, this, player, location);
         }
+
+        // If max count varies between the client and server item, set the max count.
+        if (ret.getMaxCount() != serverItem.getMaxCount()) ret.set(DataComponentTypes.MAX_STACK_SIZE, serverItem.getMaxCount());
 
         if ((player == null || player.isCreative() || location == ItemLocation.CREATIVE || ALWAYS_ADD_CREATIVE_NBT) && !ItemStack.areItemsAndComponentsEqual(serverItem, ret) && !serverItem.isEmpty()) {
 
@@ -216,7 +239,7 @@ public class PolyMapImpl implements PolyMap {
         var moddedResources = new ModdedResourceContainerImpl();
         var pack = new ResourcePackImplementation();
 
-        PolyMc.LOGGER.info("Using: " + moddedResources);
+        logger.info("Using: " + moddedResources);
 
         //Let mods register resources via the api
         List<PolyMcEntrypoint> entrypoints = FabricLoader.getInstance().getEntrypoints("polymc", PolyMcEntrypoint.class);
@@ -263,7 +286,9 @@ public class PolyMapImpl implements PolyMap {
                 // Copy all the language keys into the main map
                 var languageObject = pack.getGson().fromJson(streamReader, JsonObject.class);
                 var mainLangMap = languageKeys.computeIfAbsent(lang.getLeft().getPath(), (key) -> new TreeMap<>());
-                languageObject.entrySet().forEach(entry -> mainLangMap.put(entry.getKey(), JsonHelper.asString(entry.getValue(), entry.getKey())));
+                languageObject.entrySet().forEach(entry -> addTranslation(mainLangMap, entry.getKey(), entry.getValue()));
+            } catch (JsonSyntaxException e) {
+                logger.warn(lang.getLeft() + " is not a valid json file! " + e.getMessage());
             } catch (Throwable e) {
                 logger.error("Couldn't parse lang file " + lang.getLeft());
                 e.printStackTrace();
@@ -287,8 +312,17 @@ public class PolyMapImpl implements PolyMap {
                 logger.error("Couldn't parse sounds file " + namespace);
                 e.printStackTrace();
             }
-
         }
+
+
+        for (var texture : ADVANCEMENT_BACKGROUNDS) {
+            var asset = moddedResources.getTextureRaw(texture.getNamespace(), texture.getPath());
+            if (asset != null) {
+                pack.setAsset(texture.getNamespace(), texture.getPath(), asset);
+                pack.importRequirements(moddedResources, asset, logger);
+            }
+        }
+
 
         try {
             moddedResources.close();
@@ -297,6 +331,19 @@ public class PolyMapImpl implements PolyMap {
             logger.error("Failed to close modded resources");
         }
         return pack;
+    }
+
+    private void addTranslation(Map<String, String> mainLangMap, String key, JsonElement value) {
+        if (value instanceof JsonArray array) { // Assume owo lib text
+            var x = Text.Serialization.fromJsonTree(array, PolyMc.FALLBACK_REGISTRY_MANAGER);
+            mainLangMap.put(key, x != null ? x.getString() : "<INVALID TRANSLATION: " + key + ">");
+        } else if (value instanceof JsonObject object) { // Assume that one library which allows objects for text
+            for (var e : object.entrySet()) {
+                addTranslation(mainLangMap, key + "." + e.getKey(), e.getValue());
+            }
+        } else { // Vanilla Translation
+            mainLangMap.put(key, JsonHelper.asString(value, key));
+        }
     }
 
     @Override

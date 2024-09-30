@@ -21,20 +21,27 @@ import com.google.common.base.Splitter;
 import com.google.gson.Gson;
 import io.github.theepicblock.polymc.PolyMc;
 import io.github.theepicblock.polymc.api.PolyMap;
+import io.github.theepicblock.polymc.api.item.ItemLocation;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.impl.mixin.BlockStateDuck;
-import io.github.theepicblock.polymc.impl.mixin.TransformingDataComponent;
+import io.github.theepicblock.polymc.impl.mixin.TransformingComponent;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.ComponentMap;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -59,7 +66,7 @@ public class Util {
     public static final Gson GSON = new Gson();
     public static final String MC_NAMESPACE = "minecraft";
     private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
-    private static boolean HAS_LOGGED_POLYMAP_ERROR = false;
+    private static boolean HAS_LOGGED_POLYMAP_ERROR = !ConfigManager.getConfig().logMissingContext;
 
     public static boolean isVanilla(BlockState state) {
         if (ConfigManager.getConfig().remapVanillaBlockIds) {
@@ -200,6 +207,10 @@ public class Util {
         return a.getBoundingBox().equals(b.getBoundingBox());
     }
 
+    public static PolyMap tryGetPolyMap(PacketContext context) {
+        return tryGetPolyMap(context.getClientConnection());
+    }
+
     public static PolyMap tryGetPolyMap(@Nullable ServerPlayerEntity player) {
         if (player == null) {
             if (!HAS_LOGGED_POLYMAP_ERROR) {
@@ -218,9 +229,12 @@ public class Util {
 
     @NotNull
     public static PolyMap tryGetPolyMap(@Nullable ServerCommonNetworkHandler handler) {
+        return tryGetPolyMap(handler, true);
+    }
+    public static PolyMap tryGetPolyMap(@Nullable ServerCommonNetworkHandler handler, boolean logWarning) {
         var map = handler == null ? null : PolyMapProvider.getPolyMap(handler);
         if (map == null) {
-            if (!HAS_LOGGED_POLYMAP_ERROR) {
+            if (!HAS_LOGGED_POLYMAP_ERROR && logWarning) {
                 PolyMc.LOGGER.error("Tried to get polymap but there's no packet handler context. PolyMc will use the default PolyMap. If PolyMc is transforming things it shouldn't, this is why. Further errors of this kind will be silenced. Have a thread dump: ");
                 Thread.dumpStack();
                 HAS_LOGGED_POLYMAP_ERROR = true;
@@ -308,13 +322,14 @@ public class Util {
                 out.set(x, null);
             }
         }
+        var ctx = player == null ? PacketContext.get() : PacketContext.of(player);
 
         for (ComponentType<?> type : COMPONENTS_TO_COPY) {
             var x = original.get(type);
 
-            if (x instanceof TransformingDataComponent t) {
+            if (x instanceof TransformingComponent t) {
                 //noinspection unchecked,rawtypes
-                out.set((ComponentType)type, t.polymc$getTransformed(player));
+                out.set((ComponentType)type, t.polymc$getTransformed(ctx));
             } else {
                 //noinspection unchecked,rawtypes
                 out.set((ComponentType)type, (Object)original.get(type));
@@ -329,7 +344,7 @@ public class Util {
      * Get the appropriate dynamic registry manager
      */
     @NotNull
-    public static DynamicRegistryManager getRegistryManager(PlayerEntity entity) {
+    public static RegistryWrapper.WrapperLookup getRegistryManager(PlayerEntity entity) {
         if (entity == null) {
             return getRegistryManager();
         }
@@ -342,7 +357,12 @@ public class Util {
      * {@link #getRegistryManager(PlayerEntity)} unless it's really not possible.
      */
     @NotNull
-    public static DynamicRegistryManager getRegistryManager() {
+    public static RegistryWrapper.WrapperLookup getRegistryManager() {
+        var ctx = PacketContext.get();
+        if (ctx.getRegistryWrapperLookup() != null) {
+            return ctx.getRegistryWrapperLookup();
+        }
+
         if (PolyMc.FALLBACK_REGISTRY_MANAGER != null) {
             return PolyMc.FALLBACK_REGISTRY_MANAGER;
         }
@@ -354,7 +374,7 @@ public class Util {
     private static final ComponentType<?>[] COMPONENTS_TO_COPY = {DataComponentTypes.CAN_BREAK, DataComponentTypes.CAN_PLACE_ON,
             DataComponentTypes.BLOCK_ENTITY_DATA, DataComponentTypes.TRIM,
             DataComponentTypes.TOOL,
-            DataComponentTypes.LORE,
+            DataComponentTypes.ITEM_NAME,
             DataComponentTypes.MAX_STACK_SIZE,
             DataComponentTypes.FOOD,
             DataComponentTypes.FIRE_RESISTANT,
@@ -379,6 +399,93 @@ public class Util {
             DataComponentTypes.CUSTOM_NAME,
             DataComponentTypes.WRITABLE_BOOK_CONTENT,
             DataComponentTypes.WRITTEN_BOOK_CONTENT,
-            DataComponentTypes.DYED_COLOR
+            DataComponentTypes.DYED_COLOR,
+            DataComponentTypes.JUKEBOX_PLAYABLE,
+            DataComponentTypes.CONTAINER,
     };
+
+    public static NbtCompound transformBlockEntityNbt(PacketContext context, BlockEntityType<?> type, NbtCompound original) {
+        if (original.isEmpty()) {
+            return original;
+        }
+        NbtCompound override = null;
+
+        var lookup = context.getRegistryWrapperLookup() != null ? context.getRegistryWrapperLookup() : null;
+        if (lookup == null) {
+            return original;
+        }
+        var polymap = tryGetPolyMap(context.getClientConnection());
+
+
+        if (original.contains("Items", NbtElement.LIST_TYPE)) {
+            var list = original.getList("Items", NbtElement.COMPOUND_TYPE);
+            for (int i = 0; i < list.size(); i++) {
+                var nbt = list.getCompound(i);
+                var stack = ItemStack.fromNbtOrEmpty(lookup, nbt);
+                var x = polymap.getClientItem(stack, context.getPlayer(), ItemLocation.EQUIPMENT);
+                if (x != stack) {
+                    if (override == null) {
+                        override = original.copy();
+                    }
+                    nbt = nbt.copy();
+                    nbt.remove("id");
+                    nbt.remove("components");
+                    nbt.remove("count");
+                    override.getList("Items", NbtElement.COMPOUND_TYPE).set(i, x.isEmpty() ? new NbtCompound() : x.encode(lookup, nbt));
+                }
+            }
+        }
+
+        if (original.contains("item", NbtElement.COMPOUND_TYPE)) {
+            var stack = ItemStack.fromNbtOrEmpty(lookup, original.getCompound("item"));
+            var x = polymap.getClientItem(stack, context.getPlayer(), ItemLocation.EQUIPMENT);
+            if (stack != x) {
+                if (override == null) {
+                    override = original.copy();
+                }
+                override.put("item", x.encodeAllowEmpty(lookup));
+            }
+        }
+
+        if (original.contains("components", NbtElement.COMPOUND_TYPE)) {
+            var ops = lookup.getOps(NbtOps.INSTANCE);
+
+            var comp = ComponentMap.CODEC.decode(ops, original.getCompound("components"));
+            if (comp.isSuccess()) {
+                var map = comp.getOrThrow().getFirst();
+                ComponentMap.Builder builder = null;
+
+                for (var component : map) {
+                    if (component.value() instanceof TransformingComponent transformingComponent && transformingComponent.polymc$requireModification(context)) {
+                        if (builder == null) {
+                            builder = ComponentMap.builder();
+                            builder.addAll(map);
+                        }
+                        //noinspection unchecked
+                        builder.add((ComponentType<? super Object>) component.type(), transformingComponent.polymc$getTransformed(context));
+                    } else if (polymap.canReceiveDataComponentType(component.type())) {
+                        if (builder == null) {
+                            builder = ComponentMap.builder();
+                            builder.addAll(map);
+                        }
+                        builder.add(component.type(), null);
+                    }
+                }
+
+                if (builder != null) {
+                    if (override == null) {
+                        override = original.copy();
+                    }
+                    override.put("components", ComponentMap.CODEC.encodeStart(ops, builder.build()).result().orElse(new NbtCompound()));
+                }
+            }
+        }
+
+        return override != null ? override : original;
+    }
+
+    @Nullable
+    public static PacketContext getContext(ServerPlayerEntity player) {
+        return player == null ? PacketContext.get() : PacketContext.of(player);
+    }
 }

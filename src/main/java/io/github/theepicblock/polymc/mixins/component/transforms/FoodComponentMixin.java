@@ -1,19 +1,19 @@
-package io.github.theepicblock.polymc.mixins.item.component;
+package io.github.theepicblock.polymc.mixins.component.transforms;
 
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.mixin.TransformingDataComponent;
+import io.github.theepicblock.polymc.impl.mixin.TransformingComponent;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 import java.util.Optional;
 
 @Mixin(FoodComponent.class)
-public abstract class FoodComponentMixin implements TransformingDataComponent {
+public abstract class FoodComponentMixin implements TransformingComponent {
     @Shadow @Final private int nutrition;
 
     @Shadow @Final private boolean canAlwaysEat;
@@ -27,7 +27,7 @@ public abstract class FoodComponentMixin implements TransformingDataComponent {
     @Shadow @Final private Optional<ItemStack> usingConvertsTo;
 
     @Override
-    public Object polymc$getTransformed(ServerPlayerEntity player) {
+    public Object polymc$getTransformed(PacketContext player) {
         if (!polymc$requireModification(player)) {
             return this;
         }
@@ -36,7 +36,7 @@ public abstract class FoodComponentMixin implements TransformingDataComponent {
     }
 
     @Override
-    public boolean polymc$requireModification(ServerPlayerEntity player) {
+    public boolean polymc$requireModification(PacketContext player) {
         var map = Util.tryGetPolyMap(player);
         for (var effect : this.effects) {
             if (!map.canReceiveStatusEffect(effect.effect().getEffectType())) {

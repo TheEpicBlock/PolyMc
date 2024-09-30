@@ -1,8 +1,8 @@
 package io.github.theepicblock.polymc.mixins.block.implementations;
 
+import eu.pb4.polymer.common.api.PolymerCommonUtils;
 import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.impl.Util;
-import io.github.theepicblock.polymc.impl.mixin.ChunkPacketStaticHack;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketByteBuf;
@@ -27,7 +27,7 @@ public class IdListImplementation {
             return originalStorage;
         }
 
-        var player = ChunkPacketStaticHack.player.get();
+        var player = PolymerCommonUtils.getPlayerContext();
         var polyMap = Util.tryGetPolyMap(player);
 
         if (!polyMap.isVanillaLikeMap()) {
