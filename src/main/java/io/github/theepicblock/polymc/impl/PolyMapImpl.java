@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -121,7 +122,6 @@ public class PolyMapImpl implements PolyMap {
             var optional = advancement.value().display().map(AdvancementDisplay::getBackground).flatMap(x -> x);
             if (optional.isPresent()) {
                 var texture = optional.get();
-                System.out.println(texture);
                 if (texture.getPath().startsWith("textures/")) {
                     ADVANCEMENT_BACKGROUNDS.add(texture);
                 }
@@ -287,6 +287,8 @@ public class PolyMapImpl implements PolyMap {
                 var languageObject = pack.getGson().fromJson(streamReader, JsonObject.class);
                 var mainLangMap = languageKeys.computeIfAbsent(lang.getLeft().getPath(), (key) -> new TreeMap<>());
                 languageObject.entrySet().forEach(entry -> addTranslation(mainLangMap, entry.getKey(), entry.getValue()));
+            } catch (JsonSyntaxException e) {
+                logger.warn(lang.getLeft() + " is not a valid json file! " + e.getMessage());
             } catch (Throwable e) {
                 logger.error("Couldn't parse lang file " + lang.getLeft());
                 e.printStackTrace();

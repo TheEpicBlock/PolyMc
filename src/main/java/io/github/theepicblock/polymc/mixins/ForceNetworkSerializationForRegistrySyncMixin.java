@@ -2,6 +2,7 @@ package io.github.theepicblock.polymc.mixins;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import eu.pb4.polymer.common.api.PolymerCommonUtils;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.registry.VersionedIdentifier;
@@ -25,7 +26,7 @@ public abstract class ForceNetworkSerializationForRegistrySyncMixin extends Serv
 
     @WrapOperation(method = "onSelectKnownPacks", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/SynchronizeRegistriesTask;onSelectKnownPacks(Ljava/util/List;Ljava/util/function/Consumer;)V"))
     private void wrapWithContext(SynchronizeRegistriesTask instance, List<VersionedIdentifier> clientKnownPacks, Consumer<Packet<?>> sender, Operation<Void> original) {
-        PacketContext.runWithContext(this, () -> {
+        PolymerCommonUtils.executeWithNetworkingLogic(this, () -> {
             original.call(instance, clientKnownPacks, sender);
         });
     }
