@@ -4,7 +4,6 @@ import io.github.theepicblock.polymc.api.PolyMap;
 import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
 import io.github.theepicblock.polymc.api.wizard.PacketConsumer;
 import io.github.theepicblock.polymc.impl.ConfigManager;
-import io.github.theepicblock.polymc.mixins.TACSAccessor;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.network.packet.Packet;
@@ -16,10 +15,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @ApiStatus.Experimental
 public class PacketCountManager {
@@ -137,12 +133,20 @@ public class PacketCountManager {
 
     public static class PlayerInfo {
         private final int[] packetCountHistory = new int[PACKET_HISTORY_SIZE];
-        private byte restrictionLevel = MAX_RESTRICTION+PACKET_HISTORY_SIZE; // Start with a restriction level that's higher than possible, to give the history size array some time to fill up
+        private byte restrictionLevel;
+
+        private PlayerInfo() {
+            // -1 indicates a missing entry
+            Arrays.fill(packetCountHistory, -1);
+            this.resetRestrictionLevel();
+        }
 
         public int calculateAveragePacketCount() {
             var cumSum = 0;
             for (int i = 0; i < PACKET_HISTORY_SIZE; i++) {
-                cumSum += packetCountHistory[i];
+                if (packetCountHistory[i] != -1) {
+                    cumSum += packetCountHistory[i];
+                }
             }
             return cumSum/PACKET_HISTORY_SIZE;
         }
@@ -168,7 +172,7 @@ public class PacketCountManager {
         }
 
         public void resetRestrictionLevel() {
-            setRestrictionLevel((byte)(MAX_RESTRICTION+PACKET_HISTORY_SIZE));
+            setRestrictionLevel((byte)0);
         }
 
         /**
